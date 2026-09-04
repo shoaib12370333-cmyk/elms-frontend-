@@ -135,9 +135,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--paper-raised);
+    background: #05070C;
     padding: 20px;
-    animation: fadeIn 0.25s ease;
+    animation: fadeIn 0.3s ease;
+    overflow: hidden;
+    perspective: 1400px;
   }
   .loading-splash {
     min-height: 100vh;
@@ -161,90 +163,293 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+
+  /* ---------- Reel-inspired cyan neon diagonal auth card ---------- */
   .auth-card {
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 40px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-  }
-  .auth-brand {
-    text-align: center;
-    margin-bottom: 28px;
-  }
-  .auth-brand .mark {
-    font-family: 'Inter', sans-serif;
-    font-weight: 800;
-    font-size: 30px;
-    letter-spacing: -0.02em;
-  }
-  .auth-brand .tag {
-    display: block;
-    font-size: 12px;
-    color: var(--grey);
-    margin-top: 2px;
-  }
-  .auth-tabs {
+    position: relative;
     display: flex;
-    background: var(--paper-raised);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 24px;
+    width: min(860px, 94vw);
+    min-height: 500px;
+    background: #070a13;
+    border: 1px solid rgba(34, 211, 238, 0.8);
+    border-radius: 2px;
+    overflow: hidden;
+    transform: perspective(1400px) rotateX(1deg);
+    box-shadow:
+      0 0 0 1px rgba(34, 211, 238, 0.16),
+      0 0 18px rgba(34, 211, 238, 0.45),
+      0 0 55px rgba(34, 211, 238, 0.18),
+      0 28px 80px rgba(0,0,0,.72);
+    animation: reelCardIn .65s cubic-bezier(.2,.8,.2,1);
   }
-  .auth-tab {
-    flex: 1;
-    background: none;
-    border: none;
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: inherit;
-    color: var(--grey);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+
+  @keyframes reelCardIn {
+    from { opacity: 0; transform: perspective(1400px) rotateX(5deg) translateY(30px) scale(.94); }
+    to   { opacity: 1; transform: perspective(1400px) rotateX(1deg) translateY(0) scale(1); }
   }
-  .auth-tab.active {
-    background: #fff;
-    color: var(--ink);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+  .auth-card::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    pointer-events: none;
+    border: 1px solid rgba(103,232,249,.35);
+    box-shadow: inset 0 0 24px rgba(34,211,238,.08);
+    z-index: 8;
   }
-  .auth-form .editable-input {
-    width: 100%;
-    padding: 11px 14px;
-    margin-top: 5px;
-  }
-  .auth-submit-btn {
-    width: 100%;
-    margin-top: 22px;
-    height: 46px;
-  }
-  .auth-status {
-    margin-top: 12px;
-    font-size: 13px;
-    text-align: center;
-  }
-  .auth-status.error { color: var(--red); }
-  .auth-status.success { color: var(--green-dark); }
-  .auth-divider {
+
+  .auth-welcome-panel {
+    position: absolute;
+    inset: 0 0 0 42%;
     display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
     text-align: center;
-    color: var(--grey);
-    font-size: 12px;
-    margin: 24px 0;
+    padding: 44px 34px 44px 92px;
+    background:
+      radial-gradient(circle at 70% 38%, rgba(255,255,255,.16), transparent 34%),
+      linear-gradient(145deg, #155d73 0%, #0b8da8 48%, #1fc5df 100%);
+    clip-path: polygon(22% 0, 100% 0, 100% 100%, 0 100%);
+    color: #fff;
+    z-index: 1;
+    animation: reelPanelReveal .75s cubic-bezier(.2,.8,.2,1) .08s both;
   }
-  .auth-divider::before, .auth-divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid var(--line);
+
+  @keyframes reelPanelReveal {
+    from { clip-path: polygon(100% 0,100% 0,100% 100%,100% 100%); opacity: .25; }
+    to   { clip-path: polygon(22% 0,100% 0,100% 100%,0 100%); opacity: 1; }
   }
-  .auth-divider span { padding: 0 12px; }
-  .auth-google-btn {
+
+  .auth-welcome-panel::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 42%;
+    background: linear-gradient(135deg, rgba(3,8,18,.95), rgba(3,8,18,.72));
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    pointer-events: none;
+  }
+
+  .auth-welcome-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.09), transparent 62%);
+    transform: translateX(-110%);
+    animation: lightSweep 2.8s ease-in-out 1s infinite;
+    pointer-events: none;
+  }
+
+  @keyframes lightSweep {
+    0%,55% { transform: translateX(-110%); }
+    80%,100% { transform: translateX(110%); }
+  }
+
+  .auth-welcome-title {
+    position: relative;
+    z-index: 3;
+    font-size: 31px;
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: .02em;
+    margin: 0;
+    max-width: 190px;
+    text-shadow: 0 0 22px rgba(255,255,255,.45), 0 4px 18px rgba(0,0,0,.25);
+  }
+
+  .auth-welcome-sub {
+    display: none;
+  }
+
+  .auth-form-panel {
+    position: relative;
+    z-index: 4;
+    width: 58%;
+    min-width: 0;
     display: flex;
+    flex-direction: column;
     justify-content: center;
+    padding: 48px 54px 42px;
+    background: #070a13;
+    clip-path: polygon(0 0, 72% 0, 100% 100%, 0 100%);
+  }
+
+  .auth-form-panel::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, #22d3ee, transparent);
+    box-shadow: 0 0 14px rgba(34,211,238,.75);
+    transform: skewX(18deg);
+    transform-origin: top;
+    opacity: .8;
+  }
+
+  .auth-brand {
+    margin-bottom: 18px;
+  }
+
+  .auth-brand .mark {
+    font-family: 'Trebuchet MS', 'Verdana', sans-serif;
+    font-weight: 900;
+    font-size: 24px;
+    letter-spacing: -.02em;
+    color: #fff;
+    text-shadow: 0 0 14px rgba(34,211,238,.35);
+  }
+
+  .auth-brand .tag {
+    display: block;
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 2px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .auth-heading {
+    font-size: 27px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 22px;
+    text-shadow: 0 0 15px rgba(34,211,238,.28);
+  }
+
+  .auth-form .edit-label {
+    color: #d2d7e1;
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+
+  .auth-form .editable-input {
+    width: 100%;
+    padding: 10px 42px 10px 13px;
+    margin-top: 3px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #d8dee8;
+    border-radius: 0;
+    color: #fff;
+    outline: none;
+    transition: border-color .18s ease, box-shadow .18s ease;
+  }
+
+  .auth-form .editable-input::placeholder {
+    color: #6f7b8e;
+  }
+
+  .auth-form .editable-input:focus {
+    border-bottom-color: #22d3ee;
+    box-shadow: 0 5px 14px -10px rgba(34,211,238,.9);
+  }
+
+  .auth-field-icon {
+    right: 8px;
+    top: calc(50% + 2px);
+    color: #d1d5db;
+    font-size: 14px;
+  }
+
+  .auth-field-wrap:focus-within .auth-field-icon {
+    color: #22d3ee;
+  }
+
+  .auth-submit-btn {
+    width: 100%;
+    margin-top: 24px;
+    height: 43px;
+    border-radius: 999px;
+    border: 1px solid rgba(103,232,249,.8);
+    background: linear-gradient(90deg, #0b7897, #18c9e7);
+    color: #fff;
+    box-shadow: 0 0 18px rgba(34,211,238,.25);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  }
+
+  .auth-submit-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    box-shadow: 0 0 26px rgba(34,211,238,.48);
+  }
+
+  .auth-switch-line {
+    margin-top: 15px;
+    font-size: 11px;
+    color: #8994a6;
+    text-align: center;
+  }
+
+  .auth-switch-line a {
+    color: #22d3ee;
+    text-decoration: none;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Reel has no social-login section; keep existing JS targets but hide the UI. */
+  .auth-divider,
+  .auth-google-btn,
+  #googleSignInDivLogin,
+  #googleSignInDivRegister {
+    display: none !important;
+  }
+
+  /* Register state mirrors the diagonal composition. */
+  .auth-card.show-register .auth-welcome-panel {
+    clip-path: polygon(0 0, 78% 0, 100% 100%, 0 100%);
+    padding: 44px 92px 44px 34px;
+  }
+
+  .auth-card.show-register .auth-form-panel {
+    clip-path: polygon(28% 0, 100% 0, 100% 100%, 0 100%);
+  }
+
+  @media (max-width: 640px) {
+    .auth-page { padding: 14px; }
+
+    .auth-card {
+      display: block;
+      width: min(420px, 96vw);
+      min-height: 0;
+      transform: none;
+      border-radius: 10px;
+    }
+
+    .auth-welcome-panel,
+    .auth-card.show-register .auth-welcome-panel {
+      position: relative;
+      inset: auto;
+      width: 100%;
+      min-height: 145px;
+      clip-path: none !important;
+      padding: 28px 24px;
+    }
+
+    .auth-welcome-panel::before {
+      display: none;
+    }
+
+    .auth-welcome-title {
+      font-size: 25px;
+      max-width: none;
+    }
+
+    .auth-form-panel,
+    .auth-card.show-register .auth-form-panel {
+      width: 100%;
+      clip-path: none !important;
+      padding: 30px 26px 34px;
+    }
+
+    .auth-form-panel::after {
+      display: none;
+    }
   }
 
   .main {
@@ -836,42 +1041,84 @@
 </div>
 
 <div class="auth-page" id="authPage" style="display:none;">
-  <div class="auth-card">
-    <div class="auth-brand">
-      <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
-      <span class="tag">listing pipeline</span>
+  <div class="auth-card" id="authCard">
+    <div class="auth-welcome-panel">
+      <div class="auth-welcome-title" id="authWelcomeTitle">WELCOME<br>BACK!</div>
+      <div class="auth-welcome-sub" id="authWelcomeSub">Log in to keep managing your Amazon-to-eBay listings.</div>
     </div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="authTabLogin" data-tab="login">Log in</button>
-      <button class="auth-tab" id="authTabRegister" data-tab="register">Register</button>
+    <div class="auth-form-panel">
+      <div class="auth-brand">
+        <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
+        <span class="tag">listing pipeline</span>
+      </div>
+
+      <!-- Login form: same IDs/API hooks retained -->
+      <div id="authFormLogin" class="auth-form">
+        <div class="auth-heading">Login</div>
+
+        <label class="edit-label">Email</label>
+        <div class="auth-field-wrap">
+          <input type="email" class="editable-input" id="loginEmail" placeholder="you@example.com" />
+          <span class="auth-field-icon">&#128100;</span>
+        </div>
+        <div class="auth-field-error-msg" id="loginEmailError">Please enter your email.</div>
+
+        <label class="edit-label" style="margin-top:16px;">Password</label>
+        <div class="auth-field-wrap">
+          <input type="password" class="editable-input" id="loginPassword" placeholder="••••••••" />
+          <span class="auth-field-icon clickable" id="loginPasswordToggle">&#128065;</span>
+        </div>
+        <div class="auth-field-error-msg" id="loginPasswordError">Please enter your password.</div>
+
+        <button type="button" class="primary auth-submit-btn" id="loginSubmitBtn">Login</button>
+        <div id="loginStatus" class="auth-status"></div>
+        <div class="auth-switch-line">Don't have an account? <a id="switchToRegister">Sign Up</a></div>
+
+        <div class="auth-divider"><span>or</span></div>
+        <div id="googleSignInDivLogin" class="auth-google-btn"></div>
+      </div>
+
+      <!-- Register form: same IDs/API hooks retained -->
+      <div id="authFormRegister" class="auth-form" style="display:none;">
+        <div class="auth-heading">Sign Up</div>
+
+        <label class="edit-label">Username</label>
+        <div class="auth-field-wrap">
+          <input type="text" class="editable-input" id="registerUsername" placeholder="Choose a username" />
+          <span class="auth-field-icon">&#128100;</span>
+        </div>
+        <div class="auth-field-error-msg" id="registerUsernameError">Please choose a username (3+ characters).</div>
+
+        <label class="edit-label" style="margin-top:12px;">Email</label>
+        <div class="auth-field-wrap">
+          <input type="email" class="editable-input" id="registerEmail" placeholder="you@example.com" />
+          <span class="auth-field-icon">&#9993;</span>
+        </div>
+        <div class="auth-field-error-msg" id="registerEmailError">Please enter a valid email.</div>
+
+        <label class="edit-label" style="margin-top:12px;">Password</label>
+        <div class="auth-field-wrap">
+          <input type="password" class="editable-input" id="registerPassword" placeholder="At least 8 characters" />
+          <span class="auth-field-icon clickable" id="registerPasswordToggle">&#128065;</span>
+        </div>
+        <div class="auth-field-error-msg" id="registerPasswordError">Password must be at least 8 characters.</div>
+
+        <label class="edit-label" style="margin-top:12px;">Confirm password</label>
+        <div class="auth-field-wrap">
+          <input type="password" class="editable-input" id="registerConfirmPassword" placeholder="Re-enter your password" />
+          <span class="auth-field-icon clickable" id="registerConfirmPasswordToggle">&#128065;</span>
+        </div>
+        <div class="auth-field-error-msg" id="registerConfirmPasswordError">Passwords do not match.</div>
+
+        <button type="button" class="primary auth-submit-btn" id="registerSubmitBtn">Sign Up</button>
+        <div id="registerStatus" class="auth-status"></div>
+        <div class="auth-switch-line">Already have an account? <a id="switchToLogin">Login</a></div>
+
+        <div class="auth-divider"><span>or</span></div>
+        <div id="googleSignInDivRegister" class="auth-google-btn"></div>
+      </div>
     </div>
-
-    <!-- Login form -->
-    <div id="authFormLogin" class="auth-form">
-      <label class="edit-label">Email</label>
-      <input type="email" class="editable-input" id="loginEmail" placeholder="you@example.com" />
-      <label class="edit-label" style="margin-top:12px;">Password</label>
-      <input type="password" class="editable-input" id="loginPassword" placeholder="••••••••" />
-      <button class="primary auth-submit-btn" id="loginSubmitBtn">Log in</button>
-      <div id="loginStatus" class="auth-status"></div>
-    </div>
-
-    <!-- Register form -->
-    <div id="authFormRegister" class="auth-form" style="display:none;">
-      <label class="edit-label">Username</label>
-      <input type="text" class="editable-input" id="registerUsername" placeholder="Choose a username" />
-      <label class="edit-label" style="margin-top:12px;">Email</label>
-      <input type="email" class="editable-input" id="registerEmail" placeholder="you@example.com" />
-      <label class="edit-label" style="margin-top:12px;">Password</label>
-      <input type="password" class="editable-input" id="registerPassword" placeholder="At least 8 characters" />
-      <button class="primary auth-submit-btn" id="registerSubmitBtn">Create account</button>
-      <div id="registerStatus" class="auth-status"></div>
-    </div>
-
-    <div class="auth-divider"><span>or</span></div>
-
-    <div id="googleSignInDiv" class="auth-google-btn"></div>
   </div>
 </div>
 
@@ -1934,19 +2181,62 @@
     }
   }
 
-  // ---------- Auth Page: tab switching ----------
-  document.getElementById('authTabLogin').addEventListener('click', () => {
-    document.getElementById('authTabLogin').classList.add('active');
-    document.getElementById('authTabRegister').classList.remove('active');
+  // ---------- Auth Page: switching between login/register ----------
+  function showLoginForm() {
+    document.getElementById('authCard').classList.remove('show-register');
     document.getElementById('authFormLogin').style.display = 'block';
     document.getElementById('authFormRegister').style.display = 'none';
-  });
-  document.getElementById('authTabRegister').addEventListener('click', () => {
-    document.getElementById('authTabRegister').classList.add('active');
-    document.getElementById('authTabLogin').classList.remove('active');
+    document.getElementById('authWelcomeTitle').textContent = 'WELCOME BACK!';
+    document.getElementById('authWelcomeSub').textContent = 'Log in to keep managing your Amazon-to-eBay listings.';
+  }
+  function showRegisterForm() {
+    document.getElementById('authCard').classList.add('show-register');
     document.getElementById('authFormRegister').style.display = 'block';
     document.getElementById('authFormLogin').style.display = 'none';
-  });
+    document.getElementById('authWelcomeTitle').textContent = 'JOIN ELMS';
+    document.getElementById('authWelcomeSub').textContent = 'Create your account and start listing in minutes.';
+  }
+
+  document.getElementById('switchToRegister').addEventListener('click', showRegisterForm);
+  document.getElementById('switchToLogin').addEventListener('click', showLoginForm);
+
+  /**
+   * Shows a custom inline validation error under a field: highlights the
+   * input red, plays a brief shake animation, and reveals the message.
+   * Used instead of relying on the browser's default validation bubbles.
+   */
+  function showFieldError(inputId, errorId) {
+    const input = document.getElementById(inputId);
+    const errorEl = document.getElementById(errorId);
+    input.classList.remove('field-error');
+    void input.offsetWidth; // restart the shake animation if it's already showing
+    input.classList.add('field-error');
+    errorEl.classList.add('show');
+  }
+  function clearFieldError(inputId, errorId) {
+    document.getElementById(inputId).classList.remove('field-error');
+    document.getElementById(errorId).classList.remove('show');
+  }
+
+  // Clear a field's error as soon as the user starts fixing it.
+  ['loginEmail', 'loginPassword', 'registerUsername', 'registerEmail', 'registerPassword', 'registerConfirmPassword']
+    .forEach((id) => {
+      document.getElementById(id).addEventListener('input', () => clearFieldError(id, `${id}Error`));
+    });
+
+  // Show/hide password toggles.
+  function wirePasswordToggle(toggleId, inputId) {
+    const toggle = document.getElementById(toggleId);
+    const input = document.getElementById(inputId);
+    toggle.addEventListener('click', () => {
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      toggle.innerHTML = isHidden ? '&#128064;' : '&#128065;';
+    });
+  }
+  wirePasswordToggle('loginPasswordToggle', 'loginPassword');
+  wirePasswordToggle('registerPasswordToggle', 'registerPassword');
+  wirePasswordToggle('registerConfirmPasswordToggle', 'registerConfirmPassword');
 
   // ---------- Auth Page: email/password login ----------
   document.getElementById('loginSubmitBtn').addEventListener('click', async () => {
@@ -1955,11 +2245,10 @@
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
 
-    if (!email || !password) {
-      statusEl.className = 'auth-status error';
-      statusEl.textContent = 'Please enter your email and password.';
-      return;
-    }
+    let hasError = false;
+    if (!email) { showFieldError('loginEmail', 'loginEmailError'); hasError = true; }
+    if (!password) { showFieldError('loginPassword', 'loginPasswordError'); hasError = true; }
+    if (hasError) return;
 
     btn.disabled = true;
     statusEl.className = 'auth-status';
@@ -1996,17 +2285,15 @@
     const username = document.getElementById('registerUsername').value.trim();
     const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('registerConfirmPassword').value;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!username || !email || !password) {
-      statusEl.className = 'auth-status error';
-      statusEl.textContent = 'Please fill in all fields.';
-      return;
-    }
-    if (password.length < 8) {
-      statusEl.className = 'auth-status error';
-      statusEl.textContent = 'Password must be at least 8 characters.';
-      return;
-    }
+    let hasError = false;
+    if (!username || username.length < 3) { showFieldError('registerUsername', 'registerUsernameError'); hasError = true; }
+    if (!email || !emailPattern.test(email)) { showFieldError('registerEmail', 'registerEmailError'); hasError = true; }
+    if (!password || password.length < 8) { showFieldError('registerPassword', 'registerPasswordError'); hasError = true; }
+    if (!confirmPassword || confirmPassword !== password) { showFieldError('registerConfirmPassword', 'registerConfirmPasswordError'); hasError = true; }
+    if (hasError) return;
 
     btn.disabled = true;
     statusEl.className = 'auth-status';
@@ -2068,14 +2355,13 @@
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,
       });
-      google.accounts.id.renderButton(document.getElementById('googleSignInDiv'), {
-        theme: 'outline',
-        size: 'medium',
-        shape: 'pill',
-      });
+      const googleBtnOptions = { theme: 'filled_black', size: 'medium', shape: 'pill', width: 260 };
+      google.accounts.id.renderButton(document.getElementById('googleSignInDivLogin'), googleBtnOptions);
+      google.accounts.id.renderButton(document.getElementById('googleSignInDivRegister'), googleBtnOptions);
     } else {
-      document.getElementById('googleSignInDiv').innerHTML =
-        '<span style="font-size:12px; color:#8A8578;">Google sign-in not configured yet</span>';
+      const notConfiguredHtml = '<span style="font-size:12px; color:#7C8598;">Google sign-in not configured yet</span>';
+      document.getElementById('googleSignInDivLogin').innerHTML = notConfiguredHtml;
+      document.getElementById('googleSignInDivRegister').innerHTML = notConfiguredHtml;
     }
   });
 
