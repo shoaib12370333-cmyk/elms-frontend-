@@ -1,0 +1,3662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ELMS — Listing Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --ink: #1F1F1F;
+    --paper: #FFFFFF;
+    --paper-raised: #FAFAFA;
+    --blue: #0064D2;
+    --blue-dark: #004C9E;
+    --green: #86B817;
+    --green-dark: #6B9412;
+    --yellow: #F5AF02;
+    --red: #E53238;
+    --grey: #767676;
+    --grey-light: #E5E5E5;
+    --line: #E8E8E8;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper-raised);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, .display {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  a { color: inherit; }
+
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--paper);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 20px;
+    border-right: 1px solid var(--line);
+  }
+  .sidebar-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 40px;
+  }
+  .sidebar-brand .mark {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--blue);
+    letter-spacing: -0.02em;
+  }
+  .sidebar-brand .tag {
+    font-size: 11px;
+    color: var(--grey);
+    letter-spacing: 0.02em;
+  }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--grey);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+  }
+  .sidebar-nav a:hover {
+    background: var(--paper-raised);
+    color: var(--ink);
+  }
+  .sidebar-nav a.active {
+    background: var(--blue);
+    color: #fff;
+  }
+  .sidebar-nav .icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 999px;
+    line-height: 1.5;
+  }
+  .sidebar-nav a.active .nav-badge {
+    background: rgba(255,255,255,0.25);
+  }
+  .sidebar-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--grey);
+  }
+
+  /* ---------- Auth Page ---------- */
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--paper-raised);
+    padding: 20px;
+    animation: fadeIn 0.25s ease;
+  }
+  .loading-splash {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--paper-raised);
+  }
+  .loading-splash .mark {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 34px;
+    letter-spacing: -0.02em;
+    animation: pulseFade 1.3s ease-in-out infinite;
+  }
+  @keyframes pulseFade {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .auth-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+  .auth-brand {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .auth-brand .mark {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: -0.02em;
+  }
+  .auth-brand .tag {
+    display: block;
+    font-size: 12px;
+    color: var(--grey);
+    margin-top: 2px;
+  }
+  .auth-tabs {
+    display: flex;
+    background: var(--paper-raised);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+  .auth-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--grey);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .auth-tab.active {
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .auth-form .editable-input {
+    width: 100%;
+    padding: 11px 14px;
+    margin-top: 5px;
+  }
+  .auth-submit-btn {
+    width: 100%;
+    margin-top: 22px;
+    height: 46px;
+  }
+  .auth-status {
+    margin-top: 12px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .auth-status.error { color: var(--red); }
+  .auth-status.success { color: var(--green-dark); }
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--grey);
+    font-size: 12px;
+    margin: 24px 0;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--line);
+  }
+  .auth-divider span { padding: 0 12px; }
+  .auth-google-btn {
+    display: flex;
+    justify-content: center;
+  }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-raised);
+  }
+  .topbar h1 { font-size: 22px; }
+  .topbar .subline {
+    font-size: 13px;
+    color: var(--grey);
+    margin-top: 2px;
+  }
+
+  .auth-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .user-chip {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 14px 4px 4px;
+  }
+  .user-chip img { width: 28px; height: 28px; border-radius: 50%; }
+  .user-chip .name { font-size: 13px; font-weight: 600; }
+  .user-chip button {
+    background: none;
+    border: none;
+    color: var(--grey);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 6px;
+  }
+  .user-chip button:hover { color: var(--red); }
+
+  #googleSignInDiv { display: block; }
+
+  .content {
+    flex: 1;
+    padding: 40px;
+    max-width: 880px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .import-lane {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+  }
+  .import-lane .kicker {
+    font-size: 13px;
+    color: var(--green-dark);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .import-lane h2 { font-size: 26px; margin-bottom: 20px; }
+
+  .lane-row { display: flex; gap: 10px; margin-bottom: 14px; }
+  .lane-row input[type="text"] {
+    flex: 1;
+    padding: 13px 16px;
+    border: 1.5px solid var(--grey-light);
+    border-radius: 9px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    color: var(--ink);
+  }
+  .lane-row input[type="text"]:focus { outline: none; border-color: var(--blue); }
+  .lane-row button.primary {
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    padding: 0 26px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .lane-row button.primary:hover { background: var(--blue-dark); }
+  .lane-row button.primary:disabled { background: var(--grey-light); color: #fff; cursor: not-allowed; }
+
+  .lane-sub-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--grey);
+  }
+  .lane-sub-row label { font-weight: 600; color: var(--ink); }
+  .lane-sub-row input[type="number"] {
+    width: 70px;
+    padding: 7px 10px;
+    border: 1.5px solid var(--grey-light);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+
+  .pipeline-track {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--line);
+  }
+  .pipeline-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--grey);
+    font-weight: 600;
+  }
+  .pipeline-step .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--grey-light); }
+  .pipeline-step.done .dot { background: var(--green); }
+  .pipeline-step.active .dot { background: var(--yellow); }
+  .pipeline-step.done, .pipeline-step.active { color: var(--ink); }
+  .pipeline-arrow { color: var(--grey-light); font-size: 12px; }
+
+  .state-msg { font-size: 14px; color: var(--grey); padding: 16px 0; }
+  .state-msg.error {
+    color: var(--red);
+    background: #FDECEC;
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .state-msg.success {
+    color: var(--green-dark);
+    background: #EEF6DF;
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+
+  .product-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 32px;
+  }
+  .product-top { display: flex; gap: 22px; }
+  .main-image {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .product-info { flex: 1; min-width: 0; }
+  .product-info h3 { font-size: 19px; line-height: 1.35; margin-bottom: 8px; }
+  .breadcrumb { font-size: 12px; color: var(--grey); margin-bottom: 10px; }
+  .breadcrumb span:not(:last-child)::after { content: " / "; color: var(--grey-light); }
+  .meta-line { font-size: 13px; color: var(--grey); margin: 3px 0; }
+  .meta-line strong { color: var(--ink); }
+
+  .price-row { display: flex; gap: 14px; margin-top: 16px; }
+  .price-box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--grey);
+  }
+  .price-box strong {
+    display: block;
+    font-size: 17px;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .price-box.suggested strong { color: var(--green-dark); }
+
+  .gallery { display: flex; gap: 8px; overflow-x: auto; margin-top: 16px; padding-bottom: 4px; }
+  .gallery img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border: 1.5px solid var(--line);
+    border-radius: 7px;
+    background: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .gallery img.active { border-color: var(--green); }
+
+  .action-row { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-outline {
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-outline:hover { background: var(--paper); }
+
+  .section-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 26px 0 10px 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .bullets { margin: 0; padding-left: 18px; font-size: 13px; color: #3A3A3A; }
+  .bullets li { margin-bottom: 5px; }
+  .description-text { font-size: 13px; color: #3A3A3A; line-height: 1.65; white-space: pre-line; }
+  .specs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .specs-table tr:nth-child(odd) { background: var(--paper); }
+  .specs-table td { padding: 8px 12px; border: 1px solid var(--line); }
+  .specs-table td:first-child { font-weight: 600; width: 38%; color: var(--ink); }
+  .variants-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .variant-chip {
+    border: 1.5px solid var(--grey-light);
+    border-radius: 9px;
+    padding: 8px;
+    width: 84px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .variant-chip:hover { border-color: var(--green); }
+  .variant-chip.current { border-color: var(--green); background: #EDF5F0; }
+  .variant-chip img { width: 56px; height: 56px; object-fit: contain; margin-bottom: 4px; }
+
+  .publish-rail {
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .publish-field { display: flex; flex-direction: column; gap: 5px; }
+  .publish-field label { font-size: 12px; font-weight: 600; color: var(--grey); }
+  .publish-field input {
+    padding: 9px 12px;
+    border: 1.5px solid var(--grey-light);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    width: 140px;
+  }
+  .btn-publish {
+    background: var(--blue-dark);
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-publish:hover { background: #003B7A; }
+  .btn-publish:disabled { background: var(--grey-light); cursor: not-allowed; }
+
+  #importStatus { margin-top: 12px; font-size: 13px; width: 100%; }
+  #importStatus.success { color: var(--green-dark); font-weight: 600; }
+  #importStatus.error { color: var(--red); }
+  #sellerSettingsStatus { margin-top: 10px; font-size: 13px; }
+  #sellerSettingsStatus.success { color: var(--green-dark); font-weight: 600; }
+  #sellerSettingsStatus.error { color: var(--red); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,27,45,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 14px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+  .modal-header h2 { font-size: 20px; }
+  .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--grey); line-height: 1; }
+  .modal-product-summary {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--paper);
+    border-radius: 9px;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+  }
+  .modal-product-summary img { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; border: 1px solid var(--line); background: #fff; }
+  .modal-product-summary .name { font-size: 13px; font-weight: 600; line-height: 1.3; }
+
+  .pricing-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px 12px; }
+  .pricing-grid .field label { font-size: 12px; color: var(--grey); font-weight: 600; display: block; margin-bottom: 5px; }
+  .pricing-grid .field input {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1.5px solid var(--grey-light);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .pricing-grid .field.readonly input { background: var(--paper); color: var(--grey); }
+  .sell-price-box input { font-weight: 700; color: var(--green-dark); border-color: #A9D0BB; background: #EDF5F0; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 13px; }
+  .checkbox-row input { width: auto; }
+  .modal-apply-btn {
+    margin-top: 22px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    width: 100%;
+  }
+  .modal-apply-btn:hover { background: var(--green-dark); }
+
+  /* ---------- Editable product fields (Import page) ---------- */
+  .edit-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+  }
+  .title-input {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .editable-textarea {
+    width: 100%;
+    resize: vertical;
+    line-height: 1.6;
+    font-size: 13px;
+  }
+
+  /* ---------- Listings / Orders / History ---------- */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .data-table th {
+    text-align: left;
+    font-size: 12px;
+    color: var(--grey);
+    font-weight: 600;
+    padding: 12px 14px;
+    background: var(--paper-raised);
+    border-bottom: 1px solid var(--line);
+  }
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .row-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .row-title { font-weight: 600; max-width: 260px; }
+
+  .status-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: capitalize;
+  }
+  .status-badge.published { background: #EEF6DF; color: var(--green-dark); }
+  .status-badge.draft { background: #FEF3DA; color: #8A6300; }
+  .status-badge.error { background: #FDECEC; color: var(--red); }
+  .status-badge.pending { background: #FEF3DA; color: #8A6300; }
+  .status-badge.ordered_from_amazon { background: #E5F0FC; color: var(--blue-dark); }
+  .status-badge.shipped { background: #E5F0FC; color: var(--blue-dark); }
+  .status-badge.delivered { background: #EEF6DF; color: var(--green-dark); }
+
+  .editable-input {
+    padding: 6px 8px;
+    border: 1.5px solid var(--grey-light);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    width: 100%;
+  }
+  .editable-input:focus { outline: none; border-color: var(--blue); }
+
+  .row-actions { display: flex; gap: 6px; white-space: nowrap; }
+  .btn-small {
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-small:hover { background: var(--blue-dark); }
+  .btn-small:disabled { background: var(--grey-light); cursor: not-allowed; }
+  .btn-small.save { background: var(--green); }
+  .btn-small.save:hover { background: var(--green-dark); }
+  .btn-small.delete { background: var(--red); }
+  .btn-small.delete:hover { background: #C82333; }
+  .btn-small.publish { background: var(--blue-dark); }
+  .btn-small.publish:hover { background: #003B7A; }
+
+  /* ---------- Draft rows (AutoDS-style) ---------- */
+  .draft-bulk-bar {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .draft-list { display: flex; flex-direction: column; gap: 10px; }
+  .draft-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .draft-row:hover { border-color: var(--blue); }
+  .draft-checkbox { width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+  .draft-thumb {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .draft-info { flex: 1; min-width: 0; }
+  .draft-title {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .draft-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--grey);
+    flex-wrap: wrap;
+  }
+  .supplier-badge {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .draft-source-link { color: var(--blue); text-decoration: underline; }
+  .scheduled-badge { color: var(--blue-dark); font-weight: 600; }
+  .draft-quick-fields { display: flex; gap: 8px; flex-shrink: 0; }
+  .draft-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .draft-menu-wrap { position: relative; }
+  .menu-dots { background: var(--paper-raised); color: var(--ink); font-size: 16px; padding: 6px 10px; }
+  .menu-dots:hover { background: var(--grey-light); }
+  .draft-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    min-width: 160px;
+    z-index: 20;
+    overflow: hidden;
+  }
+  .draft-menu.open { display: block; }
+  .draft-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .draft-menu button:hover { background: var(--paper-raised); }
+  .draft-menu button.menu-danger { color: var(--red); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--grey);
+    background: var(--paper);
+    border: 1px dashed var(--grey-light);
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 720px) {
+    .sidebar { display: none; }
+    .content { padding: 20px; }
+    .topbar { padding: 16px 20px; }
+    .import-lane, .product-card { padding: 20px; }
+    .product-top { flex-direction: column; }
+    .main-image { width: 100%; height: 240px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Auth Page (shown until the user logs in or registers) -->
+<!-- Loading Splash (shown briefly while we check for an existing session) -->
+<div class="loading-splash" id="loadingSplash">
+  <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
+</div>
+
+<div class="auth-page" id="authPage" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
+      <span class="tag">listing pipeline</span>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="authTabLogin" data-tab="login">Log in</button>
+      <button class="auth-tab" id="authTabRegister" data-tab="register">Register</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="authFormLogin" class="auth-form">
+      <label class="edit-label">Email</label>
+      <input type="email" class="editable-input" id="loginEmail" placeholder="you@example.com" />
+      <label class="edit-label" style="margin-top:12px;">Password</label>
+      <input type="password" class="editable-input" id="loginPassword" placeholder="••••••••" />
+      <button class="primary auth-submit-btn" id="loginSubmitBtn">Log in</button>
+      <div id="loginStatus" class="auth-status"></div>
+    </div>
+
+    <!-- Register form -->
+    <div id="authFormRegister" class="auth-form" style="display:none;">
+      <label class="edit-label">Username</label>
+      <input type="text" class="editable-input" id="registerUsername" placeholder="Choose a username" />
+      <label class="edit-label" style="margin-top:12px;">Email</label>
+      <input type="email" class="editable-input" id="registerEmail" placeholder="you@example.com" />
+      <label class="edit-label" style="margin-top:12px;">Password</label>
+      <input type="password" class="editable-input" id="registerPassword" placeholder="At least 8 characters" />
+      <button class="primary auth-submit-btn" id="registerSubmitBtn">Create account</button>
+      <div id="registerStatus" class="auth-status"></div>
+    </div>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <div id="googleSignInDiv" class="auth-google-btn"></div>
+  </div>
+</div>
+
+<div class="app-shell" id="appShell" style="display:none;">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="mark">ELMS</span>
+      <span class="tag">listing pipeline</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="active" data-page="import">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Import
+      </a>
+      <a href="#" data-page="drafts">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        Drafts
+        <span class="nav-badge" id="draftsCountBadge" style="display:none;">0</span>
+      </a>
+      <a href="#" data-page="listings">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Live listings
+      </a>
+      <a href="#" data-page="orders">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+        Orders
+      </a>
+      <a href="#" data-page="history">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        Import history
+      </a>
+      <a href="#" data-page="settings">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42Z"/></svg>
+        Settings
+      </a>
+      <a href="#" data-page="support">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Support
+      </a>
+      <a href="#" data-page="admin" id="adminNavLink" style="display:none;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+        Admin
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="sidebarFooter">Signed in</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Import a product</h1>
+        <div class="subline" id="pageSubline">Paste an Amazon link, price it, send it to eBay.</div>
+      </div>
+      <div class="auth-area">
+        <div id="googleSignInDiv"></div>
+        <div class="user-chip" id="userChip">
+          <img id="userAvatar" src="" alt="" />
+          <span class="name" id="userName"></span>
+          <button id="signOutBtn">Sign out</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="page-import">
+        <div class="import-lane">
+          <div class="kicker">Step one</div>
+          <h2>Bring in a product</h2>
+
+          <div class="lane-row">
+            <input type="text" id="amazonUrl" placeholder="https://www.amazon.com/dp/XXXXXXXXXX" />
+            <button class="primary" id="fetchBtn">Fetch product</button>
+          </div>
+          <div class="lane-sub-row">
+            <label for="markup">Markup</label>
+            <input type="number" id="markup" placeholder="e.g. 25" />
+            <span>% added to the Amazon price as a starting eBay price</span>
+          </div>
+
+          <div class="pipeline-track">
+            <div class="pipeline-step active" id="stepSource"><span class="dot"></span>Source</div>
+            <span class="pipeline-arrow">&rarr;</span>
+            <div class="pipeline-step" id="stepPrice"><span class="dot"></span>Price</div>
+            <span class="pipeline-arrow">&rarr;</span>
+            <div class="pipeline-step" id="stepPublish"><span class="dot"></span>Publish</div>
+          </div>
+
+          <button type="button" class="btn-outline" id="toggleBulkImportBtn" style="margin-top:16px;">Bulk import multiple links</button>
+
+          <div id="bulkImportSection" style="display:none; margin-top:16px;">
+            <label class="edit-label">Amazon links (one per line, up to 25)</label>
+            <textarea class="editable-input editable-textarea" id="bulkAmazonUrls" rows="6" placeholder="https://www.amazon.com/dp/XXXXXXXXXX&#10;https://www.amazon.com/dp/YYYYYYYYYY"></textarea>
+            <button type="button" class="primary" id="bulkFetchBtn" style="margin-top:10px; width:auto; padding:0 26px; height:44px;">Fetch all</button>
+            <div id="bulkImportStatus" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+        <div id="inProgressFetches"></div>
+        <div id="result"></div>
+      </div>
+
+      <div id="page-drafts" style="display:none;">
+        <div id="draftsContent"><p class="state-msg">Loading drafts&hellip;</p></div>
+      </div>
+
+      <div id="page-listings" style="display:none;">
+        <div id="listingsContent"><p class="state-msg">Loading listings&hellip;</p></div>
+      </div>
+
+      <div id="page-orders" style="display:none;">
+        <div id="ordersContent"><p class="state-msg">Loading orders&hellip;</p></div>
+      </div>
+
+      <div id="page-history" style="display:none;">
+        <div id="historyContent"><p class="state-msg">Loading import history&hellip;</p></div>
+      </div>
+
+      <div id="page-settings" style="display:none;">
+        <div class="import-lane">
+          <div class="kicker">eBay account</div>
+          <h2>Connect your eBay account</h2>
+          <p id="ebayConnectStatus" class="state-msg">Checking connection status&hellip;</p>
+          <button class="primary" id="connectEbayBtn" style="display:none;">Connect eBay Account</button>
+          <button class="btn-outline" id="disconnectEbayBtn" style="display:none;">Disconnect eBay Account</button>
+        </div>
+
+        <div class="product-card">
+          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Business policies</div>
+          <p class="meta-line">These come from your eBay Seller Hub (Account &rarr; Business Policies) and your Inventory Location. All four are required before you can publish a listing.</p>
+          <button class="btn-outline" id="fetchEbayPoliciesBtn" style="margin-bottom:16px;">Fetch from eBay</button>
+          <div id="fetchPoliciesStatus" style="margin-bottom:12px;"></div>
+
+          <div class="publish-rail" style="border-top:none; padding-top:0;">
+            <div class="publish-field">
+              <label>Merchant location</label>
+              <select class="editable-input" id="settingMerchantLocationKey" style="width:220px;">
+                <option value="">Select after fetching&hellip;</option>
+              </select>
+            </div>
+            <div class="publish-field">
+              <label>Payment policy</label>
+              <select class="editable-input" id="settingPaymentPolicyId" style="width:220px;">
+                <option value="">Select after fetching&hellip;</option>
+              </select>
+            </div>
+            <div class="publish-field">
+              <label>Fulfillment policy</label>
+              <select class="editable-input" id="settingFulfillmentPolicyId" style="width:220px;">
+                <option value="">Select after fetching&hellip;</option>
+              </select>
+            </div>
+            <div class="publish-field">
+              <label>Return policy</label>
+              <select class="editable-input" id="settingReturnPolicyId" style="width:220px;">
+                <option value="">Select after fetching&hellip;</option>
+              </select>
+            </div>
+            <div class="publish-field">
+              <label>Marketplace</label>
+              <select class="editable-input" id="settingMarketplaceId" style="width:200px;">
+                <option value="EBAY_US">United States (.com)</option>
+                <option value="EBAY_GB">United Kingdom (.co.uk)</option>
+                <option value="EBAY_DE">Germany (.de)</option>
+                <option value="EBAY_FR">France (.fr)</option>
+                <option value="EBAY_IT">Italy (.it)</option>
+                <option value="EBAY_ES">Spain (.es)</option>
+                <option value="EBAY_CA">Canada (.ca)</option>
+                <option value="EBAY_AU">Australia (.com.au)</option>
+                <option value="EBAY_NL">Netherlands (.nl)</option>
+                <option value="EBAY_CH">Switzerland (.ch)</option>
+                <option value="EBAY_AT">Austria (.at)</option>
+                <option value="EBAY_BE">Belgium (.be)</option>
+                <option value="EBAY_IE">Ireland (.ie)</option>
+                <option value="EBAY_PL">Poland (.pl)</option>
+                <option value="EBAY_HK">Hong Kong (.com.hk)</option>
+                <option value="EBAY_SG">Singapore (.com.sg)</option>
+                <option value="EBAY_MY">Malaysia (.com.my)</option>
+                <option value="EBAY_PH">Philippines (.ph)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-publish" id="saveSellerSettingsBtn" style="margin-top:16px;">Save settings</button>
+          <div id="sellerSettingsStatus"></div>
+        </div>
+      </div>
+
+      <div id="page-support" style="display:none;">
+        <div class="import-lane">
+          <div class="kicker">Need help?</div>
+          <h2>Open a support ticket</h2>
+          <div class="publish-field" style="width:100%;">
+            <label>Subject</label>
+            <input type="text" id="ticketSubject" placeholder="e.g. Need more credits" style="width:100%;" />
+          </div>
+          <div class="publish-field" style="width:100%; margin-top:12px;">
+            <label>Message</label>
+            <textarea class="editable-input editable-textarea" id="ticketMessage" rows="4" placeholder="Describe what you need..." style="width:100%;"></textarea>
+          </div>
+          <button class="primary" id="createTicketBtn" style="margin-top:14px; width:auto; padding:0 26px; height:44px;">Submit ticket</button>
+          <div id="createTicketStatus" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="product-card">
+          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Your tickets</div>
+          <div id="myTicketsContent"><p class="state-msg">Loading&hellip;</p></div>
+        </div>
+      </div>
+
+      <div id="page-admin" style="display:none;">
+        <div class="product-card">
+          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Users</div>
+          <div id="adminUsersContent"><p class="state-msg">Loading&hellip;</p></div>
+        </div>
+
+        <div class="product-card">
+          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Support tickets</div>
+          <div id="adminTicketsContent"><p class="state-msg">Loading&hellip;</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pricingModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Edit price</h2>
+      <button class="modal-close" id="modalCloseBtn">&times;</button>
+    </div>
+
+    <div class="modal-product-summary">
+      <img id="modalProductImage" src="" alt="" />
+      <div class="name" id="modalProductName"></div>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="field readonly">
+        <label>Buy price</label>
+        <input type="text" id="pBuyPrice" readonly />
+      </div>
+      <div class="field">
+        <label>Fees %</label>
+        <input type="number" id="pFeesPercent" step="0.01" value="13" />
+      </div>
+      <div class="field">
+        <label>Fees $</label>
+        <input type="number" id="pFeesFixed" step="0.01" value="0.30" />
+      </div>
+
+      <div class="field">
+        <label>Profit %</label>
+        <input type="number" id="pProfitPercent" step="0.01" value="20" />
+      </div>
+      <div class="field">
+        <label>Profit $</label>
+        <input type="number" id="pProfitFixed" step="0.01" />
+      </div>
+      <div class="field sell-price-box">
+        <label>Sell price</label>
+        <input type="number" id="pSellPrice" step="0.01" />
+      </div>
+    </div>
+
+    <label class="checkbox-row">
+      <input type="checkbox" id="pIncludeShipping" />
+      Include shipping price
+    </label>
+
+    <div class="publish-field" style="margin-top:10px;">
+      <label>Shipping price ($)</label>
+      <input type="number" id="pShippingPrice" step="0.01" value="0" style="width:160px;" />
+    </div>
+
+    <label class="checkbox-row">
+      <input type="checkbox" id="pRoundCents" />
+      Round cents to .99
+    </label>
+
+    <button class="modal-apply-btn" id="modalApplyBtn">Apply</button>
+  </div>
+</div>
+
+<!-- Draft Detail Modal -->
+<div class="modal-overlay" id="draftDetailModal">
+  <div class="modal-box" style="max-width:680px;">
+    <div class="modal-header">
+      <h2>Edit draft</h2>
+      <button class="modal-close" id="draftDetailCloseBtn">&times;</button>
+    </div>
+    <div id="draftDetailBody">
+      <p class="state-msg">Loading&hellip;</p>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <h2>Schedule listing</h2>
+      <button class="modal-close" id="scheduleModalCloseBtn">&times;</button>
+    </div>
+    <div class="publish-field" style="width:100%;">
+      <label>Publish date &amp; time</label>
+      <input type="datetime-local" id="scheduleDateTime" style="width:100%;" />
+    </div>
+    <button class="modal-apply-btn" id="scheduleConfirmBtn" style="margin-top:16px;">Schedule</button>
+    <div id="scheduleModalStatus"></div>
+  </div>
+</div>
+
+<!-- Marketplace Selection Modal (shown before connecting eBay) -->
+<div class="modal-overlay" id="marketplaceModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <h2>Choose your eBay marketplace</h2>
+      <button class="modal-close" id="marketplaceModalCloseBtn">&times;</button>
+    </div>
+    <p class="meta-line" style="margin-bottom:14px;">This is the eBay site your listings will be published to. You can change it later in Settings.</p>
+    <div class="publish-field" style="width:100%;">
+      <label>Marketplace</label>
+      <select class="editable-input" id="connectMarketplaceSelect" style="width:100%;">
+        <option value="EBAY_US">United States (.com)</option>
+        <option value="EBAY_GB">United Kingdom (.co.uk)</option>
+        <option value="EBAY_DE">Germany (.de)</option>
+        <option value="EBAY_FR">France (.fr)</option>
+        <option value="EBAY_IT">Italy (.it)</option>
+        <option value="EBAY_ES">Spain (.es)</option>
+        <option value="EBAY_CA">Canada (.ca)</option>
+        <option value="EBAY_AU">Australia (.com.au)</option>
+        <option value="EBAY_NL">Netherlands (.nl)</option>
+        <option value="EBAY_CH">Switzerland (.ch)</option>
+        <option value="EBAY_AT">Austria (.at)</option>
+        <option value="EBAY_BE">Belgium (.be)</option>
+        <option value="EBAY_IE">Ireland (.ie)</option>
+        <option value="EBAY_PL">Poland (.pl)</option>
+        <option value="EBAY_HK">Hong Kong (.com.hk)</option>
+        <option value="EBAY_SG">Singapore (.com.sg)</option>
+        <option value="EBAY_MY">Malaysia (.com.my)</option>
+        <option value="EBAY_PH">Philippines (.ph)</option>
+      </select>
+    </div>
+    <button class="modal-apply-btn" id="marketplaceContinueBtn" style="margin-top:16px;">Continue to eBay</button>
+    <div id="marketplaceModalStatus"></div>
+  </div>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="modal-overlay" id="ticketDetailModal">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header">
+      <h2>Support ticket</h2>
+      <button class="modal-close" id="ticketDetailCloseBtn">&times;</button>
+    </div>
+    <div id="ticketDetailBody">
+      <p class="state-msg">Loading&hellip;</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'https://elms-backend-1-tr5h.onrender.com';
+
+  // ---------- Page navigation ----------
+  const PAGE_TITLES = {
+    import: ['Import a product', 'Paste an Amazon link, price it, send it to eBay.'],
+    drafts: ['Drafts', 'Products fetched and saved, ready to publish with one click.'],
+    listings: ['Live listings', 'Everything published to eBay from ELMS.'],
+    orders: ['Orders', 'Orders placed by buyers on your eBay listings.'],
+    history: ['Import history', 'Every Amazon product fetched so far.'],
+    settings: ['Settings', 'Connect your eBay account and set your business policies.'],
+    support: ['Support', 'Open a ticket if you need more credits or run into an issue.'],
+    admin: ['Admin', 'Manage users, credits, and support tickets.'],
+  };
+
+  function showPage(page) {
+    ['import', 'drafts', 'listings', 'orders', 'history', 'settings', 'support', 'admin'].forEach((p) => {
+      document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
+    });
+    document.querySelectorAll('.sidebar-nav a').forEach((a) => {
+      a.classList.toggle('active', a.getAttribute('data-page') === page);
+    });
+    const [title, subline] = PAGE_TITLES[page];
+    document.getElementById('pageTitle').textContent = title;
+    document.getElementById('pageSubline').textContent = subline;
+
+    if (page === 'drafts') loadDrafts();
+    if (page === 'listings') loadListings();
+    if (page === 'orders') loadOrders();
+    if (page === 'history') loadHistory();
+    if (page === 'settings') loadSettingsPage();
+    if (page === 'support') loadSupportPage();
+    if (page === 'admin') loadAdminPage();
+  }
+
+  document.querySelectorAll('.sidebar-nav a').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      showPage(a.getAttribute('data-page'));
+    });
+  });
+
+  const btn = document.getElementById('fetchBtn');
+  const resultDiv = document.getElementById('result');
+  let lastMarkupPercent = null;
+  let currentSellPrice = null;
+  let currentEbayUserId = null; // set once we know the connected eBay account's username
+
+  function setPipelineStep(step) {
+    const ids = { source: 'stepSource', price: 'stepPrice', publish: 'stepPublish' };
+    const order = ['source', 'price', 'publish'];
+    const idx = order.indexOf(step);
+    order.forEach((s, i) => {
+      const el = document.getElementById(ids[s]);
+      el.classList.remove('active', 'done');
+      if (i < idx) el.classList.add('done');
+      else if (i === idx) el.classList.add('active');
+    });
+  }
+
+  let fetchCounter = 0;
+
+  btn.addEventListener('click', () => {
+    const amazonUrl = document.getElementById('amazonUrl').value.trim();
+    const markupPercent = document.getElementById('markup').value;
+    lastMarkupPercent = markupPercent;
+
+    if (!amazonUrl) {
+      resultDiv.innerHTML = '<div class="state-msg error">Please enter an Amazon link first.</div>';
+      return;
+    }
+
+    // Clear the input right away so the user can immediately paste and fetch
+    // another link, without waiting for this one to finish.
+    document.getElementById('amazonUrl').value = '';
+
+    runSingleFetch(amazonUrl, markupPercent);
+  });
+
+  /**
+   * Fetches one Amazon product in the background. Multiple calls to this
+   * can be in flight at once - each gets its own progress row (so the user
+   * can start several fetches back-to-back), and each independently
+   * refreshes the Drafts count and (if it's the only/last one running)
+   * shows the full product card in the Import page's result area.
+   */
+  async function runSingleFetch(amazonUrl, markupPercent) {
+    const fetchId = ++fetchCounter;
+    const progressContainer = document.getElementById('inProgressFetches');
+
+    const row = document.createElement('div');
+    row.className = 'state-msg';
+    row.id = `fetch-progress-${fetchId}`;
+    row.textContent = `Fetching: ${amazonUrl}`;
+    progressContainer.appendChild(row);
+
+    setPipelineStep('source');
+
+    try {
+      const res = await apiFetch('/api/fetch-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amazonUrl, markupPercent }),
+      });
+
+      const data = await res.json();
+      row.remove();
+
+      if (!res.ok || !data.success) {
+        const errorRow = document.createElement('div');
+        errorRow.className = 'state-msg error';
+        errorRow.textContent = `${amazonUrl}: ${data.error || 'Something went wrong.'}`;
+        progressContainer.appendChild(errorRow);
+        setTimeout(() => errorRow.remove(), 6000);
+        return;
+      }
+
+      setPipelineStep('price');
+      renderProduct(data.product, data.suggestedPrice);
+      refreshDraftsCountBadge();
+    } catch (err) {
+      row.remove();
+      const errorRow = document.createElement('div');
+      errorRow.className = 'state-msg error';
+      errorRow.textContent = `${amazonUrl}: Could not connect to the server (${err.message})`;
+      progressContainer.appendChild(errorRow);
+      setTimeout(() => errorRow.remove(), 6000);
+    }
+  }
+
+  // ---------- Bulk Import ----------
+  const toggleBulkImportBtn = document.getElementById('toggleBulkImportBtn');
+  const bulkImportSection = document.getElementById('bulkImportSection');
+
+  toggleBulkImportBtn.addEventListener('click', () => {
+    const isHidden = bulkImportSection.style.display === 'none';
+    bulkImportSection.style.display = isHidden ? 'block' : 'none';
+    toggleBulkImportBtn.textContent = isHidden ? 'Hide bulk import' : 'Bulk import multiple links';
+  });
+
+  document.getElementById('bulkFetchBtn').addEventListener('click', async () => {
+    const bulkBtn = document.getElementById('bulkFetchBtn');
+    const statusEl = document.getElementById('bulkImportStatus');
+    const markupPercent = document.getElementById('markup').value;
+
+    const amazonUrls = document
+      .getElementById('bulkAmazonUrls')
+      .value.split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (!amazonUrls.length) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Please paste at least one Amazon link.';
+      return;
+    }
+    if (amazonUrls.length > 25) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Please import at most 25 links at a time.';
+      return;
+    }
+
+    bulkBtn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = `Fetching ${amazonUrls.length} product(s)\u2026 this may take a moment.`;
+
+    try {
+      const res = await apiFetch('/api/fetch-product/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amazonUrls, markupPercent }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = data.error || 'Could not run the bulk import.';
+        return;
+      }
+
+      const succeeded = data.results.filter((r) => r.success).length;
+      const failed = data.results.filter((r) => !r.success);
+
+      let summary = `${succeeded} of ${data.results.length} product(s) imported as drafts.`;
+      if (failed.length) {
+        summary += ' Failed: ' + failed.map((f) => escapeHtml(f.error)).join('; ');
+      }
+
+      statusEl.className = failed.length ? 'error' : 'success';
+      statusEl.textContent = summary;
+      document.getElementById('bulkAmazonUrls').value = '';
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      bulkBtn.disabled = false;
+    }
+  });
+
+  function renderProduct(product, suggestedPrice) {
+    const images = product.images && product.images.length ? product.images : [];
+    const mainImage = images[0] || '';
+
+    const breadcrumbHtml =
+      product.categories && product.categories.length
+        ? `<div class="breadcrumb">${product.categories.map((c) => `<span>${escapeHtml(c)}</span>`).join('')}</div>`
+        : '';
+
+    const galleryHtml =
+      images.length > 1
+        ? `<div class="gallery">
+            ${images.map((img, i) => `<img src="${img}" data-index="${i}" class="thumb ${i === 0 ? 'active' : ''}" alt="thumbnail ${i + 1}" />`).join('')}
+          </div>`
+        : '';
+
+    const bulletsText = (product.bulletPoints || []).join('\n');
+
+    const specRowsHtml = (product.specifications || [])
+      .map(
+        (spec, i) => `
+          <tr data-spec-row="${i}">
+            <td><input class="editable-input" data-spec-name value="${escapeAttr(spec.name)}" /></td>
+            <td><input class="editable-input" data-spec-value value="${escapeAttr(spec.value)}" /></td>
+            <td><button type="button" class="btn-small" data-action="remove-spec" style="background:var(--red);">Remove</button></td>
+          </tr>`
+      )
+      .join('');
+
+    const variantsHtml =
+      product.variants && product.variants.length > 1
+        ? `<div class="section-title">Variants</div>
+           <div class="variants-grid">
+             ${product.variants
+               .map((v, i) => {
+                 const label = (v.dimensions || []).map((d) => d.value).filter(Boolean).join(' / ') || v.title || v.asin || 'Option';
+                 return `<div class="variant-chip ${v.isCurrentProduct ? 'current' : ''}"
+                              data-variant-index="${i}"
+                              data-variant-image="${v.image || ''}"
+                              data-variant-title="${escapeHtml(v.title || label)}"
+                              data-variant-asin="${v.asin || ''}">
+                    ${v.image ? `<img src="${v.image}" alt="${escapeHtml(label)}" />` : ''}
+                    <div>${escapeHtml(label)}</div>
+                  </div>`;
+               })
+               .join('')}
+           </div>`
+        : '';
+
+    resultDiv.innerHTML = `
+      <div class="product-card">
+        <div class="product-top">
+          ${mainImage ? `<img src="${mainImage}" alt="product image" class="main-image" id="mainImage" />` : ''}
+          <div class="product-info">
+            <label class="edit-label">Title</label>
+            <input type="text" class="editable-input title-input" id="editTitle" value="${escapeAttr(product.title)}" />
+
+            ${breadcrumbHtml}
+            <p class="meta-line">Brand: <strong>${escapeHtml(product.brand || '—')}</strong></p>
+            <p class="meta-line">Availability: <strong>${escapeHtml(product.availability || '—')}</strong></p>
+
+            <div class="price-row">
+              <div class="price-box">
+                Amazon price
+                <strong>${product.price != null ? product.currency + ' ' + product.price : '—'}</strong>
+              </div>
+              ${
+                suggestedPrice != null
+                  ? `<div class="price-box suggested">
+                      Suggested eBay price
+                      <strong>${product.currency} ${suggestedPrice}</strong>
+                    </div>`
+                  : ''
+              }
+            </div>
+            <div class="action-row">
+              <button class="btn-outline" id="editPriceBtn">Edit price</button>
+            </div>
+          </div>
+        </div>
+        ${galleryHtml}
+
+        <div class="section-title">Highlights</div>
+        <textarea class="editable-input editable-textarea" id="editBullets" rows="4" placeholder="One highlight per line">${escapeHtml(bulletsText)}</textarea>
+
+        <div class="section-title">Description</div>
+        <textarea class="editable-input editable-textarea" id="editDescription" rows="6">${escapeHtml(product.description || '')}</textarea>
+
+        <div class="section-title">Item specifications</div>
+        <table class="data-table" id="specsTable">
+          <thead><tr><th>Name</th><th>Value</th><th></th></tr></thead>
+          <tbody id="specsTableBody">${specRowsHtml}</tbody>
+        </table>
+        <button type="button" class="btn-small" id="addSpecBtn" style="margin-top:8px;">+ Add specification</button>
+
+        ${variantsHtml}
+
+        <div class="publish-rail">
+          <div class="publish-field">
+            <label>eBay category ID</label>
+            <input type="text" id="ebayCategoryId" placeholder="e.g. 15052" />
+          </div>
+          <div class="publish-field">
+            <label>Quantity</label>
+            <input type="number" id="ebayQuantity" value="1" min="1" style="width:80px;" />
+          </div>
+          <button class="btn-publish" id="importBtn">Publish to eBay</button>
+          <div id="importStatus"></div>
+        </div>
+      </div>
+    `;
+
+    const mainImgEl = document.getElementById('mainImage');
+    document.querySelectorAll('.thumb').forEach((thumb) => {
+      thumb.addEventListener('click', () => {
+        if (mainImgEl) mainImgEl.src = thumb.src;
+        document.querySelectorAll('.thumb').forEach((t) => t.classList.remove('active'));
+        thumb.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.variant-chip').forEach((chip) => {
+      chip.addEventListener('click', async () => {
+        if (chip.classList.contains('current')) return;
+
+        const asin = chip.getAttribute('data-variant-asin');
+        const fallbackImage = chip.getAttribute('data-variant-image');
+
+        document.querySelectorAll('.variant-chip').forEach((c) => c.classList.remove('current'));
+        chip.classList.add('current');
+        if (fallbackImage && mainImgEl) {
+          mainImgEl.src = fallbackImage;
+          document.querySelectorAll('.thumb').forEach((t) => t.classList.remove('active'));
+        }
+
+        if (!asin) return;
+
+        const previousCardHtml = resultDiv.innerHTML;
+        resultDiv.innerHTML = '<p class="state-msg">Loading variant&hellip;</p>';
+
+        try {
+          const res = await apiFetch('/api/fetch-variant', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ asin, markupPercent: lastMarkupPercent }),
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            resultDiv.innerHTML = previousCardHtml;
+            alert(data.error || 'Could not load this variant.');
+            return;
+          }
+
+          renderProduct(data.product, data.suggestedPrice);
+        } catch (err) {
+          resultDiv.innerHTML = previousCardHtml;
+          alert('Could not connect to the server: ' + err.message);
+        }
+      });
+    });
+
+    const editBtn = document.getElementById('editPriceBtn');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        onPricingModalApply = (sellPriceValue) => {
+          const suggestedBoxes = document.querySelectorAll('.price-box strong');
+          if (suggestedBoxes.length > 1) {
+            const currencyMatch = suggestedBoxes[1].textContent.trim().split(' ')[0] || 'USD';
+            suggestedBoxes[1].textContent = `${currencyMatch} ${sellPriceValue.toFixed(2)}`;
+          }
+          currentSellPrice = sellPriceValue || currentSellPrice;
+        };
+        openPricingModal(getEditedProduct(product), mainImage);
+      });
+    }
+
+    // ---------- Specifications table: add/remove rows ----------
+    const specsTableBody = document.getElementById('specsTableBody');
+    document.getElementById('addSpecBtn').addEventListener('click', () => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input class="editable-input" data-spec-name placeholder="Name" /></td>
+        <td><input class="editable-input" data-spec-value placeholder="Value" /></td>
+        <td><button type="button" class="btn-small" data-action="remove-spec" style="background:var(--red);">Remove</button></td>
+      `;
+      specsTableBody.appendChild(row);
+      wireSpecRemoveButtons();
+    });
+    wireSpecRemoveButtons();
+
+    function wireSpecRemoveButtons() {
+      document.querySelectorAll('[data-action="remove-spec"]').forEach((removeBtn) => {
+        removeBtn.onclick = () => removeBtn.closest('tr').remove();
+      });
+    }
+
+    /**
+     * Reads the current values out of the editable fields (title, bullets,
+     * description, specs) and returns a copy of the product with those
+     * edits applied. Everything else (images, brand, ASIN, etc.) is unchanged.
+     */
+    function getEditedProduct(baseProduct) {
+      const title = document.getElementById('editTitle').value.trim();
+      const bulletPoints = document
+        .getElementById('editBullets')
+        .value.split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const description = document.getElementById('editDescription').value;
+
+      const specifications = Array.from(document.querySelectorAll('#specsTableBody tr'))
+        .map((row) => ({
+          name: row.querySelector('[data-spec-name]').value.trim(),
+          value: row.querySelector('[data-spec-value]').value.trim(),
+        }))
+        .filter((spec) => spec.name && spec.value);
+
+      return { ...baseProduct, title, bulletPoints, description, specifications };
+    }
+
+    currentSellPrice = suggestedPrice != null ? suggestedPrice : product.price;
+
+    const importBtn = document.getElementById('importBtn');
+    const importStatus = document.getElementById('importStatus');
+    if (importBtn) {
+      importBtn.addEventListener('click', async () => {
+        const categoryId = document.getElementById('ebayCategoryId').value.trim();
+        const quantity = Number(document.getElementById('ebayQuantity').value) || 1;
+        const editedProduct = getEditedProduct(product);
+
+        importStatus.className = '';
+        importStatus.textContent = '';
+
+        if (!editedProduct.title) {
+          importStatus.className = 'error';
+          importStatus.textContent = 'The title cannot be empty.';
+          return;
+        }
+        if (!categoryId) {
+          importStatus.className = 'error';
+          importStatus.textContent = 'Enter an eBay category ID before publishing.';
+          return;
+        }
+        if (currentSellPrice == null) {
+          importStatus.className = 'error';
+          importStatus.textContent = 'No sell price available for this product.';
+          return;
+        }
+
+        importBtn.disabled = true;
+        importStatus.className = '';
+        importStatus.textContent = 'Publishing to eBay&hellip;';
+        setPipelineStep('publish');
+
+        try {
+          const res = await apiFetch('/api/list-on-ebay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product: editedProduct, sellPrice: currentSellPrice, quantity, categoryId }),
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            importStatus.className = 'error';
+            importStatus.textContent = data.error || 'Could not publish this listing to eBay.';
+            return;
+          }
+
+          importStatus.className = 'success';
+          importStatus.innerHTML = `Published to eBay. SKU: ${escapeHtml(data.sku)}${data.listingId ? ` &middot; Listing ID: ${escapeHtml(data.listingId)}` : ''}`;
+        } catch (err) {
+          importStatus.className = 'error';
+          importStatus.textContent = 'Could not connect to the server: ' + err.message;
+        } finally {
+          importBtn.disabled = false;
+        }
+      });
+    }
+  }
+
+  const pricingModal = document.getElementById('pricingModal');
+  const pBuyPrice = document.getElementById('pBuyPrice');
+  const pFeesPercent = document.getElementById('pFeesPercent');
+  const pFeesFixed = document.getElementById('pFeesFixed');
+  const pProfitPercent = document.getElementById('pProfitPercent');
+  const pProfitFixed = document.getElementById('pProfitFixed');
+  const pSellPrice = document.getElementById('pSellPrice');
+  const pIncludeShipping = document.getElementById('pIncludeShipping');
+  const pShippingPrice = document.getElementById('pShippingPrice');
+  const pRoundCents = document.getElementById('pRoundCents');
+
+  let currentBuyPrice = 0;
+  let isRecalculating = false;
+
+  function openPricingModal(product, mainImage) {
+    currentBuyPrice = Number(product.price) || 0;
+
+    document.getElementById('modalProductImage').src = mainImage || '';
+    document.getElementById('modalProductName').textContent = product.title || '';
+    pBuyPrice.value = currentBuyPrice.toFixed(2);
+
+    pFeesPercent.value = pFeesPercent.value || '13';
+    pFeesFixed.value = pFeesFixed.value || '0.30';
+    pProfitPercent.value = pProfitPercent.value || '20';
+    pIncludeShipping.checked = false;
+    pShippingPrice.value = '0';
+    pRoundCents.checked = false;
+
+    recalcFromProfitPercent();
+    pricingModal.style.zIndex = '200';
+    pricingModal.classList.add('open');
+  }
+
+  function closePricingModal() {
+    pricingModal.classList.remove('open');
+  }
+
+  document.getElementById('modalCloseBtn').addEventListener('click', closePricingModal);
+  pricingModal.addEventListener('click', (e) => {
+    if (e.target === pricingModal) closePricingModal();
+  });
+
+  function getShippingAmount() {
+    return pIncludeShipping.checked ? Number(pShippingPrice.value) || 0 : 0;
+  }
+
+  function getFeesAmount(base) {
+    const feesPct = Number(pFeesPercent.value) || 0;
+    const feesFixed = Number(pFeesFixed.value) || 0;
+    return (base * feesPct) / 100 + feesFixed;
+  }
+
+  function applyRounding(value) {
+    if (!pRoundCents.checked) return value;
+    return Math.floor(value) + 0.99;
+  }
+
+  function recalcFromProfitPercent() {
+    if (isRecalculating) return;
+    isRecalculating = true;
+
+    const shipping = getShippingAmount();
+    const base = currentBuyPrice + shipping;
+    const profitPct = Number(pProfitPercent.value) || 0;
+    const fees = getFeesAmount(base);
+
+    const profitFixed = (base * profitPct) / 100;
+    let sellPrice = base + fees + profitFixed;
+    sellPrice = applyRounding(sellPrice);
+
+    pProfitFixed.value = profitFixed.toFixed(2);
+    pSellPrice.value = sellPrice.toFixed(2);
+
+    isRecalculating = false;
+  }
+
+  function recalcFromProfitFixed() {
+    if (isRecalculating) return;
+    isRecalculating = true;
+
+    const shipping = getShippingAmount();
+    const base = currentBuyPrice + shipping;
+    const profitFixed = Number(pProfitFixed.value) || 0;
+    const fees = getFeesAmount(base);
+
+    const profitPct = base > 0 ? (profitFixed / base) * 100 : 0;
+    let sellPrice = base + fees + profitFixed;
+    sellPrice = applyRounding(sellPrice);
+
+    pProfitPercent.value = profitPct.toFixed(2);
+    pSellPrice.value = sellPrice.toFixed(2);
+
+    isRecalculating = false;
+  }
+
+  function recalcFromSellPrice() {
+    if (isRecalculating) return;
+    isRecalculating = true;
+
+    const shipping = getShippingAmount();
+    const base = currentBuyPrice + shipping;
+    const fees = getFeesAmount(base);
+    const sellPrice = Number(pSellPrice.value) || 0;
+
+    const profitFixed = sellPrice - base - fees;
+    const profitPct = base > 0 ? (profitFixed / base) * 100 : 0;
+
+    pProfitFixed.value = profitFixed.toFixed(2);
+    pProfitPercent.value = profitPct.toFixed(2);
+
+    isRecalculating = false;
+  }
+
+  function recalcFromFeesOrShipping() {
+    recalcFromProfitPercent();
+  }
+
+  pProfitPercent.addEventListener('input', recalcFromProfitPercent);
+  pProfitFixed.addEventListener('input', recalcFromProfitFixed);
+  pSellPrice.addEventListener('input', recalcFromSellPrice);
+  pFeesPercent.addEventListener('input', recalcFromFeesOrShipping);
+  pFeesFixed.addEventListener('input', recalcFromFeesOrShipping);
+  pShippingPrice.addEventListener('input', recalcFromFeesOrShipping);
+  pIncludeShipping.addEventListener('change', recalcFromFeesOrShipping);
+  pRoundCents.addEventListener('change', recalcFromProfitPercent);
+
+  // Set right before opening the modal, so Apply knows where to send the result
+  // (Import page price box vs. Draft Detail Modal's sell price field).
+  let onPricingModalApply = null;
+
+  document.getElementById('modalApplyBtn').addEventListener('click', () => {
+    const sellPriceValue = Number(pSellPrice.value) || 0;
+    if (typeof onPricingModalApply === 'function') {
+      onPricingModalApply(sellPriceValue);
+    }
+    closePricingModal();
+  });
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  const GOOGLE_CLIENT_ID = '851041711281-skfab92keqlcjjkli3ebg2i216ef33k2.apps.googleusercontent.com';
+
+  /**
+   * Wraps fetch() to automatically attach the current session token (if any)
+   * as an Authorization header. Every call to a protected /api/ route should
+   * go through this instead of calling fetch() directly.
+   */
+  async function apiFetch(path, options = {}) {
+    const sessionToken = localStorage.getItem('elmsSessionToken');
+    const headers = { ...(options.headers || {}) };
+    if (sessionToken) {
+      headers['Authorization'] = `Bearer ${sessionToken}`;
+    }
+
+    const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+    if (res.status === 401) {
+      // Session expired or missing - sign the user out and show the Auth Page again.
+      localStorage.removeItem('elmsSessionToken');
+      document.getElementById('appShell').style.display = 'none';
+      document.getElementById('authPage').style.display = 'flex';
+      document.getElementById('userChip').style.display = 'none';
+    }
+
+    return res;
+  }
+
+  function decodeJwt(token) {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+  }
+
+  /**
+   * Called by Google after the user signs in on the frontend. Sends Google's
+   * ID token to the backend to verify it and exchange it for an ELMS session
+   * token, which is then stored for use by apiFetch on every future request.
+   */
+  /**
+   * Called once we know the user is logged in (Google, email/password, or a
+   * restored session). Hides the full-screen Auth Page, reveals the app,
+   * and populates the top-right user chip / sidebar admin link.
+   */
+  function showApp(user) {
+    document.getElementById('authPage').style.display = 'none';
+    document.getElementById('appShell').style.display = 'flex';
+
+    document.getElementById('userAvatar').src = user.picture || '';
+    document.getElementById('userName').textContent = user.name || user.username || user.email || '';
+    document.getElementById('userChip').style.display = 'flex';
+    document.getElementById('sidebarFooter').textContent = user.googleId ? 'Signed in via Google' : 'Signed in';
+    currentEbayUserId = user.ebayUserId || null;
+    if (user.role === 'admin') {
+      document.getElementById('adminNavLink').style.display = 'flex';
+    }
+    refreshDraftsCountBadge();
+  }
+
+  async function handleGoogleCredential(response) {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Could not sign in with Google.');
+        return;
+      }
+
+      localStorage.setItem('elmsSessionToken', data.sessionToken);
+      showApp(data.user);
+    } catch (err) {
+      alert('Could not connect to the server: ' + err.message);
+    }
+  }
+
+  // ---------- Auth Page: tab switching ----------
+  document.getElementById('authTabLogin').addEventListener('click', () => {
+    document.getElementById('authTabLogin').classList.add('active');
+    document.getElementById('authTabRegister').classList.remove('active');
+    document.getElementById('authFormLogin').style.display = 'block';
+    document.getElementById('authFormRegister').style.display = 'none';
+  });
+  document.getElementById('authTabRegister').addEventListener('click', () => {
+    document.getElementById('authTabRegister').classList.add('active');
+    document.getElementById('authTabLogin').classList.remove('active');
+    document.getElementById('authFormRegister').style.display = 'block';
+    document.getElementById('authFormLogin').style.display = 'none';
+  });
+
+  // ---------- Auth Page: email/password login ----------
+  document.getElementById('loginSubmitBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('loginSubmitBtn');
+    const statusEl = document.getElementById('loginStatus');
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+      statusEl.className = 'auth-status error';
+      statusEl.textContent = 'Please enter your email and password.';
+      return;
+    }
+
+    btn.disabled = true;
+    statusEl.className = 'auth-status';
+    statusEl.textContent = 'Logging in\u2026';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'auth-status error';
+        statusEl.textContent = data.error || 'Could not log in.';
+        return;
+      }
+
+      localStorage.setItem('elmsSessionToken', data.sessionToken);
+      showApp(data.user);
+    } catch (err) {
+      statusEl.className = 'auth-status error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ---------- Auth Page: registration ----------
+  document.getElementById('registerSubmitBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('registerSubmitBtn');
+    const statusEl = document.getElementById('registerStatus');
+    const username = document.getElementById('registerUsername').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+
+    if (!username || !email || !password) {
+      statusEl.className = 'auth-status error';
+      statusEl.textContent = 'Please fill in all fields.';
+      return;
+    }
+    if (password.length < 8) {
+      statusEl.className = 'auth-status error';
+      statusEl.textContent = 'Password must be at least 8 characters.';
+      return;
+    }
+
+    btn.disabled = true;
+    statusEl.className = 'auth-status';
+    statusEl.textContent = 'Creating your account\u2026';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'auth-status error';
+        statusEl.textContent = data.error || 'Could not create your account.';
+        return;
+      }
+
+      localStorage.setItem('elmsSessionToken', data.sessionToken);
+      showApp(data.user);
+    } catch (err) {
+      statusEl.className = 'auth-status error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  window.addEventListener('load', async () => {
+    // If a session token is already stored (from a previous visit), verify
+    // it's still valid and restore the logged-in view instead of showing
+    // the Auth Page again.
+    const existingToken = localStorage.getItem('elmsSessionToken');
+    let loggedIn = false;
+
+    if (existingToken) {
+      try {
+        const meRes = await apiFetch('/api/auth/me');
+        const meData = await meRes.json();
+        if (meRes.ok && meData.success) {
+          showApp(meData.user);
+          loggedIn = true;
+        }
+      } catch (err) {
+        // Could not verify - fall through to showing the Auth Page.
+      }
+    }
+
+    // Now that we know the login state for certain, swap the splash out for
+    // either the app or the Auth Page - never leave both/neither visible.
+    document.getElementById('loadingSplash').style.display = 'none';
+    if (!loggedIn) {
+      document.getElementById('authPage').style.display = 'flex';
+    }
+
+    if (window.google && GOOGLE_CLIENT_ID.indexOf('YOUR_GOOGLE_CLIENT_ID') === -1) {
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+      });
+      google.accounts.id.renderButton(document.getElementById('googleSignInDiv'), {
+        theme: 'outline',
+        size: 'medium',
+        shape: 'pill',
+      });
+    } else {
+      document.getElementById('googleSignInDiv').innerHTML =
+        '<span style="font-size:12px; color:#8A8578;">Google sign-in not configured yet</span>';
+    }
+  });
+
+  document.getElementById('signOutBtn').addEventListener('click', () => {
+    localStorage.removeItem('elmsSessionToken');
+    document.getElementById('appShell').style.display = 'none';
+    document.getElementById('authPage').style.display = 'flex';
+    document.getElementById('userChip').style.display = 'none';
+    if (window.google) google.accounts.id.disableAutoSelect();
+  });
+
+  // ---------- Live Listings page ----------
+  // ---------- Drafts page ----------
+  /**
+   * Updates the small count badge next to "Drafts" in the sidebar, so the
+   * user can see at a glance how many drafts are waiting without opening
+   * the page - useful since fetches now run in the background and can
+   * complete while the user is on a different page.
+   */
+  async function refreshDraftsCountBadge() {
+    try {
+      const res = await apiFetch('/api/listings?status=draft');
+      const data = await res.json();
+      const badge = document.getElementById('draftsCountBadge');
+      if (!badge) return;
+
+      if (res.ok && data.success && data.listings.length > 0) {
+        badge.textContent = data.listings.length;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    } catch (err) {
+      // Non-critical - just leave the badge as-is if this fails.
+    }
+  }
+
+  async function loadDrafts() {
+    const container = document.getElementById('draftsContent');
+    container.innerHTML = '<p class="state-msg">Loading drafts&hellip;</p>';
+
+    if (!currentEbayUserId) {
+      try {
+        const meRes = await apiFetch('/api/auth/me');
+        const meData = await meRes.json();
+        if (meRes.ok && meData.success) {
+          currentEbayUserId = meData.user.ebayUserId || null;
+        }
+      } catch (err) {
+        // Not critical - the Destination badge will simply be omitted if this fails.
+      }
+    }
+
+    try {
+      const res = await apiFetch('/api/listings?status=draft');
+      const scheduledRes = await apiFetch('/api/listings?status=scheduled');
+      const data = await res.json();
+      const scheduledData = await scheduledRes.json();
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load drafts.')}</div>`;
+        return;
+      }
+
+      const allDrafts = [...(data.listings || []), ...(scheduledData.success ? scheduledData.listings : [])];
+
+      if (!allDrafts.length) {
+        container.innerHTML = '<div class="empty-state">No drafts yet. Fetch a product from the Import page and it will be saved here automatically, ready to publish anytime.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="draft-bulk-bar" id="draftBulkBar" style="display:none;">
+          <span id="draftSelectedCount">0 selected</span>
+          <button class="btn-small publish" id="bulkPublishBtn">Publish selected</button>
+          <button class="btn-small delete" id="bulkDeleteBtn">Delete selected</button>
+        </div>
+        <div class="draft-list">
+          ${allDrafts.map((l) => draftRowHtml(l)).join('')}
+        </div>
+      `;
+
+      wireDraftRows();
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+    refreshDraftsCountBadge();
+  }
+
+  function draftRowHtml(l) {
+    const variantCount = l.variant_count || 1;
+    const scheduledLabel = l.status === 'scheduled' && l.scheduled_at
+      ? `<span class="draft-meta-item scheduled-badge">Scheduled: ${escapeHtml(new Date(l.scheduled_at).toLocaleString())}</span>`
+      : '';
+    const destinationLabel = `<span class="draft-meta-item">Destination: <span class="supplier-badge">${currentEbayUserId ? escapeHtml(currentEbayUserId) : 'Not connected'}</span></span>`;
+
+    return `
+      <div class="draft-row" data-listing-id="${l.id}">
+        <input type="checkbox" class="draft-checkbox" data-action="select" />
+        ${l.main_image ? `<img class="draft-thumb" src="${l.main_image}" alt="" data-action="open-detail" />` : '<div class="draft-thumb"></div>'}
+        <div class="draft-info" data-action="open-detail">
+          <div class="draft-title">${escapeHtml(l.title || l.sku)}</div>
+          <div class="draft-meta">
+            ${destinationLabel}
+            <span class="draft-meta-item"><span class="supplier-badge">Amazon</span></span>
+            <span class="draft-meta-item">Variants: ${variantCount}</span>
+            ${l.amazon_url ? `<a href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" class="draft-meta-item draft-source-link" data-action="stop-propagation">View Source Product</a>` : ''}
+            ${scheduledLabel}
+          </div>
+        </div>
+        <div class="draft-quick-fields" data-action="stop-propagation">
+          <input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" style="width:80px;" placeholder="Price" />
+          <input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" style="width:55px;" placeholder="Qty" />
+          <input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" placeholder="Category ID" style="width:110px;" />
+        </div>
+        <div class="draft-actions" data-action="stop-propagation">
+          <button class="btn-small save" data-action="save">Save</button>
+          <button class="btn-small publish" data-action="publish">${l.status === 'scheduled' ? 'Cancel Schedule' : 'Publish'}</button>
+          <div class="draft-menu-wrap">
+            <button class="btn-small menu-dots" data-action="toggle-menu">&#8942;</button>
+            <div class="draft-menu" data-menu>
+              <button data-action="schedule">Schedule Listing</button>
+              <button data-action="delete" class="menu-danger">Delete Draft</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function wireDraftRows() {
+    document.querySelectorAll('#draftsContent .draft-row').forEach((row) => {
+      const id = row.getAttribute('data-listing-id');
+      const saveBtn = row.querySelector('[data-action="save"]');
+      const publishBtn = row.querySelector('[data-action="publish"]');
+      const menuToggleBtn = row.querySelector('[data-action="toggle-menu"]');
+      const menu = row.querySelector('[data-menu]');
+      const scheduleBtn = row.querySelector('[data-action="schedule"]');
+      const deleteBtn = row.querySelector('[data-action="delete"]');
+      const checkbox = row.querySelector('[data-action="select"]');
+      const isScheduled = publishBtn.textContent.trim() === 'Cancel Schedule';
+
+      // Elements marked "open-detail" open the modal; "stop-propagation" elements
+      // (quick-edit fields, buttons, links) must not trigger that when clicked.
+      row.querySelectorAll('[data-action="open-detail"]').forEach((el) => {
+        el.addEventListener('click', () => openDraftDetailModal(id));
+      });
+      row.querySelectorAll('[data-action="stop-propagation"]').forEach((el) => {
+        el.addEventListener('click', (e) => e.stopPropagation());
+      });
+
+      checkbox.addEventListener('change', updateBulkBar);
+
+      saveBtn.addEventListener('click', async () => {
+        const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
+        const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
+        const categoryId = row.querySelector('[data-field="categoryId"]').value;
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving\u2026';
+
+        try {
+          const res = await apiFetch(`/api/list-on-ebay/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sellPrice, quantity, categoryId }),
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            alert(data.error || 'Could not save changes.');
+          } else {
+            saveBtn.textContent = 'Saved';
+            setTimeout(() => { saveBtn.textContent = 'Save'; }, 1200);
+          }
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      publishBtn.addEventListener('click', async () => {
+        if (isScheduled) {
+          if (!confirm('Cancel this scheduled listing? It will go back to draft.')) return;
+          try {
+            const res = await apiFetch(`/api/listings/${id}/unschedule`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+              alert(data.error || 'Could not cancel the schedule.');
+              return;
+            }
+            loadDrafts();
+          } catch (err) {
+            alert('Could not connect to the server: ' + err.message);
+          }
+          return;
+        }
+
+        const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
+        const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
+        const categoryId = row.querySelector('[data-field="categoryId"]').value;
+
+        publishBtn.disabled = true;
+        publishBtn.textContent = 'Publishing\u2026';
+
+        try {
+          const saveRes = await apiFetch(`/api/list-on-ebay/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sellPrice, quantity, categoryId }),
+          });
+          const saveData = await saveRes.json();
+          if (!saveRes.ok || !saveData.success) {
+            alert(saveData.error || 'Could not save changes before publishing.');
+            return;
+          }
+
+          const res = await apiFetch(`/api/listings/${id}/publish`, { method: 'POST' });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            alert(data.error || 'Could not publish this listing to eBay.');
+            return;
+          }
+
+          alert('Published to eBay successfully!');
+          row.remove();
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        } finally {
+          publishBtn.disabled = false;
+          publishBtn.textContent = 'Publish';
+        }
+      });
+
+      menuToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.draft-menu.open').forEach((m) => { if (m !== menu) m.classList.remove('open'); });
+        menu.classList.toggle('open');
+      });
+
+      scheduleBtn.addEventListener('click', () => {
+        menu.classList.remove('open');
+        openScheduleModal(id);
+      });
+
+      deleteBtn.addEventListener('click', async () => {
+        menu.classList.remove('open');
+        if (!confirm('Delete this draft?')) return;
+
+        try {
+          const res = await apiFetch(`/api/listings/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            alert(data.error || 'Could not delete this draft.');
+            return;
+          }
+
+          row.remove();
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        }
+      });
+    });
+
+    // Close any open three-dot menu when clicking elsewhere on the page.
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.draft-menu.open').forEach((m) => m.classList.remove('open'));
+    }, { once: true });
+
+    wireBulkBar();
+  }
+
+  function updateBulkBar() {
+    const checked = document.querySelectorAll('#draftsContent .draft-checkbox:checked');
+    const bar = document.getElementById('draftBulkBar');
+    const countLabel = document.getElementById('draftSelectedCount');
+    if (!bar) return;
+    bar.style.display = checked.length > 0 ? 'flex' : 'none';
+    if (countLabel) countLabel.textContent = `${checked.length} selected`;
+  }
+
+  function wireBulkBar() {
+    const bulkPublishBtn = document.getElementById('bulkPublishBtn');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    if (!bulkPublishBtn || !bulkDeleteBtn) return;
+
+    function getSelectedIds() {
+      return Array.from(document.querySelectorAll('#draftsContent .draft-checkbox:checked')).map(
+        (cb) => cb.closest('.draft-row').getAttribute('data-listing-id')
+      );
+    }
+
+    bulkPublishBtn.addEventListener('click', async () => {
+      const ids = getSelectedIds();
+      if (!ids.length) return;
+      if (!confirm(`Publish ${ids.length} selected draft(s) to eBay?`)) return;
+
+      bulkPublishBtn.disabled = true;
+      bulkPublishBtn.textContent = 'Publishing\u2026';
+
+      for (const id of ids) {
+        try {
+          await apiFetch(`/api/listings/${id}/publish`, { method: 'POST' });
+        } catch (err) {
+          // Individual failures are surfaced when the list reloads (status becomes "error").
+        }
+      }
+
+      bulkPublishBtn.disabled = false;
+      bulkPublishBtn.textContent = 'Publish selected';
+      loadDrafts();
+    });
+
+    bulkDeleteBtn.addEventListener('click', async () => {
+      const ids = getSelectedIds();
+      if (!ids.length) return;
+      if (!confirm(`Delete ${ids.length} selected draft(s)?`)) return;
+
+      bulkDeleteBtn.disabled = true;
+      bulkDeleteBtn.textContent = 'Deleting\u2026';
+
+      for (const id of ids) {
+        try {
+          await apiFetch(`/api/listings/${id}`, { method: 'DELETE' });
+        } catch (err) {
+          // Individual failures are surfaced when the list reloads.
+        }
+      }
+
+      bulkDeleteBtn.disabled = false;
+      bulkDeleteBtn.textContent = 'Delete selected';
+      loadDrafts();
+    });
+  }
+
+  async function loadListings() {
+    const container = document.getElementById('listingsContent');
+    container.innerHTML = '<p class="state-msg">Loading listings&hellip;</p>';
+
+    try {
+      const res = await apiFetch('/api/listings');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load listings.')}</div>`;
+        return;
+      }
+
+      if (!data.listings.length) {
+        container.innerHTML = '<div class="empty-state">No listings yet. Publish a product from the Import page to see it here.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Title</th>
+              <th>SKU</th>
+              <th>Price</th>
+              <th>Qty</th>
+              <th>Category ID</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.listings.map((l) => listingRowHtml(l)).join('')}
+          </tbody>
+        </table>
+      `;
+
+      wireListingRows();
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function listingRowHtml(l) {
+    return `
+      <tr data-listing-id="${l.id}">
+        <td>${l.main_image ? `<img class="row-thumb" src="${l.main_image}" alt="" />` : ''}</td>
+        <td class="row-title"><input class="editable-input" data-field="title" value="${escapeAttr(l.title || '')}" /></td>
+        <td>${escapeHtml(l.sku)}</td>
+        <td><input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" style="width:90px;" /></td>
+        <td><input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" style="width:60px;" /></td>
+        <td><input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" style="width:100px;" /></td>
+        <td><span class="status-badge ${escapeAttr(l.status)}">${escapeHtml(l.status)}</span>${l.error_message ? `<div style="font-size:11px;color:var(--red);margin-top:4px;max-width:180px;">${escapeHtml(l.error_message)}</div>` : ''}</td>
+        <td>
+          <div class="row-actions">
+            <button class="btn-small save" data-action="save">Save</button>
+            <button class="btn-small delete" data-action="delete">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  function wireListingRows() {
+    document.querySelectorAll('#listingsContent tr[data-listing-id]').forEach((row) => {
+      const id = row.getAttribute('data-listing-id');
+      const saveBtn = row.querySelector('[data-action="save"]');
+      const deleteBtn = row.querySelector('[data-action="delete"]');
+
+      saveBtn.addEventListener('click', async () => {
+        const title = row.querySelector('[data-field="title"]').value;
+        const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
+        const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
+        const categoryId = row.querySelector('[data-field="categoryId"]').value;
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving\u2026';
+
+        try {
+          const res = await apiFetch(`/api/list-on-ebay/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, sellPrice, quantity, categoryId }),
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            alert(data.error || 'Could not save changes.');
+          } else {
+            saveBtn.textContent = 'Saved';
+            setTimeout(() => { saveBtn.textContent = 'Save'; }, 1200);
+          }
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      deleteBtn.addEventListener('click', async () => {
+        const statusBadge = row.querySelector('.status-badge');
+        const isLive = statusBadge && statusBadge.classList.contains('published');
+        const confirmMsg = isLive
+          ? 'This listing is currently live on eBay. Deleting it here will also end it on eBay. Continue?'
+          : 'Delete this listing from ELMS?';
+
+        if (!confirm(confirmMsg)) return;
+
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = 'Deleting\u2026';
+
+        try {
+          const res = await apiFetch(`/api/listings/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            alert(data.error || 'Could not delete this listing.');
+            deleteBtn.disabled = false;
+            deleteBtn.textContent = 'Delete';
+            return;
+          }
+
+          row.remove();
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+          deleteBtn.disabled = false;
+          deleteBtn.textContent = 'Delete';
+        }
+      });
+    });
+  }
+
+  // ---------- Orders page ----------
+  const FULFILLMENT_STATUSES = ['pending', 'ordered_from_amazon', 'shipped', 'delivered'];
+
+  async function loadOrders() {
+    const container = document.getElementById('ordersContent');
+    container.innerHTML = '<p class="state-msg">Loading orders&hellip;</p>';
+
+    // Try a background sync first so freshly-placed eBay orders show up
+    // without the user needing to click anything. Silent - if it fails
+    // (e.g. eBay not connected yet), we still show whatever orders are
+    // already saved from a previous sync.
+    try {
+      await apiFetch('/api/orders/sync', { method: 'POST' });
+    } catch (err) {
+      // Ignore - we'll just show existing orders below.
+    }
+
+    try {
+      const res = await apiFetch('/api/orders');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load orders.')}</div>`;
+        return;
+      }
+
+      const syncButton = `<button class="btn-outline" id="syncOrdersBtn" style="margin-bottom:16px;">Sync orders from eBay</button><div id="syncOrdersStatus" style="margin-bottom:12px;"></div>`;
+
+      if (!data.orders.length) {
+        container.innerHTML = syncButton + '<div class="empty-state">No orders yet. Orders placed by buyers on your eBay listings will show up here - click "Sync orders from eBay" to check now.</div>';
+        wireSyncOrdersButton();
+        return;
+      }
+
+      container.innerHTML = syncButton + `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Listing</th>
+              <th>Buyer</th>
+              <th>Sale price</th>
+              <th>Qty</th>
+              <th>Amazon order ID</th>
+              <th>Fulfillment status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.orders.map((o) => orderRowHtml(o)).join('')}
+          </tbody>
+        </table>
+      `;
+
+      wireOrderRows();
+      wireSyncOrdersButton();
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function wireSyncOrdersButton() {
+    const btn = document.getElementById('syncOrdersBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+      const statusEl = document.getElementById('syncOrdersStatus');
+      btn.disabled = true;
+      statusEl.className = '';
+      statusEl.textContent = 'Syncing\u2026';
+
+      try {
+        const res = await apiFetch('/api/orders/sync', { method: 'POST' });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          statusEl.className = 'error';
+          statusEl.textContent = data.error || 'Could not sync orders.';
+          btn.disabled = false;
+          return;
+        }
+
+        statusEl.className = 'success';
+        statusEl.textContent = `Synced ${data.syncedCount} order line item(s).`;
+        loadOrders();
+      } catch (err) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Could not connect to the server: ' + err.message;
+        btn.disabled = false;
+      }
+    });
+  }
+
+  function orderRowHtml(o) {
+    const statusOptions = FULFILLMENT_STATUSES
+      .map((s) => `<option value="${s}" ${s === o.fulfillment_status ? 'selected' : ''}>${s.replace(/_/g, ' ')}</option>`)
+      .join('');
+
+    return `
+      <tr data-order-id="${o.id}">
+        <td>${o.main_image ? `<img class="row-thumb" src="${o.main_image}" alt="" />` : ''}</td>
+        <td class="row-title">${escapeHtml(o.listing_title || '—')}</td>
+        <td>${escapeHtml(o.buyer_username || '—')}</td>
+        <td>${o.sale_price != null ? escapeHtml(String(o.sale_price)) : '—'}</td>
+        <td>${o.quantity ?? 1}</td>
+        <td><input class="editable-input" data-field="amazonOrderId" value="${escapeAttr(o.amazon_order_id || '')}" style="width:130px;" placeholder="Not ordered yet" /></td>
+        <td><select class="editable-input" data-field="fulfillmentStatus">${statusOptions}</select></td>
+        <td>
+          <div class="row-actions">
+            <button class="btn-small save" data-action="save">Save</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  function wireOrderRows() {
+    document.querySelectorAll('#ordersContent tr[data-order-id]').forEach((row) => {
+      const id = row.getAttribute('data-order-id');
+      const saveBtn = row.querySelector('[data-action="save"]');
+
+      saveBtn.addEventListener('click', async () => {
+        const fulfillmentStatus = row.querySelector('[data-field="fulfillmentStatus"]').value;
+        const amazonOrderId = row.querySelector('[data-field="amazonOrderId"]').value;
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving\u2026';
+
+        try {
+          const res = await apiFetch(`/api/orders/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fulfillmentStatus, amazonOrderId }),
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            alert(data.error || 'Could not save changes.');
+          } else {
+            saveBtn.textContent = 'Saved';
+            setTimeout(() => { saveBtn.textContent = 'Save'; }, 1200);
+            loadOrders();
+          }
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+    });
+  }
+
+  // ---------- Import History page ----------
+  async function loadHistory() {
+    const container = document.getElementById('historyContent');
+    container.innerHTML = '<p class="state-msg">Loading import history&hellip;</p>';
+
+    try {
+      const res = await apiFetch('/api/imports');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load import history.')}</div>`;
+        return;
+      }
+
+      if (!data.imports.length) {
+        container.innerHTML = '<div class="empty-state">No imports yet. Fetch a product from the Import page to see it here.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Title</th>
+              <th>ASIN</th>
+              <th>Amazon price</th>
+              <th>Suggested price</th>
+              <th>Fetched</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.imports.map((i) => historyRowHtml(i)).join('')}
+          </tbody>
+        </table>
+      `;
+
+      document.querySelectorAll('#historyContent [data-action="reimport"]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const url = btn.getAttribute('data-url');
+          document.getElementById('amazonUrl').value = url || '';
+          showPage('import');
+        });
+      });
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function historyRowHtml(i) {
+    return `
+      <tr>
+        <td>${i.main_image ? `<img class="row-thumb" src="${i.main_image}" alt="" />` : ''}</td>
+        <td class="row-title">${escapeHtml(i.title || '—')}</td>
+        <td>${escapeHtml(i.asin || '—')}</td>
+        <td>${i.amazon_price != null ? escapeHtml(i.currency + ' ' + i.amazon_price) : '—'}</td>
+        <td>${i.suggested_price != null ? escapeHtml(i.currency + ' ' + i.suggested_price) : '—'}</td>
+        <td>${escapeHtml(i.created_at)}</td>
+        <td>
+          <div class="row-actions">
+            <button class="btn-small" data-action="reimport" data-url="${escapeAttr(i.amazon_url || '')}">Re-fetch</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  function escapeAttr(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ---------- Settings page ----------
+  async function loadSettingsPage() {
+    await refreshEbayConnectionStatus();
+    await loadSellerSettings();
+  }
+
+  async function refreshEbayConnectionStatus() {
+    const statusEl = document.getElementById('ebayConnectStatus');
+    const connectBtn = document.getElementById('connectEbayBtn');
+    const disconnectBtn = document.getElementById('disconnectEbayBtn');
+
+    statusEl.textContent = 'Checking connection status\u2026';
+    statusEl.className = 'state-msg';
+    connectBtn.style.display = 'none';
+    disconnectBtn.style.display = 'none';
+
+    try {
+      const res = await apiFetch('/api/auth/me');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.textContent = 'Please sign in to connect your eBay account.';
+        return;
+      }
+
+      if (data.user.ebayConnected) {
+        statusEl.textContent = `Connected as eBay user ${data.user.ebayUserId || ''}.`;
+        statusEl.className = 'state-msg success';
+        disconnectBtn.style.display = 'inline-block';
+      } else {
+        statusEl.textContent = 'Not connected yet. Connect your eBay account to publish listings.';
+        connectBtn.style.display = 'inline-block';
+      }
+    } catch (err) {
+      statusEl.textContent = 'Could not check connection status: ' + err.message;
+      statusEl.className = 'state-msg error';
+    }
+  }
+
+  document.getElementById('connectEbayBtn').addEventListener('click', () => {
+    const sessionToken = localStorage.getItem('elmsSessionToken');
+    if (!sessionToken) {
+      alert('Please sign in first.');
+      return;
+    }
+    document.getElementById('marketplaceModalStatus').textContent = '';
+    document.getElementById('marketplaceModalStatus').className = '';
+    document.getElementById('marketplaceModal').classList.add('open');
+  });
+
+  document.getElementById('marketplaceModalCloseBtn').addEventListener('click', () => {
+    document.getElementById('marketplaceModal').classList.remove('open');
+  });
+  document.getElementById('marketplaceModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('marketplaceModal')) {
+      document.getElementById('marketplaceModal').classList.remove('open');
+    }
+  });
+
+  document.getElementById('marketplaceContinueBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('marketplaceContinueBtn');
+    const statusEl = document.getElementById('marketplaceModalStatus');
+    const marketplaceId = document.getElementById('connectMarketplaceSelect').value;
+    const sessionToken = localStorage.getItem('elmsSessionToken');
+
+    btn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = 'Saving marketplace\u2026';
+
+    try {
+      // Save the chosen marketplace to this user's seller settings first,
+      // so it's already set by the time they finish connecting eBay.
+      const saveRes = await apiFetch('/api/seller-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ marketplaceId }),
+      });
+      const saveData = await saveRes.json();
+      if (!saveRes.ok || !saveData.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = saveData.error || 'Could not save the marketplace.';
+        btn.disabled = false;
+        return;
+      }
+
+      statusEl.textContent = 'Redirecting to eBay\u2026';
+
+      // /start needs the token as a query param (not a header) since the
+      // frontend is about to navigate the whole page to eBay's site.
+      const res = await fetch(`${API_BASE}/api/ebay-connect/start?token=${encodeURIComponent(sessionToken)}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = data.error || 'Could not start the eBay connection.';
+        btn.disabled = false;
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('disconnectEbayBtn').addEventListener('click', async () => {
+    if (!confirm('Disconnect your eBay account? You will need to reconnect before publishing again.')) return;
+
+    try {
+      const res = await apiFetch('/api/ebay-connect/disconnect', { method: 'POST' });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Could not disconnect.');
+        return;
+      }
+
+      refreshEbayConnectionStatus();
+    } catch (err) {
+      alert('Could not connect to the server: ' + err.message);
+    }
+  });
+
+  // Remembers the last-loaded settings so we can re-select the saved value
+  // once the dropdowns are populated with fetched options.
+  let savedSellerSettings = {};
+
+  async function loadSellerSettings() {
+    try {
+      const res = await apiFetch('/api/seller-settings');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) return;
+
+      savedSellerSettings = data.settings || {};
+      document.getElementById('settingMarketplaceId').value = savedSellerSettings.marketplaceId || 'EBAY_US';
+
+      // Try fetching the user's real policies right away if they're already
+      // connected - if they aren't, the dropdowns just stay on the
+      // placeholder option until they click "Fetch from eBay" themselves.
+      await fetchAndPopulateEbayPolicies({ silent: true });
+    } catch (err) {
+      // Silently leave the fields blank if this fails - the user can still fetch manually.
+    }
+  }
+
+  function populateSelect(selectEl, options, labelKey, valueKey, savedValue) {
+    const placeholder = options.length ? 'Select a policy...' : 'None found - create one in eBay first';
+    selectEl.innerHTML = `<option value="">${placeholder}</option>` +
+      options.map((opt) => `<option value="${escapeAttr(opt[valueKey])}">${escapeHtml(opt[labelKey])}</option>`).join('');
+    if (savedValue) selectEl.value = savedValue;
+  }
+
+  async function fetchAndPopulateEbayPolicies({ silent } = {}) {
+    const statusEl = document.getElementById('fetchPoliciesStatus');
+    const btn = document.getElementById('fetchEbayPoliciesBtn');
+
+    if (!silent) {
+      btn.disabled = true;
+      statusEl.className = '';
+      statusEl.textContent = 'Fetching your policies from eBay\u2026';
+    }
+
+    try {
+      const marketplaceId = document.getElementById('settingMarketplaceId').value || 'EBAY_US';
+      const res = await apiFetch(`/api/seller-settings/ebay-policies?marketplaceId=${encodeURIComponent(marketplaceId)}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        if (!silent) {
+          statusEl.className = 'error';
+          statusEl.textContent = data.error || 'Could not fetch your eBay policies.';
+        }
+        return;
+      }
+
+      populateSelect(
+        document.getElementById('settingPaymentPolicyId'),
+        data.paymentPolicies, 'name', 'id', savedSellerSettings.paymentPolicyId
+      );
+      populateSelect(
+        document.getElementById('settingReturnPolicyId'),
+        data.returnPolicies, 'name', 'id', savedSellerSettings.returnPolicyId
+      );
+      populateSelect(
+        document.getElementById('settingFulfillmentPolicyId'),
+        data.fulfillmentPolicies, 'name', 'id', savedSellerSettings.fulfillmentPolicyId
+      );
+      populateSelect(
+        document.getElementById('settingMerchantLocationKey'),
+        data.locations, 'name', 'key', savedSellerSettings.merchantLocationKey
+      );
+
+      if (!silent) {
+        statusEl.className = 'success';
+        statusEl.textContent = 'Loaded your policies from eBay. Select one from each dropdown, then Save settings.';
+      }
+    } catch (err) {
+      if (!silent) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Could not connect to the server: ' + err.message;
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('fetchEbayPoliciesBtn').addEventListener('click', () => fetchAndPopulateEbayPolicies());
+
+  document.getElementById('saveSellerSettingsBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('sellerSettingsStatus');
+    const btn = document.getElementById('saveSellerSettingsBtn');
+
+    const merchantLocationKey = document.getElementById('settingMerchantLocationKey').value.trim();
+    const paymentPolicyId = document.getElementById('settingPaymentPolicyId').value.trim();
+    const fulfillmentPolicyId = document.getElementById('settingFulfillmentPolicyId').value.trim();
+    const returnPolicyId = document.getElementById('settingReturnPolicyId').value.trim();
+    const marketplaceId = document.getElementById('settingMarketplaceId').value.trim() || 'EBAY_US';
+
+    btn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = 'Saving\u2026';
+
+    try {
+      const res = await apiFetch('/api/seller-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantLocationKey, paymentPolicyId, fulfillmentPolicyId, returnPolicyId, marketplaceId }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = data.error || 'Could not save settings.';
+        return;
+      }
+
+      statusEl.className = 'success';
+      statusEl.textContent = 'Settings saved.';
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // If eBay just redirected back here after OAuth consent, show a message
+  // and clean the URL so a page refresh doesn't re-trigger it.
+  (function handleEbayConnectRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const ebayConnect = params.get('ebayConnect');
+    if (!ebayConnect) return;
+
+    window.addEventListener('load', () => {
+      showPage('settings');
+      if (ebayConnect === 'success') {
+        alert('eBay account connected! Your business policies have been loaded below - please review and Save.');
+      } else {
+        alert('Could not connect eBay account: ' + (params.get('message') || 'Unknown error'));
+      }
+    });
+
+    // Remove the query params from the URL so refreshing doesn't repeat the alert.
+    window.history.replaceState({}, document.title, window.location.pathname);
+  })();
+
+  // ---------- Draft Detail Modal ----------
+  const draftDetailModal = document.getElementById('draftDetailModal');
+  let currentDraftId = null;
+
+  document.getElementById('draftDetailCloseBtn').addEventListener('click', () => {
+    draftDetailModal.classList.remove('open');
+  });
+  draftDetailModal.addEventListener('click', (e) => {
+    if (e.target === draftDetailModal) draftDetailModal.classList.remove('open');
+  });
+
+  async function openDraftDetailModal(id) {
+    currentDraftId = id;
+    const body = document.getElementById('draftDetailBody');
+    body.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
+    draftDetailModal.classList.add('open');
+
+    try {
+      const res = await apiFetch(`/api/listings/${id}/detail`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        body.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load this draft.')}</div>`;
+        return;
+      }
+
+      renderDraftDetail(data.listing, data.product);
+    } catch (err) {
+      body.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function renderDraftDetail(listing, product) {
+    const body = document.getElementById('draftDetailBody');
+
+    if (!product) {
+      body.innerHTML = `
+        <p class="state-msg error">No linked Amazon product data was found for this draft.</p>
+        <div class="publish-rail" style="border-top:none; padding-top:0;">
+          <div class="publish-field">
+            <label>eBay category ID</label>
+            <input type="text" id="draftEditCategoryId" value="${escapeAttr(listing.category_id || '')}" />
+          </div>
+          <div class="publish-field">
+            <label>Quantity</label>
+            <input type="number" id="draftEditQuantity" value="${listing.quantity ?? 1}" style="width:80px;" />
+          </div>
+          <div class="publish-field">
+            <label>Sell price</label>
+            <input type="number" id="draftEditSellPrice" step="0.01" value="${listing.sell_price ?? ''}" style="width:100px;" />
+          </div>
+          <button class="btn-outline" id="draftEditPriceBtn" type="button">Edit price</button>
+          <button class="btn-publish" id="draftDetailPublishBtn">Publish to eBay</button>
+        </div>
+        <div id="draftDetailStatus"></div>
+      `;
+      wireDraftDetailButtons(listing, null);
+      wireDraftPriceButton(listing, null);
+      return;
+    }
+
+    const images = product.images && product.images.length ? product.images : [];
+    const mainImage = listing.main_image || images[0] || '';
+    const bulletsText = (product.bulletPoints || []).join('\n');
+    const specRowsHtml = (product.specifications || [])
+      .map(
+        (spec, i) => `
+          <tr data-spec-row="${i}">
+            <td><input class="editable-input" data-spec-name value="${escapeAttr(spec.name)}" /></td>
+            <td><input class="editable-input" data-spec-value value="${escapeAttr(spec.value)}" /></td>
+            <td><button type="button" class="btn-small" data-action="remove-spec" style="background:var(--red);">Remove</button></td>
+          </tr>`
+      )
+      .join('');
+
+    body.innerHTML = `
+      ${mainImage ? `<img src="${mainImage}" alt="" class="main-image" style="max-width:200px; height:200px;" />` : ''}
+
+      <label class="edit-label">Title</label>
+      <input type="text" class="editable-input title-input" id="draftEditTitle" value="${escapeAttr(listing.title || product.title)}" />
+
+      <div class="publish-rail" style="margin-top:16px;">
+        <div class="publish-field">
+          <label>eBay category ID</label>
+          <input type="text" id="draftEditCategoryId" value="${escapeAttr(listing.category_id || '')}" />
+        </div>
+        <div class="publish-field">
+          <label>Quantity</label>
+          <input type="number" id="draftEditQuantity" value="${listing.quantity ?? 1}" style="width:80px;" />
+        </div>
+        <div class="publish-field">
+          <label>Sell price</label>
+          <input type="number" id="draftEditSellPrice" step="0.01" value="${listing.sell_price ?? ''}" style="width:100px;" />
+        </div>
+        <button class="btn-outline" id="draftEditPriceBtn" type="button">Edit price</button>
+        <button class="btn-publish" id="draftDetailPublishBtn">Publish to eBay</button>
+      </div>
+      <div id="draftDetailStatus"></div>
+
+      <div class="section-title">Highlights</div>
+      <textarea class="editable-input editable-textarea" id="draftEditBullets" rows="3" placeholder="One highlight per line">${escapeHtml(bulletsText)}</textarea>
+
+      <div class="section-title">Description</div>
+      <textarea class="editable-input editable-textarea" id="draftEditDescription" rows="5">${escapeHtml(product.description || '')}</textarea>
+
+      <div class="section-title">Item specifications</div>
+      <table class="data-table" id="draftSpecsTable">
+        <thead><tr><th>Name</th><th>Value</th><th></th></tr></thead>
+        <tbody id="draftSpecsTableBody">${specRowsHtml}</tbody>
+      </table>
+      <button type="button" class="btn-small" id="draftAddSpecBtn" style="margin-top:8px;">+ Add specification</button>
+    `;
+
+    const specsTableBody = document.getElementById('draftSpecsTableBody');
+    document.getElementById('draftAddSpecBtn').addEventListener('click', () => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input class="editable-input" data-spec-name placeholder="Name" /></td>
+        <td><input class="editable-input" data-spec-value placeholder="Value" /></td>
+        <td><button type="button" class="btn-small" data-action="remove-spec" style="background:var(--red);">Remove</button></td>
+      `;
+      specsTableBody.appendChild(row);
+      wireDraftSpecRemoveButtons();
+    });
+    wireDraftSpecRemoveButtons();
+
+    function wireDraftSpecRemoveButtons() {
+      document.querySelectorAll('#draftSpecsTableBody [data-action="remove-spec"]').forEach((btn) => {
+        btn.onclick = () => btn.closest('tr').remove();
+      });
+    }
+
+    wireDraftDetailButtons(listing, product);
+    wireDraftPriceButton(listing, product);
+  }
+
+  function getEditedDraftProduct(baseProduct) {
+    const title = document.getElementById('draftEditTitle').value.trim();
+    const bulletPoints = document
+      .getElementById('draftEditBullets')
+      .value.split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const description = document.getElementById('draftEditDescription').value;
+
+    const specifications = Array.from(document.querySelectorAll('#draftSpecsTableBody tr'))
+      .map((row) => ({
+        name: row.querySelector('[data-spec-name]').value.trim(),
+        value: row.querySelector('[data-spec-value]').value.trim(),
+      }))
+      .filter((spec) => spec.name && spec.value);
+
+    return { ...baseProduct, title, bulletPoints, description, specifications };
+  }
+
+  /**
+   * Wires the "Edit price" button in the Draft Detail Modal to reuse the
+   * same shared pricing calculator (Buy Price/Fees/Profit/Sell Price) that
+   * the Import page uses, instead of a plain number field.
+   */
+  function wireDraftPriceButton(listing, product) {
+    const btn = document.getElementById('draftEditPriceBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+      // The "Buy price" shown in the calculator is the original Amazon
+      // price - fall back to the current sell price if that's ever missing
+      // (e.g. a draft whose linked import data could not be loaded).
+      const buyPrice = product?.price ?? (Number(document.getElementById('draftEditSellPrice').value) || 0);
+      const mainImage = listing.main_image || (product?.images && product.images[0]) || '';
+
+      onPricingModalApply = (sellPriceValue) => {
+        document.getElementById('draftEditSellPrice').value = sellPriceValue.toFixed(2);
+      };
+
+      openPricingModal({ price: buyPrice, title: listing.title || product?.title || '' }, mainImage);
+    });
+  }
+
+  function wireDraftDetailButtons(listing, product) {
+    const publishBtn = document.getElementById('draftDetailPublishBtn');
+    const statusEl = document.getElementById('draftDetailStatus');
+
+    publishBtn.addEventListener('click', async () => {
+      const categoryId = document.getElementById('draftEditCategoryId').value.trim();
+      const quantity = Number(document.getElementById('draftEditQuantity').value) || 1;
+      const sellPrice = Number(document.getElementById('draftEditSellPrice').value) || null;
+      const title = product ? getEditedDraftProduct(product).title : document.getElementById('draftEditTitle')?.value;
+
+      statusEl.className = '';
+      statusEl.textContent = '';
+
+      if (!categoryId) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Please enter an eBay category ID.';
+        return;
+      }
+      if (!sellPrice) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Please enter a sell price.';
+        return;
+      }
+
+      publishBtn.disabled = true;
+      statusEl.textContent = 'Saving and publishing\u2026';
+
+      try {
+        const saveRes = await apiFetch(`/api/list-on-ebay/${listing.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, sellPrice, quantity, categoryId }),
+        });
+        const saveData = await saveRes.json();
+        if (!saveRes.ok || !saveData.success) {
+          statusEl.className = 'error';
+          statusEl.textContent = saveData.error || 'Could not save changes.';
+          return;
+        }
+
+        const res = await apiFetch(`/api/listings/${listing.id}/publish`, { method: 'POST' });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          statusEl.className = 'error';
+          statusEl.textContent = data.error || 'Could not publish this listing to eBay.';
+          return;
+        }
+
+        statusEl.className = 'success';
+        statusEl.textContent = 'Published to eBay successfully!';
+        setTimeout(() => {
+          draftDetailModal.classList.remove('open');
+          loadDrafts();
+        }, 1200);
+      } catch (err) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Could not connect to the server: ' + err.message;
+      } finally {
+        publishBtn.disabled = false;
+      }
+    });
+  }
+
+  // ---------- Schedule Modal ----------
+  const scheduleModal = document.getElementById('scheduleModal');
+  let currentScheduleId = null;
+
+  function openScheduleModal(id) {
+    currentScheduleId = id;
+    document.getElementById('scheduleDateTime').value = '';
+    document.getElementById('scheduleModalStatus').textContent = '';
+    document.getElementById('scheduleModalStatus').className = '';
+    scheduleModal.classList.add('open');
+  }
+
+  document.getElementById('scheduleModalCloseBtn').addEventListener('click', () => {
+    scheduleModal.classList.remove('open');
+  });
+  scheduleModal.addEventListener('click', (e) => {
+    if (e.target === scheduleModal) scheduleModal.classList.remove('open');
+  });
+
+  document.getElementById('scheduleConfirmBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('scheduleModalStatus');
+    const dateTimeValue = document.getElementById('scheduleDateTime').value;
+
+    if (!dateTimeValue) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Please choose a date and time.';
+      return;
+    }
+
+    const scheduledAt = new Date(dateTimeValue).toISOString();
+
+    statusEl.className = '';
+    statusEl.textContent = 'Scheduling\u2026';
+
+    try {
+      const res = await apiFetch(`/api/listings/${currentScheduleId}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scheduledAt }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = data.error || 'Could not schedule this listing.';
+        return;
+      }
+
+      statusEl.className = 'success';
+      statusEl.textContent = 'Listing scheduled!';
+      setTimeout(() => {
+        scheduleModal.classList.remove('open');
+        loadDrafts();
+      }, 1000);
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    }
+  });
+
+  // ---------- Support page ----------
+  async function loadSupportPage() {
+    await loadMyTickets();
+  }
+
+  async function loadMyTickets() {
+    const container = document.getElementById('myTicketsContent');
+    container.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
+
+    try {
+      const res = await apiFetch('/api/support-tickets');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load your tickets.')}</div>`;
+        return;
+      }
+
+      if (!data.tickets.length) {
+        container.innerHTML = '<div class="empty-state">You have not opened any support tickets yet.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr><th>Subject</th><th>Message</th><th>Status</th><th>Admin reply</th><th>Opened</th></tr>
+          </thead>
+          <tbody>
+            ${data.tickets.map((t) => `
+              <tr>
+                <td class="row-title">${escapeHtml(t.subject)}</td>
+                <td>${escapeHtml(t.message)}</td>
+                <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span></td>
+                <td>${t.adminReply ? escapeHtml(t.adminReply) : '—'}</td>
+                <td>${escapeHtml(new Date(t.createdAt).toLocaleString())}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  document.getElementById('createTicketBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('createTicketBtn');
+    const statusEl = document.getElementById('createTicketStatus');
+    const subject = document.getElementById('ticketSubject').value.trim();
+    const message = document.getElementById('ticketMessage').value.trim();
+
+    if (!subject || !message) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Please fill in both the subject and message.';
+      return;
+    }
+
+    btn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = 'Submitting\u2026';
+
+    try {
+      const res = await apiFetch('/api/support-tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, message }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = data.error || 'Could not submit the ticket.';
+        return;
+      }
+
+      statusEl.className = 'success';
+      statusEl.textContent = 'Ticket submitted!';
+      document.getElementById('ticketSubject').value = '';
+      document.getElementById('ticketMessage').value = '';
+      loadMyTickets();
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ---------- Admin Panel ----------
+  async function loadAdminPage() {
+    await loadAdminUsers();
+    await loadAdminTickets();
+  }
+
+  async function loadAdminUsers() {
+    const container = document.getElementById('adminUsersContent');
+    container.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
+
+    try {
+      const res = await apiFetch('/api/admin/users');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load users.')}</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr><th>User</th><th>Role</th><th>Credits</th><th>Stock check (days)</th><th></th></tr>
+          </thead>
+          <tbody>
+            ${data.users.map((u) => `
+              <tr data-user-id="${u.id}">
+                <td class="row-title">${escapeHtml(u.name || '—')}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span></td>
+                <td>${escapeHtml(u.role)}</td>
+                <td><input class="editable-input" data-field="creditBalance" type="number" value="${u.creditBalance}" style="width:100px;" /></td>
+                <td><input class="editable-input" data-field="stockCheckIntervalDays" type="number" min="1" value="${u.stockCheckIntervalDays}" style="width:80px;" /></td>
+                <td><button class="btn-small save" data-action="save-user">Save</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      wireAdminUserRows();
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function wireAdminUserRows() {
+    document.querySelectorAll('#adminUsersContent tr[data-user-id]').forEach((row) => {
+      const userId = row.getAttribute('data-user-id');
+      const saveBtn = row.querySelector('[data-action="save-user"]');
+
+      saveBtn.addEventListener('click', async () => {
+        const creditBalance = Number(row.querySelector('[data-field="creditBalance"]').value);
+        const stockCheckIntervalDays = Number(row.querySelector('[data-field="stockCheckIntervalDays"]').value);
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving\u2026';
+
+        try {
+          const creditsRes = await apiFetch(`/api/admin/users/${userId}/credits`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ creditBalance }),
+          });
+          const creditsData = await creditsRes.json();
+          if (!creditsRes.ok || !creditsData.success) {
+            alert(creditsData.error || 'Could not update credits.');
+            return;
+          }
+
+          const intervalRes = await apiFetch(`/api/admin/users/${userId}/stock-check-interval`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ days: stockCheckIntervalDays }),
+          });
+          const intervalData = await intervalRes.json();
+          if (!intervalRes.ok || !intervalData.success) {
+            alert(intervalData.error || 'Could not update the stock check interval.');
+            return;
+          }
+
+          saveBtn.textContent = 'Saved';
+          setTimeout(() => { saveBtn.textContent = 'Save'; }, 1200);
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+    });
+  }
+
+  async function loadAdminTickets() {
+    const container = document.getElementById('adminTicketsContent');
+    container.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
+
+    try {
+      const res = await apiFetch('/api/admin/tickets');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load tickets.')}</div>`;
+        return;
+      }
+
+      if (!data.tickets.length) {
+        container.innerHTML = '<div class="empty-state">No support tickets yet.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr><th>User</th><th>Subject</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            ${data.tickets.map((t) => `
+              <tr data-ticket-id="${t.id}" class="clickable-row">
+                <td class="row-title">${escapeHtml(t.userName || '—')}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(t.userEmail || '')}</span></td>
+                <td>${escapeHtml(t.subject)}</td>
+                <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span></td>
+                <td><button class="btn-small" data-action="open-ticket">View</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      wireAdminTicketRows(data.tickets);
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function wireAdminTicketRows(tickets) {
+    document.querySelectorAll('#adminTicketsContent tr[data-ticket-id]').forEach((row) => {
+      const ticketId = row.getAttribute('data-ticket-id');
+      const ticket = tickets.find((t) => t.id === ticketId);
+      row.addEventListener('click', () => openTicketDetailModal(ticket));
+    });
+  }
+
+  // ---------- Ticket Detail Modal ----------
+  const ticketDetailModal = document.getElementById('ticketDetailModal');
+
+  document.getElementById('ticketDetailCloseBtn').addEventListener('click', () => {
+    ticketDetailModal.classList.remove('open');
+  });
+  ticketDetailModal.addEventListener('click', (e) => {
+    if (e.target === ticketDetailModal) ticketDetailModal.classList.remove('open');
+  });
+
+  function openTicketDetailModal(ticket) {
+    const body = document.getElementById('ticketDetailBody');
+
+    body.innerHTML = `
+      <div class="modal-product-summary" style="align-items:flex-start;">
+        <div>
+          <div class="draft-title">${escapeHtml(ticket.userName || '—')}</div>
+          <div class="meta-line">${escapeHtml(ticket.userEmail || '')}</div>
+        </div>
+      </div>
+
+      <label class="edit-label">Subject</label>
+      <p class="description-text" style="margin-bottom:16px;">${escapeHtml(ticket.subject)}</p>
+
+      <label class="edit-label">Message</label>
+      <p class="description-text" style="margin-bottom:16px; white-space:pre-wrap;">${escapeHtml(ticket.message)}</p>
+
+      <div class="section-title" style="margin-top:0;">Status</div>
+      <p class="meta-line"><span class="status-badge ${ticket.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(ticket.status)}</span></p>
+
+      ${ticket.status === 'resolved'
+        ? `<div class="section-title">Your reply</div><p class="description-text">${escapeHtml(ticket.adminReply || '—')}</p>`
+        : `
+          <div class="section-title">Reply &amp; resolve</div>
+          <textarea class="editable-input editable-textarea" id="ticketDetailReply" rows="5" placeholder="Write your reply (optional)..."></textarea>
+          <button class="btn-publish" id="ticketDetailResolveBtn" style="margin-top:14px;">Resolve ticket</button>
+          <div id="ticketDetailStatus" style="margin-top:10px;"></div>
+        `
+      }
+    `;
+
+    ticketDetailModal.classList.add('open');
+
+    if (ticket.status !== 'resolved') {
+      document.getElementById('ticketDetailResolveBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('ticketDetailResolveBtn');
+        const statusEl = document.getElementById('ticketDetailStatus');
+        const adminReply = document.getElementById('ticketDetailReply').value.trim();
+
+        btn.disabled = true;
+        statusEl.className = '';
+        statusEl.textContent = 'Resolving\u2026';
+
+        try {
+          const res = await apiFetch(`/api/admin/tickets/${ticket.id}/resolve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ adminReply }),
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            statusEl.className = 'error';
+            statusEl.textContent = data.error || 'Could not resolve this ticket.';
+            btn.disabled = false;
+            return;
+          }
+
+          statusEl.className = 'success';
+          statusEl.textContent = 'Ticket resolved!';
+          setTimeout(() => {
+            ticketDetailModal.classList.remove('open');
+            loadAdminTickets();
+          }, 900);
+        } catch (err) {
+          statusEl.className = 'error';
+          statusEl.textContent = 'Could not connect to the server: ' + err.message;
+          btn.disabled = false;
+        }
+      });
+    }
+  }
+</script>
+
+
+</body>
+</html>
