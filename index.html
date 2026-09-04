@@ -197,7 +197,7 @@
     background: linear-gradient(150deg, #E53238 0%, #F5AF02 36%, #0064D2 72%, #86B817 100%);
     clip-path: polygon(22% 0, 100% 0, 100% 100%, 0% 100%);
     color: #fff;
-    transition: clip-path 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: clip-path 0.85s cubic-bezier(0.65, 0, 0.35, 1);
   }
   .auth-card.show-register .auth-welcome-panel {
     clip-path: polygon(0 0, 78% 0, 100% 100%, 0% 100%);
@@ -211,13 +211,14 @@
     pointer-events: none;
   }
   .auth-welcome-title {
-    font-size: 27px;
+    font-size: clamp(20px, 4vw, 27px);
     font-weight: 800;
     letter-spacing: -0.01em;
     margin: 0 0 10px;
     text-shadow: 0 2px 14px rgba(0,0,0,0.15);
     position: relative;
     z-index: 1;
+    overflow-wrap: break-word;
   }
   .auth-welcome-sub {
     font-size: 13px;
@@ -402,7 +403,7 @@
 
   /* Slide/fade animation between the login and register forms */
   .auth-form {
-    animation: authFormIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: authFormIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   @keyframes authFormIn {
     from { opacity: 0; transform: translateX(10px); }
@@ -1014,7 +1015,7 @@
 <div class="auth-page" id="authPage" style="display:none;">
   <div class="auth-card" id="authCard">
     <div class="auth-welcome-panel">
-      <div class="auth-welcome-title" id="authWelcomeTitle">Welcome back</div>
+      <div class="auth-welcome-title" id="authWelcomeTitle">Welcome to ELMS</div>
       <div class="auth-welcome-sub" id="authWelcomeSub">Log in to keep managing your Amazon-to-eBay listings.</div>
     </div>
 
@@ -2157,7 +2158,7 @@
     document.getElementById('authCard').classList.remove('show-register');
     document.getElementById('authFormLogin').style.display = 'block';
     document.getElementById('authFormRegister').style.display = 'none';
-    document.getElementById('authWelcomeTitle').textContent = 'Welcome back';
+    document.getElementById('authWelcomeTitle').textContent = 'Welcome to ELMS';
     document.getElementById('authWelcomeSub').textContent = 'Log in to keep managing your Amazon-to-eBay listings.';
   }
   function showRegisterForm() {
