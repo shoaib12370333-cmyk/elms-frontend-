@@ -911,10 +911,6 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Support
       </a>
-      <a href="#" data-page="admin" id="adminNavLink" style="display:none;">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
-        Admin
-      </a>
     </nav>
     <div class="sidebar-footer" id="sidebarFooter">Signed in</div>
   </aside>
@@ -1906,9 +1902,6 @@
     document.getElementById('userChip').style.display = 'flex';
     document.getElementById('sidebarFooter').textContent = user.googleId ? 'Signed in via Google' : 'Signed in';
     currentEbayUserId = user.ebayUserId || null;
-    if (user.role === 'admin') {
-      document.getElementById('adminNavLink').style.display = 'flex';
-    }
     refreshDraftsCountBadge();
 
     // If we just arrived here from the dedicated /admin.html login page,
