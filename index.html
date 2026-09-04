@@ -138,6 +138,7 @@
     background: var(--paper-raised);
     padding: 20px;
     animation: fadeIn 0.3s ease;
+    overflow-x: hidden;
   }
   .loading-splash {
     min-height: 100vh;
@@ -197,7 +198,6 @@
     background: linear-gradient(150deg, #E53238 0%, #F5AF02 36%, #0064D2 72%, #86B817 100%);
     clip-path: polygon(22% 0, 100% 0, 100% 100%, 0% 100%);
     color: #fff;
-    transition: clip-path 0.85s cubic-bezier(0.65, 0, 0.35, 1);
   }
   .auth-card.show-register .auth-welcome-panel {
     clip-path: polygon(0 0, 78% 0, 100% 100%, 0% 100%);
@@ -209,6 +209,13 @@
     inset: 0;
     background: radial-gradient(circle at 75% 15%, rgba(255,255,255,0.25), transparent 55%);
     pointer-events: none;
+  }
+  .auth-welcome-title, .auth-welcome-sub {
+    animation: welcomeFade 0.6s linear both;
+  }
+  @keyframes welcomeFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   .auth-welcome-title {
     font-size: clamp(20px, 4vw, 27px);
@@ -232,6 +239,7 @@
   /* Left panel: white form area */
   .auth-form-panel {
     flex: 1;
+    min-width: 0;
     order: 1;
     display: flex;
     flex-direction: column;
@@ -401,13 +409,13 @@
     justify-content: center;
   }
 
-  /* Slide/fade animation between the login and register forms */
+  /* Uniform fade between the login and register forms */
   .auth-form {
-    animation: authFormIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: authFormIn 0.6s linear;
   }
   @keyframes authFormIn {
-    from { opacity: 0; transform: translateX(10px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @media (max-width: 640px) {
@@ -1015,8 +1023,8 @@
 <div class="auth-page" id="authPage" style="display:none;">
   <div class="auth-card" id="authCard">
     <div class="auth-welcome-panel">
-      <div class="auth-welcome-title" id="authWelcomeTitle">Welcome to ELMS</div>
-      <div class="auth-welcome-sub" id="authWelcomeSub">Log in to keep managing your Amazon-to-eBay listings.</div>
+      <div class="auth-welcome-title" id="authWelcomeTitle">WELCOME<br>TO<br>ELMS</div>
+      <div class="auth-welcome-sub" id="authWelcomeSub">Log in to keep managing<br>your<br>Amazon-to-eBay listings.</div>
     </div>
 
     <div class="auth-form-panel">
@@ -2158,15 +2166,15 @@
     document.getElementById('authCard').classList.remove('show-register');
     document.getElementById('authFormLogin').style.display = 'block';
     document.getElementById('authFormRegister').style.display = 'none';
-    document.getElementById('authWelcomeTitle').textContent = 'Welcome to ELMS';
-    document.getElementById('authWelcomeSub').textContent = 'Log in to keep managing your Amazon-to-eBay listings.';
+    document.getElementById('authWelcomeTitle').innerHTML = 'WELCOME<br>TO<br>ELMS';
+    document.getElementById('authWelcomeSub').innerHTML = 'Log in to keep managing<br>your<br>Amazon-to-eBay listings.';
   }
   function showRegisterForm() {
     document.getElementById('authCard').classList.add('show-register');
     document.getElementById('authFormRegister').style.display = 'block';
     document.getElementById('authFormLogin').style.display = 'none';
-    document.getElementById('authWelcomeTitle').textContent = 'Join ELMS';
-    document.getElementById('authWelcomeSub').textContent = 'Create your account and start listing in minutes.';
+    document.getElementById('authWelcomeTitle').innerHTML = 'JOIN<br>ELMS';
+    document.getElementById('authWelcomeSub').innerHTML = 'Create your account<br>and start listing<br>in minutes.';
   }
 
   document.getElementById('switchToRegister').addEventListener('click', showRegisterForm);
