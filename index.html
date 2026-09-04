@@ -185,7 +185,7 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* Right panel: eBay 4-color gradient, diagonal-cut against the white form panel */
+  /* Right panel: eBay 4-color gradient, straight vertical split against the white form panel */
   .auth-welcome-panel {
     position: relative;
     flex: 0 0 42%;
@@ -194,13 +194,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    padding: 44px 40px;
+    padding: 44px 34px;
     background: linear-gradient(150deg, #E53238 0%, #F5AF02 36%, #0064D2 72%, #86B817 100%);
-    clip-path: polygon(22% 0, 100% 0, 100% 100%, 0% 100%);
     color: #fff;
   }
   .auth-card.show-register .auth-welcome-panel {
-    clip-path: polygon(0 0, 78% 0, 100% 100%, 0% 100%);
     order: 1;
   }
   .auth-welcome-panel::after {
