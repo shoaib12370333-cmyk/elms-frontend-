@@ -135,11 +135,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #05070C;
+    background: var(--paper-raised);
     padding: 20px;
     animation: fadeIn 0.3s ease;
-    overflow: hidden;
-    perspective: 1400px;
   }
   .loading-splash {
     min-height: 100vh;
@@ -163,47 +161,30 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
-  /* ---------- Cyan neon diagonal auth card ---------- */
+  /* ---------- Light eBay-style auth card ---------- */
   .auth-card {
     position: relative;
     display: flex;
     width: 100%;
     max-width: 780px;
     min-height: 480px;
-    background: #0A0E16;
+    background: #fff;
     border-radius: 18px;
     overflow: hidden;
-    transform: rotateX(2deg);
-    box-shadow:
-      0 0 0 1px rgba(34, 211, 238, 0.35),
-      0 0 30px rgba(34, 211, 238, 0.25),
-      0 0 70px rgba(34, 211, 238, 0.12),
-      0 25px 70px rgba(0,0,0,0.6);
-    animation: cardRise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), glowPulse 3.4s ease-in-out infinite 0.6s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 20px 60px rgba(0,0,0,0.1);
+    animation: cardRise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   @keyframes cardRise {
-    from { opacity: 0; transform: rotateX(2deg) translateY(20px) scale(0.96); }
-    to { opacity: 1; transform: rotateX(2deg) translateY(0) scale(1); }
-  }
-  @keyframes glowPulse {
-    0%, 100% {
-      box-shadow:
-        0 0 0 1px rgba(34, 211, 238, 0.35),
-        0 0 30px rgba(34, 211, 238, 0.25),
-        0 0 70px rgba(34, 211, 238, 0.12),
-        0 25px 70px rgba(0,0,0,0.6);
-    }
-    50% {
-      box-shadow:
-        0 0 0 1px rgba(34, 211, 238, 0.55),
-        0 0 42px rgba(34, 211, 238, 0.4),
-        0 0 90px rgba(34, 211, 238, 0.2),
-        0 25px 70px rgba(0,0,0,0.6);
-    }
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* Right panel: cyan/teal gradient with WELCOME text, diagonal-cut against the dark form panel */
+  /* Right panel: eBay 4-color gradient, diagonal-cut against the white form panel */
   .auth-welcome-panel {
     position: relative;
     flex: 0 0 42%;
@@ -211,10 +192,9 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 44px 34px;
-    background: linear-gradient(160deg, #0891B2 0%, #06B6D4 45%, #22D3EE 100%);
+    align-items: flex-start;
+    padding: 44px 40px;
+    background: linear-gradient(150deg, #E53238 0%, #F5AF02 36%, #0064D2 72%, #86B817 100%);
     clip-path: polygon(22% 0, 100% 0, 100% 100%, 0% 100%);
     color: #fff;
     transition: clip-path 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -232,50 +212,46 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 70% 25%, rgba(255,255,255,0.28), transparent 55%);
+    background: radial-gradient(circle at 75% 15%, rgba(255,255,255,0.25), transparent 55%);
     pointer-events: none;
   }
   .auth-welcome-title {
-    font-size: 28px;
+    font-size: 27px;
     font-weight: 800;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.01em;
     margin: 0 0 10px;
-    text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 2px 18px rgba(0,0,0,0.25);
+    text-shadow: 0 2px 14px rgba(0,0,0,0.15);
     position: relative;
     z-index: 1;
-    animation: fadeUp 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
+    animation: fadeUp 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.32s both;
   }
   .auth-welcome-sub {
     font-size: 13px;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.9);
-    max-width: 220px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.92);
+    max-width: 210px;
     position: relative;
     z-index: 1;
-    animation: fadeUp 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.48s both;
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(0); }
+    animation: fadeUp 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.42s both;
   }
 
-  /* Left panel: dark form area */
+  /* Left panel: white form area */
   .auth-form-panel {
     flex: 1;
     order: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 44px 44px 36px;
+    padding: 44px 46px 36px;
     position: relative;
     z-index: 2;
-    background: #0A0E16;
+    background: #fff;
   }
   .auth-card.show-register .auth-form-panel { order: 2; }
 
   .auth-brand {
-    margin-bottom: 18px;
-    animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s both;
   }
   .auth-brand .mark {
     font-family: 'Trebuchet MS', 'Verdana', sans-serif;
@@ -286,18 +262,17 @@
   .auth-brand .tag {
     display: block;
     font-size: 11px;
-    color: #6B7688;
+    color: var(--grey);
     margin-top: 2px;
     letter-spacing: 0.03em;
   }
 
   .auth-heading {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
-    color: #fff;
+    color: var(--ink);
     margin: 0 0 20px;
-    text-shadow: 0 0 16px rgba(34, 211, 238, 0.35);
-    animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.22s both;
+    animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.18s both;
   }
 
   .auth-field-wrap { position: relative; }
@@ -313,54 +288,55 @@
   .auth-form > .auth-google-btn {
     animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
-  .auth-form > *:nth-child(1) { animation-delay: 0.28s; }
-  .auth-form > *:nth-child(2) { animation-delay: 0.33s; }
-  .auth-form > *:nth-child(3) { animation-delay: 0.38s; }
-  .auth-form > *:nth-child(4) { animation-delay: 0.43s; }
-  .auth-form > *:nth-child(5) { animation-delay: 0.48s; }
-  .auth-form > *:nth-child(6) { animation-delay: 0.53s; }
-  .auth-form > *:nth-child(7) { animation-delay: 0.58s; }
-  .auth-form > *:nth-child(8) { animation-delay: 0.62s; }
-  .auth-form > *:nth-child(9) { animation-delay: 0.66s; }
-  .auth-form > *:nth-child(10) { animation-delay: 0.7s; }
-  .auth-form > *:nth-child(11) { animation-delay: 0.74s; }
-  .auth-form > *:nth-child(12) { animation-delay: 0.78s; }
-  .auth-form > *:nth-child(13) { animation-delay: 0.82s; }
-  .auth-form > *:nth-child(14) { animation-delay: 0.86s; }
-  .auth-form > *:nth-child(15) { animation-delay: 0.9s; }
+  .auth-form > *:nth-child(1) { animation-delay: 0.22s; }
+  .auth-form > *:nth-child(2) { animation-delay: 0.26s; }
+  .auth-form > *:nth-child(3) { animation-delay: 0.30s; }
+  .auth-form > *:nth-child(4) { animation-delay: 0.34s; }
+  .auth-form > *:nth-child(5) { animation-delay: 0.38s; }
+  .auth-form > *:nth-child(6) { animation-delay: 0.42s; }
+  .auth-form > *:nth-child(7) { animation-delay: 0.46s; }
+  .auth-form > *:nth-child(8) { animation-delay: 0.50s; }
+  .auth-form > *:nth-child(9) { animation-delay: 0.54s; }
+  .auth-form > *:nth-child(10) { animation-delay: 0.58s; }
+  .auth-form > *:nth-child(11) { animation-delay: 0.62s; }
+  .auth-form > *:nth-child(12) { animation-delay: 0.66s; }
+  .auth-form > *:nth-child(13) { animation-delay: 0.70s; }
+  .auth-form > *:nth-child(14) { animation-delay: 0.74s; }
+  .auth-form > *:nth-child(15) { animation-delay: 0.78s; }
+
   .auth-field-icon {
     position: absolute;
     right: 14px;
     top: calc(50% + 3px);
     transform: translateY(-50%);
-    color: #4B5568;
+    color: var(--grey);
     font-size: 15px;
     pointer-events: none;
     transition: color 0.15s ease;
   }
-  .auth-field-wrap:focus-within .auth-field-icon { color: #22D3EE; }
+  .auth-field-wrap:focus-within .auth-field-icon { color: var(--blue); }
   .auth-field-icon.clickable { pointer-events: auto; cursor: pointer; }
-  .auth-field-icon.clickable:hover { color: #67E8F9; }
+  .auth-field-icon.clickable:hover { color: var(--blue-dark); }
 
   .auth-form .edit-label {
-    color: #7C8598;
+    color: var(--grey);
   }
   .auth-form .editable-input {
     width: 100%;
     padding: 11px 40px 11px 14px;
     margin-top: 5px;
-    background: #12161F;
-    border: 1.5px solid #232A38;
-    color: #fff;
+    background: var(--paper);
+    border: 1.5px solid var(--grey-light);
+    color: var(--ink);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .auth-form .editable-input::placeholder { color: #4B5568; }
+  .auth-form .editable-input::placeholder { color: #A8A8A8; }
   .auth-form .editable-input:focus {
-    border-color: #22D3EE;
-    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18), 0 0 16px rgba(34, 211, 238, 0.25);
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(0,100,210,0.12);
   }
   .auth-form .editable-input.field-error {
-    border-color: #FF6B6E;
+    border-color: var(--red);
     animation: shakeField 0.4s ease;
   }
   @keyframes shakeField {
@@ -372,7 +348,7 @@
   }
   .auth-field-error-msg {
     font-size: 12px;
-    color: #FF6B6E;
+    color: var(--red);
     margin-top: 5px;
     display: none;
   }
@@ -382,13 +358,14 @@
     width: 100%;
     margin-top: 22px;
     height: 46px;
-    background: linear-gradient(90deg, #0891B2, #22D3EE);
-    box-shadow: 0 4px 20px rgba(34, 211, 238, 0.35);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    background: var(--blue);
+    box-shadow: 0 4px 14px rgba(0,100,210,0.25);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
   }
   .auth-submit-btn:hover {
+    background: var(--blue-dark);
     transform: translateY(-1px);
-    box-shadow: 0 6px 26px rgba(34, 211, 238, 0.5);
+    box-shadow: 0 6px 18px rgba(0,100,210,0.32);
   }
   .auth-submit-btn:active { transform: translateY(0); }
   .auth-status {
@@ -396,16 +373,16 @@
     font-size: 13px;
     text-align: center;
   }
-  .auth-status.error { color: #FF6B6E; }
-  .auth-status.success { color: #6EE7B7; }
+  .auth-status.error { color: var(--red); }
+  .auth-status.success { color: var(--green-dark); }
   .auth-switch-line {
     margin-top: 16px;
     font-size: 13px;
-    color: #7C8598;
+    color: var(--grey);
     text-align: center;
   }
   .auth-switch-line a {
-    color: #22D3EE;
+    color: var(--blue);
     text-decoration: none;
     font-weight: 600;
     cursor: pointer;
@@ -415,14 +392,14 @@
     display: flex;
     align-items: center;
     text-align: center;
-    color: #4B5568;
+    color: var(--grey);
     font-size: 12px;
     margin: 18px 0 14px;
   }
   .auth-divider::before, .auth-divider::after {
     content: '';
     flex: 1;
-    border-bottom: 1px solid #232A38;
+    border-bottom: 1px solid var(--line);
   }
   .auth-divider span { padding: 0 12px; }
   .auth-google-btn {
@@ -440,7 +417,7 @@
   }
 
   @media (max-width: 640px) {
-    .auth-card { flex-direction: column; max-width: 380px; min-height: 0; transform: none; }
+    .auth-card { flex-direction: column; max-width: 380px; min-height: 0; }
     .auth-welcome-panel, .auth-card.show-register .auth-welcome-panel {
       clip-path: none !important;
       order: 0 !important;
@@ -1040,7 +1017,7 @@
 <div class="auth-page" id="authPage" style="display:none;">
   <div class="auth-card" id="authCard">
     <div class="auth-welcome-panel">
-      <div class="auth-welcome-title" id="authWelcomeTitle">WELCOME BACK!</div>
+      <div class="auth-welcome-title" id="authWelcomeTitle">Welcome back</div>
       <div class="auth-welcome-sub" id="authWelcomeSub">Log in to keep managing your Amazon-to-eBay listings.</div>
     </div>
 
@@ -2183,14 +2160,14 @@
     document.getElementById('authCard').classList.remove('show-register');
     document.getElementById('authFormLogin').style.display = 'block';
     document.getElementById('authFormRegister').style.display = 'none';
-    document.getElementById('authWelcomeTitle').textContent = 'WELCOME BACK!';
+    document.getElementById('authWelcomeTitle').textContent = 'Welcome back';
     document.getElementById('authWelcomeSub').textContent = 'Log in to keep managing your Amazon-to-eBay listings.';
   }
   function showRegisterForm() {
     document.getElementById('authCard').classList.add('show-register');
     document.getElementById('authFormRegister').style.display = 'block';
     document.getElementById('authFormLogin').style.display = 'none';
-    document.getElementById('authWelcomeTitle').textContent = 'JOIN ELMS';
+    document.getElementById('authWelcomeTitle').textContent = 'Join ELMS';
     document.getElementById('authWelcomeSub').textContent = 'Create your account and start listing in minutes.';
   }
 
@@ -2352,7 +2329,7 @@
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,
       });
-      const googleBtnOptions = { theme: 'filled_black', size: 'medium', shape: 'pill', width: 260 };
+      const googleBtnOptions = { theme: 'outline', size: 'medium', shape: 'pill', width: 260 };
       google.accounts.id.renderButton(document.getElementById('googleSignInDivLogin'), googleBtnOptions);
       google.accounts.id.renderButton(document.getElementById('googleSignInDivRegister'), googleBtnOptions);
     } else {
