@@ -129,6 +129,17 @@
     font-size: 12px;
     color: var(--grey);
   }
+  .sidebar-legal-links {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #A8A8A8;
+  }
+  .sidebar-legal-links a {
+    color: #A8A8A8;
+    text-decoration: none;
+  }
+  .sidebar-legal-links a:hover { color: var(--blue); text-decoration: underline; }
+  .sidebar-legal-links span { margin: 0 4px; }
 
   /* ---------- Auth Page ---------- */
   .auth-page {
@@ -408,6 +419,36 @@
     display: flex;
     justify-content: center;
   }
+  .auth-google-legal-note {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #A8A8A8;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .auth-google-legal-note a { color: #A8A8A8; text-decoration: underline; }
+  .auth-google-legal-note a:hover { color: var(--blue); }
+
+  .auth-terms-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: #6B7688;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+  .auth-terms-checkbox input {
+    margin-top: 2px;
+    width: 15px;
+    height: 15px;
+    accent-color: var(--blue);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .auth-terms-checkbox a { color: var(--blue); text-decoration: none; }
+  .auth-terms-checkbox a:hover { text-decoration: underline; }
 
   /* Uniform fade between the login and register forms */
   .auth-form {
@@ -1193,12 +1234,19 @@
         </div>
         <div class="auth-field-error-msg" id="registerConfirmPasswordError">Passwords do not match.</div>
 
+        <label class="auth-terms-checkbox">
+          <input type="checkbox" id="registerTermsCheckbox" />
+          <span>I agree to the <a href="./terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="./privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span>
+        </label>
+        <div class="auth-field-error-msg" id="registerTermsError">Please accept the Terms of Service and Privacy Policy to continue.</div>
+
         <button type="button" class="primary auth-submit-btn" id="registerSubmitBtn">Sign Up</button>
         <div id="registerStatus" class="auth-status"></div>
         <div class="auth-switch-line">Already have an account? <a id="switchToLogin">Login</a></div>
 
         <div class="auth-divider"><span>or</span></div>
         <div id="googleSignInDivRegister" class="auth-google-btn"></div>
+        <div class="auth-google-legal-note">By continuing with Google, you agree to our <a href="./terms.html" target="_blank" rel="noopener">Terms</a> and <a href="./privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</div>
       </div>
     </div>
   </div>
@@ -1245,7 +1293,14 @@
         Support
       </a>
     </nav>
-    <div class="sidebar-footer" id="sidebarFooter">Signed in</div>
+    <div class="sidebar-footer">
+      <div id="sidebarFooter">Signed in</div>
+      <div class="sidebar-legal-links">
+        <a href="./privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+        <span>&middot;</span>
+        <a href="./terms.html" target="_blank" rel="noopener">Terms</a>
+      </div>
+    </div>
   </aside>
 
   <div class="main">
@@ -2354,6 +2409,9 @@
     .forEach((id) => {
       document.getElementById(id).addEventListener('input', () => clearFieldError(id, `${id}Error`));
     });
+  document.getElementById('registerTermsCheckbox').addEventListener('change', (e) => {
+    if (e.target.checked) document.getElementById('registerTermsError').classList.remove('show');
+  });
 
   // Show/hide password toggles.
   function wirePasswordToggle(toggleId, inputId) {
@@ -2424,6 +2482,15 @@
     if (!email || !emailPattern.test(email)) { showFieldError('registerEmail', 'registerEmailError'); hasError = true; }
     if (!password || password.length < 8) { showFieldError('registerPassword', 'registerPasswordError'); hasError = true; }
     if (!confirmPassword || confirmPassword !== password) { showFieldError('registerConfirmPassword', 'registerConfirmPasswordError'); hasError = true; }
+
+    const termsError = document.getElementById('registerTermsError');
+    if (!document.getElementById('registerTermsCheckbox').checked) {
+      termsError.classList.add('show');
+      hasError = true;
+    } else {
+      termsError.classList.remove('show');
+    }
+
     if (hasError) return;
 
     btn.disabled = true;
