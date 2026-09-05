@@ -11,18 +11,42 @@
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <style>
   :root {
-    --ink: #1F1F1F;
+    --ink: #1B1830;
     --paper: #FFFFFF;
-    --paper-raised: #FAFAFA;
-    --blue: #0064D2;
-    --blue-dark: #004C9E;
-    --green: #86B817;
-    --green-dark: #6B9412;
+    --paper-raised: #F7F6FC;
+
+    /* Modern accent palette (purple / teal / pink) - used throughout the
+       app's UI (buttons, badges, sidebar, cards). The eBay palette below is
+       kept separate and only used for the ELMS logo lettering. */
+    --accent: #7C3AED;
+    --accent-dark: #6025C9;
+    --accent-light: #A78BFA;
+    --teal: #14B8A6;
+    --teal-dark: #0F9488;
+    --pink: #EC4899;
+    --pink-dark: #DB2777;
+    --gradient-primary: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+    --gradient-accent: linear-gradient(135deg, #7C3AED 0%, #14B8A6 100%);
+    --gradient-sidebar: linear-gradient(180deg, #14101F 0%, #241A3D 100%);
+
+    /* Aliased to the new accent colors so existing rules using var(--blue)
+       etc. automatically pick up the new palette without rewriting every rule. */
+    --blue: var(--accent);
+    --blue-dark: var(--accent-dark);
+    --green: var(--teal);
+    --green-dark: var(--teal-dark);
+
+    /* Original eBay brand colors - kept only for the ELMS logo lettering. */
+    --ebay-red: #E53238;
+    --ebay-blue: #0064D2;
+    --ebay-yellow: #F5AF02;
+    --ebay-green: #86B817;
+
     --yellow: #F5AF02;
-    --red: #E53238;
+    --red: #EF4444;
     --grey: #767676;
     --grey-light: #E5E5E5;
-    --line: #E8E8E8;
+    --line: #EBE8F5;
   }
 
   * { box-sizing: border-box; }
@@ -55,8 +79,8 @@
   .sidebar {
     width: 220px;
     flex-shrink: 0;
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--gradient-sidebar);
+    color: #fff;
     display: flex;
     flex-direction: column;
     padding: 28px 20px;
@@ -67,6 +91,9 @@
     align-items: baseline;
     gap: 6px;
     margin-bottom: 40px;
+    background: rgba(255,255,255,0.06);
+    padding: 10px 12px;
+    border-radius: 10px;
   }
   .sidebar-brand .mark {
     font-family: 'Trebuchet MS', 'Verdana', sans-serif;
@@ -76,7 +103,7 @@
   }
   .sidebar-brand .tag {
     font-size: 11px;
-    color: var(--grey);
+    color: rgba(255,255,255,0.55);
     letter-spacing: 0.02em;
   }
   .sidebar-nav {
@@ -91,20 +118,20 @@
     padding: 10px 12px;
     border-radius: 8px;
     text-decoration: none;
-    color: var(--grey);
+    color: rgba(255,255,255,0.65);
     font-size: 14px;
     font-weight: 500;
     transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
   }
   .sidebar-nav a:hover {
-    background: var(--paper-raised);
-    color: var(--ink);
+    background: rgba(255,255,255,0.08);
+    color: #fff;
     transform: translateX(2px);
   }
   .sidebar-nav a.active {
-    background: var(--blue);
+    background: var(--gradient-primary);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(0,100,210,0.25);
+    box-shadow: 0 4px 14px rgba(124,58,237,0.4);
   }
   .sidebar-nav .icon {
     width: 16px;
@@ -113,13 +140,14 @@
   }
   .nav-badge {
     margin-left: auto;
-    background: var(--red);
+    background: var(--gradient-primary);
     color: #fff;
     font-size: 11px;
     font-weight: 700;
     padding: 1px 7px;
     border-radius: 999px;
     line-height: 1.5;
+    box-shadow: 0 2px 6px rgba(236,72,153,0.4);
   }
   .sidebar-nav a.active .nav-badge {
     background: rgba(255,255,255,0.25);
@@ -127,20 +155,20 @@
   .sidebar-footer {
     margin-top: auto;
     padding-top: 20px;
-    border-top: 1px solid var(--line);
+    border-top: 1px solid rgba(255,255,255,0.1);
     font-size: 12px;
-    color: var(--grey);
+    color: rgba(255,255,255,0.5);
   }
   .sidebar-legal-links {
     margin-top: 8px;
     font-size: 11px;
-    color: #A8A8A8;
+    color: rgba(255,255,255,0.35);
   }
   .sidebar-legal-links a {
-    color: #A8A8A8;
+    color: rgba(255,255,255,0.45);
     text-decoration: none;
   }
-  .sidebar-legal-links a:hover { color: var(--blue); text-decoration: underline; }
+  .sidebar-legal-links a:hover { color: #fff; text-decoration: underline; }
   .sidebar-legal-links span { margin: 0 4px; }
 
   /* ---------- Auth Page ---------- */
@@ -571,7 +599,7 @@
 
   /* ---------- Global primary button (used across the whole app) ---------- */
   .primary, .lane-row button.primary {
-    background: var(--blue);
+    background: var(--gradient-primary);
     color: #fff;
     border: none;
     padding: 0 26px;
@@ -582,13 +610,13 @@
     cursor: pointer;
     font-family: inherit;
     white-space: nowrap;
-    transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
-    box-shadow: 0 2px 8px rgba(0,100,210,0.18);
+    transition: filter 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: 0 4px 14px rgba(124,58,237,0.3);
   }
   .primary:hover, .lane-row button.primary:hover {
-    background: var(--blue-dark);
+    filter: brightness(1.08);
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0,100,210,0.28);
+    box-shadow: 0 6px 20px rgba(124,58,237,0.4);
   }
   .primary:active, .lane-row button.primary:active { transform: translateY(0); }
   .primary:disabled, .lane-row button.primary:disabled {
@@ -773,7 +801,7 @@
     width: 140px;
   }
   .btn-publish {
-    background: var(--blue-dark);
+    background: var(--gradient-accent);
     color: #fff;
     border: none;
     padding: 11px 22px;
@@ -782,9 +810,11 @@
     font-weight: 700;
     cursor: pointer;
     font-family: inherit;
+    transition: filter 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: 0 3px 10px rgba(20,184,166,0.3);
   }
-  .btn-publish:hover { background: #003B7A; }
-  .btn-publish:disabled { background: var(--grey-light); cursor: not-allowed; }
+  .btn-publish:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .btn-publish:disabled { background: var(--grey-light); cursor: not-allowed; transform: none; box-shadow: none; }
 
   #importStatus { margin-top: 12px; font-size: 13px; width: 100%; }
   #importStatus.success { color: var(--green-dark); font-weight: 600; }
@@ -934,13 +964,13 @@
     border-radius: 999px;
     text-transform: capitalize;
   }
-  .status-badge.published { background: #EEF6DF; color: var(--green-dark); }
+  .status-badge.published { background: #E6FBF7; color: var(--teal-dark); }
   .status-badge.draft { background: #FEF3DA; color: #8A6300; }
   .status-badge.error { background: #FDECEC; color: var(--red); }
   .status-badge.pending { background: #FEF3DA; color: #8A6300; }
-  .status-badge.ordered_from_amazon { background: #E5F0FC; color: var(--blue-dark); }
-  .status-badge.shipped { background: #E5F0FC; color: var(--blue-dark); }
-  .status-badge.delivered { background: #EEF6DF; color: var(--green-dark); }
+  .status-badge.ordered_from_amazon { background: #F1EBFC; color: var(--accent-dark); }
+  .status-badge.shipped { background: #F1EBFC; color: var(--accent-dark); }
+  .status-badge.delivered { background: #E6FBF7; color: var(--teal-dark); }
 
   /* ---------- Pricing (Buy Credits) ---------- */
   .pricing-grid {
@@ -975,7 +1005,7 @@
     top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--blue);
+    background: var(--gradient-primary);
     color: #fff;
     font-size: 11px;
     font-weight: 700;
