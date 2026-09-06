@@ -1817,6 +1817,373 @@
   .character-scene.shy .char-secretkeeper .char-flip{transform:none;}
   .character-scene.shy .char-detective .char-eye{transform:none!important;}
 
+
+/* =========================================================
+   FINAL CUTE SCENE POLISH
+   - eBay-inspired red/blue/yellow/green characters
+   - illustrated road/ground
+   - whole-body jiggle, no eye tracking
+   - shy mode keeps every character visible
+   - different entrance directions
+   ========================================================= */
+
+.auth-character-zone{
+  position:relative;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255,255,255,.55), transparent 48%),
+    #f1f1f1;
+}
+
+.character-scene{
+  position:relative;
+  width:min(100%, 560px);
+  height:365px;
+  display:block;
+  overflow:visible;
+  isolation:isolate;
+}
+
+.character-scene .mini-char{
+  position:absolute;
+  bottom:70px;
+  transform-origin:50% 100%;
+  transition:
+    transform .65s cubic-bezier(.2,.8,.2,1),
+    filter .35s ease;
+  will-change:transform;
+}
+
+.character-scene .char-shadow{
+  bottom:-13px;
+  width:76%;
+  height:16px;
+  opacity:.28;
+  filter:blur(2px);
+  z-index:-1;
+}
+
+/* Ground */
+.scene-ground{
+  position:absolute;
+  left:2%;
+  right:2%;
+  bottom:0;
+  height:105px;
+  z-index:0;
+  pointer-events:none;
+}
+.scene-ground::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:34px;
+  border-radius:50% 50% 12px 12px;
+  background:#dfe7d9;
+  box-shadow:inset 0 5px 0 rgba(255,255,255,.55);
+}
+.scene-grass{
+  position:absolute;
+  bottom:31px;
+  width:88px;
+  height:26px;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 25% 70%, #a9c878 0 8%, transparent 9%),
+    radial-gradient(ellipse at 48% 55%, #91bb55 0 8%, transparent 9%),
+    radial-gradient(ellipse at 72% 72%, #a9c878 0 7%, transparent 8%),
+    #c9dcae;
+}
+.scene-grass-left{left:1%;}
+.scene-grass-right{right:1%;}
+.scene-road{
+  position:absolute;
+  left:7%;
+  right:7%;
+  bottom:8px;
+  height:70px;
+  border-radius:50% 50% 16px 16px;
+  background:linear-gradient(#55575c,#47494e);
+  box-shadow:
+    inset 0 8px 12px rgba(255,255,255,.07),
+    0 8px 14px rgba(30,30,30,.12);
+  transform:perspective(220px) rotateX(7deg);
+}
+.scene-road::before,
+.scene-road::after{
+  content:"";
+  position:absolute;
+  top:4px;
+  bottom:4px;
+  width:5px;
+  border-radius:5px;
+  background:rgba(255,255,255,.12);
+}
+.scene-road::before{left:12px;}
+.scene-road::after{right:12px;}
+.road-line{
+  position:absolute;
+  top:50%;
+  width:54px;
+  height:5px;
+  border-radius:5px;
+  background:#f8d75a;
+  transform:translateY(-50%);
+  opacity:.9;
+}
+.road-line-1{left:17%;}
+.road-line-2{left:44%;}
+.road-line-3{right:17%;}
+.scene-pebble{
+  position:absolute;
+  width:7px;
+  height:4px;
+  border-radius:50%;
+  background:#b5b9ae;
+  bottom:45px;
+}
+.pebble-1{left:14%;}
+.pebble-2{left:83%;width:5px;}
+.pebble-3{left:50%;bottom:39px;width:4px;}
+
+/* Character placement: a compact friendly group sitting on the road. */
+.shape-orange{
+  left:7% !important;
+  width:300px;
+  height:138px;
+  z-index:4;
+}
+.shape-purple{
+  left:31% !important;
+  width:155px;
+  height:285px;
+  z-index:2;
+}
+.shape-pink{
+  left:49% !important;
+  width:108px;
+  height:220px;
+  z-index:3;
+}
+.shape-yellow{
+  left:65% !important;
+  width:104px;
+  height:168px;
+  z-index:5;
+}
+
+/* Cute faces: fixed eyes; the whole character turns instead. */
+.character-scene .char-eye,
+.character-scene .char-pupil{
+  transition:none !important;
+}
+.character-scene .char-pupil{
+  transform:none !important;
+}
+.character-scene .char-eye.blinking{
+  animation:none !important;
+}
+.character-scene .shape-body{
+  filter:saturate(1.04);
+}
+.character-scene .shape-body::after{
+  content:"";
+  position:absolute;
+  width:13px;
+  height:7px;
+  left:50%;
+  top:74px;
+  border-radius:50%;
+  background:rgba(255,120,140,.24);
+  box-shadow:-28px 0 0 rgba(255,120,140,.18), 28px 0 0 rgba(255,120,140,.18);
+  opacity:.85;
+  pointer-events:none;
+}
+
+/* Individual face refinements */
+.shape-orange .char-eyes{top:64px !important;left:27% !important;gap:12px;}
+.shape-orange .char-eye{transform:none !important;}
+.shape-orange .char-eyes::after{
+  width:27px !important;
+  height:12px !important;
+  top:25px !important;
+  border-bottom:4px solid #111 !important;
+}
+.shape-purple .char-eyes{top:35px !important;gap:11px;}
+.shape-purple .shape-mouth{
+  position:absolute;
+  left:50%;
+  top:70px;
+  transform:translateX(-50%);
+  width:24px;
+  height:13px;
+  border-bottom:4px solid #111;
+  border-radius:0 0 20px 20px;
+}
+.shape-pink .char-eyes{top:42px !important;gap:10px;}
+.shape-pink .char-eyes::after{
+  width:18px;
+  height:9px;
+  top:25px;
+  border-bottom:3px solid #111;
+}
+.shape-yellow .char-eyes{top:31px !important;left:62% !important;}
+.shape-yellow .char-eyes .char-eye:first-child{display:block !important;}
+.shape-yellow .shape-line{
+  left:38% !important;
+  top:67px !important;
+  width:58px !important;
+  height:5px !important;
+  border-radius:5px !important;
+}
+
+/* Entrance: each one arrives from a different direction. */
+.character-scene.entering .shape-orange{
+  animation:sceneEnterLeft .85s cubic-bezier(.18,.86,.25,1) both;
+}
+.character-scene.entering .shape-purple{
+  animation:sceneEnterTop .95s cubic-bezier(.18,.86,.25,1) .08s both;
+}
+.character-scene.entering .shape-pink{
+  animation:sceneEnterBottom .90s cubic-bezier(.18,.86,.25,1) .16s both;
+}
+.character-scene.entering .shape-yellow{
+  animation:sceneEnterRight .85s cubic-bezier(.18,.86,.25,1) .24s both;
+}
+@keyframes sceneEnterLeft{
+  0%{opacity:0;transform:translateX(-230px) rotate(-16deg) scale(.92)}
+  68%{opacity:1;transform:translateX(13px) rotate(3deg) scale(1.02)}
+  100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}
+}
+@keyframes sceneEnterTop{
+  0%{opacity:0;transform:translateY(-330px) rotate(9deg) scale(.9)}
+  70%{opacity:1;transform:translateY(12px) rotate(-2deg) scale(1.02)}
+  100%{opacity:1;transform:translateY(0) rotate(0) scale(1)}
+}
+@keyframes sceneEnterBottom{
+  0%{opacity:0;transform:translateY(240px) rotate(-8deg) scale(.92)}
+  70%{opacity:1;transform:translateY(-10px) rotate(3deg) scale(1.02)}
+  100%{opacity:1;transform:translateY(0) rotate(0) scale(1)}
+}
+@keyframes sceneEnterRight{
+  0%{opacity:0;transform:translateX(210px) rotate(14deg) scale(.92)}
+  70%{opacity:1;transform:translateX(-12px) rotate(-3deg) scale(1.02)}
+  100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}
+}
+
+/* Idle jiggle: the complete body moves, never the pupils. */
+.character-scene.entered .shape-orange{
+  animation:sceneJiggleRed 3.7s ease-in-out infinite;
+}
+.character-scene.entered .shape-purple{
+  animation:sceneJiggleBlue 4.2s ease-in-out .15s infinite;
+}
+.character-scene.entered .shape-pink{
+  animation:sceneJiggleYellow 3.5s ease-in-out .30s infinite;
+}
+.character-scene.entered .shape-yellow{
+  animation:sceneJiggleGreen 4s ease-in-out .45s infinite;
+}
+@keyframes sceneJiggleRed{
+  0%,100%{transform:translateY(0) rotate(0)}
+  25%{transform:translateY(-3px) rotate(-1.2deg)}
+  50%{transform:translateY(-9px) rotate(.8deg)}
+  75%{transform:translateY(-2px) rotate(-.5deg)}
+}
+@keyframes sceneJiggleBlue{
+  0%,100%{transform:translateY(0) rotate(0)}
+  30%{transform:translateY(-7px) rotate(1deg)}
+  55%{transform:translateY(-13px) rotate(-1.5deg)}
+  80%{transform:translateY(-4px) rotate(.7deg)}
+}
+@keyframes sceneJiggleYellow{
+  0%,100%{transform:translateY(0) rotate(0)}
+  35%{transform:translateY(-4px) rotate(-1.5deg)}
+  60%{transform:translateY(-10px) rotate(1deg)}
+  82%{transform:translateY(-2px) rotate(-.5deg)}
+}
+@keyframes sceneJiggleGreen{
+  0%,100%{transform:translateY(0) rotate(0)}
+  28%{transform:translateY(-5px) rotate(1.3deg)}
+  55%{transform:translateY(-11px) rotate(-1.2deg)}
+  78%{transform:translateY(-3px) rotate(.7deg)}
+}
+
+/* Password focus: all four stay visible and shyly turn away. */
+.character-scene.shy.entered .shape-orange,
+.character-scene.shy.entered .shape-purple,
+.character-scene.shy.entered .shape-pink,
+.character-scene.shy.entered .shape-yellow,
+.character-scene.peeking.entered .shape-orange,
+.character-scene.peeking.entered .shape-purple,
+.character-scene.peeking.entered .shape-pink,
+.character-scene.peeking.entered .shape-yellow{
+  animation:none !important;
+}
+.character-scene.shy .shape-orange{
+  transform:translateX(-13px) rotate(-11deg) !important;
+}
+.character-scene.shy .shape-purple{
+  transform:translateY(9px) rotate(7deg) !important;
+}
+.character-scene.shy .shape-pink{
+  transform:translateY(7px) rotate(-9deg) !important;
+}
+.character-scene.shy .shape-yellow{
+  transform:translateX(13px) rotate(11deg) !important;
+}
+
+/* Show password = an even more bashful pose, but nobody disappears. */
+.character-scene.peeking .shape-orange{
+  transform:translateX(-23px) rotate(-16deg) !important;
+}
+.character-scene.peeking .shape-purple{
+  transform:translateY(14px) rotate(11deg) !important;
+}
+.character-scene.peeking .shape-pink{
+  transform:translateY(11px) rotate(-13deg) !important;
+}
+.character-scene.peeking .shape-yellow{
+  transform:translateX(23px) rotate(15deg) !important;
+}
+
+/* Make the shy reaction visibly directional without moving the pupils. */
+.character-scene.shy .shape-orange .char-eyes{
+  transform:translateX(-50%) rotate(-10deg) !important;
+}
+.character-scene.shy .shape-purple .char-eyes{
+  transform:translateX(-50%) rotate(7deg) !important;
+}
+.character-scene.shy .shape-pink .char-eyes{
+  transform:translateX(-50%) rotate(-9deg) !important;
+}
+.character-scene.shy .shape-yellow .char-eyes{
+  transform:translateX(-50%) rotate(11deg) !important;
+}
+
+/* A tiny bounce on the ground makes the scene feel alive. */
+.character-scene.entered .scene-ground{
+  animation:groundBreath 4.5s ease-in-out infinite;
+}
+@keyframes groundBreath{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(1px)}
+}
+
+@media (max-width:760px){
+  .character-scene{
+    height:300px;
+    transform:scale(.82);
+    transform-origin:center bottom;
+    margin-bottom:-35px;
+  }
+  .auth-character-zone{
+    min-height:330px;
+    padding-bottom:0;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1831,6 +2198,19 @@
   <div class="auth-shell" id="authShell">
     <div class="auth-character-zone">
       <div class="character-scene" id="authCharacterScene">
+
+        <div class="scene-ground" aria-hidden="true">
+  <div class="scene-grass scene-grass-left"></div>
+  <div class="scene-grass scene-grass-right"></div>
+  <div class="scene-road">
+    <span class="road-line road-line-1"></span>
+    <span class="road-line road-line-2"></span>
+    <span class="road-line road-line-3"></span>
+  </div>
+  <span class="scene-pebble pebble-1"></span>
+  <span class="scene-pebble pebble-2"></span>
+  <span class="scene-pebble pebble-3"></span>
+</div>
 
         <div class="mini-char shape-orange char-detective" id="charDetective">
           <div class="char-shadow"></div>
@@ -2033,6 +2413,12 @@
     });
 
     var authPage=document.getElementById('authPage');
+    if (authPage) {
+      var authDisplayObserver = new MutationObserver(function(){
+        if (authPage.style.display !== 'none') playEntrance();
+      });
+      authDisplayObserver.observe(authPage, {attributes:true, attributeFilter:['style']});
+    }
     if(authPage){
       var pageObserver=new MutationObserver(function(){
         if(authPage.style.display==='flex') playEntrance();
