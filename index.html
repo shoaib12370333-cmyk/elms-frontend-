@@ -173,21 +173,14 @@
 
   /* ---------- Auth Page ---------- */
   .auth-page {
-    position: relative;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background:
-      radial-gradient(circle at 16% 18%, rgba(229,50,56,0.09), transparent 42%),
-      radial-gradient(circle at 84% 14%, rgba(0,100,210,0.09), transparent 42%),
-      radial-gradient(circle at 18% 88%, rgba(245,175,2,0.10), transparent 42%),
-      radial-gradient(circle at 86% 86%, rgba(134,184,23,0.09), transparent 42%),
-      var(--paper-raised);
+    background: var(--paper-raised);
     padding: 20px;
     animation: fadeIn 0.3s ease;
     overflow-x: hidden;
-    overflow-y: auto;
   }
   .loading-splash {
     min-height: 100vh;
@@ -216,18 +209,17 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* ---------- Split-screen auth card ---------- */
-  .auth-shell {
+  /* ---------- Light eBay-style auth card ---------- */
+  .auth-card {
     position: relative;
-    z-index: 1;
     display: flex;
     width: 100%;
-    max-width: 880px;
-    min-height: 540px;
+    max-width: 780px;
+    min-height: 480px;
     background: #fff;
-    border-radius: 28px;
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 26px 60px rgba(27,24,48,0.14);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 20px 60px rgba(0,0,0,0.1);
     animation: cardRise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   @keyframes cardRise {
@@ -235,306 +227,70 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* ---------- Character side ---------- */
-  .auth-character-zone {
-    flex: 0 0 42%;
+  /* Right panel: eBay 4-color gradient, straight vertical split against the white form panel */
+  .auth-welcome-panel {
     position: relative;
+    flex: 0 0 42%;
+    order: 2;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 22px;
-    padding: 40px 28px;
-    overflow: hidden;
-    background: radial-gradient(circle at 50% 28%, rgba(124,58,237,0.07), transparent 55%), var(--paper-raised);
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 54px 34px;
+    background: linear-gradient(150deg, #E53238 0%, #F5AF02 36%, #0064D2 72%, #86B817 100%);
+    color: #fff;
   }
-
-  .character-scene {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 10px;
+  .auth-card.show-register .auth-welcome-panel {
+    order: 1;
   }
-  @keyframes charBob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
-
-  .mini-char { position: relative; flex: 0 0 auto; }
-  .char-shadow {
-    position: absolute;
-    bottom: -6px;
-    left: 50%;
-    width: 70%;
-    height: 9px;
-    transform: translateX(-50%);
-    background: radial-gradient(ellipse, rgba(27,24,48,0.16), transparent 70%);
-    border-radius: 50%;
-  }
-
-  /* Shared face parts for all four characters - only body shape, color,
-     signature prop and the "shy" reaction below differ between them. */
-  .char-eyes { display: flex; gap: 8px; position: relative; z-index: 2; }
-  .char-eye {
-    width: 15px;
-    height: 18px;
-    background: #FFFDF9;
-    border-radius: 50%;
-    border: 1.5px solid rgba(27,24,48,0.08);
-    position: relative;
-    overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.07);
-    transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .char-eye.blinking { animation: charBlink 0.22s ease-in-out; }
-  @keyframes charBlink {
-    0%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(0.12); }
-  }
-  .char-pupil {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 7px;
-    height: 7px;
-    margin: -3.5px 0 0 -3.5px;
-    background: var(--ink);
-    border-radius: 50%;
-  }
-  .char-pupil::after {
+  .auth-welcome-panel::after {
     content: '';
     position: absolute;
-    top: -1.8px;
-    left: -0.3px;
-    width: 2px;
-    height: 2px;
-    border-radius: 50%;
-    background: #fff;
-    opacity: 0.9;
-  }
-  .char-mouth {
-    width: 13px;
-    height: 7px;
-    margin-top: 3px;
-    border-bottom: 2px solid rgba(255,255,255,0.55);
-    border-radius: 0 0 13px 13px;
-  }
-
-  /* ---- Detective (red): scans left and right, tips his hat down over
-     his eyes the instant a password field is focused. ---- */
-  .char-detective { width: 64px; height: 150px; animation: charBob 4s ease-in-out infinite; }
-  .char-detective .char-body {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 56px;
-    height: 96px;
-    transform: translateX(-50%);
-    background: var(--ebay-red);
-    border-radius: 20px 20px 26px 26px;
-    box-shadow: inset 0 -10px 16px rgba(0,0,0,0.14), inset 0 8px 12px rgba(255,255,255,0.2), 0 10px 16px rgba(27,24,48,0.14);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 26px;
-  }
-  .char-hat {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 48px;
-    height: 30px;
-    transform: translateX(-50%);
-    transform-origin: 50% 70%;
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-    z-index: 3;
-  }
-  .char-hat-crown {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 28px;
-    height: 18px;
-    transform: translateX(-50%);
-    background: var(--ink);
-    border-radius: 8px 8px 3px 3px;
-  }
-  .char-hat-brim {
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    width: 48px;
-    height: 9px;
-    transform: translateX(-50%);
-    background: var(--ink);
-    border-radius: 50%;
-  }
-  .character-scene.shy .char-detective .char-hat { transform: translateX(-50%) translateY(64px) rotate(8deg); }
-  .character-scene.shy .char-detective .char-eye { transform: scaleY(0.2); }
-  .character-scene.shy.peeking .char-detective .char-hat { transform: translateX(-50%) translateY(26px) rotate(4deg); }
-  .character-scene.shy.peeking .char-detective .char-eye:last-child { transform: scaleY(0.8); }
-
-  /* ---- Developer (blue): heads-down behind a laptop; ducks lower and
-     glances aside the instant a password field is focused. ---- */
-  .char-developer { width: 66px; height: 118px; animation: charBob 4s ease-in-out infinite 0.3s; }
-  .char-peek {
-    position: absolute;
-    bottom: 26px;
-    left: 50%;
-    width: 56px;
-    height: 84px;
-    transform: translateX(-50%);
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-    z-index: 1;
-  }
-  .char-developer .char-body {
-    position: absolute;
     inset: 0;
-    background: var(--ebay-blue);
-    border-radius: 24px;
-    box-shadow: inset 0 -10px 16px rgba(0,0,0,0.14), inset 0 8px 12px rgba(255,255,255,0.2), 0 10px 16px rgba(27,24,48,0.14);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 16px;
+    background: radial-gradient(circle at 75% 15%, rgba(255,255,255,0.25), transparent 55%);
+    pointer-events: none;
   }
-  .char-laptop {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 54px;
-    transform: translateX(-50%);
-    z-index: 2;
+  .auth-welcome-title, .auth-welcome-sub {
+    animation: welcomeFade 1.4s linear both;
   }
-  .char-laptop-screen {
-    width: 44px;
-    height: 30px;
-    margin: 0 auto;
-    background: var(--ink);
-    border-radius: 4px 4px 0 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
+  @keyframes welcomeFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
-  .char-code-line { display: block; width: 26px; height: 2px; border-radius: 1px; background: rgba(255,255,255,0.35); }
-  .char-code-line:nth-child(2) { width: 18px; }
-  .char-laptop-base { width: 54px; height: 6px; margin: 0 auto; background: #FFFDF9; border-radius: 0 0 5px 5px; }
-  .character-scene.shy .char-developer .char-peek { transform: translateX(-50%) translateY(50px) rotate(10deg); }
-  .character-scene.shy.peeking .char-developer .char-peek { transform: translateX(-50%) translateY(30px) rotate(9deg); }
-
-  /* ---- Security Guard (yellow): stands watch behind his shield; turns
-     his face away the instant a password field is focused. ---- */
-  .char-guard { width: 66px; height: 126px; animation: charBob 4s ease-in-out infinite 0.6s; }
-  .char-guard .char-body {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 58px;
-    height: 70px;
-    transform: translateX(-50%);
-    background: var(--ebay-yellow);
-    border-radius: 22px;
-    box-shadow: inset 0 -10px 16px rgba(0,0,0,0.14), inset 0 8px 12px rgba(255,255,255,0.2), 0 10px 16px rgba(27,24,48,0.14);
-  }
-  .char-shield {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    width: 34px;
-    height: 42px;
-    transform: translateX(-50%);
-    background: #FFFDF9;
-    border: 1.5px solid rgba(27,24,48,0.1);
-    border-radius: 50% 50% 12% 12% / 60% 60% 16% 16%;
-    z-index: 2;
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .char-shield-stripe {
-    position: absolute;
-    top: 46%;
-    left: 15%;
-    width: 70%;
-    height: 4px;
-    background: var(--ebay-yellow);
-    border-radius: 2px;
-  }
-  .char-guard .char-head {
-    position: absolute;
-    bottom: 62px;
-    left: 50%;
-    width: 44px;
-    height: 44px;
-    transform: translateX(-50%);
-    transform-origin: 50% 80%;
-    background: var(--ebay-yellow);
-    border-radius: 50%;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(27,24,48,0.12);
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .character-scene.shy .char-guard .char-head { transform: translateX(-50%) rotate(-32deg); }
-  .character-scene.shy .char-guard .char-shield { transform: translateX(-50%) translateY(-6px) scale(1.06); }
-  .character-scene.shy.peeking .char-guard .char-head { transform: translateX(-50%) rotate(-14deg); }
-
-  /* ---- Secret Keeper (green): the shyest of the four - turns all the
-     way around to show his back the instant a password field is focused. ---- */
-  .char-secretkeeper { width: 58px; height: 96px; perspective: 320px; animation: charBob 4s ease-in-out infinite 0.9s; }
-  .char-flip {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 52px;
-    height: 78px;
-    transform: translateX(-50%);
-    transform-style: preserve-3d;
-    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .char-face, .char-back {
-    position: absolute;
-    inset: 0;
-    background: var(--ebay-green);
-    border-radius: 26px 26px 22px 22px;
-    box-shadow: inset 0 -10px 16px rgba(0,0,0,0.14), inset 0 8px 12px rgba(255,255,255,0.2), 0 10px 16px rgba(27,24,48,0.14);
-    backface-visibility: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 20px;
-  }
-  .char-back { transform: rotateY(180deg); }
-  .char-back-seam { display: block; width: 2px; height: 44px; margin-top: 6px; background: rgba(0,0,0,0.1); border-radius: 1px; }
-  .character-scene.shy .char-secretkeeper .char-flip { transform: translateX(-50%) rotateY(180deg); }
-  .character-scene.shy.peeking .char-secretkeeper .char-flip { transform: translateX(-50%) rotateY(100deg); }
-
-  .auth-caption {
+  .auth-welcome-title {
+    font-size: clamp(26px, 5.5vw, 36px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+    line-height: 1.15;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.15);
     position: relative;
     z-index: 1;
-    max-width: 260px;
-    text-align: center;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--ink);
-    line-height: 1.5;
-    animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
+    overflow-wrap: break-word;
+  }
+  .auth-welcome-sub {
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.92);
+    max-width: 210px;
+    position: relative;
+    z-index: 1;
   }
 
-  /* ---------- Form side ---------- */
-  .auth-form-zone {
+  /* Left panel: white form area */
+  .auth-form-panel {
     flex: 1;
     min-width: 0;
+    order: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 44px 48px;
+    padding: 44px 46px 36px;
     position: relative;
     z-index: 2;
     background: #fff;
   }
+  .auth-card.show-register .auth-form-panel { order: 2; }
 
   .auth-brand {
     margin-bottom: 20px;
@@ -555,17 +311,11 @@
   }
 
   .auth-heading {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     color: var(--ink);
-    margin: 0 0 4px;
+    margin: 0 0 20px;
     animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.18s both;
-  }
-  .auth-subheading {
-    font-size: 13px;
-    color: var(--grey);
-    margin: 0 0 22px;
-    animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both;
   }
 
   .auth-field-wrap { position: relative; }
@@ -600,16 +350,14 @@
   .auth-field-icon {
     position: absolute;
     right: 14px;
-    top: 50%;
+    top: calc(50% + 3px);
     transform: translateY(-50%);
-    display: flex;
-    align-items: center;
     color: var(--grey);
     font-size: 15px;
     pointer-events: none;
     transition: color 0.15s ease;
   }
-  .auth-field-wrap:focus-within .auth-field-icon { color: var(--accent); }
+  .auth-field-wrap:focus-within .auth-field-icon { color: var(--blue); }
   .auth-field-icon.clickable { pointer-events: auto; cursor: pointer; }
   .auth-field-icon.clickable:hover { color: var(--blue-dark); }
 
@@ -618,19 +366,17 @@
   }
   .auth-form .editable-input {
     width: 100%;
-    padding: 12px 40px 12px 14px;
+    padding: 11px 40px 11px 14px;
     margin-top: 5px;
     background: var(--paper);
     border: 1.5px solid var(--grey-light);
-    border-radius: 10px;
     color: var(--ink);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .auth-form .editable-input::placeholder { color: #A8A8A8; }
   .auth-form .editable-input:focus {
-    border-color: var(--accent);
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(124,58,237,0.14), 0 0 18px rgba(236,72,153,0.08);
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(0,100,210,0.12);
   }
   .auth-form .editable-input.field-error {
     border-color: var(--red);
@@ -652,28 +398,17 @@
   .auth-field-error-msg.show { display: block; }
 
   .auth-submit-btn {
-    position: relative;
-    overflow: hidden;
     width: 100%;
     margin-top: 22px;
-    height: 48px;
-    border-radius: 10px;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+    height: 46px;
+    background: var(--blue);
+    box-shadow: 0 4px 14px rgba(0,100,210,0.25);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
   }
-  .auth-submit-btn::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -60%;
-    width: 40%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
-    transform: skewX(-20deg);
-    transition: left 0.55s ease;
-  }
-  .auth-submit-btn:hover::before { left: 130%; }
   .auth-submit-btn:hover {
-    filter: brightness(1.08);
+    background: var(--blue-dark);
     transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0,100,210,0.32);
   }
   .auth-submit-btn:active { transform: translateY(0); }
   .auth-status {
@@ -754,11 +489,18 @@
     to { opacity: 1; }
   }
 
-  @media (max-width: 760px) {
-    .auth-shell { flex-direction: column; max-width: 440px; min-height: 0; border-radius: 22px; }
-    .auth-character-zone { padding: 30px 22px 16px; }
-    .character-scene { transform: scale(0.86); transform-origin: bottom center; }
-    .auth-form-zone { padding: 8px 26px 30px; }
+  @media (max-width: 640px) {
+    .auth-card { flex-direction: column; max-width: 380px; min-height: 0; border-radius: 16px; }
+    .auth-welcome-panel, .auth-card.show-register .auth-welcome-panel {
+      clip-path: none !important;
+      order: 0 !important;
+      padding: 30px 28px 26px;
+      align-items: flex-start;
+      min-height: 130px;
+    }
+    .auth-welcome-title { font-size: 26px; }
+    .auth-welcome-sub { max-width: none; font-size: 12.5px; }
+    .auth-form-panel, .auth-card.show-register .auth-form-panel { order: 1 !important; padding: 26px 28px 30px; }
   }
 
   .main {
@@ -1540,650 +1282,6 @@
     .main-image { width: 100%; height: 240px; }
     .pricing-grid { grid-template-columns: 1fr; }
   }
-
-
-  /* ---------- Reference login design: four soft geometric characters ---------- */
-  .auth-shell{
-    max-width:1000px;
-    min-height:620px;
-    border-radius:18px;
-    box-shadow:0 3px 18px rgba(0,0,0,.10);
-  }
-  .auth-character-zone{
-    flex:0 0 58%;
-    padding:40px 36px;
-    background:#eeeeee;
-    gap:0;
-  }
-  .auth-form-zone{
-    padding:58px 68px 44px;
-    background:#fff;
-  }
-  .auth-brand{display:none;}
-  .auth-heading{
-    text-align:center;
-    font-size:31px;
-    font-weight:500;
-    letter-spacing:-.04em;
-    color:#111;
-    margin-bottom:6px;
-  }
-  .auth-subheading{
-    text-align:center;
-    font-size:12px;
-    color:#888;
-    margin-bottom:38px;
-  }
-  .auth-form .edit-label{
-    text-transform:none;
-    letter-spacing:0;
-    font-size:12px;
-    font-weight:500;
-    color:#222;
-    margin-bottom:5px;
-  }
-  .auth-form .editable-input{
-    border:0;
-    border-bottom:2px solid #bdbdbd;
-    border-radius:0;
-    background:transparent;
-    padding:9px 4px 10px;
-    margin:0;
-    box-shadow:none;
-    font-size:14px;
-  }
-  .auth-form .editable-input:focus{
-    border-color:#e6a58e;
-    box-shadow:none;
-    background:transparent;
-  }
-  .login-password-label{margin-top:24px !important;}
-  .login-eye{
-    right:0;
-    font-size:17px;
-    color:#222;
-  }
-  .login-options{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-top:13px;
-    font-size:10.5px;
-    color:#777;
-  }
-  .login-options label{display:flex;align-items:center;gap:4px;cursor:pointer;}
-  .login-options input{width:13px;height:13px;margin:0;accent-color:#999;}
-  .login-options a{color:#aaa;text-decoration:none;}
-  .login-options a:hover{text-decoration:underline;}
-  .auth-submit-btn{
-    height:44px;
-    border-radius:22px;
-    margin-top:27px;
-    background:#1d1e20;
-    box-shadow:none;
-    font-size:13px;
-  }
-  .auth-submit-btn:hover{background:#111;filter:none;transform:translateY(-1px);}
-  #googleSignInDivLogin{
-    margin-top:14px;
-    min-height:42px;
-  }
-  .login-signup-line{
-    position:absolute;
-    bottom:42px;
-    left:0;
-    right:0;
-    margin:0;
-    font-size:11px;
-    color:#888;
-  }
-  .login-signup-line a{color:#555;}
-  .auth-form-zone{position:relative;}
-  .auth-form-zone .auth-status{font-size:11px;}
-
-  .character-scene{
-    position:relative;
-    width:100%;
-    height:360px;
-    display:block;
-    margin-top:50px;
-  }
-  .character-scene .mini-char{
-    position:absolute;
-    bottom:54px;
-    animation:none;
-    transition:transform .45s cubic-bezier(.2,.8,.2,1);
-  }
-  .shape-body{
-    position:absolute;
-    inset:0;
-    border-radius:inherit;
-    background:var(--shape-color);
-    box-shadow:inset 0 8px 18px rgba(255,255,255,.28),
-               0 8px 18px rgba(0,0,0,.08);
-  }
-  .shape-orange{left:13%;width:300px;height:138px;z-index:4;}
-  .shape-orange .shape-body{border-radius:155px 155px 0 0;--shape-color:#ff8132;}
-  .shape-purple{left:31%;width:155px;height:285px;z-index:2;}
-  .shape-purple .shape-body{border-radius:18px 18px 0 0;--shape-color:#7547df;}
-  .shape-pink{left:50%;width:108px;height:220px;z-index:3;}
-  .shape-pink .shape-body{border-radius:14px 14px 0 0;--shape-color:#d72c78;}
-  .shape-yellow{left:63%;width:104px;height:168px;z-index:5;}
-  .shape-yellow .shape-body{border-radius:60px 60px 0 0;--shape-color:#ffd83e;}
-
-  .character-scene .char-eyes{
-    position:absolute;
-    top:31px;
-    left:50%;
-    transform:translateX(-50%);
-    gap:9px;
-  }
-  .character-scene .char-eye{
-    width:16px;height:16px;
-    border:0;
-    box-shadow:none;
-  }
-  .character-scene .char-pupil{
-    width:6px;height:6px;
-    margin:-3px 0 0 -3px;
-    background:#111;
-  }
-  .shape-orange .char-eyes{top:64px;left:23%;}
-  .shape-orange .char-eye:first-child{transform:scaleY(.45);}
-  .shape-orange .char-eye:last-child{transform:scaleY(.45);}
-  .shape-purple .char-eyes{top:35px;}
-  .shape-purple .char-mouth{
-    position:absolute;left:50%;top:70px;transform:translateX(-50%);
-    width:24px;height:12px;border-bottom:5px solid #111;border-radius:0 0 20px 20px;
-  }
-  .shape-yellow .char-eyes{top:31px;left:62%;}
-  .shape-yellow .char-eyes .char-eye:first-child{display:none;}
-  .shape-yellow .shape-line{
-    position:absolute;left:38%;top:67px;width:58px;height:5px;
-    background:#111;border-radius:0;
-  }
-  .shape-pink .char-eyes{top:42px;}
-
-  .character-scene.shy .shape-pink{transform:translateY(-285px) rotate(4deg);}
-  .character-scene.shy .shape-purple{transform:translateY(120px) rotate(-1deg);}
-  .character-scene.shy .shape-orange{transform:translateX(-18px) rotate(-1deg);}
-  .character-scene.shy .shape-yellow{transform:translateY(92px) rotate(18deg);}
-  .character-scene.peeking .shape-pink{transform:translateY(-215px) rotate(2deg);}
-  .character-scene.peeking .shape-purple{transform:translateY(95px);}
-  .character-scene.peeking .shape-orange{transform:translateX(-12px);}
-  .character-scene.peeking .shape-yellow{transform:translateY(65px) rotate(12deg);}
-
-  .auth-caption{display:none;}
-
-  @media (max-width:760px){
-    .auth-shell{min-height:0;}
-    .auth-character-zone{min-height:360px;}
-    .character-scene{transform:scale(.75);transform-origin:center bottom;margin-top:0;}
-    .auth-form-zone{padding:44px 32px 90px;}
-    .login-signup-line{bottom:26px;}
-  }
-
-
-  /* ===== Cute eBay-style character refresh ===== */
-  .character-scene .mini-char{
-    transform-origin:50% 100%;
-    transition:transform .55s cubic-bezier(.2,.8,.2,1), filter .35s ease;
-  }
-  .shape-orange .shape-body{--shape-color:#E53238;}
-  .shape-purple .shape-body{--shape-color:#0064D2;}
-  .shape-pink .shape-body{--shape-color:#F5AF02;}
-  .shape-yellow .shape-body{--shape-color:#86B817;}
-
-  /* More expressive faces: pupils stay fixed; the body/face turns instead. */
-  .character-scene .char-eye,
-  .character-scene .char-pupil{transition:none!important;}
-  .character-scene .char-pupil{transform:none!important;}
-  .character-scene .char-eye.blinking{animation:none!important;}
-
-  .shape-orange .char-eyes{left:50%;top:56px;gap:11px;transform:translateX(-50%);}
-  .shape-orange .char-eye:first-child,.shape-orange .char-eye:last-child{transform:none!important;}
-  .shape-orange .char-eyes::after{
-    content:'';position:absolute;left:50%;top:26px;width:25px;height:11px;
-    transform:translateX(-50%);border-bottom:4px solid #111;border-radius:0 0 20px 20px;
-  }
-
-  .shape-purple .char-eyes{top:38px;gap:11px;}
-  .shape-purple .char-mouth{
-    position:absolute;left:50%;top:76px;transform:translateX(-50%);
-    width:20px;height:13px;border-bottom:4px solid #111;border-radius:0 0 18px 18px;
-  }
-
-  .shape-pink .char-eyes{top:48px;gap:10px;}
-  .shape-pink .char-eyes::after{
-    content:'';position:absolute;left:50%;top:25px;width:18px;height:9px;
-    transform:translateX(-50%);border-bottom:3px solid #111;border-radius:0 0 15px 15px;
-  }
-
-  .shape-yellow .char-eyes{top:38px;left:58%;}
-  .shape-yellow .char-eyes .char-eye:first-child{display:block;}
-  .shape-yellow .shape-line{left:34%;top:72px;width:48px;height:4px;border-radius:4px;}
-
-  /* Entrance: each character arrives from a different direction. */
-  .character-scene.entering .shape-orange{animation:enterLeft .85s cubic-bezier(.2,.8,.2,1) both;}
-  .character-scene.entering .shape-purple{animation:enterTop .95s cubic-bezier(.2,.8,.2,1) .08s both;}
-  .character-scene.entering .shape-pink{animation:enterBottom .9s cubic-bezier(.2,.8,.2,1) .16s both;}
-  .character-scene.entering .shape-yellow{animation:enterRight .85s cubic-bezier(.2,.8,.2,1) .24s both;}
-  @keyframes enterLeft{from{transform:translateX(-180px) rotate(-12deg);opacity:0}70%{transform:translateX(12px) rotate(2deg);opacity:1}to{transform:translateX(0) rotate(0);opacity:1}}
-  @keyframes enterTop{from{transform:translateY(-300px) rotate(7deg);opacity:0}70%{transform:translateY(10px) rotate(-1deg);opacity:1}to{transform:translateY(0) rotate(0);opacity:1}}
-  @keyframes enterBottom{from{transform:translateY(220px) rotate(-5deg);opacity:0}70%{transform:translateY(-8px) rotate(2deg);opacity:1}to{transform:translateY(0) rotate(0);opacity:1}}
-  @keyframes enterRight{from{transform:translateX(170px) rotate(10deg);opacity:0}70%{transform:translateX(-10px) rotate(-2deg);opacity:1}to{transform:translateX(0) rotate(0);opacity:1}}
-
-  /* Gentle whole-body idle movement — eyes do not track the mouse. */
-  .character-scene.entered .shape-orange{animation:bodyBobRed 4.2s ease-in-out infinite;}
-  .character-scene.entered .shape-purple{animation:bodyBobBlue 4.6s ease-in-out .25s infinite;}
-  .character-scene.entered .shape-pink{animation:bodyBobYellow 4.1s ease-in-out .5s infinite;}
-  .character-scene.entered .shape-yellow{animation:bodyBobGreen 4.4s ease-in-out .7s infinite;}
-  @keyframes bodyBobRed{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-1.2deg)}}
-  @keyframes bodyBobBlue{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(1.4deg)}}
-  @keyframes bodyBobYellow{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-1.5deg)}}
-  @keyframes bodyBobGreen{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(1.8deg)}}
-
-  /* Password focus: everyone stays visible and shyly looks away by turning their bodies. */
-  .character-scene.shy .shape-orange{transform:translateX(-10px) rotate(-7deg);}
-  .character-scene.shy .shape-purple{transform:translateY(7px) rotate(5deg);}
-  .character-scene.shy .shape-pink{transform:translateY(5px) rotate(-6deg);}
-  .character-scene.shy .shape-yellow{transform:translateX(10px) rotate(8deg);}
-  .character-scene.shy .shape-orange .char-eyes{transform:translateX(-50%) rotate(-7deg);}
-  .character-scene.shy .shape-purple .char-eyes{transform:translateX(-50%) rotate(5deg);}
-  .character-scene.shy .shape-pink .char-eyes{transform:translateX(-50%) rotate(-6deg);}
-  .character-scene.shy .shape-yellow .char-eyes{transform:translateX(-50%) rotate(8deg);}
-  .character-scene.shy .shape-orange .char-eyes::after,
-  .character-scene.shy .shape-pink .char-eyes::after{transform:translateX(-50%) rotate(8deg);}
-
-  /* Show-password does not make anyone disappear; they simply become extra shy. */
-  .character-scene.peeking .shape-orange{transform:translateX(-18px) rotate(-12deg);}
-  .character-scene.peeking .shape-purple{transform:translateY(10px) rotate(9deg);}
-  .character-scene.peeking .shape-pink{transform:translateY(8px) rotate(-10deg);}
-  .character-scene.peeking .shape-yellow{transform:translateX(18px) rotate(12deg);}
-  .character-scene.shy.entered .shape-orange,
-  .character-scene.shy.entered .shape-purple,
-  .character-scene.shy.entered .shape-pink,
-  .character-scene.shy.entered .shape-yellow,
-  .character-scene.peeking.entered .shape-orange,
-  .character-scene.peeking.entered .shape-purple,
-  .character-scene.peeking.entered .shape-pink,
-  .character-scene.peeking.entered .shape-yellow{animation:none;}
-
-  /* Disable old hiding/flip rules from the original character implementation. */
-  .character-scene.shy .char-detective .char-hat,
-  .character-scene.shy .char-developer .char-peek,
-  .character-scene.shy .char-guard .char-head,
-  .character-scene.shy .char-guard .char-shield,
-  .character-scene.shy .char-secretkeeper .char-flip{transform:none;}
-  .character-scene.shy .char-detective .char-eye{transform:none!important;}
-
-
-/* =========================================================
-   FINAL CUTE SCENE POLISH
-   - eBay-inspired red/blue/yellow/green characters
-   - illustrated road/ground
-   - whole-body jiggle, no eye tracking
-   - shy mode keeps every character visible
-   - different entrance directions
-   ========================================================= */
-
-.auth-character-zone{
-  position:relative;
-  background:
-    radial-gradient(circle at 50% 24%, rgba(255,255,255,.55), transparent 48%),
-    #f1f1f1;
-}
-
-.character-scene{
-  position:relative;
-  width:min(100%, 560px);
-  height:365px;
-  display:block;
-  overflow:visible;
-  isolation:isolate;
-}
-
-.character-scene .mini-char{
-  position:absolute;
-  bottom:70px;
-  transform-origin:50% 100%;
-  transition:
-    transform .65s cubic-bezier(.2,.8,.2,1),
-    filter .35s ease;
-  will-change:transform;
-}
-
-.character-scene .char-shadow{
-  bottom:-13px;
-  width:76%;
-  height:16px;
-  opacity:.28;
-  filter:blur(2px);
-  z-index:-1;
-}
-
-/* Ground */
-.scene-ground{
-  position:absolute;
-  left:2%;
-  right:2%;
-  bottom:0;
-  height:105px;
-  z-index:0;
-  pointer-events:none;
-}
-.scene-ground::before{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  height:34px;
-  border-radius:50% 50% 12px 12px;
-  background:#dfe7d9;
-  box-shadow:inset 0 5px 0 rgba(255,255,255,.55);
-}
-.scene-grass{
-  position:absolute;
-  bottom:31px;
-  width:88px;
-  height:26px;
-  border-radius:50%;
-  background:
-    radial-gradient(ellipse at 25% 70%, #a9c878 0 8%, transparent 9%),
-    radial-gradient(ellipse at 48% 55%, #91bb55 0 8%, transparent 9%),
-    radial-gradient(ellipse at 72% 72%, #a9c878 0 7%, transparent 8%),
-    #c9dcae;
-}
-.scene-grass-left{left:1%;}
-.scene-grass-right{right:1%;}
-.scene-road{
-  position:absolute;
-  left:7%;
-  right:7%;
-  bottom:8px;
-  height:70px;
-  border-radius:50% 50% 16px 16px;
-  background:linear-gradient(#55575c,#47494e);
-  box-shadow:
-    inset 0 8px 12px rgba(255,255,255,.07),
-    0 8px 14px rgba(30,30,30,.12);
-  transform:perspective(220px) rotateX(7deg);
-}
-.scene-road::before,
-.scene-road::after{
-  content:"";
-  position:absolute;
-  top:4px;
-  bottom:4px;
-  width:5px;
-  border-radius:5px;
-  background:rgba(255,255,255,.12);
-}
-.scene-road::before{left:12px;}
-.scene-road::after{right:12px;}
-.road-line{
-  position:absolute;
-  top:50%;
-  width:54px;
-  height:5px;
-  border-radius:5px;
-  background:#f8d75a;
-  transform:translateY(-50%);
-  opacity:.9;
-}
-.road-line-1{left:17%;}
-.road-line-2{left:44%;}
-.road-line-3{right:17%;}
-.scene-pebble{
-  position:absolute;
-  width:7px;
-  height:4px;
-  border-radius:50%;
-  background:#b5b9ae;
-  bottom:45px;
-}
-.pebble-1{left:14%;}
-.pebble-2{left:83%;width:5px;}
-.pebble-3{left:50%;bottom:39px;width:4px;}
-
-/* Character placement: a compact friendly group sitting on the road. */
-.shape-orange{
-  left:7% !important;
-  width:300px;
-  height:138px;
-  z-index:4;
-}
-.shape-purple{
-  left:31% !important;
-  width:155px;
-  height:285px;
-  z-index:2;
-}
-.shape-pink{
-  left:49% !important;
-  width:108px;
-  height:220px;
-  z-index:3;
-}
-.shape-yellow{
-  left:65% !important;
-  width:104px;
-  height:168px;
-  z-index:5;
-}
-
-/* Cute faces: fixed eyes; the whole character turns instead. */
-.character-scene .char-eye,
-.character-scene .char-pupil{
-  transition:none !important;
-}
-.character-scene .char-pupil{
-  transform:none !important;
-}
-.character-scene .char-eye.blinking{
-  animation:none !important;
-}
-.character-scene .shape-body{
-  filter:saturate(1.04);
-}
-.character-scene .shape-body::after{
-  content:"";
-  position:absolute;
-  width:13px;
-  height:7px;
-  left:50%;
-  top:74px;
-  border-radius:50%;
-  background:rgba(255,120,140,.24);
-  box-shadow:-28px 0 0 rgba(255,120,140,.18), 28px 0 0 rgba(255,120,140,.18);
-  opacity:.85;
-  pointer-events:none;
-}
-
-/* Individual face refinements */
-.shape-orange .char-eyes{top:64px !important;left:27% !important;gap:12px;}
-.shape-orange .char-eye{transform:none !important;}
-.shape-orange .char-eyes::after{
-  width:27px !important;
-  height:12px !important;
-  top:25px !important;
-  border-bottom:4px solid #111 !important;
-}
-.shape-purple .char-eyes{top:35px !important;gap:11px;}
-.shape-purple .shape-mouth{
-  position:absolute;
-  left:50%;
-  top:70px;
-  transform:translateX(-50%);
-  width:24px;
-  height:13px;
-  border-bottom:4px solid #111;
-  border-radius:0 0 20px 20px;
-}
-.shape-pink .char-eyes{top:42px !important;gap:10px;}
-.shape-pink .char-eyes::after{
-  width:18px;
-  height:9px;
-  top:25px;
-  border-bottom:3px solid #111;
-}
-.shape-yellow .char-eyes{top:31px !important;left:62% !important;}
-.shape-yellow .char-eyes .char-eye:first-child{display:block !important;}
-.shape-yellow .shape-line{
-  left:38% !important;
-  top:67px !important;
-  width:58px !important;
-  height:5px !important;
-  border-radius:5px !important;
-}
-
-/* Entrance: each one arrives from a different direction. */
-.character-scene.entering .shape-orange{
-  animation:sceneEnterLeft .85s cubic-bezier(.18,.86,.25,1) both;
-}
-.character-scene.entering .shape-purple{
-  animation:sceneEnterTop .95s cubic-bezier(.18,.86,.25,1) .08s both;
-}
-.character-scene.entering .shape-pink{
-  animation:sceneEnterBottom .90s cubic-bezier(.18,.86,.25,1) .16s both;
-}
-.character-scene.entering .shape-yellow{
-  animation:sceneEnterRight .85s cubic-bezier(.18,.86,.25,1) .24s both;
-}
-@keyframes sceneEnterLeft{
-  0%{opacity:0;transform:translateX(-230px) rotate(-16deg) scale(.92)}
-  68%{opacity:1;transform:translateX(13px) rotate(3deg) scale(1.02)}
-  100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}
-}
-@keyframes sceneEnterTop{
-  0%{opacity:0;transform:translateY(-330px) rotate(9deg) scale(.9)}
-  70%{opacity:1;transform:translateY(12px) rotate(-2deg) scale(1.02)}
-  100%{opacity:1;transform:translateY(0) rotate(0) scale(1)}
-}
-@keyframes sceneEnterBottom{
-  0%{opacity:0;transform:translateY(240px) rotate(-8deg) scale(.92)}
-  70%{opacity:1;transform:translateY(-10px) rotate(3deg) scale(1.02)}
-  100%{opacity:1;transform:translateY(0) rotate(0) scale(1)}
-}
-@keyframes sceneEnterRight{
-  0%{opacity:0;transform:translateX(210px) rotate(14deg) scale(.92)}
-  70%{opacity:1;transform:translateX(-12px) rotate(-3deg) scale(1.02)}
-  100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}
-}
-
-/* Idle jiggle: the complete body moves, never the pupils. */
-.character-scene.entered .shape-orange{
-  animation:sceneJiggleRed 3.7s ease-in-out infinite;
-}
-.character-scene.entered .shape-purple{
-  animation:sceneJiggleBlue 4.2s ease-in-out .15s infinite;
-}
-.character-scene.entered .shape-pink{
-  animation:sceneJiggleYellow 3.5s ease-in-out .30s infinite;
-}
-.character-scene.entered .shape-yellow{
-  animation:sceneJiggleGreen 4s ease-in-out .45s infinite;
-}
-@keyframes sceneJiggleRed{
-  0%,100%{transform:translateY(0) rotate(0)}
-  25%{transform:translateY(-3px) rotate(-1.2deg)}
-  50%{transform:translateY(-9px) rotate(.8deg)}
-  75%{transform:translateY(-2px) rotate(-.5deg)}
-}
-@keyframes sceneJiggleBlue{
-  0%,100%{transform:translateY(0) rotate(0)}
-  30%{transform:translateY(-7px) rotate(1deg)}
-  55%{transform:translateY(-13px) rotate(-1.5deg)}
-  80%{transform:translateY(-4px) rotate(.7deg)}
-}
-@keyframes sceneJiggleYellow{
-  0%,100%{transform:translateY(0) rotate(0)}
-  35%{transform:translateY(-4px) rotate(-1.5deg)}
-  60%{transform:translateY(-10px) rotate(1deg)}
-  82%{transform:translateY(-2px) rotate(-.5deg)}
-}
-@keyframes sceneJiggleGreen{
-  0%,100%{transform:translateY(0) rotate(0)}
-  28%{transform:translateY(-5px) rotate(1.3deg)}
-  55%{transform:translateY(-11px) rotate(-1.2deg)}
-  78%{transform:translateY(-3px) rotate(.7deg)}
-}
-
-/* Password focus: all four stay visible and shyly turn away. */
-.character-scene.shy.entered .shape-orange,
-.character-scene.shy.entered .shape-purple,
-.character-scene.shy.entered .shape-pink,
-.character-scene.shy.entered .shape-yellow,
-.character-scene.peeking.entered .shape-orange,
-.character-scene.peeking.entered .shape-purple,
-.character-scene.peeking.entered .shape-pink,
-.character-scene.peeking.entered .shape-yellow{
-  animation:none !important;
-}
-.character-scene.shy .shape-orange{
-  transform:translateX(-13px) rotate(-11deg) !important;
-}
-.character-scene.shy .shape-purple{
-  transform:translateY(9px) rotate(7deg) !important;
-}
-.character-scene.shy .shape-pink{
-  transform:translateY(7px) rotate(-9deg) !important;
-}
-.character-scene.shy .shape-yellow{
-  transform:translateX(13px) rotate(11deg) !important;
-}
-
-/* Show password = an even more bashful pose, but nobody disappears. */
-.character-scene.peeking .shape-orange{
-  transform:translateX(-23px) rotate(-16deg) !important;
-}
-.character-scene.peeking .shape-purple{
-  transform:translateY(14px) rotate(11deg) !important;
-}
-.character-scene.peeking .shape-pink{
-  transform:translateY(11px) rotate(-13deg) !important;
-}
-.character-scene.peeking .shape-yellow{
-  transform:translateX(23px) rotate(15deg) !important;
-}
-
-/* Make the shy reaction visibly directional without moving the pupils. */
-.character-scene.shy .shape-orange .char-eyes{
-  transform:translateX(-50%) rotate(-10deg) !important;
-}
-.character-scene.shy .shape-purple .char-eyes{
-  transform:translateX(-50%) rotate(7deg) !important;
-}
-.character-scene.shy .shape-pink .char-eyes{
-  transform:translateX(-50%) rotate(-9deg) !important;
-}
-.character-scene.shy .shape-yellow .char-eyes{
-  transform:translateX(-50%) rotate(11deg) !important;
-}
-
-/* A tiny bounce on the ground makes the scene feel alive. */
-.character-scene.entered .scene-ground{
-  animation:groundBreath 4.5s ease-in-out infinite;
-}
-@keyframes groundBreath{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(1px)}
-}
-
-@media (max-width:760px){
-  .character-scene{
-    height:300px;
-    transform:scale(.82);
-    transform-origin:center bottom;
-    margin-bottom:-35px;
-  }
-  .auth-character-zone{
-    min-height:330px;
-    padding-bottom:0;
-  }
-}
-
 </style>
 </head>
 <body>
@@ -2195,70 +1293,13 @@
 </div>
 
 <div class="auth-page" id="authPage" style="display:none;">
-  <div class="auth-shell" id="authShell">
-    <div class="auth-character-zone">
-      <div class="character-scene" id="authCharacterScene">
-
-        <div class="scene-ground" aria-hidden="true">
-  <div class="scene-grass scene-grass-left"></div>
-  <div class="scene-grass scene-grass-right"></div>
-  <div class="scene-road">
-    <span class="road-line road-line-1"></span>
-    <span class="road-line road-line-2"></span>
-    <span class="road-line road-line-3"></span>
-  </div>
-  <span class="scene-pebble pebble-1"></span>
-  <span class="scene-pebble pebble-2"></span>
-  <span class="scene-pebble pebble-3"></span>
-</div>
-
-        <div class="mini-char shape-orange char-detective" id="charDetective">
-          <div class="char-shadow"></div>
-          <div class="shape-body">
-            <div class="char-eyes">
-              <div class="char-eye" data-damp-y="0.8"><div class="char-pupil"></div></div>
-              <div class="char-eye" data-damp-y="0.8"><div class="char-pupil"></div></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mini-char shape-purple char-developer" id="charDeveloper">
-          <div class="char-shadow"></div>
-          <div class="shape-body">
-            <div class="char-eyes">
-              <div class="char-eye" data-damp-y="0.9"><div class="char-pupil"></div></div>
-              <div class="char-eye" data-damp-y="0.9"><div class="char-pupil"></div></div>
-            </div>
-            <div class="shape-mouth"></div>
-          </div>
-        </div>
-
-        <div class="mini-char shape-pink char-guard" id="charGuard">
-          <div class="char-shadow"></div>
-          <div class="shape-body">
-            <div class="char-eyes">
-              <div class="char-eye"><div class="char-pupil"></div></div>
-              <div class="char-eye"><div class="char-pupil"></div></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mini-char shape-yellow char-secretkeeper" id="charSecretKeeper">
-          <div class="char-shadow"></div>
-          <div class="shape-body">
-            <div class="char-eyes">
-              <div class="char-eye"><div class="char-pupil"></div></div>
-              <div class="char-eye"><div class="char-pupil"></div></div>
-            </div>
-            <div class="shape-line"></div>
-          </div>
-        </div>
-
-      </div>
-      <div class="auth-caption" id="authCaption">Hi there! Log in to keep your listings moving.</div>
+  <div class="auth-card" id="authCard">
+    <div class="auth-welcome-panel">
+      <div class="auth-welcome-title" id="authWelcomeTitle">WELCOME<br>TO<br>ELMS</div>
+      <div class="auth-welcome-sub" id="authWelcomeSub">Log in to keep managing<br>your<br>Amazon-to-eBay listings.</div>
     </div>
 
-    <div class="auth-form-zone">
+    <div class="auth-form-panel">
       <div class="auth-brand">
         <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
         <span class="tag">listing management</span>
@@ -2266,52 +1307,45 @@
 
       <!-- Login form -->
       <div id="authFormLogin" class="auth-form">
-        <div class="auth-heading">Welcome back!</div>
-        <div class="auth-subheading">Please enter your details</div>
+        <div class="auth-heading">Login</div>
 
         <label class="edit-label">Email</label>
         <div class="auth-field-wrap">
-          <input type="email" class="editable-input" id="loginEmail" placeholder="" />
+          <input type="email" class="editable-input" id="loginEmail" placeholder="you@example.com" />
+          <span class="auth-field-icon">&#128100;</span>
         </div>
         <div class="auth-field-error-msg" id="loginEmailError">Please enter your email.</div>
 
-        <label class="edit-label login-password-label">Password</label>
+        <label class="edit-label" style="margin-top:12px;">Password</label>
         <div class="auth-field-wrap">
-          <input type="password" class="editable-input" id="loginPassword" placeholder="" />
-          <span class="auth-field-icon clickable login-eye" id="loginPasswordToggle">&#128065;</span>
+          <input type="password" class="editable-input" id="loginPassword" placeholder="••••••••" />
+          <span class="auth-field-icon clickable" id="loginPasswordToggle">&#128065;</span>
         </div>
         <div class="auth-field-error-msg" id="loginPasswordError">Please enter your password.</div>
 
-        <div class="login-options">
-          <label><input type="checkbox" id="loginRemember"> <span>Remember me</span></label>
-          <a href="#" id="forgotPasswordLink">Forgot password?</a>
-        </div>
-
-        <button type="button" class="primary auth-submit-btn" id="loginSubmitBtn">Log in</button>
+        <button type="button" class="primary auth-submit-btn" id="loginSubmitBtn">Login</button>
         <div id="loginStatus" class="auth-status"></div>
+        <div class="auth-switch-line">Don't have an account? <a id="switchToRegister">Sign Up</a></div>
 
-        <div class="auth-divider" style="display:none;"><span>or</span></div>
+        <div class="auth-divider"><span>or</span></div>
         <div id="googleSignInDivLogin" class="auth-google-btn"></div>
-
-        <div class="auth-switch-line login-signup-line">Don't have an account? <a id="switchToRegister">Sign Up</a></div>
       </div>
 
       <!-- Register form -->
       <div id="authFormRegister" class="auth-form" style="display:none;">
-        <div class="auth-heading">Create your account 🚀</div>
-        <div class="auth-subheading">Start automating your listings in minutes.</div>
+        <div class="auth-heading">Sign Up</div>
 
         <label class="edit-label">Username</label>
         <div class="auth-field-wrap">
           <input type="text" class="editable-input" id="registerUsername" placeholder="Choose a username" />
-          <span class="auth-field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <span class="auth-field-icon">&#128100;</span>
         </div>
         <div class="auth-field-error-msg" id="registerUsernameError">Please choose a username (3+ characters).</div>
 
         <label class="edit-label" style="margin-top:12px;">Email</label>
         <div class="auth-field-wrap">
           <input type="email" class="editable-input" id="registerEmail" placeholder="you@example.com" />
-          <span class="auth-field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg></span>
+          <span class="auth-field-icon">&#9993;</span>
         </div>
         <div class="auth-field-error-msg" id="registerEmailError">Please enter a valid email.</div>
 
@@ -2346,87 +1380,6 @@
     </div>
   </div>
 </div>
-
-<script>
-  /* Cute eBay-style character controller:
-     no pupil/mouse tracking; characters move as full bodies.
-     Password focus/show keeps all four visible and turns them shyly away. */
-  (function () {
-    var scene = document.getElementById('authCharacterScene');
-    if (!scene) return;
-
-    /* Entrance is replayed whenever the auth page becomes visible. */
-    function playEntrance() {
-      scene.classList.remove('entered');
-      scene.classList.remove('shy', 'peeking');
-      scene.classList.add('entering');
-      window.setTimeout(function () {
-        scene.classList.remove('entering');
-        scene.classList.add('entered');
-      }, 1500);
-    }
-    playEntrance();
-
-    var shy = false;
-    function setShy(value) {
-      shy = value;
-      scene.classList.toggle('shy', value);
-      if (!value) scene.classList.remove('peeking');
-    }
-
-    ['loginPassword','registerPassword','registerConfirmPassword'].forEach(function(id){
-      var input=document.getElementById(id);
-      if(!input) return;
-      input.addEventListener('focus',function(){ setShy(true); });
-      input.addEventListener('blur',function(){ setShy(false); });
-    });
-
-    var peekTimer=null;
-    [
-      ['loginPasswordToggle','loginPassword'],
-      ['registerPasswordToggle','registerPassword'],
-      ['registerConfirmPasswordToggle','registerConfirmPassword']
-    ].forEach(function(pair){
-      var toggle=document.getElementById(pair[0]);
-      var input=document.getElementById(pair[1]);
-      if(!toggle || !input) return;
-      toggle.addEventListener('click',function(){
-        scene.classList.add('shy');
-        scene.classList.add('peeking');
-        clearTimeout(peekTimer);
-        peekTimer=setTimeout(function(){
-          scene.classList.remove('peeking');
-          if(document.activeElement===input) setShy(true);
-        },700);
-      });
-    });
-
-    /* Restart entrance after the login/register form is switched if the
-       auth page is reused later. */
-    ['authFormLogin','authFormRegister'].forEach(function(id){
-      var form=document.getElementById(id);
-      if(!form) return;
-      var observer=new MutationObserver(function(){
-        if(form.offsetParent!==null) playEntrance();
-      });
-      observer.observe(form,{attributes:true,attributeFilter:['style','class']});
-    });
-
-    var authPage=document.getElementById('authPage');
-    if (authPage) {
-      var authDisplayObserver = new MutationObserver(function(){
-        if (authPage.style.display !== 'none') playEntrance();
-      });
-      authDisplayObserver.observe(authPage, {attributes:true, attributeFilter:['style']});
-    }
-    if(authPage){
-      var pageObserver=new MutationObserver(function(){
-        if(authPage.style.display==='flex') playEntrance();
-      });
-      pageObserver.observe(authPage,{attributes:true,attributeFilter:['style']});
-    }
-  })();
-</script>
 
 <div class="app-shell" id="appShell" style="display:none;">
   <aside class="sidebar">
@@ -3566,14 +2519,18 @@
 
   // ---------- Auth Page: switching between login/register ----------
   function showLoginForm() {
+    document.getElementById('authCard').classList.remove('show-register');
     document.getElementById('authFormLogin').style.display = 'block';
     document.getElementById('authFormRegister').style.display = 'none';
-    document.getElementById('authCaption').textContent = 'Hi there! Log in to keep your listings moving.';
+    document.getElementById('authWelcomeTitle').innerHTML = 'WELCOME<br>TO<br>ELMS';
+    document.getElementById('authWelcomeSub').innerHTML = 'Log in to keep managing<br>your<br>Amazon-to-eBay listings.';
   }
   function showRegisterForm() {
+    document.getElementById('authCard').classList.add('show-register');
     document.getElementById('authFormRegister').style.display = 'block';
     document.getElementById('authFormLogin').style.display = 'none';
-    document.getElementById('authCaption').textContent = "Let's get you set up! It only takes a minute.";
+    document.getElementById('authWelcomeTitle').innerHTML = 'JOIN<br>ELMS';
+    document.getElementById('authWelcomeSub').innerHTML = 'Create your account<br>and start listing<br>in minutes.';
   }
 
   document.getElementById('switchToRegister').addEventListener('click', showRegisterForm);
