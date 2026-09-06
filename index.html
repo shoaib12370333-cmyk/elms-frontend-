@@ -1723,6 +1723,100 @@
     .login-signup-line{bottom:26px;}
   }
 
+
+  /* ===== Cute eBay-style character refresh ===== */
+  .character-scene .mini-char{
+    transform-origin:50% 100%;
+    transition:transform .55s cubic-bezier(.2,.8,.2,1), filter .35s ease;
+  }
+  .shape-orange .shape-body{--shape-color:#E53238;}
+  .shape-purple .shape-body{--shape-color:#0064D2;}
+  .shape-pink .shape-body{--shape-color:#F5AF02;}
+  .shape-yellow .shape-body{--shape-color:#86B817;}
+
+  /* More expressive faces: pupils stay fixed; the body/face turns instead. */
+  .character-scene .char-eye,
+  .character-scene .char-pupil{transition:none!important;}
+  .character-scene .char-pupil{transform:none!important;}
+  .character-scene .char-eye.blinking{animation:none!important;}
+
+  .shape-orange .char-eyes{left:50%;top:56px;gap:11px;transform:translateX(-50%);}
+  .shape-orange .char-eye:first-child,.shape-orange .char-eye:last-child{transform:none!important;}
+  .shape-orange .char-eyes::after{
+    content:'';position:absolute;left:50%;top:26px;width:25px;height:11px;
+    transform:translateX(-50%);border-bottom:4px solid #111;border-radius:0 0 20px 20px;
+  }
+
+  .shape-purple .char-eyes{top:38px;gap:11px;}
+  .shape-purple .char-mouth{
+    position:absolute;left:50%;top:76px;transform:translateX(-50%);
+    width:20px;height:13px;border-bottom:4px solid #111;border-radius:0 0 18px 18px;
+  }
+
+  .shape-pink .char-eyes{top:48px;gap:10px;}
+  .shape-pink .char-eyes::after{
+    content:'';position:absolute;left:50%;top:25px;width:18px;height:9px;
+    transform:translateX(-50%);border-bottom:3px solid #111;border-radius:0 0 15px 15px;
+  }
+
+  .shape-yellow .char-eyes{top:38px;left:58%;}
+  .shape-yellow .char-eyes .char-eye:first-child{display:block;}
+  .shape-yellow .shape-line{left:34%;top:72px;width:48px;height:4px;border-radius:4px;}
+
+  /* Entrance: each character arrives from a different direction. */
+  .character-scene.entering .shape-orange{animation:enterLeft .85s cubic-bezier(.2,.8,.2,1) both;}
+  .character-scene.entering .shape-purple{animation:enterTop .95s cubic-bezier(.2,.8,.2,1) .08s both;}
+  .character-scene.entering .shape-pink{animation:enterBottom .9s cubic-bezier(.2,.8,.2,1) .16s both;}
+  .character-scene.entering .shape-yellow{animation:enterRight .85s cubic-bezier(.2,.8,.2,1) .24s both;}
+  @keyframes enterLeft{from{transform:translateX(-180px) rotate(-12deg);opacity:0}70%{transform:translateX(12px) rotate(2deg);opacity:1}to{transform:translateX(0) rotate(0);opacity:1}}
+  @keyframes enterTop{from{transform:translateY(-300px) rotate(7deg);opacity:0}70%{transform:translateY(10px) rotate(-1deg);opacity:1}to{transform:translateY(0) rotate(0);opacity:1}}
+  @keyframes enterBottom{from{transform:translateY(220px) rotate(-5deg);opacity:0}70%{transform:translateY(-8px) rotate(2deg);opacity:1}to{transform:translateY(0) rotate(0);opacity:1}}
+  @keyframes enterRight{from{transform:translateX(170px) rotate(10deg);opacity:0}70%{transform:translateX(-10px) rotate(-2deg);opacity:1}to{transform:translateX(0) rotate(0);opacity:1}}
+
+  /* Gentle whole-body idle movement — eyes do not track the mouse. */
+  .character-scene.entered .shape-orange{animation:bodyBobRed 4.2s ease-in-out infinite;}
+  .character-scene.entered .shape-purple{animation:bodyBobBlue 4.6s ease-in-out .25s infinite;}
+  .character-scene.entered .shape-pink{animation:bodyBobYellow 4.1s ease-in-out .5s infinite;}
+  .character-scene.entered .shape-yellow{animation:bodyBobGreen 4.4s ease-in-out .7s infinite;}
+  @keyframes bodyBobRed{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-1.2deg)}}
+  @keyframes bodyBobBlue{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(1.4deg)}}
+  @keyframes bodyBobYellow{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-1.5deg)}}
+  @keyframes bodyBobGreen{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(1.8deg)}}
+
+  /* Password focus: everyone stays visible and shyly looks away by turning their bodies. */
+  .character-scene.shy .shape-orange{transform:translateX(-10px) rotate(-7deg);}
+  .character-scene.shy .shape-purple{transform:translateY(7px) rotate(5deg);}
+  .character-scene.shy .shape-pink{transform:translateY(5px) rotate(-6deg);}
+  .character-scene.shy .shape-yellow{transform:translateX(10px) rotate(8deg);}
+  .character-scene.shy .shape-orange .char-eyes{transform:translateX(-50%) rotate(-7deg);}
+  .character-scene.shy .shape-purple .char-eyes{transform:translateX(-50%) rotate(5deg);}
+  .character-scene.shy .shape-pink .char-eyes{transform:translateX(-50%) rotate(-6deg);}
+  .character-scene.shy .shape-yellow .char-eyes{transform:translateX(-50%) rotate(8deg);}
+  .character-scene.shy .shape-orange .char-eyes::after,
+  .character-scene.shy .shape-pink .char-eyes::after{transform:translateX(-50%) rotate(8deg);}
+
+  /* Show-password does not make anyone disappear; they simply become extra shy. */
+  .character-scene.peeking .shape-orange{transform:translateX(-18px) rotate(-12deg);}
+  .character-scene.peeking .shape-purple{transform:translateY(10px) rotate(9deg);}
+  .character-scene.peeking .shape-pink{transform:translateY(8px) rotate(-10deg);}
+  .character-scene.peeking .shape-yellow{transform:translateX(18px) rotate(12deg);}
+  .character-scene.shy.entered .shape-orange,
+  .character-scene.shy.entered .shape-purple,
+  .character-scene.shy.entered .shape-pink,
+  .character-scene.shy.entered .shape-yellow,
+  .character-scene.peeking.entered .shape-orange,
+  .character-scene.peeking.entered .shape-purple,
+  .character-scene.peeking.entered .shape-pink,
+  .character-scene.peeking.entered .shape-yellow{animation:none;}
+
+  /* Disable old hiding/flip rules from the original character implementation. */
+  .character-scene.shy .char-detective .char-hat,
+  .character-scene.shy .char-developer .char-peek,
+  .character-scene.shy .char-guard .char-head,
+  .character-scene.shy .char-guard .char-shield,
+  .character-scene.shy .char-secretkeeper .char-flip{transform:none;}
+  .character-scene.shy .char-detective .char-eye{transform:none!important;}
+
 </style>
 </head>
 <body>
@@ -1874,162 +1968,77 @@
 </div>
 
 <script>
-  /**
-   * ELMS auth character scene: four soft geometric shapes, each
-   * reacting to the login form in its own way. Pupils follow the pointer
-   * (mouse or touch) via a single requestAnimationFrame loop that reads
-   * the last known pointer position - this keeps tracking smooth without
-   * doing work on every mousemove event. With no recent pointer input the
-   * eyes drift through a gentle idle look-around loop. Focusing the email
-   * field makes every character glance at it directly; focusing a
-   * password field triggers each character's own reference-style reaction
-   * (see the reference CSS above); clicking a show-password toggle makes each of
-   * them briefly peek - a distinct reaction layered on top of "shy".
-   */
+  /* Cute eBay-style character controller:
+     no pupil/mouse tracking; characters move as full bodies.
+     Password focus/show keeps all four visible and turns them shyly away. */
   (function () {
     var scene = document.getElementById('authCharacterScene');
     if (!scene) return;
 
-    var eyePairs = Array.prototype.map.call(scene.querySelectorAll('.char-eye'), function (eye) {
-      return {
-        eye: eye,
-        pupil: eye.querySelector('.char-pupil'),
-        dampY: parseFloat(eye.getAttribute('data-damp-y')) || 1,
-      };
-    }).filter(function (pair) { return pair.pupil; });
+    /* Entrance is replayed whenever the auth page becomes visible. */
+    function playEntrance() {
+      scene.classList.remove('entered');
+      scene.classList.remove('shy', 'peeking');
+      scene.classList.add('entering');
+      window.setTimeout(function () {
+        scene.classList.remove('entering');
+        scene.classList.add('entered');
+      }, 1500);
+    }
+    playEntrance();
 
-    var MAX_OFFSET = 3.6; // px the pupil may drift from center, keeping it inside the sclera
-    var pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    var hasPointerInput = false;
-    var lastInputAt = 0;
     var shy = false;
-    var lookEl = null; // element to stare at instead of the pointer (the focused email field)
-
-    function setPointer(x, y) {
-      pointer.x = x;
-      pointer.y = y;
-      hasPointerInput = true;
-      lastInputAt = performance.now();
-    }
-
-    window.addEventListener('mousemove', function (e) { setPointer(e.clientX, e.clientY); }, { passive: true });
-    window.addEventListener('touchmove', function (e) {
-      if (e.touches && e.touches[0]) setPointer(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
-    window.addEventListener('touchstart', function (e) {
-      if (e.touches && e.touches[0]) setPointer(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
-
-    function tick() {
-      var now = performance.now();
-      var idle = !hasPointerInput || (now - lastInputAt > 3500);
-
-      eyePairs.forEach(function (pair, i) {
-        var x, y;
-
-        if (shy) {
-          x = 0; y = 0;
-        } else if (lookEl) {
-          // A field (currently just email) asked every character to stare
-          // at it directly, overriding pointer-tracking and the idle loop.
-          var target = lookEl.getBoundingClientRect();
-          var eyeRect = pair.eye.getBoundingClientRect();
-          var dx = (target.left + target.width / 2) - (eyeRect.left + eyeRect.width / 2);
-          var dy = (target.top + target.height / 2) - (eyeRect.top + eyeRect.height / 2);
-          var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          var clamped = Math.min(dist, MAX_OFFSET);
-          x = (dx / dist) * clamped;
-          y = (dy / dist) * clamped * pair.dampY;
-        } else if (idle) {
-          // No recent pointer input - drift the pupils in a slow, gentle loop.
-          var t = now / 1600 + i * 1.4;
-          x = Math.cos(t) * MAX_OFFSET;
-          y = Math.sin(t * 0.8) * MAX_OFFSET * 0.6 * pair.dampY;
-        } else {
-          var rect = pair.eye.getBoundingClientRect();
-          var cx = rect.left + rect.width / 2;
-          var cy = rect.top + rect.height / 2;
-          var pdx = pointer.x - cx;
-          var pdy = pointer.y - cy;
-          var pdist = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
-          var pclamped = Math.min(pdist, MAX_OFFSET);
-          x = (pdx / pdist) * pclamped;
-          y = (pdy / pdist) * pclamped * pair.dampY;
-        }
-
-        pair.pupil.style.transform = 'translate(' + x.toFixed(2) + 'px, ' + y.toFixed(2) + 'px)';
-      });
-
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-
-    // Each character blinks on its own randomized interval so the group
-    // doesn't blink in unison - a small detail that feels far more alive.
-    scene.querySelectorAll('.mini-char').forEach(function (char) {
-      var eyes = char.querySelectorAll('.char-eye');
-      if (!eyes.length) return;
-      (function scheduleBlink() {
-        var delay = 2600 + Math.random() * 3200;
-        setTimeout(function () {
-          eyes.forEach(function (eye) {
-            eye.classList.add('blinking');
-            setTimeout(function () { eye.classList.remove('blinking'); }, 220);
-          });
-          scheduleBlink();
-        }, delay);
-      })();
-    });
-
-    // Every character plays its own signature reaction while a password
-    // field is focused - a dropped hat, a laptop duck-and-glance, a
-    // turned head, or a full turn-around (see the CSS rules above).
     function setShy(value) {
       shy = value;
       scene.classList.toggle('shy', value);
+      if (!value) scene.classList.remove('peeking');
     }
-    ['loginPassword', 'registerPassword', 'registerConfirmPassword'].forEach(function (id) {
-      var input = document.getElementById(id);
-      if (!input) return;
-      input.addEventListener('focus', function () { setShy(true); });
-      input.addEventListener('blur', function () { setShy(false); });
+
+    ['loginPassword','registerPassword','registerConfirmPassword'].forEach(function(id){
+      var input=document.getElementById(id);
+      if(!input) return;
+      input.addEventListener('focus',function(){ setShy(true); });
+      input.addEventListener('blur',function(){ setShy(false); });
     });
 
-    // Glance directly at the email field while it's focused, instead of
-    // following the pointer - a distinct, deliberate reaction of its own.
-    ['loginEmail', 'registerEmail'].forEach(function (id) {
-      var input = document.getElementById(id);
-      if (!input) return;
-      input.addEventListener('focus', function () { lookEl = input; });
-      input.addEventListener('blur', function () { if (lookEl === input) lookEl = null; });
-    });
-
-    // Clicking a show-password toggle gets its own distinct reaction on
-    // top of "shy" - each character eases partway out of hiding, separate
-    // from the full reaction triggered by focus alone.
-    var peekTimer = null;
+    var peekTimer=null;
     [
-      { toggleId: 'loginPasswordToggle', inputId: 'loginPassword' },
-      { toggleId: 'registerPasswordToggle', inputId: 'registerPassword' },
-      { toggleId: 'registerConfirmPasswordToggle', inputId: 'registerConfirmPassword' },
-    ].forEach(function (pair) {
-      var toggle = document.getElementById(pair.toggleId);
-      var input = document.getElementById(pair.inputId);
-      if (!toggle || !input) return;
-      toggle.addEventListener('click', function () {
+      ['loginPasswordToggle','loginPassword'],
+      ['registerPasswordToggle','registerPassword'],
+      ['registerConfirmPasswordToggle','registerConfirmPassword']
+    ].forEach(function(pair){
+      var toggle=document.getElementById(pair[0]);
+      var input=document.getElementById(pair[1]);
+      if(!toggle || !input) return;
+      toggle.addEventListener('click',function(){
+        scene.classList.add('shy');
         scene.classList.add('peeking');
         clearTimeout(peekTimer);
-        peekTimer = setTimeout(function () { scene.classList.remove('peeking'); }, 900);
-
-        // Some browsers briefly blur/refocus a field when its `type`
-        // attribute changes (exactly what the show/hide toggle does),
-        // which would otherwise cancel "shy" early. Re-assert it once
-        // that settles if the field is still actually focused.
-        setTimeout(function () {
-          if (document.activeElement === input) setShy(true);
-        }, 0);
+        peekTimer=setTimeout(function(){
+          scene.classList.remove('peeking');
+          if(document.activeElement===input) setShy(true);
+        },700);
       });
     });
+
+    /* Restart entrance after the login/register form is switched if the
+       auth page is reused later. */
+    ['authFormLogin','authFormRegister'].forEach(function(id){
+      var form=document.getElementById(id);
+      if(!form) return;
+      var observer=new MutationObserver(function(){
+        if(form.offsetParent!==null) playEntrance();
+      });
+      observer.observe(form,{attributes:true,attributeFilter:['style','class']});
+    });
+
+    var authPage=document.getElementById('authPage');
+    if(authPage){
+      var pageObserver=new MutationObserver(function(){
+        if(authPage.style.display==='flex') playEntrance();
+      });
+      pageObserver.observe(authPage,{attributes:true,attributeFilter:['style']});
+    }
   })();
 </script>
 
