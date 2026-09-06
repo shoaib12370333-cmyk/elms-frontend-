@@ -594,6 +594,11 @@
     font-family: inherit;
     background: #fff;
     color: var(--ink);
+    min-width: 0;
+  }
+  @media (max-width: 640px) {
+    .lane-row { flex-direction: column; }
+    .lane-row .primary, .lane-row button.primary { width: 100%; }
   }
   .lane-row input[type="text"]:focus { outline: none; border-color: var(--blue); }
 
@@ -625,23 +630,6 @@
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
-  }
-
-  .lane-sub-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: var(--grey);
-  }
-  .lane-sub-row label { font-weight: 600; color: var(--ink); }
-  .lane-sub-row input[type="number"] {
-    width: 70px;
-    padding: 7px 10px;
-    border: 1.5px solid var(--grey-light);
-    border-radius: 7px;
-    font-family: inherit;
-    font-size: 13px;
   }
 
   .pipeline-track {
@@ -1273,14 +1261,46 @@
     font-size: 14px;
   }
 
+  .mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    padding: 8px;
+    margin-right: 8px;
+    cursor: pointer;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .mobile-menu-btn svg { width: 24px; height: 24px; }
+  .sidebar-scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 199;
+  }
+  .sidebar-scrim.open { display: block; }
+
   @media (max-width: 720px) {
-    .sidebar { display: none; }
-    .content { padding: 20px; }
+    .mobile-menu-btn { display: block; }
     .topbar { padding: 16px 20px; }
+    .content { padding: 20px; }
     .import-lane, .product-card { padding: 20px; }
     .product-top { flex-direction: column; }
     .main-image { width: 100%; height: 240px; }
     .pricing-grid { grid-template-columns: 1fr; }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 200;
+      transform: translateX(-100%);
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    }
+    .sidebar.open { transform: translateX(0); }
   }
 </style>
 </head>
@@ -1382,7 +1402,7 @@
 </div>
 
 <div class="app-shell" id="appShell" style="display:none;">
-  <aside class="sidebar">
+  <aside class="sidebar" id="appSidebar">
     <div class="sidebar-brand">
       <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
       <span class="tag">listing management</span>
@@ -1434,6 +1454,9 @@
 
   <div class="main">
     <div class="topbar">
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
       <div>
         <h1 id="pageTitle">Import a product</h1>
         <div class="subline" id="pageSubline">Paste an Amazon link, price it, send it to eBay.</div>
@@ -1448,6 +1471,8 @@
       </div>
     </div>
 
+    <div class="sidebar-scrim" id="sidebarScrim"></div>
+
     <div class="content">
       <div id="page-import">
         <div class="import-lane">
@@ -1457,11 +1482,6 @@
           <div class="lane-row">
             <input type="text" id="amazonUrl" placeholder="https://www.amazon.com/dp/XXXXXXXXXX" />
             <button class="primary" id="fetchBtn">Fetch product</button>
-          </div>
-          <div class="lane-sub-row">
-            <label for="markup">Markup</label>
-            <input type="number" id="markup" placeholder="e.g. 25" />
-            <span>% added to the Amazon price as a starting eBay price</span>
           </div>
 
           <div class="pipeline-track">
@@ -1843,8 +1863,21 @@
     a.addEventListener('click', (e) => {
       e.preventDefault();
       showPage(a.getAttribute('data-page'));
+      closeMobileSidebar();
     });
   });
+
+  // ---------- Mobile sidebar drawer ----------
+  function openMobileSidebar() {
+    document.getElementById('appSidebar').classList.add('open');
+    document.getElementById('sidebarScrim').classList.add('open');
+  }
+  function closeMobileSidebar() {
+    document.getElementById('appSidebar').classList.remove('open');
+    document.getElementById('sidebarScrim').classList.remove('open');
+  }
+  document.getElementById('mobileMenuBtn').addEventListener('click', openMobileSidebar);
+  document.getElementById('sidebarScrim').addEventListener('click', closeMobileSidebar);
 
   const btn = document.getElementById('fetchBtn');
   const resultDiv = document.getElementById('result');
@@ -1868,7 +1901,11 @@
 
   btn.addEventListener('click', () => {
     const amazonUrl = document.getElementById('amazonUrl').value.trim();
-    const markupPercent = document.getElementById('markup').value;
+    // Markup is no longer set at fetch time - pricing is handled entirely
+    // by the Edit Price calculator (Buy Price/Fees/Profit/Sell Price) once
+    // the product is fetched, so we always fetch at 0% and let the user
+    // set their price afterwards.
+    const markupPercent = 0;
     lastMarkupPercent = markupPercent;
 
     if (!amazonUrl) {
@@ -1947,7 +1984,7 @@
   document.getElementById('bulkFetchBtn').addEventListener('click', async () => {
     const bulkBtn = document.getElementById('bulkFetchBtn');
     const statusEl = document.getElementById('bulkImportStatus');
-    const markupPercent = document.getElementById('markup').value;
+    const markupPercent = 0; // pricing is handled by the Edit Price calculator after fetching
 
     const amazonUrls = document
       .getElementById('bulkAmazonUrls')
