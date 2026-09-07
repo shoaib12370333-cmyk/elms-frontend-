@@ -106,6 +106,33 @@
     color: rgba(255,255,255,0.55);
     letter-spacing: 0.02em;
   }
+  .sidebar-ebay-widget {
+    margin-bottom: 20px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+  }
+  .sidebar-ebay-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 5px;
+  }
+  .sidebar-ebay-select {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .sidebar-ebay-select option { color: var(--ink); }
   .sidebar-nav {
     display: flex;
     flex-direction: column;
@@ -1407,6 +1434,14 @@
       <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
       <span class="tag">listing management</span>
     </div>
+
+    <div class="sidebar-ebay-widget" id="sidebarEbayWidget">
+      <div class="sidebar-ebay-label">eBay account</div>
+      <select class="sidebar-ebay-select" id="sidebarEbaySelect">
+        <option value="">Not connected</option>
+      </select>
+    </div>
+
     <nav class="sidebar-nav">
       <a href="#" class="active" data-page="import">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -1524,24 +1559,32 @@
 
       <div id="page-settings" style="display:none;">
         <div class="import-lane">
-          <div class="kicker">eBay account</div>
-          <h2>Connect your eBay account</h2>
-          <p id="ebayConnectStatus" class="state-msg">Checking connection status&hellip;</p>
-          <button class="primary" id="connectEbayBtn" style="display:none;">Connect eBay Account</button>
-          <button class="btn-outline" id="disconnectEbayBtn" style="display:none;">Disconnect eBay Account</button>
+          <div class="kicker">eBay accounts</div>
+          <h2>Your connected eBay accounts</h2>
+          <p class="meta-line" id="ebayAccountLimitLabel"></p>
+          <div id="ebayAccountsList"><p class="state-msg">Loading&hellip;</p></div>
+          <button class="primary" id="connectEbayBtn" style="margin-top:14px;">+ Connect an eBay account</button>
+          <div id="ebayConnectStatus" style="margin-top:10px;"></div>
         </div>
 
         <div class="product-card">
           <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Business policies</div>
+          <div class="publish-field" style="margin-bottom:16px;">
+            <label>Editing settings for</label>
+            <select class="editable-input" id="policiesAccountSelector" style="width:240px;">
+              <option value="">Connect an eBay account first&hellip;</option>
+            </select>
+          </div>
           <p class="meta-line">These come from your eBay Seller Hub (Account &rarr; Business Policies) and your Inventory Location. All four are required before you can publish a listing.</p>
           <button class="btn-outline" id="fetchEbayPoliciesBtn" style="margin-bottom:16px;">Fetch from eBay</button>
           <div id="fetchPoliciesStatus" style="margin-bottom:12px;"></div>
 
           <div class="publish-rail" style="border-top:none; padding-top:0;">
             <div class="publish-field">
-              <label>Merchant location</label>
+              <label>Product location</label>
               <select class="editable-input" id="settingMerchantLocationKey" style="width:220px;">
                 <option value="">Select after fetching&hellip;</option>
+                <option value="__custom__">Custom (enter postal code)</option>
               </select>
             </div>
             <div class="publish-field">
@@ -1586,6 +1629,33 @@
               </select>
             </div>
           </div>
+
+          <div id="customLocationFields" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--line);">
+            <div class="publish-rail" style="border-top:none; padding-top:0;">
+              <div class="publish-field">
+                <label>Country</label>
+                <select class="editable-input" id="customLocationCountry" style="width:160px;">
+                  <option value="US">United States</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="CA">Canada</option>
+                  <option value="AU">Australia</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="IT">Italy</option>
+                  <option value="ES">Spain</option>
+                  <option value="NL">Netherlands</option>
+                  <option value="IN">India</option>
+                </select>
+              </div>
+              <div class="publish-field">
+                <label>Postal code</label>
+                <input type="text" id="customLocationPostalCode" placeholder="e.g. 10001" style="width:140px;" />
+              </div>
+              <button class="btn-outline" id="lookupPostalCodeBtn" type="button">Look up</button>
+            </div>
+            <div id="postalLookupResult" style="margin-top:10px;"></div>
+          </div>
+
           <button class="btn-publish" id="saveSellerSettingsBtn" style="margin-top:16px;">Save settings</button>
           <div id="sellerSettingsStatus"></div>
         </div>
@@ -2040,6 +2110,30 @@
     }
   });
 
+  /**
+   * Asks the backend to suggest an eBay category for a product title (via
+   * eBay's Taxonomy API) and, if the target input is still empty, fills in
+   * the top suggestion automatically. Never overwrites a value the user
+   * already typed or that a previous auto-suggestion already filled in and
+   * they haven't cleared. Silent on failure (e.g. eBay not connected yet) -
+   * this is a convenience, not something that should block the user.
+   */
+  async function autoSuggestCategory(title, inputEl) {
+    if (!title || !inputEl || inputEl.value.trim()) return;
+
+    try {
+      const res = await apiFetch(`/api/list-on-ebay/suggest-category?title=${encodeURIComponent(title)}`);
+      const data = await res.json();
+
+      if (res.ok && data.success && data.topSuggestion?.categoryId && !inputEl.value.trim()) {
+        inputEl.value = data.topSuggestion.categoryId;
+        inputEl.title = `Suggested: ${data.topSuggestion.fullPath || data.topSuggestion.categoryName}`;
+      }
+    } catch (err) {
+      // Silent - the user can still type a category ID manually.
+    }
+  }
+
   function renderProduct(product, suggestedPrice) {
     const images = product.images && product.images.length ? product.images : [];
     const mainImage = images[0] || '';
@@ -2214,8 +2308,11 @@
           currentSellPrice = sellPriceValue || currentSellPrice;
         };
         openPricingModal(getEditedProduct(product), mainImage);
-      });
-    }
+      });    }
+
+    // Auto-suggest an eBay category based on the product title, filling
+    // it into the category field - the user can still change it manually.
+    autoSuggestCategory(product.title, document.getElementById('ebayCategoryId'));
 
     // ---------- Specifications table: add/remove rows ----------
     const specsTableBody = document.getElementById('specsTableBody');
@@ -2521,8 +2618,8 @@
     document.getElementById('userName').textContent = user.name || user.username || user.email || '';
     document.getElementById('userChip').style.display = 'flex';
     document.getElementById('sidebarFooter').textContent = user.googleId ? 'Signed in via Google' : 'Signed in';
-    currentEbayUserId = user.ebayUserId || null;
     refreshDraftsCountBadge();
+    populateSidebarEbayWidget();
 
     // If we just arrived here from the dedicated /admin.html login page,
     // jump straight into the Admin Panel instead of the default Import page.
@@ -2532,6 +2629,47 @@
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }
+
+  /**
+   * Populates the small eBay account widget at the top of the sidebar, so
+   * the user can see (and quickly switch) which eBay account is "active"
+   * without opening the Settings page.
+   */
+  async function populateSidebarEbayWidget() {
+    const selectEl = document.getElementById('sidebarEbaySelect');
+    if (!selectEl) return;
+
+    try {
+      const res = await apiFetch('/api/ebay-accounts');
+      const data = await res.json();
+
+      if (!res.ok || !data.success || !data.accounts.length) {
+        selectEl.innerHTML = '<option value="">Not connected</option>';
+        return;
+      }
+
+      selectEl.innerHTML = data.accounts
+        .map((acc) => `<option value="${acc.id}" ${acc.isActive ? 'selected' : ''}>${escapeHtml(acc.ebayUserId)}</option>`)
+        .join('');
+    } catch (err) {
+      selectEl.innerHTML = '<option value="">Not connected</option>';
+    }
+  }
+
+  document.getElementById('sidebarEbaySelect').addEventListener('change', async (e) => {
+    const accountId = e.target.value;
+    if (!accountId) return;
+
+    try {
+      await apiFetch(`/api/ebay-accounts/${accountId}/activate`, { method: 'POST' });
+      // Refresh anything on the current page that depends on the active
+      // account, so the switch takes effect immediately without a full reload.
+      const currentPage = document.querySelector('.sidebar-nav a.active')?.getAttribute('data-page');
+      if (currentPage) showPage(currentPage);
+    } catch (err) {
+      alert('Could not switch accounts: ' + err.message);
+    }
+  });
 
   async function handleGoogleCredential(response) {
     try {
@@ -2841,7 +2979,11 @@
     const scheduledLabel = l.status === 'scheduled' && l.scheduled_at
       ? `<span class="draft-meta-item scheduled-badge">Scheduled: ${escapeHtml(new Date(l.scheduled_at).toLocaleString())}</span>`
       : '';
-    const destinationLabel = `<span class="draft-meta-item">Destination: <span class="supplier-badge">${currentEbayUserId ? escapeHtml(currentEbayUserId) : 'Not connected'}</span></span>`;
+    // Drafts not yet published have no eBay account of their own yet, so
+    // show a neutral placeholder instead of implying they're already tied
+    // to whichever account happens to be active.
+    const destinationText = l.ebay_account_username || (l.status === 'draft' ? 'Not yet published' : 'Not connected');
+    const destinationLabel = `<span class="draft-meta-item">Destination: <span class="supplier-badge">${escapeHtml(destinationText)}</span></span>`;
 
     return `
       <div class="draft-row" data-listing-id="${l.id}">
@@ -3221,6 +3363,8 @@
   // ---------- Orders page ----------
   const FULFILLMENT_STATUSES = ['pending', 'ordered_from_amazon', 'shipped', 'delivered'];
 
+  let ordersAccountFilter = '';
+
   async function loadOrders() {
     const container = document.getElementById('ordersContent');
     container.innerHTML = '<p class="state-msg">Loading orders&hellip;</p>';
@@ -3236,7 +3380,22 @@
     }
 
     try {
-      const res = await apiFetch('/api/orders');
+      const accountsRes = await apiFetch('/api/ebay-accounts');
+      const accountsData = await accountsRes.json();
+      const accounts = (accountsRes.ok && accountsData.success) ? accountsData.accounts : [];
+
+      const filterHtml = accounts.length > 1 ? `
+        <div class="publish-field" style="margin-bottom:16px;">
+          <label>Show orders from</label>
+          <select class="editable-input" id="ordersAccountFilterSelect" style="width:200px;">
+            <option value="">All accounts</option>
+            ${accounts.map((acc) => `<option value="${acc.id}" ${acc.id === ordersAccountFilter ? 'selected' : ''}>${escapeHtml(acc.ebayUserId)}</option>`).join('')}
+          </select>
+        </div>
+      ` : '';
+
+      const query = ordersAccountFilter ? `?accountId=${encodeURIComponent(ordersAccountFilter)}` : '';
+      const res = await apiFetch(`/api/orders${query}`);
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -3247,17 +3406,19 @@
       const syncButton = `<button class="btn-outline" id="syncOrdersBtn" style="margin-bottom:16px;">Sync orders from eBay</button><div id="syncOrdersStatus" style="margin-bottom:12px;"></div>`;
 
       if (!data.orders.length) {
-        container.innerHTML = syncButton + '<div class="empty-state">No orders yet. Orders placed by buyers on your eBay listings will show up here - click "Sync orders from eBay" to check now.</div>';
+        container.innerHTML = filterHtml + syncButton + '<div class="empty-state">No orders yet. Orders placed by buyers on your eBay listings will show up here - click "Sync orders from eBay" to check now.</div>';
         wireSyncOrdersButton();
+        wireOrdersAccountFilter();
         return;
       }
 
-      container.innerHTML = syncButton + `
+      container.innerHTML = filterHtml + syncButton + `
         <table class="data-table">
           <thead>
             <tr>
               <th></th>
               <th>Listing</th>
+              <th>Account</th>
               <th>Buyer</th>
               <th>Sale price</th>
               <th>Qty</th>
@@ -3274,9 +3435,19 @@
 
       wireOrderRows();
       wireSyncOrdersButton();
+      wireOrdersAccountFilter();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
+  }
+
+  function wireOrdersAccountFilter() {
+    const selectEl = document.getElementById('ordersAccountFilterSelect');
+    if (!selectEl) return;
+    selectEl.addEventListener('change', (e) => {
+      ordersAccountFilter = e.target.value;
+      loadOrders();
+    });
   }
 
   function wireSyncOrdersButton() {
@@ -3320,6 +3491,7 @@
       <tr data-order-id="${o.id}">
         <td>${o.main_image ? `<img class="row-thumb" src="${o.main_image}" alt="" />` : ''}</td>
         <td class="row-title">${escapeHtml(o.listing_title || '—')}</td>
+        <td><span class="supplier-badge">${escapeHtml(o.ebay_account_username || '—')}</span></td>
         <td>${escapeHtml(o.buyer_username || '—')}</td>
         <td>${o.sale_price != null ? escapeHtml(String(o.sale_price)) : '—'}</td>
         <td>${o.quantity ?? 1}</td>
@@ -3444,43 +3616,131 @@
   }
 
   // ---------- Settings page ----------
+  let currentEbayAccounts = [];
+  let selectedPoliciesAccountId = null;
+
   async function loadSettingsPage() {
-    await refreshEbayConnectionStatus();
-    await loadSellerSettings();
+    await loadEbayAccountsList();
   }
 
-  async function refreshEbayConnectionStatus() {
-    const statusEl = document.getElementById('ebayConnectStatus');
-    const connectBtn = document.getElementById('connectEbayBtn');
-    const disconnectBtn = document.getElementById('disconnectEbayBtn');
-
-    statusEl.textContent = 'Checking connection status\u2026';
-    statusEl.className = 'state-msg';
-    connectBtn.style.display = 'none';
-    disconnectBtn.style.display = 'none';
+  async function loadEbayAccountsList() {
+    const listEl = document.getElementById('ebayAccountsList');
+    const limitLabelEl = document.getElementById('ebayAccountLimitLabel');
+    listEl.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
 
     try {
-      const res = await apiFetch('/api/auth/me');
+      const res = await apiFetch('/api/ebay-accounts');
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        statusEl.textContent = 'Please sign in to connect your eBay account.';
+        listEl.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load your eBay accounts.')}</div>`;
         return;
       }
 
-      if (data.user.ebayConnected) {
-        statusEl.textContent = `Connected as eBay user ${data.user.ebayUserId || ''}.`;
-        statusEl.className = 'state-msg success';
-        disconnectBtn.style.display = 'inline-block';
+      currentEbayAccounts = data.accounts;
+      currentEbayUserId = currentEbayAccounts.find((a) => a.isActive)?.ebayUserId
+        || currentEbayAccounts[0]?.ebayUserId
+        || null;
+
+      limitLabelEl.textContent = `${data.limit.connected} of ${data.limit.max} eBay account${data.limit.max === 1 ? '' : 's'} connected.`;
+
+      if (!currentEbayAccounts.length) {
+        listEl.innerHTML = '<div class="empty-state">No eBay accounts connected yet.</div>';
       } else {
-        statusEl.textContent = 'Not connected yet. Connect your eBay account to publish listings.';
-        connectBtn.style.display = 'inline-block';
+        listEl.innerHTML = currentEbayAccounts.map((acc) => `
+          <div class="draft-row" data-account-id="${acc.id}" style="cursor:default;">
+            <div class="draft-info" style="flex:1;">
+              <div class="draft-title">${escapeHtml(acc.ebayUserId)} ${acc.isActive ? '<span class="status-badge published">Active</span>' : ''}</div>
+              <div class="draft-meta"><span class="draft-meta-item">Marketplace: ${escapeHtml(acc.marketplaceId || 'EBAY_US')}</span></div>
+            </div>
+            <div class="row-actions">
+              ${!acc.isActive ? `<button class="btn-small" data-action="activate-account">Set active</button>` : ''}
+              <button class="btn-small delete" data-action="remove-account">Disconnect</button>
+            </div>
+          </div>
+        `).join('');
+        wireEbayAccountRowActions();
       }
+
+      populatePoliciesAccountSelector();
     } catch (err) {
-      statusEl.textContent = 'Could not check connection status: ' + err.message;
-      statusEl.className = 'state-msg error';
+      listEl.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
   }
+
+  function wireEbayAccountRowActions() {
+    document.querySelectorAll('#ebayAccountsList [data-account-id]').forEach((row) => {
+      const accountId = row.getAttribute('data-account-id');
+
+      const activateBtn = row.querySelector('[data-action="activate-account"]');
+      if (activateBtn) {
+        activateBtn.addEventListener('click', async () => {
+          activateBtn.disabled = true;
+          try {
+            const res = await apiFetch(`/api/ebay-accounts/${accountId}/activate`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+              alert(data.error || 'Could not set this account as active.');
+              activateBtn.disabled = false;
+              return;
+            }
+            loadEbayAccountsList();
+          } catch (err) {
+            alert('Could not connect to the server: ' + err.message);
+            activateBtn.disabled = false;
+          }
+        });
+      }
+
+      row.querySelector('[data-action="remove-account"]').addEventListener('click', async () => {
+        if (!confirm('Disconnect this eBay account? Listings already published through it are not affected.')) return;
+
+        try {
+          const res = await apiFetch('/api/ebay-connect/disconnect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accountId }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            alert(data.error || 'Could not disconnect this account.');
+            return;
+          }
+          loadEbayAccountsList();
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        }
+      });
+    });
+  }
+
+  function populatePoliciesAccountSelector() {
+    const selector = document.getElementById('policiesAccountSelector');
+
+    if (!currentEbayAccounts.length) {
+      selector.innerHTML = '<option value="">Connect an eBay account first&hellip;</option>';
+      selectedPoliciesAccountId = null;
+      return;
+    }
+
+    selector.innerHTML = currentEbayAccounts
+      .map((acc) => `<option value="${acc.id}">${escapeHtml(acc.ebayUserId)}</option>`)
+      .join('');
+
+    // Keep the previously selected account if it's still connected,
+    // otherwise default to the active (or first) account.
+    const stillExists = currentEbayAccounts.some((acc) => acc.id === selectedPoliciesAccountId);
+    if (!stillExists) {
+      selectedPoliciesAccountId = currentEbayAccounts.find((a) => a.isActive)?.id || currentEbayAccounts[0].id;
+    }
+    selector.value = selectedPoliciesAccountId;
+    loadSellerSettings();
+  }
+
+  document.getElementById('policiesAccountSelector').addEventListener('change', (e) => {
+    selectedPoliciesAccountId = e.target.value;
+    loadSellerSettings();
+  });
 
   document.getElementById('connectEbayBtn').addEventListener('click', () => {
     const sessionToken = localStorage.getItem('elmsSessionToken');
@@ -3510,29 +3770,15 @@
 
     btn.disabled = true;
     statusEl.className = '';
-    statusEl.textContent = 'Saving marketplace\u2026';
+    statusEl.textContent = 'Redirecting to eBay\u2026';
 
     try {
-      // Save the chosen marketplace to this user's seller settings first,
-      // so it's already set by the time they finish connecting eBay.
-      const saveRes = await apiFetch('/api/seller-settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ marketplaceId }),
-      });
-      const saveData = await saveRes.json();
-      if (!saveRes.ok || !saveData.success) {
-        statusEl.className = 'error';
-        statusEl.textContent = saveData.error || 'Could not save the marketplace.';
-        btn.disabled = false;
-        return;
-      }
-
-      statusEl.textContent = 'Redirecting to eBay\u2026';
-
       // /start needs the token as a query param (not a header) since the
-      // frontend is about to navigate the whole page to eBay's site.
-      const res = await fetch(`${API_BASE}/api/ebay-connect/start?token=${encodeURIComponent(sessionToken)}`);
+      // frontend is about to navigate the whole page to eBay's site. The
+      // marketplace is passed directly here (rather than saved to settings
+      // first) since this connection may become a brand-new account with
+      // no settings of its own yet.
+      const res = await fetch(`${API_BASE}/api/ebay-connect/start?token=${encodeURIComponent(sessionToken)}&marketplaceId=${encodeURIComponent(marketplaceId)}`);
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -3550,31 +3796,15 @@
     }
   });
 
-  document.getElementById('disconnectEbayBtn').addEventListener('click', async () => {
-    if (!confirm('Disconnect your eBay account? You will need to reconnect before publishing again.')) return;
-
-    try {
-      const res = await apiFetch('/api/ebay-connect/disconnect', { method: 'POST' });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        alert(data.error || 'Could not disconnect.');
-        return;
-      }
-
-      refreshEbayConnectionStatus();
-    } catch (err) {
-      alert('Could not connect to the server: ' + err.message);
-    }
-  });
-
   // Remembers the last-loaded settings so we can re-select the saved value
   // once the dropdowns are populated with fetched options.
   let savedSellerSettings = {};
 
   async function loadSellerSettings() {
+    if (!selectedPoliciesAccountId) return;
+
     try {
-      const res = await apiFetch('/api/seller-settings');
+      const res = await apiFetch(`/api/seller-settings?accountId=${encodeURIComponent(selectedPoliciesAccountId)}`);
       const data = await res.json();
 
       if (!res.ok || !data.success) return;
@@ -3586,6 +3816,20 @@
       // connected - if they aren't, the dropdowns just stay on the
       // placeholder option until they click "Fetch from eBay" themselves.
       await fetchAndPopulateEbayPolicies({ silent: true });
+
+      // If the user previously chose "Custom" for their product location,
+      // restore that view (select the option and reveal the fields) since
+      // populateSelect() above won't find a matching merchant location key.
+      if (savedSellerSettings.productLocationMode === 'custom') {
+        document.getElementById('settingMerchantLocationKey').value = '__custom__';
+        document.getElementById('customLocationFields').style.display = 'block';
+        if (savedSellerSettings.customCountryCode) {
+          document.getElementById('customLocationCountry').value = savedSellerSettings.customCountryCode;
+        }
+        if (savedSellerSettings.customPostalCode) {
+          document.getElementById('customLocationPostalCode').value = savedSellerSettings.customPostalCode;
+        }
+      }
     } catch (err) {
       // Silently leave the fields blank if this fails - the user can still fetch manually.
     }
@@ -3602,6 +3846,14 @@
     const statusEl = document.getElementById('fetchPoliciesStatus');
     const btn = document.getElementById('fetchEbayPoliciesBtn');
 
+    if (!selectedPoliciesAccountId) {
+      if (!silent) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Please connect and select an eBay account first.';
+      }
+      return;
+    }
+
     if (!silent) {
       btn.disabled = true;
       statusEl.className = '';
@@ -3610,7 +3862,7 @@
 
     try {
       const marketplaceId = document.getElementById('settingMarketplaceId').value || 'EBAY_US';
-      const res = await apiFetch(`/api/seller-settings/ebay-policies?marketplaceId=${encodeURIComponent(marketplaceId)}`);
+      const res = await apiFetch(`/api/seller-settings/ebay-policies?accountId=${encodeURIComponent(selectedPoliciesAccountId)}&marketplaceId=${encodeURIComponent(marketplaceId)}`);
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -3654,15 +3906,88 @@
 
   document.getElementById('fetchEbayPoliciesBtn').addEventListener('click', () => fetchAndPopulateEbayPolicies());
 
+  // Show/hide the custom postal code fields based on the dropdown selection.
+  document.getElementById('settingMerchantLocationKey').addEventListener('change', (e) => {
+    document.getElementById('customLocationFields').style.display = e.target.value === '__custom__' ? 'block' : 'none';
+  });
+
+  document.getElementById('lookupPostalCodeBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('lookupPostalCodeBtn');
+    const resultEl = document.getElementById('postalLookupResult');
+    const country = document.getElementById('customLocationCountry').value;
+    const postalCode = document.getElementById('customLocationPostalCode').value.trim();
+
+    if (!postalCode) {
+      resultEl.className = 'error';
+      resultEl.textContent = 'Please enter a postal code first.';
+      return;
+    }
+
+    btn.disabled = true;
+    resultEl.className = '';
+    resultEl.textContent = 'Looking up\u2026';
+
+    try {
+      const res = await apiFetch(`/api/seller-settings/postal-lookup?country=${encodeURIComponent(country)}&postalCode=${encodeURIComponent(postalCode)}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        resultEl.className = 'error';
+        resultEl.textContent = data.error || 'That postal code could not be found.';
+        return;
+      }
+
+      const loc = data.location;
+      resultEl.className = 'success';
+      resultEl.textContent = `Found: ${loc.placeName || ''}${loc.state ? ', ' + loc.state : ''}, ${loc.countryName || ''}`;
+    } catch (err) {
+      resultEl.className = 'error';
+      resultEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   document.getElementById('saveSellerSettingsBtn').addEventListener('click', async () => {
     const statusEl = document.getElementById('sellerSettingsStatus');
     const btn = document.getElementById('saveSellerSettingsBtn');
 
-    const merchantLocationKey = document.getElementById('settingMerchantLocationKey').value.trim();
+    if (!selectedPoliciesAccountId) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Please connect and select an eBay account first.';
+      return;
+    }
+
+    const locationSelection = document.getElementById('settingMerchantLocationKey').value.trim();
+    const isCustomLocation = locationSelection === '__custom__';
+
     const paymentPolicyId = document.getElementById('settingPaymentPolicyId').value.trim();
     const fulfillmentPolicyId = document.getElementById('settingFulfillmentPolicyId').value.trim();
     const returnPolicyId = document.getElementById('settingReturnPolicyId').value.trim();
     const marketplaceId = document.getElementById('settingMarketplaceId').value.trim() || 'EBAY_US';
+
+    const body = {
+      accountId: selectedPoliciesAccountId,
+      paymentPolicyId,
+      fulfillmentPolicyId,
+      returnPolicyId,
+      marketplaceId,
+      productLocationMode: isCustomLocation ? 'custom' : 'merchant',
+    };
+
+    if (isCustomLocation) {
+      const customPostalCode = document.getElementById('customLocationPostalCode').value.trim();
+      if (!customPostalCode) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Please enter a postal code for your custom product location.';
+        return;
+      }
+      body.customCountryCode = document.getElementById('customLocationCountry').value;
+      body.customPostalCode = customPostalCode;
+      body.merchantLocationKey = ''; // not using a saved merchant location in this mode
+    } else {
+      body.merchantLocationKey = locationSelection;
+    }
 
     btn.disabled = true;
     statusEl.className = '';
@@ -3672,7 +3997,7 @@
       const res = await apiFetch('/api/seller-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ merchantLocationKey, paymentPolicyId, fulfillmentPolicyId, returnPolicyId, marketplaceId }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
 
@@ -3763,6 +4088,12 @@
             <label>Sell price</label>
             <input type="number" id="draftEditSellPrice" step="0.01" value="${listing.sell_price ?? ''}" style="width:100px;" />
           </div>
+          <div class="publish-field">
+            <label>Publish to</label>
+            <select class="editable-input" id="draftPublishAccountSelect" style="width:180px;">
+              <option value="">Loading accounts&hellip;</option>
+            </select>
+          </div>
           <button class="btn-outline" id="draftEditPriceBtn" type="button">Edit price</button>
           <button class="btn-publish" id="draftDetailPublishBtn">Publish to eBay</button>
         </div>
@@ -3770,6 +4101,8 @@
       `;
       wireDraftDetailButtons(listing, null);
       wireDraftPriceButton(listing, null);
+      populateDraftPublishAccountSelect();
+      autoSuggestCategory(listing.title, document.getElementById('draftEditCategoryId'));
       return;
     }
 
@@ -3805,6 +4138,12 @@
         <div class="publish-field">
           <label>Sell price</label>
           <input type="number" id="draftEditSellPrice" step="0.01" value="${listing.sell_price ?? ''}" style="width:100px;" />
+        </div>
+        <div class="publish-field">
+          <label>Publish to</label>
+          <select class="editable-input" id="draftPublishAccountSelect" style="width:180px;">
+            <option value="">Loading accounts&hellip;</option>
+          </select>
         </div>
         <button class="btn-outline" id="draftEditPriceBtn" type="button">Edit price</button>
         <button class="btn-publish" id="draftDetailPublishBtn">Publish to eBay</button>
@@ -3846,6 +4185,8 @@
 
     wireDraftDetailButtons(listing, product);
     wireDraftPriceButton(listing, product);
+    populateDraftPublishAccountSelect();
+    autoSuggestCategory(listing.title || product.title, document.getElementById('draftEditCategoryId'));
   }
 
   function getEditedDraftProduct(baseProduct) {
@@ -3891,6 +4232,35 @@
     });
   }
 
+  /**
+   * Populates the "Publish to" account selector in the Draft Detail Modal
+   * with the user's connected eBay accounts. If they have only one, it's
+   * selected automatically; with several, they must choose.
+   */
+  async function populateDraftPublishAccountSelect() {
+    const selectEl = document.getElementById('draftPublishAccountSelect');
+    if (!selectEl) return;
+
+    try {
+      const res = await apiFetch('/api/ebay-accounts');
+      const data = await res.json();
+
+      if (!res.ok || !data.success || !data.accounts.length) {
+        selectEl.innerHTML = '<option value="">Connect an eBay account in Settings</option>';
+        return;
+      }
+
+      selectEl.innerHTML = data.accounts
+        .map((acc) => `<option value="${acc.id}">${escapeHtml(acc.ebayUserId)}</option>`)
+        .join('');
+
+      const activeAccount = data.accounts.find((a) => a.isActive);
+      if (activeAccount) selectEl.value = activeAccount.id;
+    } catch (err) {
+      selectEl.innerHTML = '<option value="">Could not load accounts</option>';
+    }
+  }
+
   function wireDraftDetailButtons(listing, product) {
     const publishBtn = document.getElementById('draftDetailPublishBtn');
     const statusEl = document.getElementById('draftDetailStatus');
@@ -3900,10 +4270,16 @@
       const quantity = Number(document.getElementById('draftEditQuantity').value) || 1;
       const sellPrice = Number(document.getElementById('draftEditSellPrice').value) || null;
       const title = product ? getEditedDraftProduct(product).title : document.getElementById('draftEditTitle')?.value;
+      const accountId = document.getElementById('draftPublishAccountSelect')?.value;
 
       statusEl.className = '';
       statusEl.textContent = '';
 
+      if (!accountId) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Please choose which eBay account to publish to.';
+        return;
+      }
       if (!categoryId) {
         statusEl.className = 'error';
         statusEl.textContent = 'Please enter an eBay category ID.';
@@ -3931,7 +4307,11 @@
           return;
         }
 
-        const res = await apiFetch(`/api/listings/${listing.id}/publish`, { method: 'POST' });
+        const res = await apiFetch(`/api/listings/${listing.id}/publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accountId }),
+        });
         const data = await res.json();
 
         if (!res.ok || !data.success) {
@@ -4182,7 +4562,7 @@
       container.innerHTML = `
         <table class="data-table">
           <thead>
-            <tr><th>User</th><th>Role</th><th>Credits</th><th>Stock check (days)</th><th></th></tr>
+            <tr><th>User</th><th>Role</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
           </thead>
           <tbody>
             ${data.users.map((u) => `
@@ -4191,6 +4571,7 @@
                 <td>${escapeHtml(u.role)}</td>
                 <td><input class="editable-input" data-field="creditBalance" type="number" value="${u.creditBalance}" style="width:100px;" /></td>
                 <td><input class="editable-input" data-field="stockCheckIntervalDays" type="number" min="1" value="${u.stockCheckIntervalDays}" style="width:80px;" /></td>
+                <td><input class="editable-input" data-field="maxEbayAccounts" type="number" min="0" value="${u.maxEbayAccounts ?? 1}" style="width:80px;" /></td>
                 <td><button class="btn-small save" data-action="save-user">Save</button></td>
               </tr>
             `).join('')}
@@ -4212,6 +4593,7 @@
       saveBtn.addEventListener('click', async () => {
         const creditBalance = Number(row.querySelector('[data-field="creditBalance"]').value);
         const stockCheckIntervalDays = Number(row.querySelector('[data-field="stockCheckIntervalDays"]').value);
+        const maxEbayAccounts = Number(row.querySelector('[data-field="maxEbayAccounts"]').value);
 
         saveBtn.disabled = true;
         saveBtn.textContent = 'Saving\u2026';
@@ -4236,6 +4618,17 @@
           const intervalData = await intervalRes.json();
           if (!intervalRes.ok || !intervalData.success) {
             alert(intervalData.error || 'Could not update the stock check interval.');
+            return;
+          }
+
+          const maxAccountsRes = await apiFetch(`/api/admin/users/${userId}/max-ebay-accounts`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ max: maxEbayAccounts }),
+          });
+          const maxAccountsData = await maxAccountsRes.json();
+          if (!maxAccountsRes.ok || !maxAccountsData.success) {
+            alert(maxAccountsData.error || 'Could not update the max eBay accounts limit.');
             return;
           }
 
