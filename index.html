@@ -557,6 +557,25 @@
     align-items: center;
     gap: 14px;
   }
+  .credit-balance-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--gradient-primary);
+    color: #fff;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.25);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .credit-balance-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(124,58,237,0.35);
+  }
+  .credit-balance-chip svg { width: 15px; height: 15px; }
   .user-chip {
     display: none;
     align-items: center;
@@ -1497,6 +1516,10 @@
         <div class="subline" id="pageSubline">Paste an Amazon link, price it, send it to eBay.</div>
       </div>
       <div class="auth-area">
+        <a href="#" class="credit-balance-chip" id="creditBalanceChip" data-page="pricing" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4"/><path d="M9 15a3 3 0 0 0 6 0"/></svg>
+          <span id="creditBalanceAmount">0</span> credits
+        </a>
         <div id="googleSignInDiv"></div>
         <div class="user-chip" id="userChip">
           <img id="userAvatar" src="" alt="" />
@@ -2031,6 +2054,7 @@
       setPipelineStep('price');
       renderProduct(data.product, data.suggestedPrice);
       refreshDraftsCountBadge();
+      refreshCreditBalanceChip();
     } catch (err) {
       row.remove();
       const errorRow = document.createElement('div');
@@ -2618,6 +2642,7 @@
     document.getElementById('userName').textContent = user.name || user.username || user.email || '';
     document.getElementById('userChip').style.display = 'flex';
     document.getElementById('sidebarFooter').textContent = user.googleId ? 'Signed in via Google' : 'Signed in';
+    updateCreditBalanceChip(user.creditBalance);
     refreshDraftsCountBadge();
     populateSidebarEbayWidget();
 
@@ -2627,6 +2652,38 @@
     if (params.get('goToAdminPanel') === 'true' && user.role === 'admin') {
       showPage('admin');
       window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+
+  /**
+   * Updates the credit balance chip in the topbar (like AutoDS's balance
+   * display next to its "Buy Credits" button), so the user always knows
+   * how many credits they have left without hunting for it.
+   */
+  function updateCreditBalanceChip(creditBalance) {
+    const chip = document.getElementById('creditBalanceChip');
+    if (!chip || creditBalance == null) return;
+    document.getElementById('creditBalanceAmount').textContent = creditBalance.toLocaleString();
+    chip.style.display = 'flex';
+  }
+
+  document.getElementById('creditBalanceChip').addEventListener('click', (e) => {
+    e.preventDefault();
+    showPage('pricing');
+  });
+
+  /**
+   * Re-fetches the current user's credit balance and refreshes the chip -
+   * called after any action that spends or grants credits (imports, stock
+   * checks reflected on next load, purchases) so the number stays accurate.
+   */
+  async function refreshCreditBalanceChip() {
+    try {
+      const res = await apiFetch('/api/auth/me');
+      const data = await res.json();
+      if (res.ok && data.success) updateCreditBalanceChip(data.user.creditBalance);
+    } catch (err) {
+      // Non-critical - the chip just keeps showing its last known value.
     }
   }
 
