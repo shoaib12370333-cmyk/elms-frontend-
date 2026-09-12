@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ELMS Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #1F1F1F;
+    --paper: #FFFFFF;
+    --paper-raised: #FAFAFA;
+    --blue: #0064D2;
+    --blue-dark: #004C9E;
+    --green: #86B817;
+    --green-dark: #6B9412;
+    --red: #E53238;
+    --grey: #767676;
+    --grey-light: #E5E5E5;
+    --line: #E8E8E8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper-raised);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .admin-login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .admin-login-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+  .admin-brand {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .admin-brand .mark {
+    font-family: 'Trebuchet MS', 'Verdana', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: -0.03em;
+  }
+  .admin-brand .tag {
+    display: block;
+    font-size: 12px;
+    color: var(--grey);
+    margin-top: 2px;
+  }
+  .admin-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 20px 0 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .edit-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+  }
+  .admin-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--grey-light);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-top: 5px;
+    transition: border-color 0.15s;
+  }
+  .admin-input:focus {
+    outline: none;
+    border-color: var(--blue);
+  }
+  .admin-submit-btn {
+    width: 100%;
+    margin-top: 22px;
+    height: 46px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .admin-submit-btn:hover { background: var(--blue-dark); }
+  .admin-submit-btn:active { transform: scale(0.98); }
+  .admin-submit-btn:disabled { background: var(--grey-light); cursor: not-allowed; }
+  .admin-status {
+    margin-top: 12px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .admin-status.error { color: var(--red); }
+  .admin-status.success { color: var(--green-dark); }
+</style>
+</head>
+<body>
+
+<div class="admin-login-page">
+  <div class="admin-login-card">
+    <div class="admin-brand">
+      <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
+      <span class="tag">listing pipeline</span>
+    </div>
+    <div class="admin-title">Admin sign in</div>
+
+    <label class="edit-label">Email</label>
+    <input type="email" class="admin-input" id="adminEmail" placeholder="you@example.com" />
+    <label class="edit-label" style="margin-top:12px;">Password</label>
+    <input type="password" class="admin-input" id="adminPassword" placeholder="••••••••" />
+    <button class="admin-submit-btn" id="adminLoginBtn">Log in</button>
+    <div id="adminLoginStatus" class="admin-status"></div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'https://elms-backend-1-tr5h.onrender.com';
+
+  async function attemptAdminLogin() {
+    const btn = document.getElementById('adminLoginBtn');
+    const statusEl = document.getElementById('adminLoginStatus');
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value;
+
+    if (!email || !password) {
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = 'Please enter your email and password.';
+      return;
+    }
+
+    btn.disabled = true;
+    statusEl.className = 'admin-status';
+    statusEl.textContent = 'Logging in\u2026';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/admin-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = data.error || 'Could not log in.';
+        btn.disabled = false;
+        return;
+      }
+
+      // Store the session the same way the main app does, so navigating to
+      // the main app afterwards (e.g. from the Admin Panel) stays logged in.
+      localStorage.setItem('elmsSessionToken', data.sessionToken);
+      statusEl.className = 'admin-status success';
+      statusEl.textContent = 'Welcome back! Redirecting\u2026';
+
+      // Redirect into the main app, straight to the Admin Panel page.
+      window.location.href = './?goToAdminPanel=true';
+    } catch (err) {
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('adminLoginBtn').addEventListener('click', attemptAdminLogin);
+  document.getElementById('adminPassword').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') attemptAdminLogin();
+  });
+</script>
+
+</body>
+</html>
