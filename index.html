@@ -1327,7 +1327,9 @@
   .live-draft-field.qty { flex:0 0 58px; }
   .live-draft-field.stock { flex:1 1 105px; }
   .live-draft-field .auto { color:var(--blue); font-size:10px; font-weight:600; }
-  .live-draft-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; width:178px; min-width:178px; flex-shrink:0; box-sizing:border-box; }
+  .live-draft-actions { display:flex; align-items:center; justify-content:flex-end; gap:7px; width:auto; min-width:0; flex-shrink:0; box-sizing:border-box; }
+  .live-draft-actions .pause { background:#fff7e6; color:#8a5a00; border:1px solid #f0d28a; }
+  .live-draft-actions .resume { background:#edf8f1; color:var(--green-dark); border:1px solid #b9dec5; }
   .live-draft-actions .btn-small { height:42px; min-width:58px; padding:0 14px; display:inline-flex; align-items:center; justify-content:center; }
   .live-draft-actions .menu-dots { min-width:40px; width:40px; padding:0; }
   .live-draft-actions .btn-small { white-space:nowrap; }
@@ -1339,9 +1341,9 @@
   .live-draft-menu button { display:block; width:100%; text-align:left; background:none; border:0; padding:10px 14px; font:13px inherit; cursor:pointer; }
   .live-draft-menu button:hover { background:var(--paper-raised); }
   .live-draft-menu .danger { color:var(--red); }
-  @media (max-width:1100px) { .live-draft-row { grid-template-columns:20px 56px minmax(230px,1fr) minmax(330px,.9fr) 170px; gap:10px; } .live-draft-actions { width:170px; min-width:170px; } .live-draft-actions .btn-small { min-width:54px; padding:0 11px; } .live-draft-field.stock { display:none; } }
+  @media (max-width:1100px) { .live-draft-row { grid-template-columns:20px 56px minmax(230px,1fr) minmax(330px,.9fr) 170px; gap:10px; } .live-draft-actions { width:auto; min-width:0; } .live-draft-actions .btn-small { min-width:54px; padding:0 11px; } .live-draft-field.stock { display:none; } }
   @media (max-width:860px) { .live-draft-row { grid-template-columns:20px 56px minmax(180px,1fr) auto; } .live-draft-fields { grid-column:3 / -1; } .live-draft-actions { grid-column:4; grid-row:1; } .live-draft-field.qty { display:none; } }
-  @media (max-width:620px) { .live-draft-row { grid-template-columns:18px 48px minmax(0,1fr) auto; padding:10px 11px; gap:8px; min-height:78px; } .live-draft-thumb { width:48px; height:48px; } .live-draft-title { font-size:13px; } .live-draft-fields { grid-column:3 / -1; gap:5px; } .live-draft-field { height:34px; padding:0 7px; } .live-draft-field.stock, .live-draft-field.qty { display:none; } .live-draft-actions .edit { display:none; } }
+  @media (max-width:620px) { .live-draft-actions .pause, .live-draft-actions .resume { min-width:54px; padding:0 8px; } .live-draft-row { grid-template-columns:18px 48px minmax(0,1fr) auto; padding:10px 11px; gap:8px; min-height:78px; } .live-draft-thumb { width:48px; height:48px; } .live-draft-title { font-size:13px; } .live-draft-fields { grid-column:3 / -1; gap:5px; } .live-draft-field { height:34px; padding:0 7px; } .live-draft-field.stock, .live-draft-field.qty { display:none; } .live-draft-actions .edit { display:none; } }
 
   /* Live Listings: expand the outer card and the inner metric area without making rows tall. */
   .content.listings-wide #listingsContent { width:100%; }
@@ -1364,7 +1366,8 @@
   .content.listings-wide .live-draft-field.margin { flex:1 1 125px; }
   .content.listings-wide .live-draft-field.qty { flex:0 0 68px; }
   .content.listings-wide .live-draft-field.stock { flex:1 1 120px; }
-  .content.listings-wide .live-draft-actions { gap:8px; }
+  .content.listings-wide .live-draft-actions { gap:7px; flex-wrap:nowrap; }
+  .content.listings-wide .live-draft-actions .pause, .content.listings-wide .live-draft-actions .resume { min-width:64px; }
   .content.listings-wide .live-draft-actions .btn-small { min-height:38px; padding:0 15px; }
   @media (max-width:1200px) {
     .content.listings-wide .live-draft-row { grid-template-columns:20px 60px minmax(280px,1.1fr) minmax(330px,1fr) auto; gap:12px; }
@@ -1725,9 +1728,7 @@
   }
   .editable-input:focus { outline: none; border-color: var(--blue); }
 
-  .row-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
-  .live-listings-wrap .row-actions .btn-small { min-width: 58px; }
-  .live-listings-wrap .row-actions .icon-btn { width: 34px; min-width: 34px; flex: 0 0 34px; }
+  .row-actions { display: flex; gap: 6px; white-space: nowrap; }
   .btn-small {
     background: var(--blue);
     color: #fff;
@@ -3751,7 +3752,7 @@
     dashboard: ['Dashboard', 'A quick view of your ELMS activity, publish queue, and results.'],
     import: ['Import a product', 'Paste an Amazon link, price it, send it to eBay.'],
     drafts: ['Drafts', 'Products fetched and saved, ready to publish with one click.'],
-    listings: ['Live listings', 'Everything published to eBay from ELMS.'],
+    listings: ['Live listings', 'Everything published or paused on eBay from ELMS.'],
     orders: ['Orders', 'Orders placed by buyers on your eBay listings.'],
     messages: ['Messages', 'Manage eBay conversations, replies, notes, and saved replies.'],
     history: ['Import history', 'Every Amazon product fetched so far.'],
@@ -5947,6 +5948,7 @@
     if (s === 'published' || s === 'active') return 'active';
     if (s === 'sold' || s === 'completed') return 'sold';
     if (s === 'ended' || s === 'ended_listing') return 'ended';
+    if (s === 'paused' || s === 'withdrawn') return 'paused';
     if (s === 'error' || s === 'issue') return 'issues';
     return s || 'active';
   }
@@ -5955,7 +5957,7 @@
     const container = document.getElementById('listingsContent');
     container.innerHTML = '<p class="state-msg">Loading listings&hellip;</p>';
     try {
-      const res = await apiFetch('/api/listings?status=published');
+      const res = await apiFetch('/api/listings?status=published,paused');
       const data = await res.json();
       if (!res.ok || !data.success) {
         container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load listings.')}</div>`;
@@ -5988,6 +5990,7 @@
       active: llAll.filter((l) => llListingStatus(l) === 'active').length,
       sold: llAll.filter((l) => llListingStatus(l) === 'sold').length,
       ended: llAll.filter((l) => llListingStatus(l) === 'ended').length,
+      paused: llAll.filter((l) => llListingStatus(l) === 'paused').length,
       issues: llAll.filter((l) => llListingStatus(l) === 'issues').length,
     };
     const filtered = llFiltered();
@@ -6000,7 +6003,7 @@
 
     container.innerHTML = `
       <div class="ll-head">
-        <div><h1>Live listings</h1><div class="sub">Everything published to eBay from ELMS.</div></div>
+        <div><h1>Live listings</h1><div class="sub">Everything published or paused on eBay from ELMS.</div></div>
         <div class="ll-head-actions">
           <button class="ll-btn outline" id="llSyncBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync from eBay</button>
           <button class="ll-btn primary" id="llCreateBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create listing</button>
@@ -6008,7 +6011,7 @@
       </div>
 
       <div class="ll-tabs">
-        ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('issues','With issues',counts.issues)}
+        ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('paused','Paused',counts.paused)}${tab('issues','With issues',counts.issues)}
       </div>
 
       <div class="ll-toolbar">
@@ -6045,8 +6048,8 @@
 
   function listingRowHtml(l) {
     const st = llListingStatus(l);
-    const statusLabel = { active:'Published', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || (l.status || 'Published');
-    const statusColor = { active:'var(--green-dark)', sold:'var(--blue)', ended:'var(--grey)', issues:'var(--red)' }[st] || 'var(--grey)';
+    const statusLabel = { active:'Published', paused:'Paused', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || (l.status || 'Published');
+    const statusColor = { active:'var(--green-dark)', paused:'var(--orange, #b7791f)', sold:'var(--blue)', ended:'var(--grey)', issues:'var(--red)' }[st] || 'var(--grey)';
     const currency = CURRENCY_SYMBOLS[l.currency] || '$';
     const amazonPriceNumber = Number(l.amazon_price);
     const amazonPriceDisplay = Number.isFinite(amazonPriceNumber) && amazonPriceNumber > 0
@@ -6083,11 +6086,15 @@
         <div class="live-draft-actions" data-action="stop-propagation">
           <button class="btn-small view" data-action="view" type="button">View</button>
           <button class="btn-small edit" data-action="edit" type="button">Edit</button>
+          ${llListingStatus(l) === 'paused'
+            ? '<button class="btn-small resume" data-action="resume" type="button">Resume</button>'
+            : '<button class="btn-small pause" data-action="pause" type="button">Pause</button>'}
           <div class="live-draft-menu-wrap">
             <button class="btn-small menu-dots" data-action="menu" type="button" title="More">&#8942;</button>
             <div class="live-draft-menu" data-menu>
               <button data-action="edit">Edit listing</button>
-              <button data-action="delete" class="danger">Delete listing</button>
+              ${llListingStatus(l) === 'paused' ? '<button data-action="resume">Resume listing</button>' : '<button data-action="pause">Pause listing</button>'}
+              <button data-action="delete" class="danger">Delete offer permanently</button>
             </div>
           </div>
         </div>
@@ -6165,10 +6172,34 @@
     });
   }
 
+  async function llPauseListing(l) {
+    if (llListingStatus(l) !== 'active') return;
+    if (!confirm('Pause this eBay listing? It will be withdrawn from eBay, but the offer and ELMS listing will be kept so you can resume it later.')) return;
+    try {
+      const res = await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/pause`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not pause this listing.');
+      showToast('Paused', 'The eBay offer was withdrawn and kept in ELMS.', 'success');
+      await loadListings();
+    } catch (err) { alert(err.message || 'Could not pause this listing.'); }
+  }
+
+  async function llResumeListing(l) {
+    if (llListingStatus(l) !== 'paused') return;
+    if (!confirm('Resume this listing on eBay? ELMS will republish the existing offer.')) return;
+    try {
+      const res = await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/resume`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not resume this listing.');
+      showToast('Resumed', 'The existing eBay offer was published again.', 'success');
+      await loadListings();
+    } catch (err) { alert(err.message || 'Could not resume this listing.'); }
+  }
+
   async function llDeleteListing(l, row) {
     const isLive = llListingStatus(l) === 'active';
-    const confirmMsg = isLive
-      ? 'This listing is currently live on eBay. Deleting it here will also end it on eBay. Continue?'
+    const confirmMsg = isLive || llListingStatus(l) === 'paused'
+      ? 'Delete this eBay offer permanently? This removes the offer from eBay and the listing from ELMS. You will not be able to Resume it.'
       : 'Delete this listing from ELMS?';
     if (!confirm(confirmMsg)) return;
     try {
@@ -6204,7 +6235,7 @@
     if (!body) return;
     const currency = CURRENCY_SYMBOLS[l.currency] || '$';
     const st = llListingStatus(l);
-    const statusLabel = { active:'Published', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || l.status || 'Published';
+    const statusLabel = { active:'Published', paused:'Paused', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || l.status || 'Published';
     const images = Array.isArray(l.images) && l.images.length ? l.images : (l.main_image ? [l.main_image] : []);
     const specs = Array.isArray(l.specifications) ? l.specifications : [];
     const aspects = l.ebay_aspects && typeof l.ebay_aspects === 'object' ? Object.entries(l.ebay_aspects) : [];
@@ -6267,6 +6298,10 @@
       const menu = row.querySelector('[data-menu]');
       menuBtn?.addEventListener('click', (e) => { e.stopPropagation(); document.querySelectorAll('.live-draft-menu.open').forEach(m => { if(m!==menu) m.classList.remove('open'); }); menu?.classList.toggle('open'); });
       row.querySelector('[data-action="delete"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) await llDeleteListing(l,row); });
+      row.querySelector('[data-action="pause"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) await llPauseListing(l); });
+      row.querySelector('[data-action="resume"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) await llResumeListing(l); });
+      menu?.querySelector('[data-action="pause"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); menu.classList.remove('open'); if(l) await llPauseListing(l); });
+      menu?.querySelector('[data-action="resume"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); menu.classList.remove('open'); if(l) await llResumeListing(l); });
       menu?.querySelector('[data-action="edit"]')?.addEventListener('click', (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) llEnterEditMode(row,l); menu.classList.remove('open'); });
     });
     document.querySelectorAll('#listingsContent .live-draft-menu').forEach((menu) => {
