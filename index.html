@@ -6062,7 +6062,7 @@
       <div class="live-draft-row" data-listing-id="${escapeAttr(l.id)}" tabindex="0" role="button" aria-label="View details for ${escapeAttr(l.title || l.sku || 'listing')}">
         <input type="checkbox" class="live-draft-check" data-action="select" aria-label="Select listing" />
         ${l.main_image ? `<img class="live-draft-thumb" src="${escapeAttr(l.main_image)}" alt="" data-action="view" />` : '<div class="live-draft-thumb"></div>'}
-        <div class="live-draft-info" data-action="view">
+        <div class="live-draft-info">
           <div class="live-draft-title" title="${escapeAttr(l.title || '')}">${escapeHtml(l.title || 'Untitled listing')}</div>
           <div class="live-draft-meta">
             <span class="supplier-badge">${escapeHtml(l.ebay_account_username || 'eBay')}</span>
@@ -6071,7 +6071,7 @@
             <span style="color:${statusColor};font-weight:600;">● ${escapeHtml(statusLabel)}</span>
           </div>
         </div>
-        <div class="live-draft-fields" data-action="stop-propagation">
+        <div class="live-draft-fields">
           <div class="live-draft-field price" title="Amazon source price and current eBay price">
             <span class="label">Amazon → eBay</span>
             <span class="value">${amazonPriceDisplay} → ${ebayPriceDisplay}</span>
@@ -6084,8 +6084,6 @@
           <div class="live-draft-field stock"><span class="label">Stock</span><span class="value">${escapeHtml(stock)}</span></div>
         </div>
         <div class="live-draft-actions" data-action="stop-propagation">
-          <button class="btn-small view" data-action="view" type="button">View</button>
-          <button class="btn-small edit" data-action="edit" type="button">Edit</button>
           ${llListingStatus(l) === 'paused'
             ? '<button class="btn-small resume" data-action="resume" type="button">Resume</button>'
             : '<button class="btn-small pause" data-action="pause" type="button">Pause</button>'}
@@ -6285,12 +6283,11 @@
       const id = row.getAttribute('data-listing-id');
       const checkbox = row.querySelector('[data-action="select"]');
       const open = (e) => {
-        if (e.target.closest('input, select, textarea, button, a, [data-action="stop-propagation"]')) return;
+        if (e.target.closest('input, select, textarea, button, a')) return;
         openLiveListingDetail(id);
       };
       row.addEventListener('click', open);
       row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLiveListingDetail(id); } });
-      row.querySelectorAll('[data-action="view"]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openLiveListingDetail(id); }));
       checkbox?.addEventListener('click', (e) => e.stopPropagation());
       checkbox?.addEventListener('change', (e) => e.stopPropagation());
       row.querySelector('[data-action="edit"]')?.addEventListener('click', (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) llEnterEditMode(row,l); });
