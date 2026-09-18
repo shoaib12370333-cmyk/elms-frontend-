@@ -765,13 +765,6 @@
     max-width: 1480px;
     width: 100%;
   }
-  /* Live Listings uses the full available workspace like Drafts. */
-  .content.listings-wide {
-    width: 100% !important;
-    max-width: none !important;
-    padding: 14px 14px 20px !important;
-    box-sizing: border-box !important;
-  }
   .content > div {
     animation: pageFadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -1298,109 +1291,6 @@
   .live-listings-wrap .data-table { margin: 0; min-width: 940px; border: 0; border-radius: 12px; }
   .live-listings-wrap .data-table th, .live-listings-wrap .data-table td { padding: 9px 10px; white-space: nowrap; }
   .live-listings-wrap .data-table .row-title { max-width: 360px; white-space: normal; }
-
-
-  /* Live Listings: same compact card language as Drafts. No table/grid rows. */
-  .live-listings-wrap { width:100%; overflow:visible; background:transparent; border:0; border-radius:0; }
-  .live-draft-list { display:flex; flex-direction:column; gap:10px; width:100%; }
-  .live-draft-row {
-    display:grid; grid-template-columns:20px 64px minmax(300px,1.05fr) minmax(400px,.95fr) 178px;
-    align-items:center; gap:14px; width:100%; min-width:0; box-sizing:border-box;
-    background:var(--paper); border:1px solid var(--line); border-radius:12px;
-    padding:12px 16px; min-height:88px; cursor:pointer;
-    transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease;
-  }
-  .live-draft-row:hover { border-color:var(--blue); box-shadow:0 4px 14px rgba(0,0,0,.06); transform:translateY(-1px); }
-  .live-draft-row:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
-  .live-draft-check { width:16px; height:16px; cursor:pointer; }
-  .live-draft-thumb { width:60px; height:60px; object-fit:contain; border-radius:8px; border:1px solid var(--line); background:#fff; flex-shrink:0; }
-  .live-draft-info { min-width:0; overflow:hidden; }
-  .live-draft-title { display:block; width:100%; min-width:0; font-size:15px; font-weight:700; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink); }
-  .live-draft-meta { display:flex; align-items:center; gap:8px; margin-top:5px; font-size:11px; color:var(--grey); flex-wrap:wrap; min-width:0; }
-  .live-draft-meta .supplier-badge { white-space:nowrap; }
-  .live-draft-fields { display:flex; align-items:center; gap:7px; min-width:0; width:100%; overflow:hidden; }
-  .live-draft-field { min-width:0; height:38px; border:1px solid var(--grey-light); border-radius:8px; background:#fff; padding:0 9px; display:flex; flex-direction:column; justify-content:center; overflow:hidden; }
-  .live-draft-field .label { font-size:9px; line-height:1.1; color:var(--grey); white-space:nowrap; }
-  .live-draft-field .value { margin-top:2px; font-size:12px; line-height:1.1; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .live-draft-field.price { flex:1 1 115px; }
-  .live-draft-field.margin { flex:1 1 105px; }
-  .live-draft-field.qty { flex:0 0 58px; }
-  .live-draft-field.stock { flex:1 1 105px; }
-  .live-draft-field .auto { color:var(--blue); font-size:10px; font-weight:600; }
-  .live-draft-actions { display:flex; align-items:center; justify-content:flex-end; gap:7px; width:auto; min-width:0; flex-shrink:0; box-sizing:border-box; }
-  .live-draft-actions .pause { background:#fff7e6; color:#8a5a00; border:1px solid #f0d28a; }
-  .live-draft-actions .resume { background:#edf8f1; color:var(--green-dark); border:1px solid #b9dec5; }
-  .live-draft-actions .btn-small { height:42px; min-width:58px; padding:0 14px; display:inline-flex; align-items:center; justify-content:center; }
-  .live-draft-actions .menu-dots { min-width:40px; width:40px; padding:0; }
-  .live-draft-actions .btn-small { white-space:nowrap; }
-  .live-draft-actions .view { background:var(--blue); color:#fff; }
-  .live-draft-actions .view:hover { background:var(--blue-dark); }
-  .live-draft-menu-wrap { position:relative; }
-  .live-draft-menu { display:none; position:absolute; right:0; top:calc(100% + 4px); z-index:30; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,.12); min-width:150px; overflow:hidden; }
-  .live-draft-menu.open { display:block; }
-  .live-draft-menu button { display:block; width:100%; text-align:left; background:none; border:0; padding:10px 14px; font:13px inherit; cursor:pointer; }
-  .live-draft-menu button:hover { background:var(--paper-raised); }
-  .live-draft-menu .danger { color:var(--red); }
-  @media (max-width:1100px) { .live-draft-row { grid-template-columns:20px 56px minmax(230px,1fr) minmax(330px,.9fr) 170px; gap:10px; } .live-draft-actions { width:auto; min-width:0; } .live-draft-actions .btn-small { min-width:54px; padding:0 11px; } .live-draft-field.stock { display:none; } }
-  @media (max-width:860px) { .live-draft-row { grid-template-columns:20px 56px minmax(180px,1fr) auto; } .live-draft-fields { grid-column:3 / -1; } .live-draft-actions { grid-column:4; grid-row:1; } .live-draft-field.qty { display:none; } }
-  @media (max-width:620px) { .live-draft-actions .pause, .live-draft-actions .resume { min-width:54px; padding:0 8px; } .live-draft-row { grid-template-columns:18px 48px minmax(0,1fr) auto; padding:10px 11px; gap:8px; min-height:78px; } .live-draft-thumb { width:48px; height:48px; } .live-draft-title { font-size:13px; } .live-draft-fields { grid-column:3 / -1; gap:5px; } .live-draft-field { height:34px; padding:0 7px; } .live-draft-field.stock, .live-draft-field.qty { display:none; } .live-draft-actions .edit { display:none; } }
-
-  /* Live Listings: expand the outer card and the inner metric area without making rows tall. */
-  .content.listings-wide #listingsContent { width:100%; }
-  .content.listings-wide .live-draft-list { width:100%; gap:10px; }
-  .content.listings-wide .live-draft-row {
-    grid-template-columns:20px 64px minmax(330px,1.25fr) minmax(420px,1.35fr) auto;
-    gap:16px;
-    min-height:96px;
-    padding:12px 18px;
-    border-radius:14px;
-  }
-  .content.listings-wide .live-draft-thumb { width:64px; height:64px; border-radius:9px; }
-  .content.listings-wide .live-draft-title { font-size:16px; }
-  .content.listings-wide .live-draft-meta { margin-top:6px; font-size:12px; gap:9px; }
-  .content.listings-wide .live-draft-fields { gap:9px; overflow:visible; }
-  .content.listings-wide .live-draft-field { height:44px; padding:0 11px; border-radius:9px; }
-  .content.listings-wide .live-draft-field .label { font-size:10px; }
-  .content.listings-wide .live-draft-field .value { font-size:13px; }
-  .content.listings-wide .live-draft-field.price { flex:1.3 1 170px; }
-  .content.listings-wide .live-draft-field.margin { flex:1 1 125px; }
-  .content.listings-wide .live-draft-field.qty { flex:0 0 68px; }
-  .content.listings-wide .live-draft-field.stock { flex:1 1 120px; }
-  .content.listings-wide .live-draft-actions { gap:7px; flex-wrap:nowrap; }
-  .content.listings-wide .live-draft-actions .pause, .content.listings-wide .live-draft-actions .resume { min-width:64px; }
-  .content.listings-wide .live-draft-actions .btn-small { min-height:38px; padding:0 15px; }
-  @media (max-width:1200px) {
-    .content.listings-wide .live-draft-row { grid-template-columns:20px 60px minmax(280px,1.1fr) minmax(330px,1fr) auto; gap:12px; }
-    .content.listings-wide .live-draft-field.stock { display:none; }
-  }
-
-  /* Published listing detail modal */
-  #liveListingDetailModal .modal-box { max-width:980px; padding:0; overflow:hidden; max-height:90vh; display:flex; flex-direction:column; }
-  .lld-header { display:flex; align-items:center; gap:12px; padding:18px 20px; border-bottom:1px solid var(--line); }
-  .lld-header-ico { width:42px; height:42px; border-radius:11px; background:#E7F0FD; color:var(--blue); display:grid; place-items:center; flex-shrink:0; }
-  .lld-header-ico svg { width:21px; height:21px; }
-  .lld-header h2 { margin:0; font-size:18px; font-weight:800; }
-  .lld-header .sub { margin-top:3px; font-size:12px; color:var(--grey); }
-  .lld-close { margin-left:auto; width:34px; height:34px; border:1px solid var(--line); border-radius:9px; background:#fff; font-size:20px; cursor:pointer; color:var(--grey); }
-  .lld-body { overflow:auto; padding:20px; }
-  .lld-top { display:grid; grid-template-columns:120px 1fr; gap:18px; align-items:start; margin-bottom:20px; }
-  .lld-image { width:120px; height:120px; object-fit:contain; border:1px solid var(--line); border-radius:12px; background:#fff; }
-  .lld-title { margin:0 0 7px; font-size:20px; line-height:1.25; }
-  .lld-subline { display:flex; flex-wrap:wrap; gap:7px; }
-  .lld-pill { display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; background:var(--paper-raised); color:var(--grey); font-size:11px; font-weight:600; border:1px solid var(--line); }
-  .lld-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:18px; }
-  .lld-stat { border:1px solid var(--line); border-radius:10px; padding:11px 12px; background:#fff; }
-  .lld-stat .label { font-size:11px; color:var(--grey); margin-bottom:4px; }
-  .lld-stat .value { font-size:14px; font-weight:750; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .lld-section { border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-top:12px; background:#fff; }
-  .lld-section-title { padding:10px 12px; background:var(--paper-raised); border-bottom:1px solid var(--line); font-size:12px; font-weight:800; }
-  .lld-section-body { padding:12px; font-size:12px; line-height:1.55; color:var(--ink); }
-  .lld-specs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0; }
-  .lld-spec { padding:8px 10px; border-bottom:1px solid var(--line); }
-  .lld-spec b { color:var(--grey); font-size:11px; display:block; margin-bottom:2px; }
-  .lld-images { display:flex; gap:8px; overflow:auto; padding:12px; }
-  .lld-images img { width:64px; height:64px; object-fit:contain; border:1px solid var(--line); border-radius:8px; background:#fff; flex-shrink:0; }
-  @media (max-width:720px) { .lld-top { grid-template-columns:80px 1fr; } .lld-image { width:80px; height:80px; } .lld-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .lld-specs { grid-template-columns:1fr; } }
 
   /* --- Live Listings page --- */
   .ll-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
@@ -3336,24 +3226,6 @@
         </div>
 
         <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Auto Order</div>
-          <p class="meta-line">Choose how ELMS handles new eBay orders. Full-Auto remains locked until a supported buyer-account ordering integration is connected.</p>
-          <div class="publish-rail" style="border-top:none; padding-top:0;">
-            <div class="publish-field">
-              <label>Order mode</label>
-              <select class="editable-input" id="autoOrderModeSelect" style="width:260px;">
-                <option value="disabled">Disabled</option>
-                <option value="semi_auto">Semi-Auto — I place the Amazon order</option>
-                <option value="full_auto">Full-Auto — place automatically</option>
-              </select>
-            </div>
-          </div>
-          <div id="autoOrderInfo" style="margin-top:12px; padding:11px 13px; border:1px solid var(--line); border-radius:10px; background:var(--paper-raised); font-size:12.5px; color:var(--grey);">Loading Auto Order status…</div>
-          <button class="btn-publish" id="saveAutoOrderBtn" style="margin-top:12px;">Save Auto Order settings</button>
-          <div id="autoOrderStatus" style="margin-top:10px;"></div>
-        </div>
-
-        <div class="product-card">
           <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Business policies</div>
           <div class="publish-field" style="margin-bottom:16px;">
             <label>Editing settings for</label>
@@ -3660,19 +3532,6 @@
   </div>
 </div>
 
-
-<!-- Live Listing Detail Modal -->
-<div class="modal-overlay" id="liveListingDetailModal">
-  <div class="modal-box">
-    <div class="lld-header">
-      <div class="lld-header-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>
-      <div><h2>Listing details</h2><div class="sub">Published listing information from ELMS.</div></div>
-      <button class="lld-close" id="liveListingDetailCloseBtn" aria-label="Close">&times;</button>
-    </div>
-    <div class="lld-body" id="liveListingDetailBody"><div class="state-msg" style="padding:20px;">Loading&hellip;</div></div>
-  </div>
-</div>
-
 <!-- Schedule Modal -->
 <div class="modal-overlay" id="scheduleModal">
   <div class="modal-box" style="max-width:420px;">
@@ -3752,12 +3611,12 @@
     dashboard: ['Dashboard', 'A quick view of your ELMS activity, publish queue, and results.'],
     import: ['Import a product', 'Paste an Amazon link, price it, send it to eBay.'],
     drafts: ['Drafts', 'Products fetched and saved, ready to publish with one click.'],
-    listings: ['Live listings', 'Everything published or paused on eBay from ELMS.'],
+    listings: ['Live listings', 'Everything published to eBay from ELMS.'],
     orders: ['Orders', 'Orders placed by buyers on your eBay listings.'],
     messages: ['Messages', 'Manage eBay conversations, replies, notes, and saved replies.'],
     history: ['Import history', 'Every Amazon product fetched so far.'],
     'research-tools': ['Research Tools', 'Keyword ranks, reviews, categories, and more - live from Amazon.'],
-    settings: ['Settings', 'Manage eBay accounts, order automation, sync, and business policies.'],
+    settings: ['Settings', 'Connect your eBay account and set your business policies.'],
     pricing: ['Buy Credits', 'Purchase credits to import products and monitor stock.'],
     support: ['Support', 'Open a ticket if you need more credits or run into an issue.'],
     admin: ['Admin', 'Manage users, credits, and support tickets.'],
@@ -3766,7 +3625,6 @@
   function showPage(page) {
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts');
-    document.querySelector('.content')?.classList.toggle('listings-wide', page === 'listings');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
@@ -4902,7 +4760,7 @@
       } finally { clearTimeout(timeout); }
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not request a reset code.');
-      status.className = 'auth-status'; status.textContent = 'Code sent. Check your inbox and spam/junk folder.';
+      status.className = 'auth-status'; status.textContent = 'If an account exists for this email, a 6-digit code has been sent. Check your inbox and spam/junk folder.';
       document.getElementById('forgotStepRequest').style.display = 'none';
       document.getElementById('forgotStepReset').style.display = 'block';
       document.getElementById('forgotCode').focus();
@@ -4927,7 +4785,7 @@
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not reset your password.');
-      status.className='auth-status'; status.textContent='Password reset successfully. Returning to login…';
+      status.className='auth-status'; status.textContent='Password set successfully. You can now log in with your email and password.';
       setTimeout(() => { document.getElementById('loginEmail').value=email; document.getElementById('loginPassword').value=''; showLoginForm(); }, 900);
     } catch (err) {
       status.className='auth-status error'; status.textContent=err.message || 'Could not reset your password.';
@@ -5710,7 +5568,7 @@
       saveBtn.addEventListener('click', async () => {
         const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
         const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
-        const categoryId = l.category_id || '';
+        const categoryId = row.querySelector('[data-field="categoryId"]').value;
 
         saveBtn.disabled = true;
         saveBtn.textContent = 'Saving\u2026';
@@ -5776,7 +5634,7 @@
 
         const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
         const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
-        const categoryId = l.category_id || '';
+        const categoryId = row.querySelector('[data-field="categoryId"]').value;
         const accountId = await ensureSelectedEbayAccountId();
 
         if (!accountId) {
@@ -5948,7 +5806,6 @@
     if (s === 'published' || s === 'active') return 'active';
     if (s === 'sold' || s === 'completed') return 'sold';
     if (s === 'ended' || s === 'ended_listing') return 'ended';
-    if (s === 'paused' || s === 'withdrawn') return 'paused';
     if (s === 'error' || s === 'issue') return 'issues';
     return s || 'active';
   }
@@ -5957,7 +5814,7 @@
     const container = document.getElementById('listingsContent');
     container.innerHTML = '<p class="state-msg">Loading listings&hellip;</p>';
     try {
-      const res = await apiFetch('/api/listings?status=published,paused');
+      const res = await apiFetch('/api/listings?status=published');
       const data = await res.json();
       if (!res.ok || !data.success) {
         container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load listings.')}</div>`;
@@ -5990,7 +5847,6 @@
       active: llAll.filter((l) => llListingStatus(l) === 'active').length,
       sold: llAll.filter((l) => llListingStatus(l) === 'sold').length,
       ended: llAll.filter((l) => llListingStatus(l) === 'ended').length,
-      paused: llAll.filter((l) => llListingStatus(l) === 'paused').length,
       issues: llAll.filter((l) => llListingStatus(l) === 'issues').length,
     };
     const filtered = llFiltered();
@@ -6003,7 +5859,7 @@
 
     container.innerHTML = `
       <div class="ll-head">
-        <div><h1>Live listings</h1><div class="sub">Everything published or paused on eBay from ELMS.</div></div>
+        <div><h1>Live listings</h1><div class="sub">Everything published to eBay from ELMS.</div></div>
         <div class="ll-head-actions">
           <button class="ll-btn outline" id="llSyncBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync from eBay</button>
           <button class="ll-btn primary" id="llCreateBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create listing</button>
@@ -6011,7 +5867,7 @@
       </div>
 
       <div class="ll-tabs">
-        ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('paused','Paused',counts.paused)}${tab('issues','With issues',counts.issues)}
+        ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('issues','With issues',counts.issues)}
       </div>
 
       <div class="ll-toolbar">
@@ -6022,9 +5878,22 @@
 
       ${filtered.length ? `
       <div class="live-listings-wrap">
-        <div class="live-draft-list">
-          ${pageRows.map((l) => listingRowHtml(l)).join('')}
-        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:34px;"><input type="checkbox" id="llSelectAll" /></th>
+              <th>Item</th>
+              <th>Title</th>
+              <th>SKU</th>
+              <th>Price</th>
+              <th>Qty</th>
+              <th>Category ID</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>${pageRows.map((l) => listingRowHtml(l)).join('')}</tbody>
+        </table>
       </div>
       <div class="ll-footer">
         <div class="ll-showing">Showing ${start + 1} to ${Math.min(start + LL_PAGE_SIZE, filtered.length)} of ${filtered.length} listings</div>
@@ -6048,55 +5917,26 @@
 
   function listingRowHtml(l) {
     const st = llListingStatus(l);
-    const statusLabel = { active:'Published', paused:'Paused', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || (l.status || 'Published');
-    const statusColor = { active:'var(--green-dark)', paused:'var(--orange, #b7791f)', sold:'var(--blue)', ended:'var(--grey)', issues:'var(--red)' }[st] || 'var(--grey)';
-    const currency = CURRENCY_SYMBOLS[l.currency] || '$';
-    const amazonPriceNumber = Number(l.amazon_price);
-    const amazonPriceDisplay = Number.isFinite(amazonPriceNumber) && amazonPriceNumber > 0
-      ? `${currency}${amazonPriceNumber.toFixed(2)}`
-      : '—';
-    const ebayPriceDisplay = l.sell_price != null ? `${currency}${Number(l.sell_price).toFixed(2)}` : '—';
-    const margin = l.margin_amount != null ? `${currency}${Number(l.margin_amount).toFixed(2)}` : '—';
-    const stock = l.amazon_in_stock === true ? 'In stock' : l.amazon_in_stock === false ? 'Out of stock' : 'Unknown';
+    const statusColors = { active:'var(--green-dark)', sold:'var(--blue)', ended:'var(--grey)', issues:'var(--red)' };
+    const statusLabel = { active:'Published', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || (l.status || '');
     return `
-      <div class="live-draft-row" data-listing-id="${escapeAttr(l.id)}" tabindex="0" role="button" aria-label="View details for ${escapeAttr(l.title || l.sku || 'listing')}">
-        <input type="checkbox" class="live-draft-check" data-action="select" aria-label="Select listing" />
-        ${l.main_image ? `<img class="live-draft-thumb" src="${escapeAttr(l.main_image)}" alt="" data-action="view" />` : '<div class="live-draft-thumb"></div>'}
-        <div class="live-draft-info">
-          <div class="live-draft-title" title="${escapeAttr(l.title || '')}">${escapeHtml(l.title || 'Untitled listing')}</div>
-          <div class="live-draft-meta">
-            <span class="supplier-badge">${escapeHtml(l.ebay_account_username || 'eBay')}</span>
-            <span>SKU: ${escapeHtml(l.sku || '—')}</span>
-            ${l.asin ? `<span>ASIN: ${escapeHtml(l.asin)}</span>` : ''}
-            <span style="color:${statusColor};font-weight:600;">● ${escapeHtml(statusLabel)}</span>
+      <tr data-listing-id="${l.id}">
+        <td><input type="checkbox" class="ll-row-check" /></td>
+        <td>${l.main_image ? `<img class="row-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="row-thumb"></div>'}</td>
+        <td class="row-title" data-cell="title">${escapeHtml(l.title || '—')}</td>
+        <td data-cell="sku">${escapeHtml(l.sku || '—')}</td>
+        <td data-cell="sellPrice">${l.sell_price != null ? escapeHtml((CURRENCY_SYMBOLS[l.currency] || '$') + Number(l.sell_price).toFixed(2)) : '—'}</td>
+        <td data-cell="quantity">${l.quantity ?? 1}</td>
+        <td data-cell="categoryId">${escapeHtml(l.category_id || '—')}</td>
+        <td><span class="ll-status-dot" style="color:${statusColors[st] || 'var(--grey)'};font-weight:600;font-size:12.5px;">${escapeHtml(statusLabel)}</span>${l.error_message ? `<div style="font-size:11px;color:var(--red);margin-top:4px;max-width:180px;white-space:normal;">${escapeHtml(l.error_message)}</div>` : ''}</td>
+        <td>
+          <div class="row-actions" style="display:flex;align-items:center;">
+            <button class="ll-view-btn" data-action="view">View</button>
+            <button class="ll-menu-btn" data-action="menu" title="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>
           </div>
-        </div>
-        <div class="live-draft-fields">
-          <div class="live-draft-field price" title="Amazon source price and current eBay price">
-            <span class="label">Amazon → eBay</span>
-            <span class="value">${amazonPriceDisplay} → ${ebayPriceDisplay}</span>
-          </div>
-          <div class="live-draft-field margin" title="Saved fixed-dollar margin">
-            <span class="label">Margin</span>
-            <span class="value">${escapeHtml(margin)} <span class="auto">${l.repricing_enabled === false ? 'Fixed' : 'Auto'}</span></span>
-          </div>
-          <div class="live-draft-field qty"><span class="label">Qty</span><span class="value">${escapeHtml(String(l.quantity ?? 1))}</span></div>
-          <div class="live-draft-field stock"><span class="label">Stock</span><span class="value">${escapeHtml(stock)}</span></div>
-        </div>
-        <div class="live-draft-actions" data-action="stop-propagation">
-          ${llListingStatus(l) === 'paused'
-            ? '<button class="btn-small resume" data-action="resume" type="button">Resume</button>'
-            : '<button class="btn-small pause" data-action="pause" type="button">Pause</button>'}
-          <div class="live-draft-menu-wrap">
-            <button class="btn-small menu-dots" data-action="menu" type="button" title="More">&#8942;</button>
-            <div class="live-draft-menu" data-menu>
-              <button data-action="edit">Edit listing</button>
-              ${llListingStatus(l) === 'paused' ? '<button data-action="resume">Resume listing</button>' : '<button data-action="pause">Pause listing</button>'}
-              <button data-action="delete" class="danger">Delete offer permanently</button>
-            </div>
-          </div>
-        </div>
-      </div>`;
+        </td>
+      </tr>
+    `;
   }
 
   function wireListingsPage() {
@@ -6124,8 +5964,8 @@
   function llExportCsv() {
     const rows = llFiltered();
     if (!rows.length) { showToast('Nothing to export', 'No listings in the current view.', ''); return; }
-    const header = ['Title','SKU','Amazon Price','eBay Price','Margin','Qty','Category ID','Status'];
-    const csv = [header.join(',')].concat(rows.map((l) => [l.title, l.sku, l.amazon_price, l.sell_price, l.margin_amount, l.quantity, l.category_id, l.status].map((v) => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','))).join('\n');
+    const header = ['Title','SKU','Price','Qty','Category ID','Status'];
+    const csv = [header.join(',')].concat(rows.map((l) => [l.title, l.sku, l.sell_price, l.quantity, l.category_id, l.status].map((v) => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','))).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -6136,14 +5976,11 @@
 
   function llEnterEditMode(row, l) {
     row.classList.add('ll-row-editing');
-    const titleEl = row.querySelector('.live-draft-title');
-    if (titleEl) titleEl.innerHTML = `<input class="editable-input" data-field="title" value="${escapeAttr(l.title || '')}" style="width:100%;box-sizing:border-box;" />`;
-    const fields = row.querySelector('.live-draft-fields');
-    if (fields) fields.innerHTML = `
-      <div class="live-draft-field price"><span class="label">eBay price</span><input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" style="width:100%;box-sizing:border-box;padding:4px 0;border:0;background:transparent;font-weight:700;" /></div>
-      <div class="live-draft-field qty"><span class="label">Qty</span><input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" style="width:100%;box-sizing:border-box;padding:4px 0;border:0;background:transparent;font-weight:700;" /></div>
-      <div class="live-draft-field margin"><span class="label">Margin</span><span class="value">${l.margin_amount != null ? `${CURRENCY_SYMBOLS[l.currency] || '$'}${Number(l.margin_amount).toFixed(2)}` : '—'}</span></div>`;
-    const actions = row.querySelector('.live-draft-actions');
+    row.querySelector('[data-cell="title"]').innerHTML = `<input class="editable-input" data-field="title" value="${escapeAttr(l.title || '')}" style="width:100%;" />`;
+    row.querySelector('[data-cell="sellPrice"]').innerHTML = `<input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" style="width:90px;" />`;
+    row.querySelector('[data-cell="quantity"]').innerHTML = `<input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" style="width:60px;" />`;
+    row.querySelector('[data-cell="categoryId"]').innerHTML = `<input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" style="width:100px;" />`;
+    const actions = row.querySelector('.row-actions');
     actions.innerHTML = `<button class="btn-small save" data-action="save">Save</button><button class="btn-small" data-action="cancel" style="background:var(--grey-light);color:var(--ink);">Cancel</button>`;
     actions.querySelector('[data-action="cancel"]').addEventListener('click', () => renderListings());
     actions.querySelector('[data-action="save"]').addEventListener('click', async () => {
@@ -6151,7 +5988,7 @@
       const title = row.querySelector('[data-field="title"]').value;
       const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
       const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
-      const categoryId = l.category_id || '';
+      const categoryId = row.querySelector('[data-field="categoryId"]').value;
       saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026';
       try {
         const isLive = llListingStatus(l) === 'active';
@@ -6170,34 +6007,10 @@
     });
   }
 
-  async function llPauseListing(l) {
-    if (llListingStatus(l) !== 'active') return;
-    if (!confirm('Pause this eBay listing? It will be withdrawn from eBay, but the offer and ELMS listing will be kept so you can resume it later.')) return;
-    try {
-      const res = await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/pause`, { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not pause this listing.');
-      showToast('Paused', 'The eBay offer was withdrawn and kept in ELMS.', 'success');
-      await loadListings();
-    } catch (err) { alert(err.message || 'Could not pause this listing.'); }
-  }
-
-  async function llResumeListing(l) {
-    if (llListingStatus(l) !== 'paused') return;
-    if (!confirm('Resume this listing on eBay? ELMS will republish the existing offer.')) return;
-    try {
-      const res = await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/resume`, { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not resume this listing.');
-      showToast('Resumed', 'The existing eBay offer was published again.', 'success');
-      await loadListings();
-    } catch (err) { alert(err.message || 'Could not resume this listing.'); }
-  }
-
   async function llDeleteListing(l, row) {
     const isLive = llListingStatus(l) === 'active';
-    const confirmMsg = isLive || llListingStatus(l) === 'paused'
-      ? 'Delete this eBay offer permanently? This removes the offer from eBay and the listing from ELMS. You will not be able to Resume it.'
+    const confirmMsg = isLive
+      ? 'This listing is currently live on eBay. Deleting it here will also end it on eBay. Continue?'
       : 'Delete this listing from ELMS?';
     if (!confirm(confirmMsg)) return;
     try {
@@ -6209,103 +6022,93 @@
     } catch (err) { alert('Could not connect to the server: ' + err.message); }
   }
 
-  async function openLiveListingDetail(id) {
-    const modal = document.getElementById('liveListingDetailModal');
-    const body = document.getElementById('liveListingDetailBody');
-    if (!modal || !body) return;
-    modal.classList.add('open');
-    body.innerHTML = '<div class="state-msg" style="padding:26px;">Loading listing details&hellip;</div>';
-    const local = llAll.find((x) => String(x.id) === String(id));
+  function wireListingRows() {
+    document.querySelectorAll('#listingsContent tr[data-listing-id]').forEach((row) => {
+      const id = row.getAttribute('data-listing-id');
+      const l = llAll.find((x) => String(x.id) === String(id));
+      if (!l) return;
+      row.querySelector('[data-action="view"]')?.addEventListener('click', () => llEnterEditMode(row, l));
+      row.querySelector('[data-action="menu"]')?.addEventListener('click', () => {
+        // Simple menu: Edit or Delete.
+        const choice = prompt('Type "edit" to edit, or "delete" to remove this listing:', 'edit');
+        if (!choice) return;
+        const c = choice.trim().toLowerCase();
+        if (c === 'edit') llEnterEditMode(row, l);
+        else if (c === 'delete') llDeleteListing(l, row);
+      });
+    });
+  }
+
+  // ---------- Orders page ----------
+  const FULFILLMENT_STATUSES = ['pending', 'ordered_from_amazon', 'shipped', 'delivered'];
+
+  let ordersAccountFilter = '';
+
+  async function loadOrders() {
+    const container = document.getElementById('ordersContent');
+    container.innerHTML = '<p class="state-msg">Loading orders&hellip;</p>';
+
     try {
-      const res = await apiFetch(`/api/listings/${encodeURIComponent(id)}`);
+      const accountsRes = await apiFetch('/api/ebay-accounts');
+      const accountsData = await accountsRes.json();
+      const accounts = (accountsRes.ok && accountsData.success) ? accountsData.accounts : [];
+
+      const filterHtml = accounts.length > 1 ? `
+        <div class="publish-field" style="margin-bottom:16px;">
+          <label>Show orders from</label>
+          <select class="editable-input" id="ordersAccountFilterSelect" style="width:200px;">
+            <option value="">All accounts</option>
+            ${accounts.map((acc) => `<option value="${acc.id}" ${acc.id === ordersAccountFilter ? 'selected' : ''}>${escapeHtml(accountDisplayLabel(acc))}</option>`).join('')}
+          </select>
+        </div>
+      ` : '';
+
+      const query = ordersAccountFilter ? `?accountId=${encodeURIComponent(ordersAccountFilter)}` : '';
+      const res = await apiFetch(`/api/orders${query}`);
       const data = await res.json();
-      const listing = (res.ok && data.success && data.listing) ? data.listing : local;
-      if (!listing) throw new Error('Listing not found.');
-      renderLiveListingDetail(listing);
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load orders.')}</div>`;
+        return;
+      }
+
+      const syncButton = `<button class="btn-outline" id="syncOrdersBtn" style="margin-bottom:16px;">Refresh from eBay</button><div id="syncOrdersStatus" style="margin-bottom:12px;"></div>`;
+
+      if (!data.orders.length) {
+        container.innerHTML = filterHtml + syncButton + '<div class="empty-state">No orders yet. Orders placed by buyers on your eBay listings will show up here - click "Sync orders from eBay" to check now.</div>';
+        wireSyncOrdersButton();
+        wireOrdersAccountFilter();
+        return;
+      }
+
+      container.innerHTML = filterHtml + syncButton + `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Listing</th>
+              <th>Account</th>
+              <th>Buyer</th>
+              <th>Sale price</th>
+              <th>Qty</th>
+              <th>Amazon order ID</th>
+              <th>Fulfillment status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.orders.map((o) => orderRowHtml(o)).join('')}
+          </tbody>
+        </table>
+      `;
+
+      wireOrderRows();
+      wireSyncOrdersButton();
+      wireOrdersAccountFilter();
     } catch (err) {
-      if (local) renderLiveListingDetail(local);
-      else body.innerHTML = `<div class="state-msg error" style="padding:26px;">Could not load listing details: ${escapeHtml(err.message)}</div>`;
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
   }
-
-  function renderLiveListingDetail(l) {
-    const body = document.getElementById('liveListingDetailBody');
-    if (!body) return;
-    const currency = CURRENCY_SYMBOLS[l.currency] || '$';
-    const st = llListingStatus(l);
-    const statusLabel = { active:'Published', paused:'Paused', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || l.status || 'Published';
-    const images = Array.isArray(l.images) && l.images.length ? l.images : (l.main_image ? [l.main_image] : []);
-    const specs = Array.isArray(l.specifications) ? l.specifications : [];
-    const aspects = l.ebay_aspects && typeof l.ebay_aspects === 'object' ? Object.entries(l.ebay_aspects) : [];
-    const bullets = Array.isArray(l.bullet_points) ? l.bullet_points : [];
-    const desc = String(l.description || '').trim();
-    const safeDate = (v) => v ? new Date(v).toLocaleString() : '—';
-    body.innerHTML = `
-      <div class="lld-top">
-        ${l.main_image ? `<img class="lld-image" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="lld-image"></div>'}
-        <div>
-          <h3 class="lld-title">${escapeHtml(l.title || 'Untitled listing')}</h3>
-          <div class="lld-subline">
-            <span class="lld-pill">${escapeHtml(statusLabel)}</span>
-            ${l.sku ? `<span class="lld-pill">SKU: ${escapeHtml(l.sku)}</span>` : ''}
-            ${l.ebay_listing_id ? `<span class="lld-pill">eBay ID: ${escapeHtml(l.ebay_listing_id)}</span>` : ''}
-            ${l.asin ? `<span class="lld-pill">ASIN: ${escapeHtml(l.asin)}</span>` : ''}
-          </div>
-        </div>
-      </div>
-      <div class="lld-grid">
-        <div class="lld-stat"><div class="label">Amazon price</div><div class="value">${l.amazon_price != null ? `${currency}${Number(l.amazon_price).toFixed(2)}` : '—'}</div></div>
-        <div class="lld-stat"><div class="label">eBay price</div><div class="value">${l.sell_price != null ? `${currency}${Number(l.sell_price).toFixed(2)}` : '—'}</div></div>
-        <div class="lld-stat"><div class="label">Margin</div><div class="value">${l.margin_amount != null ? `${currency}${Number(l.margin_amount).toFixed(2)}` : '—'} ${l.repricing_enabled === false ? '(Fixed)' : '(Auto)'}</div></div>
-        <div class="lld-stat"><div class="label">Quantity</div><div class="value">${l.quantity ?? 1}</div></div>
-      </div>
-      <div class="lld-grid">
-        <div class="lld-stat"><div class="label">Category</div><div class="value">${escapeHtml(l.category_id || '—')}</div></div>
-        <div class="lld-stat"><div class="label">Stock</div><div class="value">${l.amazon_in_stock === true ? 'In stock' : l.amazon_in_stock === false ? 'Out of stock' : 'Unknown'}</div></div>
-        <div class="lld-stat"><div class="label">Last repriced</div><div class="value">${escapeHtml(safeDate(l.last_repriced_at))}</div></div>
-        <div class="lld-stat"><div class="label">Last stock check</div><div class="value">${escapeHtml(safeDate(l.last_stock_checked_at || l.last_stock_synced_at))}</div></div>
-      </div>
-      ${desc ? `<div class="lld-section"><div class="lld-section-title">Description</div><div class="lld-section-body">${escapeHtml(desc).replace(/\n/g,'<br>')}</div></div>` : ''}
-      ${bullets.length ? `<div class="lld-section"><div class="lld-section-title">Bullet points</div><div class="lld-section-body"><ul style="margin:0;padding-left:18px;">${bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul></div></div>` : ''}
-      ${specs.length ? `<div class="lld-section"><div class="lld-section-title">Specifications</div><div class="lld-specs">${specs.map((s) => `<div class="lld-spec"><b>${escapeHtml(s.name || s.key || 'Specification')}</b>${escapeHtml(s.value || '')}</div>`).join('')}</div></div>` : ''}
-      ${aspects.length ? `<div class="lld-section"><div class="lld-section-title">eBay item specifics</div><div class="lld-specs">${aspects.map(([k,v]) => `<div class="lld-spec"><b>${escapeHtml(k)}</b>${escapeHtml(Array.isArray(v) ? v.join(', ') : String(v ?? ''))}</div>`).join('')}</div></div>` : ''}
-      ${images.length ? `<div class="lld-section"><div class="lld-section-title">Images</div><div class="lld-images">${images.map((src) => `<img src="${escapeAttr(src)}" alt="" />`).join('')}</div></div>` : ''}
-    `;
-  }
-
-  document.getElementById('liveListingDetailCloseBtn')?.addEventListener('click', () => document.getElementById('liveListingDetailModal')?.classList.remove('open'));
-  document.getElementById('liveListingDetailModal')?.addEventListener('click', (e) => {
-    if (e.target.id === 'liveListingDetailModal') e.currentTarget.classList.remove('open');
-  });
-
-  function wireListingRows() {
-    document.querySelectorAll('#listingsContent .live-draft-row').forEach((row) => {
-      const id = row.getAttribute('data-listing-id');
-      const checkbox = row.querySelector('[data-action="select"]');
-      const open = (e) => {
-        if (e.target.closest('input, select, textarea, button, a')) return;
-        openLiveListingDetail(id);
-      };
-      row.addEventListener('click', open);
-      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLiveListingDetail(id); } });
-      checkbox?.addEventListener('click', (e) => e.stopPropagation());
-      checkbox?.addEventListener('change', (e) => e.stopPropagation());
-      row.querySelector('[data-action="edit"]')?.addEventListener('click', (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) llEnterEditMode(row,l); });
-      const menuBtn = row.querySelector('[data-action="menu"]');
-      const menu = row.querySelector('[data-menu]');
-      menuBtn?.addEventListener('click', (e) => { e.stopPropagation(); document.querySelectorAll('.live-draft-menu.open').forEach(m => { if(m!==menu) m.classList.remove('open'); }); menu?.classList.toggle('open'); });
-      row.querySelector('[data-action="delete"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) await llDeleteListing(l,row); });
-      row.querySelector('[data-action="pause"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) await llPauseListing(l); });
-      row.querySelector('[data-action="resume"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) await llResumeListing(l); });
-      menu?.querySelector('[data-action="pause"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); menu.classList.remove('open'); if(l) await llPauseListing(l); });
-      menu?.querySelector('[data-action="resume"]')?.addEventListener('click', async (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); menu.classList.remove('open'); if(l) await llResumeListing(l); });
-      menu?.querySelector('[data-action="edit"]')?.addEventListener('click', (e) => { e.stopPropagation(); const l=llAll.find(x=>String(x.id)===String(id)); if(l) llEnterEditMode(row,l); menu.classList.remove('open'); });
-    });
-    document.querySelectorAll('#listingsContent .live-draft-menu').forEach((menu) => {
-      menu.addEventListener('click', (e) => e.stopPropagation());
-    });
-  }
-
 
   function wireOrdersAccountFilter() {
     const selectEl = document.getElementById('ordersAccountFilterSelect');
@@ -6361,15 +6164,11 @@
         <td>${escapeHtml(o.buyer_username || '—')}</td>
         <td>${o.sale_price != null ? escapeHtml(String(o.sale_price)) : '—'}</td>
         <td>${o.quantity ?? 1}</td>
-        <td>
-          <input class="editable-input" data-field="amazonOrderId" value="${escapeAttr(o.amazon_order_id || '')}" style="width:130px;" placeholder="Amazon order ID" />
-          <div style="margin-top:5px;font-size:11px;color:var(--grey);">${o.tracking_number ? 'Tracking: ' + escapeHtml(o.tracking_number) : 'No tracking yet'}</div>
-        </td>
+        <td><input class="editable-input" data-field="amazonOrderId" value="${escapeAttr(o.amazon_order_id || '')}" style="width:130px;" placeholder="Not ordered yet" /></td>
         <td><select class="editable-input" data-field="fulfillmentStatus">${statusOptions}</select></td>
         <td>
-          <div class="row-actions" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <div class="row-actions">
             <button class="btn-small save" data-action="save">Save</button>
-            <button class="btn-small" data-action="tracking">Add tracking</button>
           </div>
         </td>
       </tr>
@@ -6407,31 +6206,6 @@
           alert('Could not connect to the server: ' + err.message);
         } finally {
           saveBtn.disabled = false;
-        }
-      });
-
-      const trackingBtn = row.querySelector('[data-action="tracking"]');
-      trackingBtn?.addEventListener('click', async () => {
-        const trackingNumber = prompt('Enter the Amazon/supplier tracking number:', '');
-        if (!trackingNumber || !trackingNumber.trim()) return;
-        const shippingCarrier = prompt('Carrier (optional, e.g. UPS, USPS, FedEx):', '');
-        trackingBtn.disabled = true;
-        trackingBtn.textContent = 'Sending…';
-        try {
-          const res = await apiFetch(`/api/orders/${id}/tracking`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ trackingNumber: trackingNumber.trim(), shippingCarrier: shippingCarrier.trim() }),
-          });
-          const data = await res.json();
-          if (!res.ok || !data.success) throw new Error(data.error || 'Could not save tracking.');
-          showToast('success', 'Tracking updated', 'Tracking was saved and sent to eBay.');
-          loadOrders();
-        } catch (err) {
-          alert(err.message || 'Could not update tracking.');
-        } finally {
-          trackingBtn.disabled = false;
-          trackingBtn.textContent = 'Add tracking';
         }
       });
     });
@@ -7011,7 +6785,6 @@
   async function loadSettingsPage() {
     await loadEbayAccountsList();
     await loadOrderSyncSettings();
-    await loadAutoOrderSettings();
     await loadExtensionKey();
   }
 
@@ -7130,76 +6903,6 @@
     } catch (err) {
       statusEl.className = 'error';
       statusEl.textContent = 'Could not connect to the server: ' + err.message;
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  // ---------- Auto Order Settings ----------
-  async function loadAutoOrderSettings() {
-    const select = document.getElementById('autoOrderModeSelect');
-    const info = document.getElementById('autoOrderInfo');
-    if (!select || !info) return;
-    try {
-      const res = await apiFetch('/api/seller-settings/auto-order');
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load Auto Order settings.');
-      select.value = data.autoOrderMode || 'disabled';
-      renderAutoOrderInfo(data);
-    } catch (err) {
-      info.textContent = err.message || 'Could not load Auto Order status.';
-    }
-  }
-
-  function renderAutoOrderInfo(data) {
-    const info = document.getElementById('autoOrderInfo');
-    if (!info) return;
-    const mode = data.autoOrderMode || 'disabled';
-    if (mode === 'semi_auto') {
-      info.innerHTML = '<strong>Semi-Auto:</strong> ELMS records the eBay order and prepares the Amazon-order workflow. You place the Amazon order manually, then add the Amazon Order ID and tracking in Orders.';
-      return;
-    }
-    if (mode === 'full_auto') {
-      info.innerHTML = data.fullAutoAvailable
-        ? '<strong>Full-Auto:</strong> supported buyer-account automation is available.'
-        : '<strong>Full-Auto is saved but currently locked:</strong> ELMS does not have a supported Amazon buyer-account checkout integration connected yet. No automatic Amazon purchase will be attempted.';
-      return;
-    }
-    info.innerHTML = '<strong>Disabled:</strong> ELMS will not prepare an automatic ordering workflow for new orders.';
-  }
-
-  document.getElementById('autoOrderModeSelect')?.addEventListener('change', async (e) => {
-    const mode = e.target.value;
-    const info = document.getElementById('autoOrderInfo');
-    if (!info) return;
-    renderAutoOrderInfo({ autoOrderMode: mode, fullAutoAvailable: false });
-  });
-
-  document.getElementById('saveAutoOrderBtn')?.addEventListener('click', async () => {
-    const btn = document.getElementById('saveAutoOrderBtn');
-    const status = document.getElementById('autoOrderStatus');
-    const mode = document.getElementById('autoOrderModeSelect').value;
-    if (mode === 'full_auto') {
-      const ok = confirm('Full-Auto is currently unavailable because no supported Amazon buyer-account checkout integration is connected. Save this preference anyway?');
-      if (!ok) return;
-    }
-    btn.disabled = true;
-    status.className = '';
-    status.textContent = 'Saving…';
-    try {
-      const res = await apiFetch('/api/seller-settings/auto-order', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ autoOrderMode: mode, confirmFullAuto: mode === 'full_auto' }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save Auto Order settings.');
-      status.className = 'success';
-      status.textContent = 'Auto Order settings saved.';
-      renderAutoOrderInfo(data.settings || data);
-    } catch (err) {
-      status.className = 'error';
-      status.textContent = err.message || 'Could not save Auto Order settings.';
     } finally {
       btn.disabled = false;
     }
