@@ -2687,6 +2687,116 @@
   #draftsContent .elms-draft-table .draft-menu { min-width:150px !important; right:0 !important; top:calc(100% + 5px) !important; }
   #draftsContent .elms-draft-table .draft-footer { width:100%; }
 
+
+
+  /* ===== AutoDS-style inner sidebar for Drafts ===== */
+  .elms-drafts-layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    width: 100%;
+  }
+  .elms-drafts-inner-sidebar {
+    position: sticky;
+    top: 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 10px;
+    box-shadow: 0 4px 16px rgba(15,23,42,.04);
+  }
+  .elms-inner-side-head {
+    padding: 7px 9px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #94A3B8;
+  }
+  .elms-inner-side-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .elms-inner-side-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 40px;
+    padding: 8px 9px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #475569;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    transition: background .14s ease, color .14s ease;
+  }
+  .elms-inner-side-item:hover {
+    background: #F1F5F9;
+    color: var(--ink);
+  }
+  .elms-inner-side-item.active {
+    background: #EAF1FF;
+    color: var(--blue);
+  }
+  .elms-inner-side-icon {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+    display: grid;
+    place-items: center;
+    color: currentColor;
+  }
+  .elms-inner-side-count {
+    margin-left: auto;
+    min-width: 24px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: #F1F5F9;
+    color: #64748B;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+  }
+  .elms-inner-side-item.active .elms-inner-side-count {
+    background: #D8E6FF;
+    color: var(--blue);
+  }
+  .elms-inner-side-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 10px 8px;
+  }
+  .elms-inner-side-link {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px;
+    border-radius: 8px;
+    color: #64748B;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .elms-inner-side-link:hover { background:#F8FAFC; color:var(--ink); }
+  .elms-drafts-main { min-width: 0; }
+  .elms-drafts-main .elms-drafts-toolbar { margin-top: 0; }
+  @media (max-width: 900px) {
+    .elms-drafts-layout { grid-template-columns: 1fr; }
+    .elms-drafts-inner-sidebar { position: static; }
+    .elms-inner-side-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .elms-inner-side-nav { grid-template-columns: 1fr; }
+  }
+
 </style>
 </head>
 <body>
@@ -5487,8 +5597,33 @@
       }
 
       container.innerHTML = `
-        <div class="elms-drafts-shell">
-          <div class="elms-drafts-toolbar">
+        <div class="elms-drafts-layout">
+          <aside class="elms-drafts-inner-sidebar" aria-label="Draft filters">
+            <div class="elms-inner-side-head">Listing management</div>
+            <nav class="elms-inner-side-nav">
+              <button class="elms-inner-side-item active" type="button" data-inner-status="all">
+                <span class="elms-inner-side-icon">☷</span><span>All products</span><span class="elms-inner-side-count">${allDrafts.length}</span>
+              </button>
+              <button class="elms-inner-side-item" type="button" data-inner-status="draft">
+                <span class="elms-inner-side-icon">□</span><span>Drafts</span><span class="elms-inner-side-count">${counts.draft || 0}</span>
+              </button>
+              <button class="elms-inner-side-item" type="button" data-inner-status="publishing">
+                <span class="elms-inner-side-icon">↗</span><span>Publishing</span><span class="elms-inner-side-count">${counts.publishing || 0}</span>
+              </button>
+              <button class="elms-inner-side-item" type="button" data-inner-status="scheduled">
+                <span class="elms-inner-side-icon">◷</span><span>Scheduled</span><span class="elms-inner-side-count">${counts.scheduled || 0}</span>
+              </button>
+              <button class="elms-inner-side-item" type="button" data-inner-status="error">
+                <span class="elms-inner-side-icon">!</span><span>Failed</span><span class="elms-inner-side-count">${counts.error || 0}</span>
+              </button>
+            </nav>
+            <div class="elms-inner-side-divider"></div>
+            <div class="elms-inner-side-link" data-inner-import>+ Import product</div>
+          </aside>
+
+          <section class="elms-drafts-main">
+            <div class="elms-drafts-shell">
+              <div class="elms-drafts-toolbar">
             <label class="draft-select-all"><input type="checkbox" id="draftSelectAll" /> Select all</label>
             <div class="elms-drafts-search"><input id="draftProductSearch" type="search" placeholder="Search by product title, ASIN or SKU…" /></div>
             <select id="draftStatusFilter" class="elms-drafts-select">
@@ -5518,7 +5653,9 @@
               <tbody id="draftProductList"></tbody>
             </table>
           </div>
-          <div class="draft-footer" id="draftFooter"></div>
+              <div class="draft-footer" id="draftFooter"></div>
+            </div>
+          </section>
         </div>
       `;
 
@@ -5564,7 +5701,28 @@
         if (selectAll) selectAll.checked = false;
         wireDraftRows();
       };
-      ['draftProductSearch','draftStatusFilter','draftSort'].forEach((id) => document.getElementById(id)?.addEventListener('input', () => { draftPage = 1; renderDraftProductList(); }));
+      ['draftProductSearch','draftStatusFilter','draftSort'].forEach((id) => document.getElementById(id)?.addEventListener('input', () => {
+        if (id === 'draftStatusFilter') {
+          const value = document.getElementById(id)?.value || 'all';
+          document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item.getAttribute('data-inner-status') === value));
+        }
+        draftPage = 1;
+        renderDraftProductList();
+      }));
+      document.querySelectorAll('#draftsContent [data-inner-status]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const value = btn.getAttribute('data-inner-status') || 'all';
+          const filter = document.getElementById('draftStatusFilter');
+          if (filter) filter.value = value;
+          document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item === btn));
+          draftPage = 1;
+          renderDraftProductList();
+        });
+      });
+      document.querySelector('#draftsContent [data-inner-import]')?.addEventListener('click', () => {
+        showPage('import');
+        setTimeout(() => document.getElementById('amazonUrl')?.focus(), 50);
+      });
       document.getElementById('draftSelectAll')?.addEventListener('change', (e) => {
         document.querySelectorAll('#draftsContent .draft-checkbox').forEach((cb) => { cb.checked = e.target.checked; });
         updateBulkBar();
