@@ -2002,6 +2002,84 @@
     font-size: 14px;
   }
 
+  /* --- Connected eBay account cards (Settings) --- */
+  #ebayAccountsList { display: flex; flex-direction: column; gap: 12px; }
+  .ebay-account-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    animation: eacRise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .ebay-account-card:nth-child(1) { animation-delay: 0.02s; }
+  .ebay-account-card:nth-child(2) { animation-delay: 0.09s; }
+  .ebay-account-card:nth-child(3) { animation-delay: 0.16s; }
+  .ebay-account-card:hover {
+    border-color: var(--blue);
+    box-shadow: 0 8px 26px rgba(37,99,235,0.10);
+    transform: translateY(-2px);
+  }
+  /* Accent strip that sweeps in on the active account */
+  .ebay-account-card.is-active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--gradient-primary);
+    animation: eacStrip 0.5s ease 0.15s both;
+  }
+  @keyframes eacRise {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes eacStrip {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+  .eac-main { flex: 1 1 260px; min-width: 0; }
+  .eac-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .eac-title { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; }
+  .eac-active-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 700;
+    color: var(--teal-dark); background: #E6FBF7;
+    border: 1px solid #B9EEE4;
+    padding: 3px 9px; border-radius: 999px;
+  }
+  .eac-active-pill::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--teal); animation: eacPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes eacPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(6,182,212,0.5); }
+    50% { box-shadow: 0 0 0 5px rgba(6,182,212,0); }
+  }
+  .eac-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--grey); }
+  .eac-meta b { color: var(--ink); font-weight: 600; }
+  .eac-name-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  .eac-name-row input { flex: 1 1 240px; min-width: 0; }
+  /* Actions sit on their own, top-right, never overlapping the title */
+  .eac-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; align-items: flex-start; }
+  .eac-actions .btn-small { height: 34px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease; }
+  .eac-actions .btn-small:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .eac-actions .btn-activate { background: var(--blue); color: #fff; }
+  .eac-actions .btn-activate:hover { background: var(--blue-dark); }
+  .eac-actions .btn-disconnect { background: #fff; color: var(--red); border: 1px solid #F3C0C0; }
+  .eac-actions .btn-disconnect:hover { background: #FDECEC; }
+  @media (max-width: 620px) {
+    .ebay-account-card { flex-direction: column; }
+    .eac-actions { width: 100%; }
+    .eac-actions .btn-small { flex: 1; }
+  }
+
   .mobile-menu-btn {
     display: none;
     background: none;
@@ -6795,18 +6873,21 @@
         listEl.innerHTML = '<div class="empty-state">No eBay accounts connected yet.</div>';
       } else {
         listEl.innerHTML = currentEbayAccounts.map((acc) => `
-          <div class="draft-row" data-account-id="${acc.id}" style="cursor:default; align-items:flex-start;">
-            <div class="draft-info" style="flex:1; min-width:220px;">
-              <div class="draft-title">${escapeHtml(accountDisplayLabel(acc))} ${acc.isActive ? '<span class="status-badge published">Active</span>' : ''}</div>
-              <div class="draft-meta"><span class="draft-meta-item">eBay ID: ${escapeHtml(acc.ebayUserId)}</span><span class="draft-meta-item">Marketplace: ${escapeHtml(acc.marketplaceId || 'EBAY_US')}</span></div>
-              <div style="display:flex; gap:8px; margin-top:8px; max-width:520px; flex-wrap:wrap;">
-                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="Enter a name for this eBay account" style="flex:1 1 240px; min-width:0; max-width:100%;" />
+          <div class="ebay-account-card ${acc.isActive ? 'is-active' : ''}" data-account-id="${acc.id}">
+            <div class="eac-main">
+              <div class="eac-title-row">
+                <span class="eac-title">${escapeHtml(accountDisplayLabel(acc))}</span>
+                ${acc.isActive ? '<span class="eac-active-pill">Active</span>' : ''}
+              </div>
+              <div class="eac-meta"><span>eBay ID: <b>${escapeHtml(acc.ebayUserId)}</b></span><span>Marketplace: <b>${escapeHtml(acc.marketplaceId || 'EBAY_US')}</b></span></div>
+              <div class="eac-name-row">
+                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="Enter a name for this eBay account" />
                 <button class="btn-small save" data-action="save-name">Save name</button>
               </div>
             </div>
-            <div class="row-actions">
-              ${!acc.isActive ? `<button class="btn-small" data-action="activate-account">Set active</button>` : ''}
-              <button class="btn-small delete" data-action="remove-account">Disconnect</button>
+            <div class="eac-actions">
+              ${!acc.isActive ? `<button class="btn-small btn-activate" data-action="activate-account">Set active</button>` : ''}
+              <button class="btn-small btn-disconnect" data-action="remove-account">Disconnect</button>
             </div>
           </div>
         `).join('');
