@@ -51,6 +51,50 @@
 
   * { box-sizing: border-box; }
 
+  /* Global layout guard: the dashboard must stay inside the viewport.
+     Only intentionally wide data tables/lists may scroll horizontally. */
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .app-shell, .main, .content, .topbar {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .sidebar {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+  .sidebar-brand, .sidebar-ebay-widget, .sidebar-nav, .sidebar-upgrade, .sidebar-footer,
+  .sidebar-nav a, .sidebar-nav-label {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .sidebar-brand .brand-text, .sidebar-nav a, .sidebar-upgrade, .sidebar-footer {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .sidebar-nav a {
+    overflow: hidden;
+  }
+  .sidebar-nav a .nav-badge {
+    flex: 0 0 auto;
+  }
+  .topbar {
+    min-width: 0;
+  }
+  .topbar > * {
+    min-width: 0;
+  }
+  .content > div, .content .product-card, .content .import-lane,
+  .content table, .content .card, .content .panel {
+    max-width: 100%;
+  }
+  .content img, .content video, .content iframe {
+    max-width: 100%;
+  }
+
   html, body {
     margin: 0;
     padding: 0;
@@ -760,6 +804,13 @@
   }
   .content.messages-wide {
     max-width: 1400px;
+  }
+  /* Drafts: wider horizontal canvas without making the cards excessively tall. */
+  .content.drafts-wide {
+    max-width: 1420px;
+  }
+  .content.drafts-wide #page-drafts {
+    width: 100%;
   }
   .content.drafts-wide {
     max-width: 1480px;
@@ -1655,17 +1706,18 @@
   .draft-list { display: flex; flex-direction: column; gap: 10px; }
   .draft-row {
     display: grid;
-    grid-template-columns: 20px 56px minmax(250px, 1fr) minmax(340px, 0.95fr) auto;
+    grid-template-columns: 20px 58px minmax(300px, 1fr) minmax(430px, 470px) 300px;
     align-items: center;
     gap: 14px;
     width: 100%;
     min-width: 0;
+    min-height: 94px;
     box-sizing: border-box;
     overflow: visible;
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: 12px;
-    padding: 12px 16px;
+    padding: 11px 16px;
     cursor: pointer;
     transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   }
@@ -1760,37 +1812,26 @@
   .draft-page-btn.active { background:var(--blue); border-color:var(--blue); color:#fff; }
   .draft-page-btn:disabled { opacity:0.45; cursor:not-allowed; }
   .scheduled-badge { color: var(--blue-dark); font-weight: 600; }
-  .draft-quick-fields { display: flex; align-items: center; gap: 8px; min-width: 0; width: 100%; flex-shrink: 1; }
-  .draft-quick-fields > * { min-width: 0; }
-  .draft-quick-fields .draft-price-field { min-width: 0; flex: 1 1 180px; }
-  .draft-price-field {
-    display: flex;
+  .draft-quick-fields {
+    display: grid;
+    grid-template-columns: minmax(190px, 1fr) 64px 130px;
     align-items: center;
-    gap: 4px;
-    background: #fff;
-    border: 1.5px solid var(--grey-light);
-    border-radius: 8px;
-    padding: 0 6px;
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+    flex-shrink: 0;
   }
   .draft-price-field .editable-input { border: none; padding: 6px 2px; }
   .draft-currency-symbol { font-size: 13px; color: var(--grey); font-weight: 600; }
-  .draft-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; flex-shrink: 0; }
-  .draft-actions .btn-small { white-space: nowrap; }
-  .draft-menu-wrap { position: relative; }
-  .menu-dots { background: var(--paper-raised); color: var(--ink); font-size: 16px; padding: 6px 10px; }
-  .menu-dots:hover { background: var(--grey-light); }
-  .draft-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: calc(100% + 4px);
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-    min-width: 160px;
-    z-index: 20;
-    overflow: hidden;
+  .draft-actions {
+    display: grid;
+    grid-template-columns: 66px 74px 102px 42px;
+    align-items: center;
+    justify-content: end;
+    gap: 6px;
+    min-width: 0;
+    width: 100%;
+    flex-shrink: 0;
   }
   .draft-menu.open { display: block; }
   .draft-menu button {
@@ -1980,6 +2021,51 @@
     z-index: 199;
   }
   .sidebar-scrim.open { display: block; }
+
+  @media (max-width: 1250px) {
+    .content.drafts-wide { max-width: 1180px; }
+    .draft-row {
+      grid-template-columns: 20px 56px minmax(250px, 1fr) minmax(370px, 400px) 270px;
+      gap: 10px;
+      padding: 10px 12px;
+    }
+    .draft-quick-fields {
+      grid-template-columns: minmax(160px, 1fr) 58px 112px;
+      gap: 6px;
+    }
+    .draft-actions {
+      grid-template-columns: 60px 68px 92px 38px;
+      gap: 5px;
+    }
+  }
+  @media (max-width: 1000px) {
+    .draft-row {
+      grid-template-columns: 20px 56px minmax(0, 1fr);
+      min-height: 0;
+    }
+    .draft-quick-fields {
+      grid-column: 3;
+      grid-template-columns: minmax(180px, 1fr) 58px 112px;
+      justify-content: start;
+      margin-top: 4px;
+    }
+    .draft-actions {
+      grid-column: 3;
+      justify-content: start;
+      grid-template-columns: 60px 68px 92px 38px;
+      margin-top: 4px;
+    }
+  }
+  @media (max-width: 650px) {
+    .draft-row {
+      grid-template-columns: 18px 52px minmax(0, 1fr);
+      padding: 9px;
+    }
+    .draft-quick-fields {
+      grid-template-columns: minmax(135px, 1fr) 55px 105px;
+      width: 100%;
+    }
+  }
 
   /* ---------- Messages / AutoDS-style inbox ---------- */
   .support-center { background:#fff; border:1px solid #e6eaf0; border-radius:18px; overflow:hidden; min-height:650px; box-shadow:0 10px 35px rgba(15,23,42,.05); }
@@ -2320,249 +2406,15 @@
     }
     .sidebar.open { transform: translateX(0); }
   }
-
-  /* ===== DRAFTS BALANCED SCREEN-FIT =====
-     Compact like the reference: wider horizontally, but no oversized
-     typography/thumbs and no horizontal overflow. */
-  .content.drafts-wide {
-    width: 100% !important;
-    max-width: none !important;
-    padding: 14px 14px 20px !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-list {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-row {
-    display: grid !important;
-    grid-template-columns: 20px 82px minmax(0, 1fr) 330px 245px !important;
-    align-items: center !important;
-    column-gap: 10px !important;
-    row-gap: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    min-height: 100px !important;
-    height: auto !important;
-    margin: 0 0 12px !important;
-    padding: 9px 12px !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
-
-  #draftsContent .draft-row > * {
-    min-width: 0 !important;
-    max-width: 100% !important;
-  }
-
-  #draftsContent .draft-checkbox {
-    width: 18px !important;
-    height: 18px !important;
-  }
-
-  #draftsContent .draft-thumb {
-    width: 78px !important;
-    height: 78px !important;
-    max-width: 78px !important;
-    max-height: 78px !important;
-    object-fit: contain !important;
-  }
-
-  #draftsContent .draft-info {
-    min-width: 0 !important;
-    width: 100% !important;
-    overflow: hidden !important;
-  }
-
-  #draftsContent .draft-title {
-    font-size: 18px !important;
-    line-height: 1.25 !important;
-    font-weight: 700 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  #draftsContent .draft-meta {
-    margin-top: 5px !important;
-    gap: 9px !important;
-    font-size: 13px !important;
-    line-height: 1.25 !important;
-  }
-
-  #draftsContent .supplier-badge {
-    font-size: 12px !important;
-    padding: 3px 9px !important;
-  }
-
-  #draftsContent .draft-source-link {
-    font-size: 13px !important;
-    white-space: nowrap !important;
-  }
-
-  #draftsContent .draft-error-text {
-    font-size: 12px !important;
-    line-height: 1.3 !important;
-    margin-top: 4px !important;
-    max-width: 100% !important;
-  }
-
-  #draftsContent .draft-quick-fields {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 52px 105px !important;
-    align-items: center !important;
-    gap: 6px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
-
-  #draftsContent .draft-price-field {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto 68px !important;
-    align-items: center !important;
-    gap: 4px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-  }
-
-  #draftsContent .draft-price-field > div {
-    min-width: 0 !important;
-  }
-
-  #draftsContent .draft-price-field > div:first-child {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    font-size: 11px !important;
-  }
-
-  #draftsContent .draft-price-field > div:nth-child(2) {
-    display: flex !important;
-    align-items: center !important;
-    min-width: 0 !important;
-  }
-
-  #draftsContent .draft-price-field > div:nth-child(3) {
-    min-width: 68px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: clip !important;
-    text-align: right !important;
-    font-size: 11px !important;
-  }
-
-  #draftsContent .draft-price-field input[data-field="sellPrice"] {
-    width: 62px !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-quick-fields > input[data-field="quantity"] {
-    width: 52px !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-quick-fields > div:last-child {
-    width: 105px !important;
-    min-width: 0 !important;
-  }
-
-  #draftsContent .draft-quick-fields > div:last-child input[data-field="categoryId"] {
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-actions {
-    display: grid !important;
-    grid-template-columns: 64px 88px 38px !important;
-    align-items: center !important;
-    justify-content: end !important;
-    gap: 6px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
-
-  #draftsContent .draft-actions .btn-small {
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    white-space: nowrap !important;
-    padding-left: 7px !important;
-    padding-right: 7px !important;
-  }
-
-  #draftsContent .draft-menu-wrap {
-    position: relative !important;
-    min-width: 0 !important;
-  }
-
-  #draftsContent .draft-menu {
-    z-index: 100 !important;
-  }
-
-  @media (max-width: 1250px) {
-    #draftsContent .draft-row {
-      grid-template-columns: 20px 72px minmax(0, 1fr) 300px 220px !important;
-      column-gap: 8px !important;
-      min-height: 96px !important;
-      padding-left: 9px !important;
-      padding-right: 9px !important;
-    }
-    #draftsContent .draft-thumb {
-      width: 68px !important;
-      height: 68px !important;
-    }
-    #draftsContent .draft-quick-fields {
-      grid-template-columns: minmax(0, 1fr) 50px 92px !important;
-    }
-    #draftsContent .draft-quick-fields > input[data-field="quantity"] {
-      width: 50px !important;
-    }
-    #draftsContent .draft-quick-fields > div:last-child {
-      width: 92px !important;
-    }
-    #draftsContent .draft-actions {
-      grid-template-columns: 58px 80px 34px !important;
-      gap: 4px !important;
-    }
-  }
-
-  @media (max-width: 1000px) {
-    #draftsContent .draft-row {
-      grid-template-columns: 20px 62px minmax(0, 1fr) !important;
-      min-height: 0 !important;
-      padding: 9px !important;
-    }
-    #draftsContent .draft-thumb {
-      width: 60px !important;
-      height: 60px !important;
-    }
-    #draftsContent .draft-quick-fields {
-      grid-column: 3 !important;
-      grid-template-columns: minmax(145px, 1fr) 50px 92px !important;
-      margin-top: 4px !important;
-    }
-    #draftsContent .draft-actions {
-      grid-column: 3 !important;
-      justify-content: start !important;
-      grid-template-columns: 58px 80px 34px !important;
-      margin-top: 4px !important;
-    }
+  /* Final viewport safety net for dashboard/content on small screens. */
+  @media (max-width: 720px) {
+    .app-shell { width: 100%; max-width: 100%; overflow-x: hidden; }
+    .main { width: 100%; max-width: 100%; overflow-x: hidden; }
+    .content { width: 100%; max-width: 100%; min-width: 0; }
+    .topbar { width: 100%; max-width: 100%; flex-wrap: wrap; gap: 12px; }
+    .topbar > div { min-width: 0; max-width: 100%; }
+    .auth-area { max-width: 100%; flex-wrap: wrap; justify-content: flex-end; }
+    .sidebar { width: 220px; max-width: 85vw; overflow-x: hidden; }
   }
 </style>
 </head>
@@ -3625,6 +3477,7 @@
   function showPage(page) {
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts');
+    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
@@ -4551,7 +4404,9 @@
   function accountDisplayLabel(acc) {
     const nickname = String(acc?.displayName || '').trim();
     const username = String(acc?.ebayUserId || '').trim();
-    if (nickname && username) return `${nickname} · ${username}`;
+    // eBay may return an immutable user ID for U.S. accounts instead of the
+    // private username. Keep the human-facing label editable and use the
+    // immutable ID only as the internal/account identifier.
     return nickname || username || 'eBay account';
   }
 
@@ -4760,7 +4615,7 @@
       } finally { clearTimeout(timeout); }
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not request a reset code.');
-      status.className = 'auth-status'; status.textContent = 'If an account exists for this email, a 6-digit code has been sent. Check your inbox and spam/junk folder.';
+      status.className = 'auth-status'; status.textContent = 'Code sent. Check your inbox and spam/junk folder.';
       document.getElementById('forgotStepRequest').style.display = 'none';
       document.getElementById('forgotStepReset').style.display = 'block';
       document.getElementById('forgotCode').focus();
@@ -4785,7 +4640,7 @@
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not reset your password.');
-      status.className='auth-status'; status.textContent='Password set successfully. You can now log in with your email and password.';
+      status.className='auth-status'; status.textContent='Password reset successfully. Returning to login…';
       setTimeout(() => { document.getElementById('loginEmail').value=email; document.getElementById('loginPassword').value=''; showLoginForm(); }, 900);
     } catch (err) {
       status.className='auth-status error'; status.textContent=err.message || 'Could not reset your password.';
@@ -5673,7 +5528,7 @@
             return;
           }
 
-          showToast('success', 'Published to eBay', 'The listing was published successfully.');
+          showToast('success', 'Publish queued', 'ELMS is publishing this listing in the background.');
           loadDrafts();
         } catch (err) {
           alert('Could not connect to the server: ' + err.message);
@@ -5764,7 +5619,7 @@
           await apiFetch(`/api/listings/${id}/publish`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({accountId}) });
         } catch (_) {}
       }));
-      showToast('success', 'Publish request sent', `${ids.length} listing(s) were submitted for immediate eBay publishing.`);
+      showToast('success', 'Publish queue started', `${ids.length} listing(s) are being processed in the background.`);
 
       bulkPublishBtn.disabled = false;
       bulkPublishBtn.textContent = 'Publish selected';
@@ -5949,7 +5804,7 @@
     // Search
     const search = root.querySelector('#llSearchInput');
     if (search) search.addEventListener('input', () => { llSearch = search.value.trim(); llPage = 1; renderListings(); const el = document.getElementById('llSearchInput'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
-    // Filter / Export controls
+    // Filter / Export (placeholders for now)
     root.querySelector('#llFilterBtn')?.addEventListener('click', () => showToast('Filter', 'Use the tabs and search to narrow your listings.', ''));
     root.querySelector('#llExportBtn')?.addEventListener('click', () => llExportCsv());
     // Pagination
@@ -6942,10 +6797,10 @@
         listEl.innerHTML = currentEbayAccounts.map((acc) => `
           <div class="draft-row" data-account-id="${acc.id}" style="cursor:default; align-items:flex-start;">
             <div class="draft-info" style="flex:1; min-width:220px;">
-              <div class="draft-title">${escapeHtml(acc.displayName || accountDisplayLabel(acc))} ${acc.isActive ? '<span class="status-badge published">Active</span>' : ''}</div>
+              <div class="draft-title">${escapeHtml(accountDisplayLabel(acc))} ${acc.isActive ? '<span class="status-badge published">Active</span>' : ''}</div>
               <div class="draft-meta"><span class="draft-meta-item">eBay ID: ${escapeHtml(acc.ebayUserId)}</span><span class="draft-meta-item">Marketplace: ${escapeHtml(acc.marketplaceId || 'EBAY_US')}</span></div>
-              <div style="display:flex; gap:8px; margin-top:8px; max-width:520px;">
-                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="e.g. USA Store / My eBay 1" style="flex:1; min-width:0;" />
+              <div style="display:flex; gap:8px; margin-top:8px; max-width:520px; flex-wrap:wrap;">
+                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="Enter a name for this eBay account" style="flex:1 1 240px; min-width:0; max-width:100%;" />
                 <button class="btn-small save" data-action="save-name">Save name</button>
               </div>
             </div>
@@ -7668,60 +7523,16 @@
       if (skippedFull) showToast('Image limit reached', 'A draft can have at most 24 images.', 'error');
     }
 
-    async function uploadDraftImage(file) {
-      if (!file || !file.type.startsWith('image/')) return null;
-      if (file.size > 10 * 1024 * 1024) {
-        showToast('File too large', 'Each image must be 10MB or smaller.', 'error');
-        return null;
-      }
-      if (draftImages.length >= MAX_DRAFT_IMAGES) {
-        showToast('Image limit reached', 'A draft can have at most 24 images.', 'error');
-        return null;
-      }
-
-      const reader = new FileReader();
-      const dataUrl = await new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error('Could not read the selected image.'));
-        reader.readAsDataURL(file);
-      });
-
-      const res = await apiFetch(`/api/list-on-ebay/${encodeURIComponent(listing.id)}/images/upload`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageData: dataUrl }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success || !data.url) {
-        throw new Error(data.error || 'Could not upload image.');
-      }
-      return data.url;
-    }
-
-    async function readFilesAsDataUrls(fileList) {
+    function readFilesAsDataUrls(fileList) {
       const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'));
       if (!files.length) return;
-
-      const available = MAX_DRAFT_IMAGES - draftImages.length;
-      if (available <= 0) {
-        showToast('Image limit reached', 'A draft can have at most 24 images.', 'error');
-        return;
-      }
-
-      const selected = files.slice(0, available);
-      let added = 0;
-      for (const file of selected) {
-        try {
-          const hostedUrl = await uploadDraftImage(file);
-          if (hostedUrl) {
-            addImageUrls([hostedUrl]);
-            added++;
-          }
-        } catch (err) {
-          showToast('Image upload failed', err.message || 'Could not upload image.', 'error');
-        }
-      }
-      if (added) refreshDraftImageGallery();
+      const tooBig = files.filter((f) => f.size > 10 * 1024 * 1024);
+      if (tooBig.length) showToast('File too large', 'Each image must be 10MB or smaller.', 'error');
+      files.filter((f) => f.size <= 10 * 1024 * 1024).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = () => addImageUrls([reader.result]);
+        reader.readAsDataURL(file);
+      });
     }
 
     // "Add images" and "Bulk upload" both open the OS file picker (multiple).
@@ -7730,33 +7541,10 @@
     fileInput?.addEventListener('change', (e) => { readFilesAsDataUrls(e.target.files); fileInput.value = ''; });
 
     // "Add from URL" — paste one or more image URLs (comma/newline separated).
-    document.getElementById('draftAddFromUrlBtn')?.addEventListener('click', async () => {
+    document.getElementById('draftAddFromUrlBtn')?.addEventListener('click', () => {
       const input = prompt('Paste image URL(s) — separate multiple with a comma or new line:');
       if (!input) return;
-      const urls = [...new Set(input.split(/[\n,]+/).map((u) => u.trim()).filter(Boolean))];
-      const available = MAX_DRAFT_IMAGES - draftImages.length;
-      if (available <= 0) {
-        showToast('Image limit reached', 'A draft can have at most 24 images.', 'error');
-        return;
-      }
-      let added = 0;
-      for (const imageUrl of urls.slice(0, available)) {
-        try {
-          const res = await apiFetch(`/api/list-on-ebay/${encodeURIComponent(listing.id)}/images/upload`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl }),
-          });
-          const data = await res.json();
-          if (!res.ok || !data.success || !data.url) throw new Error(data.error || 'Could not save image from URL.');
-          addImageUrls([data.url]);
-          added++;
-        } catch (err) {
-          showToast('Image URL failed', err.message || 'Could not save image from URL.', 'error');
-        }
-      }
-      if (urls.length > available) showToast('Image limit reached', `Only ${available} image(s) could be added.`, 'error');
-      if (added) refreshDraftImageGallery();
+      addImageUrls(input.split(/[\n,]+/));
     });
 
     // Drag & drop zone (also click-to-upload).
@@ -7766,11 +7554,7 @@
       dropZone.addEventListener('click', () => fileInput?.click());
       ['dragover', 'dragenter'].forEach((evt) => dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.add('dragover'); }));
       ['dragleave', 'dragend'].forEach((evt) => dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover')));
-      dropZone.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        await readFilesAsDataUrls(e.dataTransfer?.files);
-      });
+      dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); readFilesAsDataUrls(e.dataTransfer?.files); });
     }
 
     const specsTableBody = document.getElementById('draftSpecsTableBody');
@@ -7814,10 +7598,7 @@
       .filter((spec) => spec.name && spec.value);
 
     const imageEls = Array.from(document.querySelectorAll('#draftEditImageGallery img'));
-    const images = imageEls
-      .map((img) => img.getAttribute('src'))
-      .filter((src) => src && !String(src).startsWith('data:image/'))
-      .slice(0, 24);
+    const images = imageEls.map((img) => img.getAttribute('src')).filter(Boolean).slice(0, 24);
     return { ...baseProduct, title, bulletPoints, description, specifications, images, variants: [], variantDimensions: [] };
   }
 
@@ -7866,10 +7647,6 @@
     if (!selectEl) return null;
     const fieldEl = selectEl.closest('.publish-field');
 
-    // The "connect your eBay account first" hint should only show when there
-    // is genuinely no connected account. Once accounts load, we hide it.
-    const connectHint = document.getElementById('draftConnectHint');
-
     draftPublishAccountLoadPromise = (async () => {
       try {
         const res = await apiFetch('/api/ebay-accounts');
@@ -7878,12 +7655,8 @@
         if (!res.ok || !data.success || !data.accounts.length) {
           selectEl.innerHTML = '<option value="">Connect an eBay account in Settings</option>';
           if (fieldEl) fieldEl.style.display = '';
-          if (connectHint) connectHint.style.display = '';
           return null;
         }
-
-        // A connected account exists - the draft can be published, so hide the hint.
-        if (connectHint) connectHint.style.display = 'none';
 
         selectEl.innerHTML = data.accounts
           .map((acc) => `<option value="${acc.id}">${escapeHtml(accountDisplayLabel(acc))}</option>`)
@@ -7900,7 +7673,6 @@
       } catch (err) {
         selectEl.innerHTML = '<option value="">Could not load accounts</option>';
         if (fieldEl) fieldEl.style.display = '';
-        if (connectHint) connectHint.style.display = '';
         return null;
       }
     })();
@@ -7941,15 +7713,7 @@
       const res = await apiFetch(`/api/list-on-ebay/${listing.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title, sellPrice, markupPercent, quantity,
-          categoryId: categoryEl?.value?.trim() || '',
-          images: (editedProduct?.images || []).filter((src) => !String(src).startsWith('data:image/')).slice(0, 24),
-          mainImage: (editedProduct?.images || []).find((src) => !String(src).startsWith('data:image/')) || null,
-          accountId: document.getElementById('draftPublishAccountSelect')?.value || listing.ebay_account_id || null,
-          draftProduct: editedProduct,
-          ebayAspects
-        }),
+        body: JSON.stringify({ title, sellPrice, markupPercent, quantity, categoryId: categoryEl?.value?.trim() || '', images: editedProduct?.images || [], mainImage: editedProduct?.images?.[0] || null, accountId: document.getElementById('draftPublishAccountSelect')?.value || listing.ebay_account_id || null, draftProduct: editedProduct, ebayAspects }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not save changes.');
@@ -8044,7 +7808,7 @@
         }
 
         statusEl.className = 'success';
-        statusEl.textContent = data.immediate ? 'Published to eBay successfully.' : 'Publish completed.';
+        statusEl.textContent = 'Publish queued. You can keep working while ELMS publishes in the background.';
         setTimeout(() => {
           draftDetailModal.classList.remove('open');
           loadDrafts();
