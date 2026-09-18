@@ -1343,7 +1343,45 @@
   .live-listings-wrap .data-table th, .live-listings-wrap .data-table td { padding: 9px 10px; white-space: nowrap; }
   .live-listings-wrap .data-table .row-title { max-width: 360px; white-space: normal; }
 
-  /* --- Live Listings page --- */
+
+  /* ===== PHASE 4 — LIVE LISTINGS MANAGEMENT ===== */
+  .phase4-live-shell{width:100%;max-width:none;}
+  .phase4-live-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 14px;}
+  .phase4-live-kpi{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;}
+  .phase4-live-kpi .k-label{font-size:11px;color:var(--grey);margin-bottom:5px;}
+  .phase4-live-kpi .k-value{font-size:20px;font-weight:750;line-height:1.1;}
+  .phase4-live-kpi .k-sub{font-size:10.5px;color:var(--grey);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .phase4-filterbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;}
+  .phase4-filterbar .ll-search{flex:1 1 260px;min-width:220px;}
+  .phase4-filterbar select{height:38px;min-width:135px;}
+  .phase4-bulkbar{display:none;align-items:center;gap:8px;padding:9px 11px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;background:#fafafa;}
+  .phase4-bulkbar.show{display:flex;}
+  .phase4-bulkbar .selected-count{font-weight:650;margin-right:auto;}
+  .phase4-market{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--grey);}
+  .phase4-market-dot{width:6px;height:6px;border-radius:50%;background:var(--green-dark);display:inline-block;}
+  .phase4-stock{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap;}
+  .phase4-stock-dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--green-dark);}
+  .phase4-stock.out .phase4-stock-dot{background:var(--red);}
+  .phase4-stock.hold .phase4-stock-dot{background:#b7791f;}
+  .phase4-margin{font-size:11px;color:var(--blue);white-space:nowrap;}
+  .phase4-table .row-title{min-width:240px;}
+  .phase4-table td{vertical-align:middle;}
+  .phase4-row-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;white-space:nowrap;}
+  .phase4-row-actions .ll-menu-btn{width:32px;height:32px;}
+  .phase4-row-link{font-size:11px;color:var(--blue);text-decoration:none;white-space:nowrap;}
+  .phase4-empty-note{padding:32px;text-align:center;color:var(--grey);border:1px dashed var(--line);border-radius:12px;background:var(--paper);}
+  @media (max-width:900px){.phase4-live-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.phase4-filterbar{align-items:stretch;}.phase4-filterbar .ll-search{flex-basis:100%;}}
+  @media (max-width:560px){.phase4-live-kpis{grid-template-columns:1fr 1fr;gap:7px;}.phase4-live-kpi{padding:10px;}.phase4-live-kpi .k-value{font-size:17px;}.phase4-filterbar select{flex:1;min-width:0;}.phase4-bulkbar{flex-wrap:wrap;}.phase4-bulkbar .selected-count{width:100%;}}
+
+  /* ===== PHASE 6 — LIVE LISTING ACTIONS ===== */
+.phase6-action-note{font-size:11px;color:var(--grey);margin-top:3px;}
+.phase6-progress{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--grey);}
+
+/* --- Phase 7: Live listing price & quantity controls --- */
+.phase7-bulk-editor{display:none;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;margin:10px 0;border:1px solid #dbe3ec;border-radius:12px;background:#f8fafc}
+.phase7-bulk-editor.show{display:flex}.phase7-bulk-editor .phase7-label{font-size:12px;font-weight:700;color:#334155}.phase7-bulk-editor input{width:105px}.phase7-edit-input{width:90px!important;min-width:70px}.phase7-save-note{font-size:11px;color:#64748b;margin-left:auto}.phase7-price-cell,.phase7-qty-cell{white-space:nowrap}.phase7-dirty{outline:2px solid #93c5fd!important}.phase7-inline-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.phase7-inline-actions button{font-size:11px;padding:6px 8px}
+
+/* --- Live Listings page --- */
   .ll-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
   .ll-head h1 { margin:0; font-size:28px; font-weight:800; letter-spacing:-0.02em; }
   .ll-head .sub { margin-top:4px; color:var(--grey); font-size:14px; }
@@ -2002,84 +2040,6 @@
     font-size: 14px;
   }
 
-  /* --- Connected eBay account cards (Settings) --- */
-  #ebayAccountsList { display: flex; flex-direction: column; gap: 12px; }
-  .ebay-account-card {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-    animation: eacRise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-  }
-  .ebay-account-card:nth-child(1) { animation-delay: 0.02s; }
-  .ebay-account-card:nth-child(2) { animation-delay: 0.09s; }
-  .ebay-account-card:nth-child(3) { animation-delay: 0.16s; }
-  .ebay-account-card:hover {
-    border-color: var(--blue);
-    box-shadow: 0 8px 26px rgba(37,99,235,0.10);
-    transform: translateY(-2px);
-  }
-  /* Accent strip that sweeps in on the active account */
-  .ebay-account-card.is-active::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 4px;
-    background: var(--gradient-primary);
-    animation: eacStrip 0.5s ease 0.15s both;
-  }
-  @keyframes eacRise {
-    from { opacity: 0; transform: translateY(14px) scale(0.985); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes eacStrip {
-    from { transform: scaleY(0); }
-    to { transform: scaleY(1); }
-  }
-  .eac-main { flex: 1 1 260px; min-width: 0; }
-  .eac-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .eac-title { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; }
-  .eac-active-pill {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 11px; font-weight: 700;
-    color: var(--teal-dark); background: #E6FBF7;
-    border: 1px solid #B9EEE4;
-    padding: 3px 9px; border-radius: 999px;
-  }
-  .eac-active-pill::before {
-    content: ''; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--teal); animation: eacPulse 1.8s ease-in-out infinite;
-  }
-  @keyframes eacPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(6,182,212,0.5); }
-    50% { box-shadow: 0 0 0 5px rgba(6,182,212,0); }
-  }
-  .eac-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--grey); }
-  .eac-meta b { color: var(--ink); font-weight: 600; }
-  .eac-name-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
-  .eac-name-row input { flex: 1 1 240px; min-width: 0; }
-  /* Actions sit on their own, top-right, never overlapping the title */
-  .eac-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; align-items: flex-start; }
-  .eac-actions .btn-small { height: 34px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease; }
-  .eac-actions .btn-small:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-  .eac-actions .btn-activate { background: var(--blue); color: #fff; }
-  .eac-actions .btn-activate:hover { background: var(--blue-dark); }
-  .eac-actions .btn-disconnect { background: #fff; color: var(--red); border: 1px solid #F3C0C0; }
-  .eac-actions .btn-disconnect:hover { background: #FDECEC; }
-  @media (max-width: 620px) {
-    .ebay-account-card { flex-direction: column; }
-    .eac-actions { width: 100%; }
-    .eac-actions .btn-small { flex: 1; }
-  }
-
   .mobile-menu-btn {
     display: none;
     background: none;
@@ -2494,6 +2454,255 @@
     .auth-area { max-width: 100%; flex-wrap: wrap; justify-content: flex-end; }
     .sidebar { width: 220px; max-width: 85vw; overflow-x: hidden; }
   }
+
+  /* ============================================================
+     ELMS PHASE 2 — GLOBAL LAYOUT / VIEWPORT SAFETY
+     Keep the dashboard inside the viewport while allowing only
+     intentionally wide data areas to scroll internally.
+     ============================================================ */
+
+  html {
+    overflow-x: clip;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .sidebar {
+    flex: 0 0 220px;
+    width: 220px;
+    max-width: 220px;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .main {
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 0;
+    max-width: calc(100% - 220px);
+    overflow-x: clip;
+  }
+
+  .topbar {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+  }
+
+  .topbar > div,
+  .topbar h1,
+  .topbar .subline,
+  .auth-area {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .auth-area {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .content > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Long labels/titles must never push the page wider. */
+  .content h1,
+  .content h2,
+  .content h3,
+  .content p,
+  .content .meta-line,
+  .content .state-msg,
+  .content .empty-state,
+  .content .product-title,
+  .content .draft-title,
+  .content .listing-title,
+  .content .card-title,
+  .content label,
+  .sidebar,
+  .sidebar * {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Buttons/controls may shrink, but their text remains readable. */
+  button,
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+  }
+
+  .btn,
+  .btn-small,
+  button {
+    min-width: 0;
+  }
+
+  /* Images/media stay inside their containing cards. */
+  img,
+  video,
+  iframe,
+  svg {
+    max-width: 100%;
+  }
+
+  /* Grids/flex rows should be allowed to shrink instead of creating
+     a page-level horizontal scrollbar. */
+  .content .grid,
+  .content [class*="grid"],
+  .content [class*="toolbar"],
+  .content [class*="header"],
+  .content [class*="actions"],
+  .content [class*="row"] {
+    min-width: 0;
+  }
+
+  /* Tables are allowed to be wide only inside their own container. */
+  .content table {
+    max-width: none;
+  }
+
+  .table-wrap,
+  .table-container,
+  .listing-table-wrap,
+  .orders-table-wrap,
+  .history-table-wrap,
+  .data-table-wrap {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent common flex children from forcing their parent wider. */
+  .content .product-card,
+  .content .card,
+  .content .panel,
+  .content .section,
+  .content .modal-box,
+  .content .import-lane {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Desktop: keep the main workspace naturally fluid. */
+  @media (min-width: 721px) {
+    .content {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  /* Tablet/mobile: the sidebar becomes the existing drawer.
+     The main content uses the full viewport width. */
+  @media (max-width: 720px) {
+    .main {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .sidebar {
+      flex-basis: 220px;
+      width: 220px;
+      max-width: 85vw;
+    }
+
+    .topbar {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .content {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .auth-area {
+      width: auto;
+      flex: 1 1 auto;
+      justify-content: flex-end;
+    }
+
+    .credit-balance-chip {
+      max-width: 100%;
+    }
+
+    .user-chip-meta {
+      min-width: 0;
+      max-width: 120px;
+    }
+
+    .user-chip-meta .name,
+    .user-chip-meta .role {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .content {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    .topbar {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    .auth-area {
+      gap: 8px;
+    }
+
+    .credit-balance-chip {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+  }
+
+
+/* ===== PHASE 5: LIVE LISTING DETAIL PANEL ===== */
+.phase5-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:1200;display:none}
+.phase5-backdrop.open{display:block}
+.phase5-panel{position:fixed;top:0;right:0;height:100vh;width:min(560px,96vw);background:#fff;z-index:1201;box-shadow:-18px 0 45px rgba(15,23,42,.18);transform:translateX(105%);transition:transform .22s ease;overflow:auto}
+.phase5-panel.open{transform:translateX(0)}
+.phase5-head{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e7eb;padding:18px 20px;display:flex;justify-content:space-between;gap:12px;z-index:2}
+.phase5-head h3{margin:0;font-size:17px}.phase5-sub{margin-top:4px;color:#64748b;font-size:12px}
+.phase5-close{border:0;background:#f1f5f9;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:18px}
+.phase5-body{padding:20px}.phase5-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.phase5-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff}.phase5-card.full{grid-column:1/-1}
+.phase5-label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}.phase5-value{font-size:14px;font-weight:600;color:#0f172a;word-break:break-word}
+.phase5-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.phase5-actions button{border:1px solid #dbe2ea;background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer}.phase5-actions .primary{background:#111827;color:#fff;border-color:#111827}
+.phase5-note{font-size:12px;color:#64748b;line-height:1.5;margin-top:14px}
+@media(max-width:600px){.phase5-grid{grid-template-columns:1fr}.phase5-card.full{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -2680,53 +2889,53 @@
 
     <nav class="sidebar-nav">
       <div class="sidebar-nav-label">Main</div>
-      <a href="#" class="active" data-page="dashboard">
+      <a href="/" class="active" data-page="dashboard">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></svg>
         Dashboard
       </a>
-      <a href="#" data-page="import">
+      <a href="/import" data-page="import">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Import
       </a>
-      <a href="#" data-page="drafts">
+      <a href="/drafts" data-page="drafts">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         Drafts
         <span class="nav-badge" id="draftsCountBadge" style="display:none;">0</span>
       </a>
-      <a href="#" data-page="listings">
+      <a href="/listings" data-page="listings">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-4V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a1 1 0 0 0-1 1v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a1 1 0 0 0-1-1z"/><path d="M9 7V5h6v2"/></svg>
         Live listings
       </a>
-      <a href="#" data-page="orders">
+      <a href="/orders" data-page="orders">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         Orders
       </a>
-      <a href="#" data-page="messages">
+      <a href="/messages" data-page="messages">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Messages
         <span class="nav-badge" id="messagesCountBadge" style="display:none;">0</span>
       </a>
 
       <div class="sidebar-nav-label">Tools</div>
-      <a href="#" data-page="history">
+      <a href="/history" data-page="history">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg>
         Import history
       </a>
-      <a href="#" data-page="research-tools">
+      <a href="/research-tools" data-page="research-tools">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         Research Tools
       </a>
 
       <div class="sidebar-nav-label">Account</div>
-      <a href="#" data-page="settings">
+      <a href="/settings" data-page="settings">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Settings
       </a>
-      <a href="#" data-page="pricing">
+      <a href="/pricing" data-page="pricing">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
         Buy Credits
       </a>
-      <a href="#" data-page="support">
+      <a href="/support" data-page="support">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Support
       </a>
@@ -3552,12 +3761,50 @@
     admin: ['Admin', 'Manage users, credits, and support tickets.'],
   };
 
-  function showPage(page) {
+  // ---------- Client-side routes ----------
+  const PAGE_ROUTES = {
+    dashboard: '/',
+    import: '/import',
+    drafts: '/drafts',
+    listings: '/listings',
+    orders: '/orders',
+    messages: '/messages',
+    history: '/history',
+    'research-tools': '/research-tools',
+    settings: '/settings',
+    pricing: '/pricing',
+    support: '/support',
+    admin: '/admin',
+  };
+  const ROUTE_PAGES = Object.fromEntries(Object.entries(PAGE_ROUTES).map(([page, route]) => [route, page]));
+
+  function pageFromPath(pathname) {
+    const path = String(pathname || '/').replace(/\/+$/, '') || '/';
+    return ROUTE_PAGES[path] || 'dashboard';
+  }
+
+  function routeForPage(page) {
+    return PAGE_ROUTES[page] || '/';
+  }
+
+  function showPage(page, options = {}) {
+    const { updateUrl = true, replaceUrl = false } = options;
+    if (!PAGE_TITLES[page]) page = 'dashboard';
+
+    if (updateUrl) {
+      const target = routeForPage(page);
+      if (window.location.pathname !== target) {
+        const method = replaceUrl ? 'replaceState' : 'pushState';
+        window.history[method]({ page }, '', target);
+      }
+    }
+
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts');
-    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts');
+    document.querySelector('.content')?.classList.toggle('listings-wide', page === 'listings');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
-      document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
+      const el = document.getElementById(`page-${p}`);
+      if (el) el.style.display = p === page ? 'block' : 'none';
     });
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
       a.classList.toggle('active', a.getAttribute('data-page') === page);
@@ -3585,6 +3832,11 @@
       showPage(a.getAttribute('data-page'));
       closeMobileSidebar();
     });
+  });
+
+  // Browser Back / Forward must restore the corresponding ELMS page.
+  window.addEventListener('popstate', () => {
+    showPage(pageFromPath(window.location.pathname), { updateUrl: false });
   });
 
   // "View Plans" button in the sidebar upgrade card (outside the nav list).
@@ -4414,18 +4666,15 @@
     const adminNavLink = document.getElementById('adminNavLink');
     if (adminNavLink) adminNavLink.style.display = user.role === 'admin' ? 'flex' : 'none';
 
-    // Always start authenticated sessions on Dashboard after login/reload.
-    // Individual page navigation remains client-side after the initial boot.
+    // Restore the page represented by the current URL instead of always
+    // forcing a refresh back to Dashboard. This makes every ELMS section
+    // deep-linkable and refresh-safe.
     const params = new URLSearchParams(window.location.search);
-    if (!(params.get('goToAdminPanel') === 'true' && user.role === 'admin')) {
-      showPage('dashboard');
-    }
-
-    // If we just arrived here from the dedicated /admin.html login page,
-    // jump straight into the Admin Panel instead of the default Dashboard.
     if (params.get('goToAdminPanel') === 'true' && user.role === 'admin') {
-      showPage('admin');
-      window.history.replaceState({}, document.title, window.location.pathname);
+      showPage('admin', { replaceUrl: true });
+      window.history.replaceState({ page: 'admin' }, document.title, '/admin');
+    } else {
+      showPage(pageFromPath(window.location.pathname), { updateUrl: false });
     }
   }
 
@@ -5731,6 +5980,8 @@
   let llAll = [];
   let llTab = 'all';
   let llSearch = '';
+  let llMarketplace = 'all';
+  let llAccount = 'all';
   let llPage = 1;
   const LL_PAGE_SIZE = 10;
 
@@ -5769,6 +6020,8 @@
         const hay = `${l.title || ''} ${l.sku || ''} ${l.listing_id || ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
+      if (llMarketplace !== 'all' && String(l.marketplace_id || l.marketplace || '') !== llMarketplace) return false;
+      if (llAccount !== 'all' && String(l.ebay_account_username || l.ebay_account_id || '') !== llAccount) return false;
       return true;
     });
   }
@@ -5787,53 +6040,70 @@
     if (llPage > pages) llPage = pages;
     const start = (llPage - 1) * LL_PAGE_SIZE;
     const pageRows = filtered.slice(start, start + LL_PAGE_SIZE);
-
+    const totalQty = llAll.reduce((n,l) => n + Math.max(0, Number(l.quantity || 0)), 0);
+    const avgPrice = llAll.length ? llAll.reduce((n,l) => n + Math.max(0, Number(l.sell_price || 0)), 0) / llAll.length : 0;
     const tab = (key, label, n) => `<button class="ll-tab${llTab === key ? ' active' : ''}" data-ll-tab="${key}">${label} (${n})</button>`;
 
     container.innerHTML = `
-      <div class="ll-head">
-        <div><h1>Live listings</h1><div class="sub">Everything published to eBay from ELMS.</div></div>
-        <div class="ll-head-actions">
-          <button class="ll-btn outline" id="llSyncBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync from eBay</button>
-          <button class="ll-btn primary" id="llCreateBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create listing</button>
+      <div class="phase4-live-shell">
+        <div class="ll-head">
+          <div><h1>Live listings</h1><div class="sub">Manage products currently published to your connected eBay accounts, including real end/delete actions.</div></div>
+          <div class="ll-head-actions">
+            <button class="ll-btn outline" id="llSyncBtn">↻ Sync from eBay</button>
+            <button class="ll-btn primary" id="llCreateBtn">+ Create listing</button>
+          </div>
         </div>
-      </div>
 
-      <div class="ll-tabs">
-        ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('issues','With issues',counts.issues)}
-      </div>
+        <div class="phase4-live-kpis">
+          <div class="phase4-live-kpi"><div class="k-label">Active listings</div><div class="k-value">${counts.active}</div><div class="k-sub">Currently published</div></div>
+          <div class="phase4-live-kpi"><div class="k-label">Available quantity</div><div class="k-value">${totalQty}</div><div class="k-sub">Across loaded listings</div></div>
+          <div class="phase4-live-kpi"><div class="k-label">Average sell price</div><div class="k-value">${avgPrice ? escapeHtml((CURRENCY_SYMBOLS[llAll[0]?.currency] || '$') + avgPrice.toFixed(2)) : '—'}</div><div class="k-sub">Current listing prices</div></div>
+          <div class="phase4-live-kpi"><div class="k-label">Needs attention</div><div class="k-value">${counts.issues}</div><div class="k-sub">Listings with an issue</div></div>
+        </div>
 
-      <div class="ll-toolbar">
-        <div class="ll-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search in live listings..." value="${escapeAttr(llSearch)}" /></div>
-        <button class="ll-tool-btn" id="llFilterBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Filter</button>
-        <button class="ll-tool-btn" id="llExportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
-      </div>
+        <div class="ll-tabs">
+          ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('issues','With issues',counts.issues)}
+        </div>
 
-      ${filtered.length ? `
-      <div class="live-listings-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
+        <div class="phase4-filterbar">
+          <div class="ll-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search title, ASIN/SKU or eBay listing ID…" value="${escapeAttr(llSearch)}" /></div>
+          <select id="llMarketplaceFilter" class="editable-input"><option value="all">All marketplaces</option></select>
+          <select id="llAccountFilter" class="editable-input"><option value="all">All eBay accounts</option></select>
+          <button class="ll-tool-btn" id="llExportBtn">Export CSV</button>
+        </div>
+
+        <div class="phase4-bulkbar" id="llBulkBar"><span class="selected-count" id="llSelectedCount">0 selected</span><button class="ll-tool-btn" id="llBulkPause">Pause selected</button><button class="ll-tool-btn" id="llBulkDelete">End selected</button></div>
+        <div class="phase7-bulk-editor" id="llBulkEditor">
+          <span class="phase7-label">Bulk price / quantity</span>
+          <input id="llBulkPrice" class="editable-input" type="number" min="0.01" step="0.01" placeholder="Price" />
+          <input id="llBulkQty" class="editable-input" type="number" min="0" step="1" placeholder="Qty" />
+          <button class="ll-tool-btn" id="llBulkApply">Apply to selected</button>
+          <button class="ll-tool-btn" id="llBulkClear">Clear</button>
+          <span class="phase7-save-note">Only filled fields are changed.</span>
+        </div>
+
+        ${filtered.length ? `
+        <div class="live-listings-wrap">
+          <table class="data-table phase4-table">
+            <thead><tr>
               <th style="width:34px;"><input type="checkbox" id="llSelectAll" /></th>
-              <th>Item</th>
-              <th>Title</th>
-              <th>SKU</th>
-              <th>Price</th>
-              <th>Qty</th>
-              <th>Category ID</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>${pageRows.map((l) => listingRowHtml(l)).join('')}</tbody>
-        </table>
-      </div>
-      <div class="ll-footer">
-        <div class="ll-showing">Showing ${start + 1} to ${Math.min(start + LL_PAGE_SIZE, filtered.length)} of ${filtered.length} listings</div>
-        ${llPaginationHtml(llPage, pages)}
-      </div>` : `<div class="empty-state">${llAll.length ? 'No listings match this view.' : 'No listings yet. Publish a product from the Drafts page to see it here.'}</div>`}
-    `;
+              <th>Item</th><th>Listing</th><th>SKU / ASIN</th><th>Marketplace</th><th>Price</th><th>Qty</th><th>Stock</th><th>Status</th><th style="text-align:right;">Actions</th>
+            </tr></thead>
+            <tbody>${pageRows.map((l) => listingRowHtml(l)).join('')}</tbody>
+          </table>
+        </div>
+        <div class="ll-footer"><div class="ll-showing">Showing ${start + 1} to ${Math.min(start + LL_PAGE_SIZE, filtered.length)} of ${filtered.length} listings</div>${llPaginationHtml(llPage, pages)}</div>` : `<div class="phase4-empty-note">${llAll.length ? 'No listings match this view.' : 'No live listings yet. Publish a product from Drafts to see it here.'}</div>`}
+      </div>`;
 
+    // Populate marketplace/account filters from fields already returned by the API.
+    const marketplaces = [...new Set(llAll.map(l => l.marketplace_id || l.marketplace || '').filter(Boolean))].sort();
+    const accounts = [...new Set(llAll.map(l => l.ebay_account_username || l.ebay_account_id || '').filter(Boolean))].sort();
+    const mp = container.querySelector('#llMarketplaceFilter');
+    const ac = container.querySelector('#llAccountFilter');
+    marketplaces.forEach(v => mp?.insertAdjacentHTML('beforeend', `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`));
+    accounts.forEach(v => ac?.insertAdjacentHTML('beforeend', `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`));
+    if (mp) mp.value = llMarketplace;
+    if (ac) ac.value = llAccount;
     wireListingsPage();
   }
 
@@ -5850,26 +6120,28 @@
 
   function listingRowHtml(l) {
     const st = llListingStatus(l);
-    const statusColors = { active:'var(--green-dark)', sold:'var(--blue)', ended:'var(--grey)', issues:'var(--red)' };
     const statusLabel = { active:'Published', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || (l.status || '');
+    const currency = CURRENCY_SYMBOLS[l.currency] || (l.currency ? l.currency + ' ' : '$');
+    const qty = Math.max(0, Number(l.quantity ?? 0));
+    const stockClass = qty <= 0 ? 'out' : (qty <= 2 ? 'hold' : '');
+    const stockLabel = qty <= 0 ? 'Out of stock' : (qty <= 2 ? `Low · ${qty}` : `Available · ${qty}`);
+    const marketplace = l.marketplace_id || l.marketplace || '—';
+    const account = l.ebay_account_username || l.ebay_account_id || '';
+    const margin = Number(l.sell_price) - Number(l.amazon_price);
+    const marginHtml = Number.isFinite(margin) && Number(l.amazon_price) > 0 ? `<div class="phase4-margin">Margin ${currency}${margin.toFixed(2)}</div>` : '';
     return `
-      <tr data-listing-id="${l.id}">
+      <tr data-listing-id="${escapeAttr(l.id)}">
         <td><input type="checkbox" class="ll-row-check" /></td>
         <td>${l.main_image ? `<img class="row-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="row-thumb"></div>'}</td>
-        <td class="row-title" data-cell="title">${escapeHtml(l.title || '—')}</td>
-        <td data-cell="sku">${escapeHtml(l.sku || '—')}</td>
-        <td data-cell="sellPrice">${l.sell_price != null ? escapeHtml((CURRENCY_SYMBOLS[l.currency] || '$') + Number(l.sell_price).toFixed(2)) : '—'}</td>
-        <td data-cell="quantity">${l.quantity ?? 1}</td>
-        <td data-cell="categoryId">${escapeHtml(l.category_id || '—')}</td>
-        <td><span class="ll-status-dot" style="color:${statusColors[st] || 'var(--grey)'};font-weight:600;font-size:12.5px;">${escapeHtml(statusLabel)}</span>${l.error_message ? `<div style="font-size:11px;color:var(--red);margin-top:4px;max-width:180px;white-space:normal;">${escapeHtml(l.error_message)}</div>` : ''}</td>
-        <td>
-          <div class="row-actions" style="display:flex;align-items:center;">
-            <button class="ll-view-btn" data-action="view">View</button>
-            <button class="ll-menu-btn" data-action="menu" title="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>
-          </div>
-        </td>
-      </tr>
-    `;
+        <td class="row-title" data-cell="title"><div style="font-weight:650;line-height:1.3;">${escapeHtml(l.title || '—')}</div>${l.listing_id ? `<div class="phase4-row-link">eBay ID ${escapeHtml(l.listing_id)}</div>` : ''}</td>
+        <td data-cell="sku"><strong>${escapeHtml(l.sku || '—')}</strong></td>
+        <td><div class="phase4-market"><span class="phase4-market-dot"></span>${escapeHtml(marketplace)}</div>${account ? `<div style="font-size:10px;color:var(--grey);margin-top:3px;max-width:130px;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(account)}</div>` : ''}</td>
+        <td data-cell="sellPrice" class="phase7-price-cell"><strong>${l.sell_price != null ? escapeHtml(currency + Number(l.sell_price).toFixed(2)) : '—'}</strong>${marginHtml}</td>
+        <td data-cell="quantity" class="phase7-qty-cell">${qty}</td>
+        <td><span class="phase4-stock ${stockClass}"><span class="phase4-stock-dot"></span>${stockLabel}</span></td>
+        <td><span class="ll-status-dot" style="font-weight:600;font-size:12.5px;">${escapeHtml(statusLabel)}</span>${l.error_message ? `<div style="font-size:11px;color:var(--red);margin-top:4px;max-width:180px;white-space:normal;">${escapeHtml(l.error_message)}</div>` : ''}</td>
+        <td><div class="phase4-row-actions"><button class="ll-view-btn" data-action="view">View</button><button class="ll-view-btn" data-action="quick-edit">Edit</button><button class="ll-menu-btn" data-action="menu" title="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button></div></td>
+      </tr>`;
   }
 
   function wireListingsPage() {
@@ -5882,14 +6154,90 @@
     // Search
     const search = root.querySelector('#llSearchInput');
     if (search) search.addEventListener('input', () => { llSearch = search.value.trim(); llPage = 1; renderListings(); const el = document.getElementById('llSearchInput'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
-    // Filter / Export (placeholders for now)
-    root.querySelector('#llFilterBtn')?.addEventListener('click', () => showToast('Filter', 'Use the tabs and search to narrow your listings.', ''));
+    // Phase 4 filters and export
     root.querySelector('#llExportBtn')?.addEventListener('click', () => llExportCsv());
+    root.querySelector('#llMarketplaceFilter')?.addEventListener('change', (e) => {
+      llMarketplace = e.target.value;
+      llPage = 1;
+      renderListings();
+    });
+    root.querySelector('#llAccountFilter')?.addEventListener('change', (e) => {
+      llAccount = e.target.value;
+      llPage = 1;
+      renderListings();
+    });
+    const refreshBulkBar = () => {
+      const checked = Array.from(root.querySelectorAll('.ll-row-check:checked'));
+      const bar = root.querySelector('#llBulkBar');
+      const label = root.querySelector('#llSelectedCount');
+      if (bar) bar.classList.toggle('show', checked.length > 0);
+      if (label) label.textContent = `${checked.length} selected`;
+    };
+    root.querySelectorAll('.ll-row-check').forEach(cb => cb.addEventListener('change', refreshBulkBar));
+    const syncBulkEditor = () => {
+      const checked = root.querySelectorAll('.ll-row-check:checked');
+      const editor = root.querySelector('#llBulkEditor');
+      if (editor) editor.classList.toggle('show', checked.length > 0);
+    };
+    root.querySelectorAll('.ll-row-check').forEach(cb => cb.addEventListener('change', syncBulkEditor));
+    root.querySelector('#llSelectAll')?.addEventListener('change', syncBulkEditor);
+    root.querySelector('#llBulkClear')?.addEventListener('click', () => {
+      const p=root.querySelector('#llBulkPrice'), q=root.querySelector('#llBulkQty'); if(p)p.value=''; if(q)q.value='';
+    });
+    root.querySelector('#llBulkApply')?.addEventListener('click', async () => {
+      const selected = Array.from(root.querySelectorAll('.ll-row-check:checked')).map(cb => cb.closest('tr')?.getAttribute('data-listing-id')).filter(Boolean);
+      const priceEl=root.querySelector('#llBulkPrice'), qtyEl=root.querySelector('#llBulkQty');
+      const hasPrice=priceEl?.value !== ''; const hasQty=qtyEl?.value !== '';
+      const price=Number(priceEl?.value); const qty=Number(qtyEl?.value);
+      if(!selected.length) return;
+      if(!hasPrice && !hasQty){ alert('Enter a price and/or quantity.'); return; }
+      if(hasPrice && (!Number.isFinite(price) || price<=0)){ alert('Enter a valid price greater than 0.'); return; }
+      if(hasQty && (!Number.isInteger(qty) || qty<0)){ alert('Enter a valid quantity of 0 or more.'); return; }
+      if(!confirm(`Apply ${hasPrice?'price':''}${hasPrice&&hasQty?' and ':''}${hasQty?'quantity':''} to ${selected.length} selected listing${selected.length===1?'':'s'}?`)) return;
+      const btn=root.querySelector('#llBulkApply'); if(btn){btn.disabled=true;btn.textContent='Updating…';}
+      let success=0, failed=0;
+      for(const id of selected){
+        const listing=llAll.find(x=>String(x.id)===String(id)); if(!listing) {failed++; continue;}
+        try{
+          const body={}; if(hasPrice) body.sellPrice=price; if(hasQty) body.quantity=qty;
+          const res=await apiFetch(`/api/listings/${encodeURIComponent(id)}/revise`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+          const data=await res.json();
+          if(!res.ok||!data.success) throw new Error(data.error||'Update failed');
+          if(hasPrice) listing.sell_price=price; if(hasQty) listing.quantity=qty; success++;
+        }catch(_){failed++;}
+      }
+      if(success) showToast('Bulk update complete',`${success} listing${success===1?'':'s'} updated${failed?`; ${failed} failed.`:'.'}`,'success');
+      else showToast('Bulk update failed','No selected listings were updated.','error');
+      if(btn){btn.disabled=false;btn.textContent='Apply to selected';}
+      renderListings();
+    });
+    root.querySelector('#llBulkPause')?.addEventListener('click', () => showToast('Pause selected', 'Pause/withdraw needs a dedicated backend withdraw endpoint. No listing was changed.', ''));
+    root.querySelector('#llBulkDelete')?.addEventListener('click', async () => {
+      const selected = Array.from(root.querySelectorAll('.ll-row-check:checked'))
+        .map(cb => cb.closest('tr')?.getAttribute('data-listing-id'))
+        .filter(Boolean);
+      if (!selected.length) return;
+      if (!confirm(`End ${selected.length} selected listing${selected.length === 1 ? '' : 's'} on eBay? This action cannot be undone from ELMS.`)) return;
+      const btn = root.querySelector('#llBulkDelete');
+      if (btn) { btn.disabled = true; btn.textContent = 'Ending…'; }
+      let success = 0, failed = 0;
+      for (const id of selected) {
+        try {
+          const res = await apiFetch(`/api/listings/${encodeURIComponent(id)}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (res.ok && data.success) success++; else failed++;
+        } catch (_) { failed++; }
+      }
+      if (success) showToast('Listings ended', `${success} listing${success === 1 ? '' : 's'} ended successfully${failed ? `; ${failed} failed.` : '.'}`, 'success');
+      else showToast('End failed', 'No selected listings were ended.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'End selected'; }
+      await loadListings();
+    });
     // Pagination
     root.querySelectorAll('[data-ll-page]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; llPage = Number(b.getAttribute('data-ll-page')); renderListings(); }));
     // Select all
     const selectAll = root.querySelector('#llSelectAll');
-    if (selectAll) selectAll.addEventListener('change', (e) => root.querySelectorAll('.ll-row-check').forEach((cb) => { cb.checked = e.target.checked; }));
+    if (selectAll) selectAll.addEventListener('change', (e) => { root.querySelectorAll('.ll-row-check').forEach((cb) => { cb.checked = e.target.checked; }); refreshBulkBar(); syncBulkEditor(); });
     // Row View (inline edit) + menu (Edit/Delete)
     wireListingRows();
   }
@@ -5909,41 +6257,39 @@
 
   function llEnterEditMode(row, l) {
     row.classList.add('ll-row-editing');
-    row.querySelector('[data-cell="title"]').innerHTML = `<input class="editable-input" data-field="title" value="${escapeAttr(l.title || '')}" style="width:100%;" />`;
-    row.querySelector('[data-cell="sellPrice"]').innerHTML = `<input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" style="width:90px;" />`;
-    row.querySelector('[data-cell="quantity"]').innerHTML = `<input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" style="width:60px;" />`;
-    row.querySelector('[data-cell="categoryId"]').innerHTML = `<input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" style="width:100px;" />`;
-    const actions = row.querySelector('.row-actions');
-    actions.innerHTML = `<button class="btn-small save" data-action="save">Save</button><button class="btn-small" data-action="cancel" style="background:var(--grey-light);color:var(--ink);">Cancel</button>`;
-    actions.querySelector('[data-action="cancel"]').addEventListener('click', () => renderListings());
-    actions.querySelector('[data-action="save"]').addEventListener('click', async () => {
-      const saveBtn = actions.querySelector('[data-action="save"]');
-      const title = row.querySelector('[data-field="title"]').value;
-      const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
-      const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
-      const categoryId = row.querySelector('[data-field="categoryId"]').value;
-      saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026';
-      try {
-        const isLive = llListingStatus(l) === 'active';
-        const res = await apiFetch(isLive ? `/api/listings/${l.id}/revise` : `/api/list-on-ebay/${l.id}`, {
-          method: isLive ? 'POST' : 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, sellPrice, quantity, categoryId }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) { alert(data.error || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save'; return; }
-        // Update local copy and re-render.
-        Object.assign(l, { title, sell_price: sellPrice, quantity, category_id: categoryId });
-        showToast('Saved', 'Listing updated.', 'success');
+    const titleCell=row.querySelector('[data-cell="title"]');
+    const priceCell=row.querySelector('[data-cell="sellPrice"]');
+    const qtyCell=row.querySelector('[data-cell="quantity"]');
+    const actions=row.querySelector('.phase4-row-actions');
+    if(titleCell) titleCell.innerHTML=`<input class="editable-input phase7-edit-input" data-field="title" value="${escapeAttr(l.title||'')}" style="width:100%;" />`;
+    if(priceCell) priceCell.innerHTML=`<input class="editable-input phase7-edit-input" data-field="sellPrice" type="number" min="0.01" step="0.01" value="${l.sell_price ?? ''}" />`;
+    if(qtyCell) qtyCell.innerHTML=`<input class="editable-input phase7-edit-input" data-field="quantity" type="number" min="0" step="1" value="${l.quantity ?? 0}" />`;
+    if(actions) actions.innerHTML=`<div class="phase7-inline-actions"><button class="ll-view-btn" data-action="save">Save</button><button class="ll-view-btn" data-action="cancel">Cancel</button></div>`;
+    actions?.querySelector('[data-action="cancel"]')?.addEventListener('click',()=>renderListings());
+    actions?.querySelector('[data-action="save"]')?.addEventListener('click',async()=>{
+      const btn=actions.querySelector('[data-action="save"]');
+      const title=row.querySelector('[data-field="title"]')?.value?.trim()||l.title||'';
+      const sellPrice=Number(row.querySelector('[data-field="sellPrice"]')?.value);
+      const quantity=Number(row.querySelector('[data-field="quantity"]')?.value);
+      if(!title){alert('Title is required.');return;}
+      if(!Number.isFinite(sellPrice)||sellPrice<=0){alert('Enter a valid price greater than 0.');return;}
+      if(!Number.isInteger(quantity)||quantity<0){alert('Enter a valid quantity of 0 or more.');return;}
+      btn.disabled=true;btn.textContent='Saving…';
+      try{
+        const res=await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/revise`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,sellPrice,quantity})});
+        const data=await res.json();
+        if(!res.ok||!data.success) throw new Error(data.error||'Could not save changes.');
+        Object.assign(l,{title,sell_price:sellPrice,quantity});
+        showToast('Saved','Live listing updated.','success');
         renderListings();
-      } catch (err) { alert('Could not connect to the server: ' + err.message); saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+      }catch(err){alert(err.message||'Could not connect to the server.');btn.disabled=false;btn.textContent='Save';}
     });
   }
 
   async function llDeleteListing(l, row) {
     const isLive = llListingStatus(l) === 'active';
     const confirmMsg = isLive
-      ? 'This listing is currently live on eBay. Deleting it here will also end it on eBay. Continue?'
+      ? 'This listing is currently live on eBay. Ending it here will also end the eBay listing. Continue?'
       : 'Delete this listing from ELMS?';
     if (!confirm(confirmMsg)) return;
     try {
@@ -5951,23 +6297,51 @@
       const data = await res.json();
       if (!res.ok || !data.success) { alert(data.error || 'Could not delete this listing.'); return; }
       llAll = llAll.filter((x) => x.id !== l.id);
+      showToast(isLive ? 'Listing ended' : 'Listing deleted', isLive ? 'The eBay listing was ended successfully.' : 'The listing was removed from ELMS.', 'success');
       renderListings();
     } catch (err) { alert('Could not connect to the server: ' + err.message); }
   }
+
+  function openPhase5ListingPanel(l) {
+    const panel=document.getElementById('phase5Panel'), back=document.getElementById('phase5Backdrop');
+    if(!panel||!back) return;
+    const status=llListingStatus(l), marketplace=l.marketplace_id||l.marketplace||'—';
+    document.getElementById('phase5Title').textContent=l.title||'Listing details';
+    document.getElementById('phase5Sub').textContent=`${status==='active'?'Published':'Listing'} • ${marketplace} • ${l.sku||'No SKU'}`;
+    const body=document.getElementById('phase5Body');
+    const val=(x)=>escapeHtml(String(x ?? '—'));
+    body.innerHTML=`
+      <div class="phase5-card full"><div class="phase5-label">Title</div><div class="phase5-value">${val(l.title)}</div></div>
+      <div class="phase5-card"><div class="phase5-label">SKU / ASIN</div><div class="phase5-value">${val(l.sku)}</div></div>
+      <div class="phase5-card"><div class="phase5-label">eBay Listing ID</div><div class="phase5-value">${val(l.ebay_listing_id||l.listing_id)}</div></div>
+      <div class="phase5-card"><div class="phase5-label">Marketplace</div><div class="phase5-value">${val(marketplace)}</div></div>
+      <div class="phase5-card"><div class="phase5-label">eBay Account</div><div class="phase5-value">${val(l.account_name||l.ebay_account_name||l.ebay_account_id)}</div></div>
+      <div class="phase5-card"><div class="phase5-label">Sell Price</div><div class="phase5-value">${val(l.sell_price)}</div></div>
+      <div class="phase5-card"><div class="phase5-label">Quantity</div><div class="phase5-value">${val(l.quantity)}</div></div>
+      <div class="phase5-card"><div class="phase5-label">Category</div><div class="phase5-value">${val(l.category_id)}</div></div>
+      <div class="phase5-card"><div class="phase5-label">Amazon Price</div><div class="phase5-value">${val(l.amazon_price)}</div></div>`;
+    const actions=document.getElementById('phase5Actions');
+    actions.innerHTML=`<button class="primary" id="phase5Edit">Edit listing</button><button id="phase5Delete">Delete / End</button>${l.ebay_listing_id||l.listing_id?`<button id="phase5OpenEbay">Open eBay</button>`:''}`;
+    document.getElementById('phase5Edit').onclick=()=>{closePhase5ListingPanel(); const row=document.querySelector(`#listingsContent tr[data-listing-id="${CSS.escape(String(l.id))}"]`); if(row) llEnterEditMode(row,l);};
+    document.getElementById('phase5Delete').onclick=async()=>{closePhase5ListingPanel(); await llDeleteListing(l,null);};
+    document.getElementById('phase5OpenEbay')?.addEventListener('click',()=>{ const id=l.ebay_listing_id||l.listing_id; if(id) window.open(`https://www.ebay.com/itm/${encodeURIComponent(id)}`,'_blank','noopener'); });
+    panel.classList.add('open'); back.classList.add('open'); panel.setAttribute('aria-hidden','false');
+  }
+  function closePhase5ListingPanel(){ const p=document.getElementById('phase5Panel'),b=document.getElementById('phase5Backdrop'); p?.classList.remove('open'); b?.classList.remove('open'); p?.setAttribute('aria-hidden','true'); }
+  document.getElementById('phase5Close')?.addEventListener('click',closePhase5ListingPanel);
+  document.getElementById('phase5Backdrop')?.addEventListener('click',closePhase5ListingPanel);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape') closePhase5ListingPanel();});
 
   function wireListingRows() {
     document.querySelectorAll('#listingsContent tr[data-listing-id]').forEach((row) => {
       const id = row.getAttribute('data-listing-id');
       const l = llAll.find((x) => String(x.id) === String(id));
       if (!l) return;
-      row.querySelector('[data-action="view"]')?.addEventListener('click', () => llEnterEditMode(row, l));
+      row.querySelector('[data-action="view"]')?.addEventListener('click', () => openPhase5ListingPanel(l));
+      row.querySelector('[data-action="quick-edit"]')?.addEventListener('click', (e) => { e.stopPropagation(); llEnterEditMode(row, l); });
       row.querySelector('[data-action="menu"]')?.addEventListener('click', () => {
-        // Simple menu: Edit or Delete.
-        const choice = prompt('Type "edit" to edit, or "delete" to remove this listing:', 'edit');
-        if (!choice) return;
-        const c = choice.trim().toLowerCase();
-        if (c === 'edit') llEnterEditMode(row, l);
-        else if (c === 'delete') llDeleteListing(l, row);
+        const choice = window.confirm('OK = Edit listing\nCancel = Delete listing');
+        if (choice) llEnterEditMode(row, l); else llDeleteListing(l, row);
       });
     });
   }
@@ -6873,21 +7247,18 @@
         listEl.innerHTML = '<div class="empty-state">No eBay accounts connected yet.</div>';
       } else {
         listEl.innerHTML = currentEbayAccounts.map((acc) => `
-          <div class="ebay-account-card ${acc.isActive ? 'is-active' : ''}" data-account-id="${acc.id}">
-            <div class="eac-main">
-              <div class="eac-title-row">
-                <span class="eac-title">${escapeHtml(accountDisplayLabel(acc))}</span>
-                ${acc.isActive ? '<span class="eac-active-pill">Active</span>' : ''}
-              </div>
-              <div class="eac-meta"><span>eBay ID: <b>${escapeHtml(acc.ebayUserId)}</b></span><span>Marketplace: <b>${escapeHtml(acc.marketplaceId || 'EBAY_US')}</b></span></div>
-              <div class="eac-name-row">
-                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="Enter a name for this eBay account" />
+          <div class="draft-row" data-account-id="${acc.id}" style="cursor:default; align-items:flex-start;">
+            <div class="draft-info" style="flex:1; min-width:220px;">
+              <div class="draft-title">${escapeHtml(accountDisplayLabel(acc))} ${acc.isActive ? '<span class="status-badge published">Active</span>' : ''}</div>
+              <div class="draft-meta"><span class="draft-meta-item">eBay ID: ${escapeHtml(acc.ebayUserId)}</span><span class="draft-meta-item">Marketplace: ${escapeHtml(acc.marketplaceId || 'EBAY_US')}</span></div>
+              <div style="display:flex; gap:8px; margin-top:8px; max-width:520px; flex-wrap:wrap;">
+                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="Enter a name for this eBay account" style="flex:1 1 240px; min-width:0; max-width:100%;" />
                 <button class="btn-small save" data-action="save-name">Save name</button>
               </div>
             </div>
-            <div class="eac-actions">
-              ${!acc.isActive ? `<button class="btn-small btn-activate" data-action="activate-account">Set active</button>` : ''}
-              <button class="btn-small btn-disconnect" data-action="remove-account">Disconnect</button>
+            <div class="row-actions">
+              ${!acc.isActive ? `<button class="btn-small" data-action="activate-account">Set active</button>` : ''}
+              <button class="btn-small delete" data-action="remove-account">Disconnect</button>
             </div>
           </div>
         `).join('');
@@ -9242,5 +9613,11 @@
 </script>
 
 
+
+<div class="phase5-backdrop" id="phase5Backdrop"></div>
+<aside class="phase5-panel" id="phase5Panel" aria-hidden="true">
+  <div class="phase5-head"><div><h3 id="phase5Title">Listing details</h3><div class="phase5-sub" id="phase5Sub">Live listing</div></div><button class="phase5-close" id="phase5Close" aria-label="Close">×</button></div>
+  <div class="phase5-body"><div class="phase5-grid" id="phase5Body"></div><div class="phase5-actions" id="phase5Actions"></div><div class="phase5-note">Edit uses the existing ELMS listing revise endpoint. Phase 7 adds price/quantity bulk editing with validation. No fake eBay state is generated in this panel.</div></div>
+</aside>
 </body>
 </html>
