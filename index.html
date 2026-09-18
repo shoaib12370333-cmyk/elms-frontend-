@@ -51,50 +51,6 @@
 
   * { box-sizing: border-box; }
 
-  /* Global layout guard: the dashboard must stay inside the viewport.
-     Only intentionally wide data tables/lists may scroll horizontally. */
-  html, body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-  .app-shell, .main, .content, .topbar {
-    min-width: 0;
-    max-width: 100%;
-  }
-  .sidebar {
-    min-width: 0;
-    overflow-x: hidden;
-  }
-  .sidebar-brand, .sidebar-ebay-widget, .sidebar-nav, .sidebar-upgrade, .sidebar-footer,
-  .sidebar-nav a, .sidebar-nav-label {
-    min-width: 0;
-    max-width: 100%;
-  }
-  .sidebar-brand .brand-text, .sidebar-nav a, .sidebar-upgrade, .sidebar-footer {
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-  .sidebar-nav a {
-    overflow: hidden;
-  }
-  .sidebar-nav a .nav-badge {
-    flex: 0 0 auto;
-  }
-  .topbar {
-    min-width: 0;
-  }
-  .topbar > * {
-    min-width: 0;
-  }
-  .content > div, .content .product-card, .content .import-lane,
-  .content table, .content .card, .content .panel {
-    max-width: 100%;
-  }
-  .content img, .content video, .content iframe {
-    max-width: 100%;
-  }
-
   html, body {
     margin: 0;
     padding: 0;
@@ -805,13 +761,6 @@
   .content.messages-wide {
     max-width: 1400px;
   }
-  /* Drafts: wider horizontal canvas without making the cards excessively tall. */
-  .content.drafts-wide {
-    max-width: 1420px;
-  }
-  .content.drafts-wide #page-drafts {
-    width: 100%;
-  }
   .content.drafts-wide {
     max-width: 1480px;
     width: 100%;
@@ -1343,45 +1292,7 @@
   .live-listings-wrap .data-table th, .live-listings-wrap .data-table td { padding: 9px 10px; white-space: nowrap; }
   .live-listings-wrap .data-table .row-title { max-width: 360px; white-space: normal; }
 
-
-  /* ===== PHASE 4 — LIVE LISTINGS MANAGEMENT ===== */
-  .phase4-live-shell{width:100%;max-width:none;}
-  .phase4-live-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 14px;}
-  .phase4-live-kpi{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;}
-  .phase4-live-kpi .k-label{font-size:11px;color:var(--grey);margin-bottom:5px;}
-  .phase4-live-kpi .k-value{font-size:20px;font-weight:750;line-height:1.1;}
-  .phase4-live-kpi .k-sub{font-size:10.5px;color:var(--grey);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .phase4-filterbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;}
-  .phase4-filterbar .ll-search{flex:1 1 260px;min-width:220px;}
-  .phase4-filterbar select{height:38px;min-width:135px;}
-  .phase4-bulkbar{display:none;align-items:center;gap:8px;padding:9px 11px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;background:#fafafa;}
-  .phase4-bulkbar.show{display:flex;}
-  .phase4-bulkbar .selected-count{font-weight:650;margin-right:auto;}
-  .phase4-market{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--grey);}
-  .phase4-market-dot{width:6px;height:6px;border-radius:50%;background:var(--green-dark);display:inline-block;}
-  .phase4-stock{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap;}
-  .phase4-stock-dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--green-dark);}
-  .phase4-stock.out .phase4-stock-dot{background:var(--red);}
-  .phase4-stock.hold .phase4-stock-dot{background:#b7791f;}
-  .phase4-margin{font-size:11px;color:var(--blue);white-space:nowrap;}
-  .phase4-table .row-title{min-width:240px;}
-  .phase4-table td{vertical-align:middle;}
-  .phase4-row-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;white-space:nowrap;}
-  .phase4-row-actions .ll-menu-btn{width:32px;height:32px;}
-  .phase4-row-link{font-size:11px;color:var(--blue);text-decoration:none;white-space:nowrap;}
-  .phase4-empty-note{padding:32px;text-align:center;color:var(--grey);border:1px dashed var(--line);border-radius:12px;background:var(--paper);}
-  @media (max-width:900px){.phase4-live-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.phase4-filterbar{align-items:stretch;}.phase4-filterbar .ll-search{flex-basis:100%;}}
-  @media (max-width:560px){.phase4-live-kpis{grid-template-columns:1fr 1fr;gap:7px;}.phase4-live-kpi{padding:10px;}.phase4-live-kpi .k-value{font-size:17px;}.phase4-filterbar select{flex:1;min-width:0;}.phase4-bulkbar{flex-wrap:wrap;}.phase4-bulkbar .selected-count{width:100%;}}
-
-  /* ===== PHASE 6 — LIVE LISTING ACTIONS ===== */
-.phase6-action-note{font-size:11px;color:var(--grey);margin-top:3px;}
-.phase6-progress{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--grey);}
-
-/* --- Phase 7: Live listing price & quantity controls --- */
-.phase7-bulk-editor{display:none;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;margin:10px 0;border:1px solid #dbe3ec;border-radius:12px;background:#f8fafc}
-.phase7-bulk-editor.show{display:flex}.phase7-bulk-editor .phase7-label{font-size:12px;font-weight:700;color:#334155}.phase7-bulk-editor input{width:105px}.phase7-edit-input{width:90px!important;min-width:70px}.phase7-save-note{font-size:11px;color:#64748b;margin-left:auto}.phase7-price-cell,.phase7-qty-cell{white-space:nowrap}.phase7-dirty{outline:2px solid #93c5fd!important}.phase7-inline-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.phase7-inline-actions button{font-size:11px;padding:6px 8px}
-
-/* --- Live Listings page --- */
+  /* --- Live Listings page --- */
   .ll-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
   .ll-head h1 { margin:0; font-size:28px; font-weight:800; letter-spacing:-0.02em; }
   .ll-head .sub { margin-top:4px; color:var(--grey); font-size:14px; }
@@ -1708,6 +1619,39 @@
   .editable-input:focus { outline: none; border-color: var(--blue); }
 
   .row-actions { display: flex; gap: 6px; white-space: nowrap; }
+
+  /* eBay account rows: keep account actions pinned to the far right.
+     The shared .draft-row is a CSS grid, but account rows only have two
+     logical children, so they need a dedicated flex layout. */
+  #ebayAccountsList .draft-row {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  #ebayAccountsList .draft-info {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  #ebayAccountsList .row-actions {
+    margin-left: auto !important;
+    flex: 0 0 auto !important;
+    align-self: flex-start !important;
+    justify-content: flex-end !important;
+    padding-top: 2px;
+  }
+  @media (max-width: 700px) {
+    #ebayAccountsList .draft-row {
+      flex-direction: column !important;
+    }
+    #ebayAccountsList .row-actions {
+      width: 100% !important;
+      margin-left: 0 !important;
+      justify-content: flex-end !important;
+    }
+  }
   .btn-small {
     background: var(--blue);
     color: #fff;
@@ -1728,66 +1672,6 @@
   .btn-small.publish { background: var(--blue-dark); }
   .btn-small.publish:hover { background: #003B7A; }
 
-/* ================= PHASE 8 — PREMIUM DRAFTS DESIGN UPGRADE ================= */
-#draftsContent .p8-drafts-shell{background:#fff;border:1px solid #e7ebf1;border-radius:18px;box-shadow:0 12px 35px rgba(15,23,42,.05);overflow:hidden}
-#draftsContent .p8-head{padding:22px 24px 16px;background:linear-gradient(180deg,#fff 0%,#fbfcfe 100%);border-bottom:1px solid #e8edf3}
-#draftsContent .p8-head-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
-#draftsContent .p8-title{margin:0;font-size:25px;font-weight:800;letter-spacing:-.025em;color:#111827}
-#draftsContent .p8-subtitle{margin:5px 0 0;color:#667085;font-size:13px}
-#draftsContent .p8-head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-#draftsContent .p8-head-btn{height:40px;border:1px solid #dfe5ed;background:#fff;border-radius:9px;padding:0 13px;font:700 12px inherit;color:#344054;cursor:pointer}
-#draftsContent .p8-head-btn:hover{background:#f8fafc;border-color:#cfd7e3}
-#draftsContent .p8-head-btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
-#draftsContent .p8-head-btn.primary:hover{background:#1d4ed8}
-#draftsContent .p8-tabs{display:flex;gap:22px;margin-top:18px;overflow:auto}
-#draftsContent .p8-tab{position:relative;border:0;background:transparent;padding:8px 1px 12px;color:#667085;font:700 12px inherit;cursor:pointer;white-space:nowrap}
-#draftsContent .p8-tab.active{color:#2563eb}
-#draftsContent .p8-tab.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#2563eb;border-radius:2px}
-#draftsContent .p8-tab .count{margin-left:5px;padding:2px 6px;border-radius:999px;background:#f1f4f8;color:#667085;font-size:10px}
-#draftsContent .p8-tab.active .count{background:#eaf1ff;color:#2563eb}
-#draftsContent .p8-tools{display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1px solid #edf0f4;flex-wrap:wrap}
-#draftsContent .p8-search{position:relative;flex:1 1 280px;min-width:220px}
-#draftsContent .p8-search input{width:100%;height:40px;box-sizing:border-box;padding:0 13px 0 38px;border:1px solid #dfe5ed;border-radius:9px;background:#fff;font:500 12px inherit;color:#1d2939;outline:none}
-#draftsContent .p8-search:before{content:"⌕";position:absolute;left:14px;top:8px;color:#98a2b3;font-size:18px;z-index:1}
-#draftsContent .p8-search input:focus{border-color:#93b4f8;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
-#draftsContent .p8-select,#draftsContent .p8-filter-btn{height:40px;border:1px solid #dfe5ed;border-radius:9px;background:#fff;padding:0 11px;font:600 12px inherit;color:#344054;outline:none}
-#draftsContent .p8-filter-btn{padding:0 13px;cursor:pointer}
-#draftsContent .p8-filter-btn:hover{background:#f8fafc}
-#draftsContent .p8-summary{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px;background:#fafbfc;border-bottom:1px solid #edf0f4}
-#draftsContent .p8-chip{border:1px solid #e3e8ef;background:#fff;border-radius:999px;padding:6px 10px;color:#667085;font-size:11px;font-weight:600}
-#draftsContent .p8-chip strong{color:#1d2939;margin-right:3px}
-#draftsContent .p8-bulk{display:flex;align-items:center;gap:9px;padding:10px 18px;background:#eef4ff;border-bottom:1px solid #dbe7ff;flex-wrap:wrap}
-#draftsContent .p8-bulk .selected{font-size:12px;font-weight:800;color:#1d4ed8;margin-right:auto}
-#draftsContent .p8-bulk button{height:34px;border:1px solid #c9d7f7;background:#fff;border-radius:8px;padding:0 11px;font:700 11px inherit;color:#1d4ed8;cursor:pointer}
-#draftsContent .p8-bulk button.danger{color:#dc2626;border-color:#f1caca}
-#draftsContent .p8-table-wrap{overflow:auto;width:100%}
-#draftsContent .p8-columns{min-width:1120px;display:grid;grid-template-columns:38px minmax(360px,1.55fr) 150px 130px 125px 105px 150px;align-items:center;gap:0;padding:10px 18px;background:#f8fafc;border-bottom:1px solid #e8edf3;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
-#draftsContent .p8-list{min-width:1120px}
-#draftsContent .draft-row.p8-row{display:grid;grid-template-columns:38px minmax(360px,1.55fr) 150px 130px 125px 105px 150px;align-items:center;gap:0;min-height:106px;border:0;border-bottom:1px solid #edf0f4;border-radius:0;padding:13px 18px;background:#fff;box-sizing:border-box;cursor:pointer;transition:background .15s ease}
-#draftsContent .draft-row.p8-row:hover{background:#f9fbff;box-shadow:none;transform:none;border-color:#edf0f4}
-#draftsContent .p8-product{display:flex;align-items:center;gap:12px;min-width:0;padding-right:18px}
-#draftsContent .p8-product .draft-thumb{width:64px;height:64px;border-radius:10px;background:#fff}
-#draftsContent .p8-product-main{min-width:0}
-#draftsContent .p8-product-title{font-size:13px;font-weight:750;line-height:1.35;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#draftsContent .p8-product-sub{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px;color:#667085;font-size:10.5px}
-#draftsContent .p8-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid #e1e6ee;background:#f8fafc;border-radius:999px;font-size:10px;font-weight:700;color:#596579}
-#draftsContent .p8-pill.blue{background:#eef4ff;border-color:#d7e4ff;color:#2563eb}
-#draftsContent .p8-cell{min-width:0;padding-right:14px}
-#draftsContent .p8-cell-label{display:none;color:#98a2b3;font-size:9px;text-transform:uppercase;font-weight:800;margin-bottom:3px}
-#draftsContent .p8-cell-value{font-size:12px;font-weight:700;color:#344054;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#draftsContent .p8-cell-muted{font-size:10px;color:#98a2b3;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#draftsContent .p8-price{font-size:13px;font-weight:800;color:#111827}
-#draftsContent .p8-input{height:34px;width:88px;box-sizing:border-box;border:1px solid #dfe5ed;border-radius:7px;padding:0 8px;font:700 12px inherit;color:#1d2939;background:#fff}
-#draftsContent .p8-input.qty{width:64px}
-#draftsContent .p8-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;padding-left:8px}
-#draftsContent .p8-actions .btn-small{height:34px;padding:0 10px;border-radius:8px;font-size:11px}
-#draftsContent .p8-more{width:34px;height:34px;border:1px solid #dfe5ed;background:#fff;border-radius:8px;color:#475467;font-size:18px;cursor:pointer}
-#draftsContent .p8-error{grid-column:2 / -1;display:flex;gap:7px;align-items:flex-start;margin:7px 0 0 76px;padding:8px 10px;border-radius:8px;background:#fff7f7;color:#dc2626;font-size:10.5px;line-height:1.4;border:1px solid #fee2e2}
-#draftsContent .p8-footer{display:block;padding:0;background:#fff;border-top:0}.p8-footer .draft-footer{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;margin:0;border-top:0}
-@media(max-width:900px){#draftsContent .p8-columns,#draftsContent .draft-row.p8-row{grid-template-columns:38px minmax(320px,1.5fr) 120px 110px 105px 90px 135px;min-width:1000px}}
-@media(max-width:650px){#draftsContent .p8-head{padding:18px 14px 12px}#draftsContent .p8-tools,#draftsContent .p8-summary,#draftsContent .p8-bulk{padding-left:12px;padding-right:12px}}
-
-
   /* ---------- Draft rows (AutoDS-style) ---------- */
   .draft-bulk-bar {
     display: none;
@@ -1804,18 +1688,17 @@
   .draft-list { display: flex; flex-direction: column; gap: 10px; }
   .draft-row {
     display: grid;
-    grid-template-columns: 20px 58px minmax(300px, 1fr) minmax(430px, 470px) 300px;
+    grid-template-columns: 20px 56px minmax(250px, 1fr) minmax(340px, 0.95fr) auto;
     align-items: center;
     gap: 14px;
     width: 100%;
     min-width: 0;
-    min-height: 94px;
     box-sizing: border-box;
     overflow: visible;
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: 12px;
-    padding: 11px 16px;
+    padding: 12px 16px;
     cursor: pointer;
     transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   }
@@ -1896,6 +1779,86 @@
   }
   .draft-source-link { color: var(--blue); text-decoration: underline; }
 
+
+  /* AutoDS-inspired Drafts table: ELMS data, separate visual layer */
+  .elms-drafts-shell { background:#fff; border:1px solid #e6e8ec; border-radius:10px; overflow:hidden; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+  .elms-drafts-toolbar { display:flex; align-items:center; gap:12px; padding:18px 20px; border-bottom:1px solid #e7e9ee; background:#fff; flex-wrap:wrap; }
+  .elms-drafts-toolbar .draft-select-all { margin-right:2px; }
+  .elms-drafts-search { flex:1 1 300px; min-width:220px; position:relative; }
+  .elms-drafts-search input { width:100%; height:40px; border:1px solid #dfe3e8; border-radius:8px; padding:0 13px; font:500 14px Inter, sans-serif; color:#1f2937; outline:none; }
+  .elms-drafts-search input:focus { border-color:#9db7e8; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  .elms-drafts-select { height:40px; border:1px solid #dfe3e8; border-radius:8px; padding:0 34px 0 11px; background:#fff; color:#374151; font:500 13px Inter,sans-serif; }
+  .elms-drafts-toolbar .primary { height:40px !important; border-radius:8px; }
+  .elms-drafts-summary { display:flex; align-items:center; gap:8px; padding:12px 20px; border-bottom:1px solid #eef0f3; background:#fafbfc; flex-wrap:wrap; }
+  .elms-summary-pill { height:30px; display:inline-flex; align-items:center; gap:6px; padding:0 11px; border:1px solid #e2e5ea; border-radius:16px; background:#fff; color:#596273; font-size:12px; font-weight:600; }
+  .elms-summary-pill strong { color:#172033; font-size:13px; }
+  .elms-summary-pill.active { border-color:#cbdaf8; background:#f4f7ff; color:#1d4ed8; }
+  .elms-draft-table-wrap { overflow-x:auto; }
+  .elms-draft-table { min-width:1180px; width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed; }
+  .elms-draft-table th { height:48px; padding:0 14px; text-align:left; border-bottom:1px solid #e5e7eb; color:#687180; background:#fff; font-size:12px; font-weight:700; white-space:nowrap; vertical-align:middle; }
+  .elms-draft-table th:first-child { width:48px; padding-left:16px; }
+  .elms-draft-table th:nth-child(2) { width:330px; }
+  .elms-draft-table th:nth-child(3) { width:120px; }
+  .elms-draft-table th:nth-child(4) { width:155px; }
+  .elms-draft-table th:nth-child(5) { width:190px; }
+  .elms-draft-table th:nth-child(6) { width:155px; }
+  .elms-draft-table th:nth-child(7) { width:115px; }
+  .elms-draft-table th:nth-child(8) { width:115px; }
+  .elms-draft-table th:nth-child(9) { width:110px; }
+  .elms-draft-table th:nth-child(10) { width:120px; }
+  .elms-draft-table th:nth-child(11) { width:120px; }
+  .elms-draft-table th:nth-child(12) { width:118px; }
+  .elms-draft-table th:last-child { width:82px; }
+  .elms-draft-table td { height:94px; padding:12px 14px; border-bottom:1px solid #edf0f3; color:#4b5563; font-size:13px; vertical-align:middle; background:#fff; }
+  .elms-draft-table tr:hover td { background:#fcfdff; }
+  .elms-draft-table tr:last-child td { border-bottom:0; }
+  .elms-product-cell { display:flex; align-items:center; gap:13px; min-width:0; cursor:pointer; }
+  .elms-product-thumb { width:68px; height:68px; flex:0 0 68px; border:1px solid #e1e5eb; border-radius:8px; object-fit:contain; background:#fff; }
+  .elms-product-copy { min-width:0; }
+  .elms-product-title { color:#4b5563; font-size:15px; line-height:1.35; font-weight:700; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .elms-product-id { margin-top:5px; color:#8a93a2; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .elms-warning-dot { display:inline-grid; place-items:center; width:22px; height:22px; margin-right:6px; border-radius:50%; background:#facc15; color:#fff; font-weight:800; font-size:13px; vertical-align:middle; }
+  .elms-date { color:#596273; white-space:nowrap; }
+  .elms-muted { color:#9aa2ad; }
+  .elms-link { color:#2563eb; text-decoration:none; font-weight:600; }
+  .elms-link:hover { text-decoration:underline; }
+  .elms-source { display:flex; flex-direction:column; gap:4px; }
+  .elms-source-badge { display:inline-flex; width:max-content; padding:4px 9px; border-radius:999px; border:1px solid #e0e4ea; background:#f8fafc; color:#5b6575; font-size:11px; font-weight:700; }
+  .elms-destination { display:flex; flex-direction:column; gap:5px; min-width:0; }
+  .elms-destination-badge { display:inline-flex; width:max-content; max-width:165px; padding:4px 9px; border:1px solid #dfe4ea; border-radius:999px; background:#f8fafc; color:#536071; font-size:11px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .elms-marketplace { font-size:11px; color:#89919e; }
+  .elms-variation-head { font-size:11px; font-weight:800; color:#4b5563; margin-bottom:7px; }
+  .elms-variation-grid { display:grid; grid-template-columns:repeat(3,max-content); gap:7px; align-items:center; }
+  .elms-stock-pill { min-width:42px; height:30px; padding:0 9px; display:inline-flex; justify-content:center; align-items:center; border-radius:7px; font-size:13px; font-weight:800; }
+  .elms-stock-available { background:#4dcc83; color:#fff; }
+  .elms-stock-hold { background:#f9c62b; color:#fff; }
+  .elms-stock-oos { background:#ef4444; color:#fff; }
+  .elms-stock-na { background:#f1f3f5; color:#7b8491; }
+  .elms-total { font-weight:700; color:#606977; font-size:14px; }
+  .elms-money { color:#394150; font-weight:700; white-space:nowrap; }
+  .elms-price-editor { display:flex; flex-direction:column; gap:5px; }
+  .elms-price-editor input,.elms-qty-editor input { width:82px; height:34px; border:1px solid #dfe3e8; border-radius:7px; padding:0 8px; font:600 13px Inter,sans-serif; color:#374151; }
+  .elms-qty-editor input { width:62px; }
+  .elms-markup { color:#2563eb; font-size:11px; font-weight:700; white-space:nowrap; }
+  .elms-status { display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap; }
+  .elms-status-draft { background:#eef2ff; color:#4f46e5; }
+  .elms-status-error { background:#fff1f2; color:#dc2626; }
+  .elms-status-publishing { background:#eff6ff; color:#2563eb; }
+  .elms-status-scheduled { background:#f5f3ff; color:#7c3aed; }
+  .elms-error { margin-top:6px; color:#ef4444; font-size:11px; line-height:1.35; max-width:250px; }
+  .elms-row-actions { display:flex; align-items:center; gap:6px; }
+  .elms-icon-btn { width:34px; height:34px; display:grid; place-items:center; border:1px solid #dfe3e8; border-radius:7px; background:#fff; color:#5b6472; cursor:pointer; font-size:16px; }
+  .elms-icon-btn:hover { background:#f7f9fb; border-color:#cfd5dd; }
+  .elms-publish-btn { height:34px; padding:0 11px; border:0; border-radius:7px; background:#2563eb; color:#fff; font:700 12px Inter,sans-serif; cursor:pointer; }
+  .elms-publish-btn:disabled { opacity:.55; cursor:not-allowed; }
+  .elms-bulk-bar { display:flex; align-items:center; gap:8px; padding:10px 20px; background:#f8fbff; border-bottom:1px solid #dce7fb; flex-wrap:wrap; }
+  .elms-bulk-count { color:#344054; font-size:12px; font-weight:700; margin-right:auto; }
+  .elms-bulk-btn { height:34px; padding:0 12px; border:1px solid #d9dee6; border-radius:7px; background:#fff; font:700 12px Inter,sans-serif; cursor:pointer; color:#374151; }
+  .elms-bulk-btn.primary { background:#2563eb; color:#fff; border-color:#2563eb; }
+  .elms-bulk-btn.danger { color:#dc2626; }
+  .elms-drafts-empty { padding:48px 20px; text-align:center; color:#77808d; }
+  @media (max-width:900px) { .elms-drafts-toolbar{padding:14px}.elms-drafts-summary{padding:10px 14px}.elms-draft-table th,.elms-draft-table td{padding-left:10px;padding-right:10px} }
+
   /* Drafts page header + select-all + footer */
   .drafts-page-head { margin-bottom: 20px; }
   .drafts-page-head h1 { margin:0; font-size:28px; font-weight:800; letter-spacing:-0.02em; }
@@ -1910,26 +1873,37 @@
   .draft-page-btn.active { background:var(--blue); border-color:var(--blue); color:#fff; }
   .draft-page-btn:disabled { opacity:0.45; cursor:not-allowed; }
   .scheduled-badge { color: var(--blue-dark); font-weight: 600; }
-  .draft-quick-fields {
-    display: grid;
-    grid-template-columns: minmax(190px, 1fr) 64px 130px;
+  .draft-quick-fields { display: flex; align-items: center; gap: 8px; min-width: 0; width: 100%; flex-shrink: 1; }
+  .draft-quick-fields > * { min-width: 0; }
+  .draft-quick-fields .draft-price-field { min-width: 0; flex: 1 1 180px; }
+  .draft-price-field {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    min-width: 0;
-    width: 100%;
-    flex-shrink: 0;
+    gap: 4px;
+    background: #fff;
+    border: 1.5px solid var(--grey-light);
+    border-radius: 8px;
+    padding: 0 6px;
   }
   .draft-price-field .editable-input { border: none; padding: 6px 2px; }
   .draft-currency-symbol { font-size: 13px; color: var(--grey); font-weight: 600; }
-  .draft-actions {
-    display: grid;
-    grid-template-columns: 66px 74px 102px 42px;
-    align-items: center;
-    justify-content: end;
-    gap: 6px;
-    min-width: 0;
-    width: 100%;
-    flex-shrink: 0;
+  .draft-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; flex-shrink: 0; }
+  .draft-actions .btn-small { white-space: nowrap; }
+  .draft-menu-wrap { position: relative; }
+  .menu-dots { background: var(--paper-raised); color: var(--ink); font-size: 16px; padding: 6px 10px; }
+  .menu-dots:hover { background: var(--grey-light); }
+  .draft-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    min-width: 160px;
+    z-index: 20;
+    overflow: hidden;
   }
   .draft-menu.open { display: block; }
   .draft-menu button {
@@ -2119,51 +2093,6 @@
     z-index: 199;
   }
   .sidebar-scrim.open { display: block; }
-
-  @media (max-width: 1250px) {
-    .content.drafts-wide { max-width: 1180px; }
-    .draft-row {
-      grid-template-columns: 20px 56px minmax(250px, 1fr) minmax(370px, 400px) 270px;
-      gap: 10px;
-      padding: 10px 12px;
-    }
-    .draft-quick-fields {
-      grid-template-columns: minmax(160px, 1fr) 58px 112px;
-      gap: 6px;
-    }
-    .draft-actions {
-      grid-template-columns: 60px 68px 92px 38px;
-      gap: 5px;
-    }
-  }
-  @media (max-width: 1000px) {
-    .draft-row {
-      grid-template-columns: 20px 56px minmax(0, 1fr);
-      min-height: 0;
-    }
-    .draft-quick-fields {
-      grid-column: 3;
-      grid-template-columns: minmax(180px, 1fr) 58px 112px;
-      justify-content: start;
-      margin-top: 4px;
-    }
-    .draft-actions {
-      grid-column: 3;
-      justify-content: start;
-      grid-template-columns: 60px 68px 92px 38px;
-      margin-top: 4px;
-    }
-  }
-  @media (max-width: 650px) {
-    .draft-row {
-      grid-template-columns: 18px 52px minmax(0, 1fr);
-      padding: 9px;
-    }
-    .draft-quick-fields {
-      grid-template-columns: minmax(135px, 1fr) 55px 105px;
-      width: 100%;
-    }
-  }
 
   /* ---------- Messages / AutoDS-style inbox ---------- */
   .support-center { background:#fff; border:1px solid #e6eaf0; border-radius:18px; overflow:hidden; min-height:650px; box-shadow:0 10px 35px rgba(15,23,42,.05); }
@@ -2504,265 +2433,260 @@
     }
     .sidebar.open { transform: translateX(0); }
   }
-  /* Final viewport safety net for dashboard/content on small screens. */
-  @media (max-width: 720px) {
-    .app-shell { width: 100%; max-width: 100%; overflow-x: hidden; }
-    .main { width: 100%; max-width: 100%; overflow-x: hidden; }
-    .content { width: 100%; max-width: 100%; min-width: 0; }
-    .topbar { width: 100%; max-width: 100%; flex-wrap: wrap; gap: 12px; }
-    .topbar > div { min-width: 0; max-width: 100%; }
-    .auth-area { max-width: 100%; flex-wrap: wrap; justify-content: flex-end; }
-    .sidebar { width: 220px; max-width: 85vw; overflow-x: hidden; }
+
+  /* ===== DRAFTS BALANCED SCREEN-FIT =====
+     Compact like the reference: wider horizontally, but no oversized
+     typography/thumbs and no horizontal overflow. */
+  .content.drafts-wide {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 14px 14px 20px !important;
+    box-sizing: border-box !important;
   }
 
-  /* ============================================================
-     ELMS PHASE 2 — GLOBAL LAYOUT / VIEWPORT SAFETY
-     Keep the dashboard inside the viewport while allowing only
-     intentionally wide data areas to scroll internally.
-     ============================================================ */
-
-  html {
-    overflow-x: clip;
+  #draftsContent .draft-list {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
   }
 
-  body {
-    overflow-x: clip;
+  #draftsContent .draft-row {
+    display: grid !important;
+    grid-template-columns: 20px 82px minmax(0, 1fr) 330px 245px !important;
+    align-items: center !important;
+    column-gap: 10px !important;
+    row-gap: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 100px !important;
+    height: auto !important;
+    margin: 0 0 12px !important;
+    padding: 9px 12px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
 
-  .app-shell {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: clip;
+  #draftsContent .draft-row > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
-  .sidebar {
-    flex: 0 0 220px;
-    width: 220px;
-    max-width: 220px;
-    min-width: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    scrollbar-width: thin;
+  #draftsContent .draft-checkbox {
+    width: 18px !important;
+    height: 18px !important;
   }
 
-  .main {
-    flex: 1 1 auto;
-    width: 0;
-    min-width: 0;
-    max-width: calc(100% - 220px);
-    overflow-x: clip;
+  #draftsContent .draft-thumb {
+    width: 78px !important;
+    height: 78px !important;
+    max-width: 78px !important;
+    max-height: 78px !important;
+    object-fit: contain !important;
   }
 
-  .topbar {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    flex-wrap: wrap;
-    gap: 12px 18px;
+  #draftsContent .draft-info {
+    min-width: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
   }
 
-  .topbar > div,
-  .topbar h1,
-  .topbar .subline,
-  .auth-area {
-    min-width: 0;
-    max-width: 100%;
+  #draftsContent .draft-title {
+    font-size: 18px !important;
+    line-height: 1.25 !important;
+    font-weight: 700 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
-  .auth-area {
-    flex: 0 1 auto;
-    min-width: 0;
-    max-width: 100%;
-    flex-wrap: wrap;
+  #draftsContent .draft-meta {
+    margin-top: 5px !important;
+    gap: 9px !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
   }
 
-  .content {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: clip;
+  #draftsContent .supplier-badge {
+    font-size: 12px !important;
+    padding: 3px 9px !important;
   }
 
-  .content > * {
-    min-width: 0;
-    max-width: 100%;
+  #draftsContent .draft-source-link {
+    font-size: 13px !important;
+    white-space: nowrap !important;
   }
 
-  /* Long labels/titles must never push the page wider. */
-  .content h1,
-  .content h2,
-  .content h3,
-  .content p,
-  .content .meta-line,
-  .content .state-msg,
-  .content .empty-state,
-  .content .product-title,
-  .content .draft-title,
-  .content .listing-title,
-  .content .card-title,
-  .content label,
-  .sidebar,
-  .sidebar * {
-    overflow-wrap: anywhere;
-    word-break: break-word;
+  #draftsContent .draft-error-text {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    margin-top: 4px !important;
+    max-width: 100% !important;
   }
 
-  /* Buttons/controls may shrink, but their text remains readable. */
-  button,
-  input,
-  select,
-  textarea {
-    max-width: 100%;
+  #draftsContent .draft-quick-fields {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 52px 105px !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
 
-  .btn,
-  .btn-small,
-  button {
-    min-width: 0;
+  #draftsContent .draft-price-field {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto 68px !important;
+    align-items: center !important;
+    gap: 4px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
   }
 
-  /* Images/media stay inside their containing cards. */
-  img,
-  video,
-  iframe,
-  svg {
-    max-width: 100%;
+  #draftsContent .draft-price-field > div {
+    min-width: 0 !important;
   }
 
-  /* Grids/flex rows should be allowed to shrink instead of creating
-     a page-level horizontal scrollbar. */
-  .content .grid,
-  .content [class*="grid"],
-  .content [class*="toolbar"],
-  .content [class*="header"],
-  .content [class*="actions"],
-  .content [class*="row"] {
-    min-width: 0;
+  #draftsContent .draft-price-field > div:first-child {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 11px !important;
   }
 
-  /* Tables are allowed to be wide only inside their own container. */
-  .content table {
-    max-width: none;
+  #draftsContent .draft-price-field > div:nth-child(2) {
+    display: flex !important;
+    align-items: center !important;
+    min-width: 0 !important;
   }
 
-  .table-wrap,
-  .table-container,
-  .listing-table-wrap,
-  .orders-table-wrap,
-  .history-table-wrap,
-  .data-table-wrap {
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
+  #draftsContent .draft-price-field > div:nth-child(3) {
+    min-width: 68px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+    text-align: right !important;
+    font-size: 11px !important;
   }
 
-  /* Prevent common flex children from forcing their parent wider. */
-  .content .product-card,
-  .content .card,
-  .content .panel,
-  .content .section,
-  .content .modal-box,
-  .content .import-lane {
-    min-width: 0;
-    max-width: 100%;
+  #draftsContent .draft-price-field input[data-field="sellPrice"] {
+    width: 62px !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
 
-  /* Desktop: keep the main workspace naturally fluid. */
-  @media (min-width: 721px) {
-    .content {
-      margin-left: auto;
-      margin-right: auto;
+  #draftsContent .draft-quick-fields > input[data-field="quantity"] {
+    width: 52px !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #draftsContent .draft-quick-fields > div:last-child {
+    width: 105px !important;
+    min-width: 0 !important;
+  }
+
+  #draftsContent .draft-quick-fields > div:last-child input[data-field="categoryId"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #draftsContent .draft-actions {
+    display: grid !important;
+    grid-template-columns: 64px 88px 38px !important;
+    align-items: center !important;
+    justify-content: end !important;
+    gap: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+
+  #draftsContent .draft-actions .btn-small {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    padding-left: 7px !important;
+    padding-right: 7px !important;
+  }
+
+  #draftsContent .draft-menu-wrap {
+    position: relative !important;
+    min-width: 0 !important;
+  }
+
+  #draftsContent .draft-menu {
+    z-index: 100 !important;
+  }
+
+  @media (max-width: 1250px) {
+    #draftsContent .draft-row {
+      grid-template-columns: 20px 72px minmax(0, 1fr) 300px 220px !important;
+      column-gap: 8px !important;
+      min-height: 96px !important;
+      padding-left: 9px !important;
+      padding-right: 9px !important;
+    }
+    #draftsContent .draft-thumb {
+      width: 68px !important;
+      height: 68px !important;
+    }
+    #draftsContent .draft-quick-fields {
+      grid-template-columns: minmax(0, 1fr) 50px 92px !important;
+    }
+    #draftsContent .draft-quick-fields > input[data-field="quantity"] {
+      width: 50px !important;
+    }
+    #draftsContent .draft-quick-fields > div:last-child {
+      width: 92px !important;
+    }
+    #draftsContent .draft-actions {
+      grid-template-columns: 58px 80px 34px !important;
+      gap: 4px !important;
     }
   }
 
-  /* Tablet/mobile: the sidebar becomes the existing drawer.
-     The main content uses the full viewport width. */
-  @media (max-width: 720px) {
-    .main {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
+  @media (max-width: 1000px) {
+    #draftsContent .draft-row {
+      grid-template-columns: 20px 62px minmax(0, 1fr) !important;
+      min-height: 0 !important;
+      padding: 9px !important;
     }
-
-    .sidebar {
-      flex-basis: 220px;
-      width: 220px;
-      max-width: 85vw;
+    #draftsContent .draft-thumb {
+      width: 60px !important;
+      height: 60px !important;
     }
-
-    .topbar {
-      padding-left: 16px;
-      padding-right: 16px;
+    #draftsContent .draft-quick-fields {
+      grid-column: 3 !important;
+      grid-template-columns: minmax(145px, 1fr) 50px 92px !important;
+      margin-top: 4px !important;
     }
-
-    .content {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-
-    .auth-area {
-      width: auto;
-      flex: 1 1 auto;
-      justify-content: flex-end;
-    }
-
-    .credit-balance-chip {
-      max-width: 100%;
-    }
-
-    .user-chip-meta {
-      min-width: 0;
-      max-width: 120px;
-    }
-
-    .user-chip-meta .name,
-    .user-chip-meta .role {
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    #draftsContent .draft-actions {
+      grid-column: 3 !important;
+      justify-content: start !important;
+      grid-template-columns: 58px 80px 34px !important;
+      margin-top: 4px !important;
     }
   }
 
-  @media (max-width: 480px) {
-    .content {
-      padding-left: 12px;
-      padding-right: 12px;
-    }
+  /* FINAL: table view takes precedence over legacy draft-card layout */
+  #draftsContent .elms-draft-table .draft-row { display:table-row !important; width:auto !important; min-width:0 !important; height:auto !important; min-height:0 !important; margin:0 !important; padding:0 !important; border:0 !important; border-radius:0 !important; background:#fff !important; box-shadow:none !important; transform:none !important; overflow:visible !important; cursor:default !important; }
+  #draftsContent .elms-draft-table .draft-row:hover td { background:#fcfdff !important; border-color:#edf0f3 !important; }
+  #draftsContent .elms-draft-table .draft-row > * { max-width:none !important; min-width:0 !important; }
+  #draftsContent .elms-draft-table .draft-checkbox { width:16px !important; height:16px !important; }
+  #draftsContent .elms-draft-table .draft-menu-wrap { display:inline-block !important; position:relative !important; min-width:0 !important; }
+  #draftsContent .elms-draft-table .draft-menu { min-width:150px !important; right:0 !important; top:calc(100% + 5px) !important; }
+  #draftsContent .elms-draft-table .draft-footer { width:100%; }
 
-    .topbar {
-      padding-left: 12px;
-      padding-right: 12px;
-    }
-
-    .auth-area {
-      gap: 8px;
-    }
-
-    .credit-balance-chip {
-      padding-left: 10px;
-      padding-right: 10px;
-    }
-  }
-
-
-/* ===== PHASE 5: LIVE LISTING DETAIL PANEL ===== */
-.phase5-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:1200;display:none}
-.phase5-backdrop.open{display:block}
-.phase5-panel{position:fixed;top:0;right:0;height:100vh;width:min(560px,96vw);background:#fff;z-index:1201;box-shadow:-18px 0 45px rgba(15,23,42,.18);transform:translateX(105%);transition:transform .22s ease;overflow:auto}
-.phase5-panel.open{transform:translateX(0)}
-.phase5-head{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e7eb;padding:18px 20px;display:flex;justify-content:space-between;gap:12px;z-index:2}
-.phase5-head h3{margin:0;font-size:17px}.phase5-sub{margin-top:4px;color:#64748b;font-size:12px}
-.phase5-close{border:0;background:#f1f5f9;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:18px}
-.phase5-body{padding:20px}.phase5-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.phase5-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff}.phase5-card.full{grid-column:1/-1}
-.phase5-label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}.phase5-value{font-size:14px;font-weight:600;color:#0f172a;word-break:break-word}
-.phase5-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.phase5-actions button{border:1px solid #dbe2ea;background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer}.phase5-actions .primary{background:#111827;color:#fff;border-color:#111827}
-.phase5-note{font-size:12px;color:#64748b;line-height:1.5;margin-top:14px}
-@media(max-width:600px){.phase5-grid{grid-template-columns:1fr}.phase5-card.full{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -2949,53 +2873,53 @@
 
     <nav class="sidebar-nav">
       <div class="sidebar-nav-label">Main</div>
-      <a href="/" class="active" data-page="dashboard">
+      <a href="#" class="active" data-page="dashboard">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></svg>
         Dashboard
       </a>
-      <a href="/import" data-page="import">
+      <a href="#" data-page="import">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Import
       </a>
-      <a href="/drafts" data-page="drafts">
+      <a href="#" data-page="drafts">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         Drafts
         <span class="nav-badge" id="draftsCountBadge" style="display:none;">0</span>
       </a>
-      <a href="/listings" data-page="listings">
+      <a href="#" data-page="listings">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-4V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a1 1 0 0 0-1 1v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a1 1 0 0 0-1-1z"/><path d="M9 7V5h6v2"/></svg>
         Live listings
       </a>
-      <a href="/orders" data-page="orders">
+      <a href="#" data-page="orders">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         Orders
       </a>
-      <a href="/messages" data-page="messages">
+      <a href="#" data-page="messages">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Messages
         <span class="nav-badge" id="messagesCountBadge" style="display:none;">0</span>
       </a>
 
       <div class="sidebar-nav-label">Tools</div>
-      <a href="/history" data-page="history">
+      <a href="#" data-page="history">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg>
         Import history
       </a>
-      <a href="/research-tools" data-page="research-tools">
+      <a href="#" data-page="research-tools">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         Research Tools
       </a>
 
       <div class="sidebar-nav-label">Account</div>
-      <a href="/settings" data-page="settings">
+      <a href="#" data-page="settings">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Settings
       </a>
-      <a href="/pricing" data-page="pricing">
+      <a href="#" data-page="pricing">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
         Buy Credits
       </a>
-      <a href="/support" data-page="support">
+      <a href="#" data-page="support">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Support
       </a>
@@ -3821,50 +3745,11 @@
     admin: ['Admin', 'Manage users, credits, and support tickets.'],
   };
 
-  // ---------- Client-side routes ----------
-  const PAGE_ROUTES = {
-    dashboard: '/',
-    import: '/import',
-    drafts: '/drafts',
-    listings: '/listings',
-    orders: '/orders',
-    messages: '/messages',
-    history: '/history',
-    'research-tools': '/research-tools',
-    settings: '/settings',
-    pricing: '/pricing',
-    support: '/support',
-    admin: '/admin',
-  };
-  const ROUTE_PAGES = Object.fromEntries(Object.entries(PAGE_ROUTES).map(([page, route]) => [route, page]));
-
-  function pageFromPath(pathname) {
-    const path = String(pathname || '/').replace(/\/+$/, '') || '/';
-    return ROUTE_PAGES[path] || 'dashboard';
-  }
-
-  function routeForPage(page) {
-    return PAGE_ROUTES[page] || '/';
-  }
-
-  function showPage(page, options = {}) {
-    const { updateUrl = true, replaceUrl = false } = options;
-    if (!PAGE_TITLES[page]) page = 'dashboard';
-
-    if (updateUrl) {
-      const target = routeForPage(page);
-      if (window.location.pathname !== target) {
-        const method = replaceUrl ? 'replaceState' : 'pushState';
-        window.history[method]({ page }, '', target);
-      }
-    }
-
+  function showPage(page) {
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts');
-    document.querySelector('.content')?.classList.toggle('listings-wide', page === 'listings');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
-      const el = document.getElementById(`page-${p}`);
-      if (el) el.style.display = p === page ? 'block' : 'none';
+      document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
       a.classList.toggle('active', a.getAttribute('data-page') === page);
@@ -3892,11 +3777,6 @@
       showPage(a.getAttribute('data-page'));
       closeMobileSidebar();
     });
-  });
-
-  // Browser Back / Forward must restore the corresponding ELMS page.
-  window.addEventListener('popstate', () => {
-    showPage(pageFromPath(window.location.pathname), { updateUrl: false });
   });
 
   // "View Plans" button in the sidebar upgrade card (outside the nav list).
@@ -4726,15 +4606,18 @@
     const adminNavLink = document.getElementById('adminNavLink');
     if (adminNavLink) adminNavLink.style.display = user.role === 'admin' ? 'flex' : 'none';
 
-    // Restore the page represented by the current URL instead of always
-    // forcing a refresh back to Dashboard. This makes every ELMS section
-    // deep-linkable and refresh-safe.
+    // Always start authenticated sessions on Dashboard after login/reload.
+    // Individual page navigation remains client-side after the initial boot.
     const params = new URLSearchParams(window.location.search);
+    if (!(params.get('goToAdminPanel') === 'true' && user.role === 'admin')) {
+      showPage('dashboard');
+    }
+
+    // If we just arrived here from the dedicated /admin.html login page,
+    // jump straight into the Admin Panel instead of the default Dashboard.
     if (params.get('goToAdminPanel') === 'true' && user.role === 'admin') {
-      showPage('admin', { replaceUrl: true });
-      window.history.replaceState({ page: 'admin' }, document.title, '/admin');
-    } else {
-      showPage(pageFromPath(window.location.pathname), { updateUrl: false });
+      showPage('admin');
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }
 
@@ -4791,9 +4674,7 @@
   function accountDisplayLabel(acc) {
     const nickname = String(acc?.displayName || '').trim();
     const username = String(acc?.ebayUserId || '').trim();
-    // eBay may return an immutable user ID for U.S. accounts instead of the
-    // private username. Keep the human-facing label editable and use the
-    // immutable ID only as the internal/account identifier.
+    if (nickname && username) return `${nickname} · ${username}`;
     return nickname || username || 'eBay account';
   }
 
@@ -5002,7 +4883,7 @@
       } finally { clearTimeout(timeout); }
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not request a reset code.');
-      status.className = 'auth-status'; status.textContent = 'Code sent. Check your inbox and spam/junk folder.';
+      status.className = 'auth-status'; status.textContent = 'If an account exists for this email, a 6-digit code has been sent. Check your inbox and spam/junk folder.';
       document.getElementById('forgotStepRequest').style.display = 'none';
       document.getElementById('forgotStepReset').style.display = 'block';
       document.getElementById('forgotCode').focus();
@@ -5027,7 +4908,7 @@
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not reset your password.');
-      status.className='auth-status'; status.textContent='Password reset successfully. Returning to login…';
+      status.className='auth-status'; status.textContent='Password set successfully. You can now log in with your email and password.';
       setTimeout(() => { document.getElementById('loginEmail').value=email; document.getElementById('loginPassword').value=''; showLoginForm(); }, 900);
     } catch (err) {
       status.className='auth-status error'; status.textContent=err.message || 'Could not reset your password.';
@@ -5606,14 +5487,38 @@
       }
 
       container.innerHTML = `
-        <div class="p8-drafts-shell">
-          <div class="p8-head"><div class="p8-head-top"><div><h1 class="p8-title">Drafts <span style="color:#98a2b3;font-weight:700;font-size:16px;">${allDrafts.length}</span></h1><p class="p8-subtitle">Review, edit and prepare products before publishing them to eBay.</p></div><div class="p8-head-actions"><button class="p8-head-btn" id="draftHistoryBtn" type="button">↶ View history</button><button class="p8-head-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div></div>
-            <div class="p8-tabs"><button class="p8-tab active" data-draft-tab="draft">Drafts <span class="count">${counts.draft || 0}</span></button><button class="p8-tab" data-draft-tab="scheduled">Scheduled <span class="count">${counts.scheduled || 0}</span></button><button class="p8-tab" data-draft-tab="publishing">Publishing <span class="count">${counts.publishing || 0}</span></button><button class="p8-tab" data-draft-tab="error">Failed <span class="count">${counts.error || 0}</span></button></div></div>
-          <div class="p8-tools"><label class="draft-select-all"><input type="checkbox" id="draftSelectAll" /> Select all</label><div class="p8-search"><input id="draftProductSearch" type="search" placeholder="Search by product title, ASIN or SKU…" /></div><button class="p8-filter-btn" id="draftFilterBtn" type="button">☷ Add Filter</button><select id="draftStatusFilter" class="p8-select"><option value="all">All statuses</option><option value="draft">Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option></select><select id="draftSort" class="p8-select"><option value="updated">Newest first</option><option value="title">Title A–Z</option><option value="price">Price high–low</option></select></div>
-          <div class="p8-summary"><span class="p8-chip"><strong>${counts.draft || 0}</strong> Drafts</span><span class="p8-chip"><strong>${counts.publishing || 0}</strong> Publishing</span><span class="p8-chip"><strong>${counts.scheduled || 0}</strong> Scheduled</span><span class="p8-chip"><strong>${counts.error || 0}</strong> Failed</span></div>
-          <div class="p8-bulk" id="draftBulkBar" style="display:none;"><span class="selected" id="draftSelectedCount">0 selected</span><button id="bulkPublishBtn">Import / Publish</button><button id="bulkEditBtn" type="button">Bulk Edit</button><button id="bulkScheduleBtn" type="button">Schedule</button><button id="bulkDeleteBtn" class="danger">Remove from list</button></div>
-          <div class="p8-table-wrap"><div class="p8-columns"><div></div><div>Product</div><div>Destination</div><div>Amazon price</div><div>Sell price</div><div>Qty</div><div>Actions</div></div><div class="p8-list" id="draftProductList"></div></div>
-          <div class="p8-footer"><div class="draft-footer" id="draftFooter"></div></div>
+        <div class="elms-drafts-shell">
+          <div class="elms-drafts-toolbar">
+            <label class="draft-select-all"><input type="checkbox" id="draftSelectAll" /> Select all</label>
+            <div class="elms-drafts-search"><input id="draftProductSearch" type="search" placeholder="Search by product title, ASIN or SKU…" /></div>
+            <select id="draftStatusFilter" class="elms-drafts-select">
+              <option value="all">All statuses</option><option value="draft">Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option>
+            </select>
+            <select id="draftSort" class="elms-drafts-select">
+              <option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="price">Price high–low</option>
+            </select>
+            <button class="primary" id="draftAddProductBtn" type="button">+ Import product</button>
+          </div>
+          <div class="elms-drafts-summary">
+            <span class="elms-summary-pill active"><strong>${counts.draft || 0}</strong> Drafts</span>
+            <span class="elms-summary-pill"><strong>${counts.publishing || 0}</strong> Publishing</span>
+            <span class="elms-summary-pill"><strong>${counts.scheduled || 0}</strong> Scheduled</span>
+            <span class="elms-summary-pill"><strong>${counts.error || 0}</strong> Failed</span>
+          </div>
+          <div class="elms-bulk-bar" id="draftBulkBar" style="display:none;">
+            <span class="elms-bulk-count" id="draftSelectedCount">0 selected</span>
+            <button class="elms-bulk-btn primary" id="bulkPublishBtn">Publish selected</button>
+            <button class="elms-bulk-btn danger" id="bulkDeleteBtn">Delete selected</button>
+          </div>
+          <div class="elms-draft-table-wrap">
+            <table class="elms-draft-table">
+              <thead><tr>
+                <th></th><th>Name</th><th>Uploaded</th><th>Supplier</th><th>Destination</th><th>Variations</th><th>Total</th><th>Amazon price</th><th>Sell price</th><th>Markup</th><th>Qty</th><th>Status</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="draftProductList"></tbody>
+            </table>
+          </div>
+          <div class="draft-footer" id="draftFooter"></div>
         </div>
       `;
 
@@ -5636,11 +5541,10 @@
         const startIdx = (draftPage - 1) * DRAFTS_PAGE_SIZE;
         const pageItems = filtered.slice(startIdx, startIdx + DRAFTS_PAGE_SIZE);
         const list = document.getElementById('draftProductList');
-        if (list) list.innerHTML = pageItems.length ? pageItems.map((l) => draftRowHtml(l)).join('') : '<div class="empty-state">No products match these filters.</div>';
-        // Footer with count + pagination
+        if (list) list.innerHTML = pageItems.length ? pageItems.map((l) => draftRowHtml(l)).join('') : `<tr><td colspan="13"><div class="elms-drafts-empty">No products match these filters.</div></td></tr>`;
         const footer = document.getElementById('draftFooter');
         if (footer) {
-          if (!filtered.length) { footer.innerHTML = ''; }
+          if (!filtered.length) footer.innerHTML = '';
           else {
             let pag = '';
             if (pages > 1) {
@@ -5656,18 +5560,11 @@
             footer.querySelectorAll('[data-draft-page]').forEach((btn) => btn.addEventListener('click', () => { if (btn.disabled) return; draftPage = Number(btn.getAttribute('data-draft-page')); renderDraftProductList(); window.scrollTo({top:0,behavior:'smooth'}); }));
           }
         }
-        // Keep "Select all" in sync with the current page's checkboxes.
         const selectAll = document.getElementById('draftSelectAll');
         if (selectAll) selectAll.checked = false;
         wireDraftRows();
       };
-      document.querySelectorAll('[data-draft-tab]').forEach((tab) => tab.addEventListener('click', () => { document.querySelectorAll('[data-draft-tab]').forEach(x => x.classList.remove('active')); tab.classList.add('active'); const value = tab.getAttribute('data-draft-tab'); const sel = document.getElementById('draftStatusFilter'); if (sel) sel.value = value; draftPage = 1; renderDraftProductList(); }));
-      document.getElementById('draftFilterBtn')?.addEventListener('click', () => document.getElementById('draftStatusFilter')?.focus());
-      document.getElementById('draftHistoryBtn')?.addEventListener('click', () => showToast('info','Draft history','History is available from the individual draft editor.'));
-      document.getElementById('bulkEditBtn')?.addEventListener('click', () => showToast('info','Bulk Edit','Select drafts, then edit supported fields from the bulk workflow.'));
-      document.getElementById('bulkScheduleBtn')?.addEventListener('click', () => showToast('info','Schedule','Use Schedule Listing from the selected draft action menu.'));
       ['draftProductSearch','draftStatusFilter','draftSort'].forEach((id) => document.getElementById(id)?.addEventListener('input', () => { draftPage = 1; renderDraftProductList(); }));
-      // Select all toggles every checkbox in the current page.
       document.getElementById('draftSelectAll')?.addEventListener('change', (e) => {
         document.querySelectorAll('#draftsContent .draft-checkbox').forEach((cb) => { cb.checked = e.target.checked; });
         updateBulkBar();
@@ -5685,32 +5582,51 @@
   }
 
   function draftRowHtml(l) {
-    const scheduledLabel = l.status === 'scheduled' && l.scheduled_at ? `Scheduled ${escapeHtml(new Date(l.scheduled_at).toLocaleString())}` : '';
-    const destinationText = l.ebay_account_username || (l.status === 'draft' ? 'Not yet published' : 'Not connected');
-    const errorText = l.status === 'error' && l.error_message ? `<div class="p8-error"><span class="draft-error-icon">!</span><span>${escapeHtml(l.error_message)}</span></div>` : '';
-    const actionLabel = l.status === 'error' ? 'Retry' : (l.status === 'scheduled' ? 'Cancel' : (l.status === 'publishing' ? 'Publishing…' : 'Publish'));
-    const asin = l.sku || l.asin || '—';
+    const status = l.status || 'draft';
+    const statusLabel = status === 'error' ? 'Failed' : status === 'publishing' ? 'Publishing' : status === 'scheduled' ? 'Scheduled' : 'Draft';
+    const statusClass = status === 'error' ? 'elms-status-error' : status === 'publishing' ? 'elms-status-publishing' : status === 'scheduled' ? 'elms-status-scheduled' : 'elms-status-draft';
+    const destination = l.ebay_account_username || (status === 'draft' ? 'Not yet published' : 'Not connected');
+    const marketplace = l.marketplace_id || l.marketplace || '';
     const currency = CURRENCY_SYMBOLS[l.currency] || (l.currency ? `${l.currency} ` : '$');
-    const amazonPrice = l.amazon_price != null && Number.isFinite(Number(l.amazon_price)) ? `${currency}${Number(l.amazon_price).toFixed(2)}` : '—';
-    const sellPrice = l.sell_price != null ? Number(l.sell_price).toFixed(2) : '';
-    const qty = l.quantity ?? 1;
-    const supplierCountry = l.supplier_country ? `Amazon · ${escapeHtml(l.supplier_country)}` : 'Amazon supplier';
-    const variants = Number(l.variant_count || l.variants_count || 0);
-    const category = l.category_id ? `Category ${escapeHtml(l.category_id)}` : 'Category not set';
+    const amazonPrice = Number.isFinite(Number(l.amazon_price)) && Number(l.amazon_price) > 0 ? `${currency}${Number(l.amazon_price).toFixed(2)}` : '—';
+    const variantTotal = Number.isFinite(Number(l.variant_count)) ? Number(l.variant_count) : (Number.isFinite(Number(l.total_variants)) ? Number(l.total_variants) : 1);
+    const available = Number.isFinite(Number(l.available_variants)) ? Number(l.available_variants) : null;
+    const onHold = Number.isFinite(Number(l.on_hold_variants)) ? Number(l.on_hold_variants) : null;
+    const outOfStock = Number.isFinite(Number(l.out_of_stock_variants)) ? Number(l.out_of_stock_variants) : null;
+    const hasVariationData = available !== null || onHold !== null || outOfStock !== null;
+    const variationHtml = hasVariationData
+      ? `<div class="elms-variation-head">Variations</div><div class="elms-variation-grid"><span class="elms-stock-pill elms-stock-available">${available ?? '—'}</span><span class="elms-stock-pill elms-stock-hold">${onHold ?? '—'}</span><span class="elms-stock-pill elms-stock-oos">${outOfStock ?? '—'}</span></div>`
+      : `<div class="elms-variation-head">Variations</div><div class="elms-stock-pill elms-stock-na">—</div>`;
+    const errorHtml = status === 'error' && l.error_message ? `<div class="elms-error">${escapeHtml(l.error_message)}</div>` : '';
+    const actionLabel = status === 'error' ? 'Retry' : status === 'scheduled' ? 'Cancel' : status === 'publishing' ? 'Publishing…' : 'Publish';
+    const uploaded = l.created_at || l.imported_at || l.updated_at;
+    const uploadedText = uploaded ? new Date(uploaded).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}) : '—';
     return `
-      <div class="draft-row p8-row" data-listing-id="${l.id}" data-status="${escapeAttr(l.status || 'draft')}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
-        <div><input type="checkbox" class="draft-checkbox" data-action="select" /></div>
-        <div class="p8-product" data-action="open-detail">
-          ${l.main_image ? `<img class="draft-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="draft-thumb"></div>'}
-          <div class="p8-product-main"><div class="p8-product-title">${escapeHtml(l.title || l.sku || 'Untitled product')}</div><div class="p8-product-sub"><span class="p8-pill blue">ASIN ${escapeHtml(asin)}</span><span>${escapeHtml(supplierCountry)}</span>${variants ? `<span>${variants} variant${variants === 1 ? '' : 's'}</span>` : ''}${scheduledLabel ? `<span class="p8-pill">${scheduledLabel}</span>` : ''}${l.amazon_url ? `<a href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" class="draft-source-link" data-action="stop-propagation">View source</a>` : ''}</div><div class="p8-product-sub"><span>${escapeHtml(category)}</span><span>Updated ${l.updated_at ? escapeHtml(new Date(l.updated_at).toLocaleDateString()) : '—'}</span></div></div>
-        </div>
-        <div class="p8-cell" data-action="open-detail"><div class="p8-cell-label">Destination</div><div class="p8-cell-value">${escapeHtml(destinationText)}</div><div class="p8-cell-muted">${escapeHtml(l.marketplace_id || 'eBay')}</div></div>
-        <div class="p8-cell" data-action="stop-propagation"><div class="p8-cell-label">Amazon price</div><div class="p8-price">${escapeHtml(amazonPrice)}</div><div class="p8-cell-muted">Source price</div></div>
-        <div class="p8-cell" data-action="stop-propagation"><div class="p8-cell-label">Sell price</div><input class="p8-input editable-input" data-field="sellPrice" type="number" step="0.01" value="${escapeAttr(sellPrice)}" placeholder="Price" /><div class="p8-cell-muted">Markup ${Number(l.markup_percent || 0).toFixed(2).replace(/\.00$/, '')}%</div></div>
-        <div class="p8-cell" data-action="stop-propagation"><div class="p8-cell-label">Qty</div><input class="p8-input qty editable-input" data-field="quantity" type="number" min="1" value="${escapeAttr(qty)}" /></div>
-        <div class="p8-actions" data-action="stop-propagation"><button class="btn-small save" data-action="save">Save</button><button class="btn-small publish" data-action="publish">${actionLabel}</button><div class="draft-menu-wrap"><button class="p8-more" data-action="toggle-menu" aria-label="More actions">⋮</button><div class="draft-menu" data-menu><button data-action="open-detail">Edit Draft</button><button data-action="schedule">Schedule Listing</button><button data-action="delete" class="menu-danger">Delete Draft</button></div></div></div>
-        ${errorText}
-      </div>`;
+      <tr class="draft-row" data-listing-id="${escapeAttr(l.id)}" data-status="${escapeAttr(status)}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
+        <td><input type="checkbox" class="draft-checkbox" data-action="select" /></td>
+        <td>
+          <div class="elms-product-cell" data-action="open-detail">
+            ${l.main_image ? `<img class="elms-product-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="elms-product-thumb"></div>'}
+            <div class="elms-product-copy">
+              <div class="elms-product-title">${status === 'error' ? '<span class="elms-warning-dot">!</span>' : ''}${escapeHtml(l.title || l.sku || 'Untitled product')}</div>
+              <div class="elms-product-id">ASIN / SKU: ${escapeHtml(l.sku || '—')}</div>
+              ${l.amazon_url ? `<a class="elms-link" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation">View Source</a>` : ''}
+              ${errorHtml}
+            </div>
+          </div>
+        </td>
+        <td><span class="elms-date">${escapeHtml(uploadedText)}</span></td>
+        <td><div class="elms-source"><span class="elms-source-badge">Amazon</span>${l.amazon_url ? '<span class="elms-muted">Source product</span>' : ''}</div></td>
+        <td><div class="elms-destination"><span class="elms-destination-badge">${escapeHtml(destination)}</span>${marketplace ? `<span class="elms-marketplace">${escapeHtml(marketplace)}</span>` : '<span class="elms-marketplace">Not selected</span>'}</div></td>
+        <td>${variationHtml}</td>
+        <td><span class="elms-total">${variantTotal}</span></td>
+        <td><span class="elms-money">${escapeHtml(amazonPrice)}</span></td>
+        <td data-action="stop-propagation"><div class="elms-price-editor"><input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" placeholder="Price" /><button class="elms-link" data-action="save" style="border:0;background:none;padding:0;text-align:left;cursor:pointer;">Save</button></div></td>
+        <td><span class="elms-markup">${Number(l.markup_percent || 0).toFixed(2).replace(/\.00$/, '')}%</span></td>
+        <td data-action="stop-propagation"><div class="elms-qty-editor"><input class="editable-input" data-field="quantity" type="number" min="0" step="1" value="${l.quantity ?? 1}" /></div></td><input type="hidden" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" />
+        <td><span class="elms-status ${statusClass}">${statusLabel}</span></td>
+        <td data-action="stop-propagation"><div class="elms-row-actions"><button class="elms-publish-btn" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>${actionLabel}</button><button class="elms-icon-btn" data-action="toggle-menu" title="More actions">⋮</button><div class="draft-menu-wrap"><div class="draft-menu" data-menu><button data-action="schedule">Schedule Listing</button><button data-action="delete" class="menu-danger">Delete Draft</button></div></div></div></td>
+      </tr>`;
   }
 
   async function autoSuggestEmptyDraftCategories() {
@@ -5766,7 +5682,7 @@
       saveBtn.addEventListener('click', async () => {
         const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
         const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
-        const categoryId = row.querySelector('[data-field="categoryId"]')?.value || '';
+        const categoryId = row.querySelector('[data-field="categoryId"]').value;
 
         saveBtn.disabled = true;
         saveBtn.textContent = 'Saving\u2026';
@@ -5832,7 +5748,7 @@
 
         const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
         const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
-        const categoryId = row.querySelector('[data-field="categoryId"]')?.value || '';
+        const categoryId = row.querySelector('[data-field="categoryId"]').value;
         const accountId = await ensureSelectedEbayAccountId();
 
         if (!accountId) {
@@ -5871,7 +5787,7 @@
             return;
           }
 
-          showToast('success', 'Publish queued', 'ELMS is publishing this listing in the background.');
+          showToast('success', 'Published to eBay', 'The listing was published successfully.');
           loadDrafts();
         } catch (err) {
           alert('Could not connect to the server: ' + err.message);
@@ -5962,7 +5878,7 @@
           await apiFetch(`/api/listings/${id}/publish`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({accountId}) });
         } catch (_) {}
       }));
-      showToast('success', 'Publish queue started', `${ids.length} listing(s) are being processed in the background.`);
+      showToast('success', 'Publish request sent', `${ids.length} listing(s) were submitted for immediate eBay publishing.`);
 
       bulkPublishBtn.disabled = false;
       bulkPublishBtn.textContent = 'Publish selected';
@@ -5996,8 +5912,6 @@
   let llAll = [];
   let llTab = 'all';
   let llSearch = '';
-  let llMarketplace = 'all';
-  let llAccount = 'all';
   let llPage = 1;
   const LL_PAGE_SIZE = 10;
 
@@ -6036,8 +5950,6 @@
         const hay = `${l.title || ''} ${l.sku || ''} ${l.listing_id || ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (llMarketplace !== 'all' && String(l.marketplace_id || l.marketplace || '') !== llMarketplace) return false;
-      if (llAccount !== 'all' && String(l.ebay_account_username || l.ebay_account_id || '') !== llAccount) return false;
       return true;
     });
   }
@@ -6056,70 +5968,53 @@
     if (llPage > pages) llPage = pages;
     const start = (llPage - 1) * LL_PAGE_SIZE;
     const pageRows = filtered.slice(start, start + LL_PAGE_SIZE);
-    const totalQty = llAll.reduce((n,l) => n + Math.max(0, Number(l.quantity || 0)), 0);
-    const avgPrice = llAll.length ? llAll.reduce((n,l) => n + Math.max(0, Number(l.sell_price || 0)), 0) / llAll.length : 0;
+
     const tab = (key, label, n) => `<button class="ll-tab${llTab === key ? ' active' : ''}" data-ll-tab="${key}">${label} (${n})</button>`;
 
     container.innerHTML = `
-      <div class="phase4-live-shell">
-        <div class="ll-head">
-          <div><h1>Live listings</h1><div class="sub">Manage products currently published to your connected eBay accounts, including real end/delete actions.</div></div>
-          <div class="ll-head-actions">
-            <button class="ll-btn outline" id="llSyncBtn">↻ Sync from eBay</button>
-            <button class="ll-btn primary" id="llCreateBtn">+ Create listing</button>
-          </div>
+      <div class="ll-head">
+        <div><h1>Live listings</h1><div class="sub">Everything published to eBay from ELMS.</div></div>
+        <div class="ll-head-actions">
+          <button class="ll-btn outline" id="llSyncBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync from eBay</button>
+          <button class="ll-btn primary" id="llCreateBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create listing</button>
         </div>
+      </div>
 
-        <div class="phase4-live-kpis">
-          <div class="phase4-live-kpi"><div class="k-label">Active listings</div><div class="k-value">${counts.active}</div><div class="k-sub">Currently published</div></div>
-          <div class="phase4-live-kpi"><div class="k-label">Available quantity</div><div class="k-value">${totalQty}</div><div class="k-sub">Across loaded listings</div></div>
-          <div class="phase4-live-kpi"><div class="k-label">Average sell price</div><div class="k-value">${avgPrice ? escapeHtml((CURRENCY_SYMBOLS[llAll[0]?.currency] || '$') + avgPrice.toFixed(2)) : '—'}</div><div class="k-sub">Current listing prices</div></div>
-          <div class="phase4-live-kpi"><div class="k-label">Needs attention</div><div class="k-value">${counts.issues}</div><div class="k-sub">Listings with an issue</div></div>
-        </div>
+      <div class="ll-tabs">
+        ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('issues','With issues',counts.issues)}
+      </div>
 
-        <div class="ll-tabs">
-          ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('issues','With issues',counts.issues)}
-        </div>
+      <div class="ll-toolbar">
+        <div class="ll-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search in live listings..." value="${escapeAttr(llSearch)}" /></div>
+        <button class="ll-tool-btn" id="llFilterBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Filter</button>
+        <button class="ll-tool-btn" id="llExportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
+      </div>
 
-        <div class="phase4-filterbar">
-          <div class="ll-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search title, ASIN/SKU or eBay listing ID…" value="${escapeAttr(llSearch)}" /></div>
-          <select id="llMarketplaceFilter" class="editable-input"><option value="all">All marketplaces</option></select>
-          <select id="llAccountFilter" class="editable-input"><option value="all">All eBay accounts</option></select>
-          <button class="ll-tool-btn" id="llExportBtn">Export CSV</button>
-        </div>
-
-        <div class="phase4-bulkbar" id="llBulkBar"><span class="selected-count" id="llSelectedCount">0 selected</span><button class="ll-tool-btn" id="llBulkPause">Pause selected</button><button class="ll-tool-btn" id="llBulkDelete">End selected</button></div>
-        <div class="phase7-bulk-editor" id="llBulkEditor">
-          <span class="phase7-label">Bulk price / quantity</span>
-          <input id="llBulkPrice" class="editable-input" type="number" min="0.01" step="0.01" placeholder="Price" />
-          <input id="llBulkQty" class="editable-input" type="number" min="0" step="1" placeholder="Qty" />
-          <button class="ll-tool-btn" id="llBulkApply">Apply to selected</button>
-          <button class="ll-tool-btn" id="llBulkClear">Clear</button>
-          <span class="phase7-save-note">Only filled fields are changed.</span>
-        </div>
-
-        ${filtered.length ? `
-        <div class="live-listings-wrap">
-          <table class="data-table phase4-table">
-            <thead><tr>
+      ${filtered.length ? `
+      <div class="live-listings-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
               <th style="width:34px;"><input type="checkbox" id="llSelectAll" /></th>
-              <th>Item</th><th>Listing</th><th>SKU / ASIN</th><th>Marketplace</th><th>Price</th><th>Qty</th><th>Stock</th><th>Status</th><th style="text-align:right;">Actions</th>
-            </tr></thead>
-            <tbody>${pageRows.map((l) => listingRowHtml(l)).join('')}</tbody>
-          </table>
-        </div>
-        <div class="ll-footer"><div class="ll-showing">Showing ${start + 1} to ${Math.min(start + LL_PAGE_SIZE, filtered.length)} of ${filtered.length} listings</div>${llPaginationHtml(llPage, pages)}</div>` : `<div class="phase4-empty-note">${llAll.length ? 'No listings match this view.' : 'No live listings yet. Publish a product from Drafts to see it here.'}</div>`}
-      </div>`;
+              <th>Item</th>
+              <th>Title</th>
+              <th>SKU</th>
+              <th>Price</th>
+              <th>Qty</th>
+              <th>Category ID</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>${pageRows.map((l) => listingRowHtml(l)).join('')}</tbody>
+        </table>
+      </div>
+      <div class="ll-footer">
+        <div class="ll-showing">Showing ${start + 1} to ${Math.min(start + LL_PAGE_SIZE, filtered.length)} of ${filtered.length} listings</div>
+        ${llPaginationHtml(llPage, pages)}
+      </div>` : `<div class="empty-state">${llAll.length ? 'No listings match this view.' : 'No listings yet. Publish a product from the Drafts page to see it here.'}</div>`}
+    `;
 
-    // Populate marketplace/account filters from fields already returned by the API.
-    const marketplaces = [...new Set(llAll.map(l => l.marketplace_id || l.marketplace || '').filter(Boolean))].sort();
-    const accounts = [...new Set(llAll.map(l => l.ebay_account_username || l.ebay_account_id || '').filter(Boolean))].sort();
-    const mp = container.querySelector('#llMarketplaceFilter');
-    const ac = container.querySelector('#llAccountFilter');
-    marketplaces.forEach(v => mp?.insertAdjacentHTML('beforeend', `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`));
-    accounts.forEach(v => ac?.insertAdjacentHTML('beforeend', `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`));
-    if (mp) mp.value = llMarketplace;
-    if (ac) ac.value = llAccount;
     wireListingsPage();
   }
 
@@ -6136,28 +6031,26 @@
 
   function listingRowHtml(l) {
     const st = llListingStatus(l);
+    const statusColors = { active:'var(--green-dark)', sold:'var(--blue)', ended:'var(--grey)', issues:'var(--red)' };
     const statusLabel = { active:'Published', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || (l.status || '');
-    const currency = CURRENCY_SYMBOLS[l.currency] || (l.currency ? l.currency + ' ' : '$');
-    const qty = Math.max(0, Number(l.quantity ?? 0));
-    const stockClass = qty <= 0 ? 'out' : (qty <= 2 ? 'hold' : '');
-    const stockLabel = qty <= 0 ? 'Out of stock' : (qty <= 2 ? `Low · ${qty}` : `Available · ${qty}`);
-    const marketplace = l.marketplace_id || l.marketplace || '—';
-    const account = l.ebay_account_username || l.ebay_account_id || '';
-    const margin = Number(l.sell_price) - Number(l.amazon_price);
-    const marginHtml = Number.isFinite(margin) && Number(l.amazon_price) > 0 ? `<div class="phase4-margin">Margin ${currency}${margin.toFixed(2)}</div>` : '';
     return `
-      <tr data-listing-id="${escapeAttr(l.id)}">
+      <tr data-listing-id="${l.id}">
         <td><input type="checkbox" class="ll-row-check" /></td>
         <td>${l.main_image ? `<img class="row-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="row-thumb"></div>'}</td>
-        <td class="row-title" data-cell="title"><div style="font-weight:650;line-height:1.3;">${escapeHtml(l.title || '—')}</div>${l.listing_id ? `<div class="phase4-row-link">eBay ID ${escapeHtml(l.listing_id)}</div>` : ''}</td>
-        <td data-cell="sku"><strong>${escapeHtml(l.sku || '—')}</strong></td>
-        <td><div class="phase4-market"><span class="phase4-market-dot"></span>${escapeHtml(marketplace)}</div>${account ? `<div style="font-size:10px;color:var(--grey);margin-top:3px;max-width:130px;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(account)}</div>` : ''}</td>
-        <td data-cell="sellPrice" class="phase7-price-cell"><strong>${l.sell_price != null ? escapeHtml(currency + Number(l.sell_price).toFixed(2)) : '—'}</strong>${marginHtml}</td>
-        <td data-cell="quantity" class="phase7-qty-cell">${qty}</td>
-        <td><span class="phase4-stock ${stockClass}"><span class="phase4-stock-dot"></span>${stockLabel}</span></td>
-        <td><span class="ll-status-dot" style="font-weight:600;font-size:12.5px;">${escapeHtml(statusLabel)}</span>${l.error_message ? `<div style="font-size:11px;color:var(--red);margin-top:4px;max-width:180px;white-space:normal;">${escapeHtml(l.error_message)}</div>` : ''}</td>
-        <td><div class="phase4-row-actions"><button class="ll-view-btn" data-action="view">View</button><button class="ll-view-btn" data-action="quick-edit">Edit</button><button class="ll-menu-btn" data-action="menu" title="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button></div></td>
-      </tr>`;
+        <td class="row-title" data-cell="title">${escapeHtml(l.title || '—')}</td>
+        <td data-cell="sku">${escapeHtml(l.sku || '—')}</td>
+        <td data-cell="sellPrice">${l.sell_price != null ? escapeHtml((CURRENCY_SYMBOLS[l.currency] || '$') + Number(l.sell_price).toFixed(2)) : '—'}</td>
+        <td data-cell="quantity">${l.quantity ?? 1}</td>
+        <td data-cell="categoryId">${escapeHtml(l.category_id || '—')}</td>
+        <td><span class="ll-status-dot" style="color:${statusColors[st] || 'var(--grey)'};font-weight:600;font-size:12.5px;">${escapeHtml(statusLabel)}</span>${l.error_message ? `<div style="font-size:11px;color:var(--red);margin-top:4px;max-width:180px;white-space:normal;">${escapeHtml(l.error_message)}</div>` : ''}</td>
+        <td>
+          <div class="row-actions" style="display:flex;align-items:center;">
+            <button class="ll-view-btn" data-action="view">View</button>
+            <button class="ll-menu-btn" data-action="menu" title="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>
+          </div>
+        </td>
+      </tr>
+    `;
   }
 
   function wireListingsPage() {
@@ -6170,90 +6063,14 @@
     // Search
     const search = root.querySelector('#llSearchInput');
     if (search) search.addEventListener('input', () => { llSearch = search.value.trim(); llPage = 1; renderListings(); const el = document.getElementById('llSearchInput'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
-    // Phase 4 filters and export
+    // Filter / Export controls
+    root.querySelector('#llFilterBtn')?.addEventListener('click', () => showToast('Filter', 'Use the tabs and search to narrow your listings.', ''));
     root.querySelector('#llExportBtn')?.addEventListener('click', () => llExportCsv());
-    root.querySelector('#llMarketplaceFilter')?.addEventListener('change', (e) => {
-      llMarketplace = e.target.value;
-      llPage = 1;
-      renderListings();
-    });
-    root.querySelector('#llAccountFilter')?.addEventListener('change', (e) => {
-      llAccount = e.target.value;
-      llPage = 1;
-      renderListings();
-    });
-    const refreshBulkBar = () => {
-      const checked = Array.from(root.querySelectorAll('.ll-row-check:checked'));
-      const bar = root.querySelector('#llBulkBar');
-      const label = root.querySelector('#llSelectedCount');
-      if (bar) bar.classList.toggle('show', checked.length > 0);
-      if (label) label.textContent = `${checked.length} selected`;
-    };
-    root.querySelectorAll('.ll-row-check').forEach(cb => cb.addEventListener('change', refreshBulkBar));
-    const syncBulkEditor = () => {
-      const checked = root.querySelectorAll('.ll-row-check:checked');
-      const editor = root.querySelector('#llBulkEditor');
-      if (editor) editor.classList.toggle('show', checked.length > 0);
-    };
-    root.querySelectorAll('.ll-row-check').forEach(cb => cb.addEventListener('change', syncBulkEditor));
-    root.querySelector('#llSelectAll')?.addEventListener('change', syncBulkEditor);
-    root.querySelector('#llBulkClear')?.addEventListener('click', () => {
-      const p=root.querySelector('#llBulkPrice'), q=root.querySelector('#llBulkQty'); if(p)p.value=''; if(q)q.value='';
-    });
-    root.querySelector('#llBulkApply')?.addEventListener('click', async () => {
-      const selected = Array.from(root.querySelectorAll('.ll-row-check:checked')).map(cb => cb.closest('tr')?.getAttribute('data-listing-id')).filter(Boolean);
-      const priceEl=root.querySelector('#llBulkPrice'), qtyEl=root.querySelector('#llBulkQty');
-      const hasPrice=priceEl?.value !== ''; const hasQty=qtyEl?.value !== '';
-      const price=Number(priceEl?.value); const qty=Number(qtyEl?.value);
-      if(!selected.length) return;
-      if(!hasPrice && !hasQty){ alert('Enter a price and/or quantity.'); return; }
-      if(hasPrice && (!Number.isFinite(price) || price<=0)){ alert('Enter a valid price greater than 0.'); return; }
-      if(hasQty && (!Number.isInteger(qty) || qty<0)){ alert('Enter a valid quantity of 0 or more.'); return; }
-      if(!confirm(`Apply ${hasPrice?'price':''}${hasPrice&&hasQty?' and ':''}${hasQty?'quantity':''} to ${selected.length} selected listing${selected.length===1?'':'s'}?`)) return;
-      const btn=root.querySelector('#llBulkApply'); if(btn){btn.disabled=true;btn.textContent='Updating…';}
-      let success=0, failed=0;
-      for(const id of selected){
-        const listing=llAll.find(x=>String(x.id)===String(id)); if(!listing) {failed++; continue;}
-        try{
-          const body={}; if(hasPrice) body.sellPrice=price; if(hasQty) body.quantity=qty;
-          const res=await apiFetch(`/api/listings/${encodeURIComponent(id)}/revise`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-          const data=await res.json();
-          if(!res.ok||!data.success) throw new Error(data.error||'Update failed');
-          if(hasPrice) listing.sell_price=price; if(hasQty) listing.quantity=qty; success++;
-        }catch(_){failed++;}
-      }
-      if(success) showToast('Bulk update complete',`${success} listing${success===1?'':'s'} updated${failed?`; ${failed} failed.`:'.'}`,'success');
-      else showToast('Bulk update failed','No selected listings were updated.','error');
-      if(btn){btn.disabled=false;btn.textContent='Apply to selected';}
-      renderListings();
-    });
-    root.querySelector('#llBulkPause')?.addEventListener('click', () => showToast('Pause selected', 'Pause/withdraw needs a dedicated backend withdraw endpoint. No listing was changed.', ''));
-    root.querySelector('#llBulkDelete')?.addEventListener('click', async () => {
-      const selected = Array.from(root.querySelectorAll('.ll-row-check:checked'))
-        .map(cb => cb.closest('tr')?.getAttribute('data-listing-id'))
-        .filter(Boolean);
-      if (!selected.length) return;
-      if (!confirm(`End ${selected.length} selected listing${selected.length === 1 ? '' : 's'} on eBay? This action cannot be undone from ELMS.`)) return;
-      const btn = root.querySelector('#llBulkDelete');
-      if (btn) { btn.disabled = true; btn.textContent = 'Ending…'; }
-      let success = 0, failed = 0;
-      for (const id of selected) {
-        try {
-          const res = await apiFetch(`/api/listings/${encodeURIComponent(id)}`, { method: 'DELETE' });
-          const data = await res.json();
-          if (res.ok && data.success) success++; else failed++;
-        } catch (_) { failed++; }
-      }
-      if (success) showToast('Listings ended', `${success} listing${success === 1 ? '' : 's'} ended successfully${failed ? `; ${failed} failed.` : '.'}`, 'success');
-      else showToast('End failed', 'No selected listings were ended.', 'error');
-      if (btn) { btn.disabled = false; btn.textContent = 'End selected'; }
-      await loadListings();
-    });
     // Pagination
     root.querySelectorAll('[data-ll-page]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; llPage = Number(b.getAttribute('data-ll-page')); renderListings(); }));
     // Select all
     const selectAll = root.querySelector('#llSelectAll');
-    if (selectAll) selectAll.addEventListener('change', (e) => { root.querySelectorAll('.ll-row-check').forEach((cb) => { cb.checked = e.target.checked; }); refreshBulkBar(); syncBulkEditor(); });
+    if (selectAll) selectAll.addEventListener('change', (e) => root.querySelectorAll('.ll-row-check').forEach((cb) => { cb.checked = e.target.checked; }));
     // Row View (inline edit) + menu (Edit/Delete)
     wireListingRows();
   }
@@ -6273,39 +6090,41 @@
 
   function llEnterEditMode(row, l) {
     row.classList.add('ll-row-editing');
-    const titleCell=row.querySelector('[data-cell="title"]');
-    const priceCell=row.querySelector('[data-cell="sellPrice"]');
-    const qtyCell=row.querySelector('[data-cell="quantity"]');
-    const actions=row.querySelector('.phase4-row-actions');
-    if(titleCell) titleCell.innerHTML=`<input class="editable-input phase7-edit-input" data-field="title" value="${escapeAttr(l.title||'')}" style="width:100%;" />`;
-    if(priceCell) priceCell.innerHTML=`<input class="editable-input phase7-edit-input" data-field="sellPrice" type="number" min="0.01" step="0.01" value="${l.sell_price ?? ''}" />`;
-    if(qtyCell) qtyCell.innerHTML=`<input class="editable-input phase7-edit-input" data-field="quantity" type="number" min="0" step="1" value="${l.quantity ?? 0}" />`;
-    if(actions) actions.innerHTML=`<div class="phase7-inline-actions"><button class="ll-view-btn" data-action="save">Save</button><button class="ll-view-btn" data-action="cancel">Cancel</button></div>`;
-    actions?.querySelector('[data-action="cancel"]')?.addEventListener('click',()=>renderListings());
-    actions?.querySelector('[data-action="save"]')?.addEventListener('click',async()=>{
-      const btn=actions.querySelector('[data-action="save"]');
-      const title=row.querySelector('[data-field="title"]')?.value?.trim()||l.title||'';
-      const sellPrice=Number(row.querySelector('[data-field="sellPrice"]')?.value);
-      const quantity=Number(row.querySelector('[data-field="quantity"]')?.value);
-      if(!title){alert('Title is required.');return;}
-      if(!Number.isFinite(sellPrice)||sellPrice<=0){alert('Enter a valid price greater than 0.');return;}
-      if(!Number.isInteger(quantity)||quantity<0){alert('Enter a valid quantity of 0 or more.');return;}
-      btn.disabled=true;btn.textContent='Saving…';
-      try{
-        const res=await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/revise`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,sellPrice,quantity})});
-        const data=await res.json();
-        if(!res.ok||!data.success) throw new Error(data.error||'Could not save changes.');
-        Object.assign(l,{title,sell_price:sellPrice,quantity});
-        showToast('Saved','Live listing updated.','success');
+    row.querySelector('[data-cell="title"]').innerHTML = `<input class="editable-input" data-field="title" value="${escapeAttr(l.title || '')}" style="width:100%;" />`;
+    row.querySelector('[data-cell="sellPrice"]').innerHTML = `<input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" style="width:90px;" />`;
+    row.querySelector('[data-cell="quantity"]').innerHTML = `<input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" style="width:60px;" />`;
+    row.querySelector('[data-cell="categoryId"]').innerHTML = `<input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" style="width:100px;" />`;
+    const actions = row.querySelector('.row-actions');
+    actions.innerHTML = `<button class="btn-small save" data-action="save">Save</button><button class="btn-small" data-action="cancel" style="background:var(--grey-light);color:var(--ink);">Cancel</button>`;
+    actions.querySelector('[data-action="cancel"]').addEventListener('click', () => renderListings());
+    actions.querySelector('[data-action="save"]').addEventListener('click', async () => {
+      const saveBtn = actions.querySelector('[data-action="save"]');
+      const title = row.querySelector('[data-field="title"]').value;
+      const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
+      const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
+      const categoryId = row.querySelector('[data-field="categoryId"]').value;
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026';
+      try {
+        const isLive = llListingStatus(l) === 'active';
+        const res = await apiFetch(isLive ? `/api/listings/${l.id}/revise` : `/api/list-on-ebay/${l.id}`, {
+          method: isLive ? 'POST' : 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, sellPrice, quantity, categoryId }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) { alert(data.error || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save'; return; }
+        // Update local copy and re-render.
+        Object.assign(l, { title, sell_price: sellPrice, quantity, category_id: categoryId });
+        showToast('Saved', 'Listing updated.', 'success');
         renderListings();
-      }catch(err){alert(err.message||'Could not connect to the server.');btn.disabled=false;btn.textContent='Save';}
+      } catch (err) { alert('Could not connect to the server: ' + err.message); saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
     });
   }
 
   async function llDeleteListing(l, row) {
     const isLive = llListingStatus(l) === 'active';
     const confirmMsg = isLive
-      ? 'This listing is currently live on eBay. Ending it here will also end the eBay listing. Continue?'
+      ? 'This listing is currently live on eBay. Deleting it here will also end it on eBay. Continue?'
       : 'Delete this listing from ELMS?';
     if (!confirm(confirmMsg)) return;
     try {
@@ -6313,51 +6132,23 @@
       const data = await res.json();
       if (!res.ok || !data.success) { alert(data.error || 'Could not delete this listing.'); return; }
       llAll = llAll.filter((x) => x.id !== l.id);
-      showToast(isLive ? 'Listing ended' : 'Listing deleted', isLive ? 'The eBay listing was ended successfully.' : 'The listing was removed from ELMS.', 'success');
       renderListings();
     } catch (err) { alert('Could not connect to the server: ' + err.message); }
   }
-
-  function openPhase5ListingPanel(l) {
-    const panel=document.getElementById('phase5Panel'), back=document.getElementById('phase5Backdrop');
-    if(!panel||!back) return;
-    const status=llListingStatus(l), marketplace=l.marketplace_id||l.marketplace||'—';
-    document.getElementById('phase5Title').textContent=l.title||'Listing details';
-    document.getElementById('phase5Sub').textContent=`${status==='active'?'Published':'Listing'} • ${marketplace} • ${l.sku||'No SKU'}`;
-    const body=document.getElementById('phase5Body');
-    const val=(x)=>escapeHtml(String(x ?? '—'));
-    body.innerHTML=`
-      <div class="phase5-card full"><div class="phase5-label">Title</div><div class="phase5-value">${val(l.title)}</div></div>
-      <div class="phase5-card"><div class="phase5-label">SKU / ASIN</div><div class="phase5-value">${val(l.sku)}</div></div>
-      <div class="phase5-card"><div class="phase5-label">eBay Listing ID</div><div class="phase5-value">${val(l.ebay_listing_id||l.listing_id)}</div></div>
-      <div class="phase5-card"><div class="phase5-label">Marketplace</div><div class="phase5-value">${val(marketplace)}</div></div>
-      <div class="phase5-card"><div class="phase5-label">eBay Account</div><div class="phase5-value">${val(l.account_name||l.ebay_account_name||l.ebay_account_id)}</div></div>
-      <div class="phase5-card"><div class="phase5-label">Sell Price</div><div class="phase5-value">${val(l.sell_price)}</div></div>
-      <div class="phase5-card"><div class="phase5-label">Quantity</div><div class="phase5-value">${val(l.quantity)}</div></div>
-      <div class="phase5-card"><div class="phase5-label">Category</div><div class="phase5-value">${val(l.category_id)}</div></div>
-      <div class="phase5-card"><div class="phase5-label">Amazon Price</div><div class="phase5-value">${val(l.amazon_price)}</div></div>`;
-    const actions=document.getElementById('phase5Actions');
-    actions.innerHTML=`<button class="primary" id="phase5Edit">Edit listing</button><button id="phase5Delete">Delete / End</button>${l.ebay_listing_id||l.listing_id?`<button id="phase5OpenEbay">Open eBay</button>`:''}`;
-    document.getElementById('phase5Edit').onclick=()=>{closePhase5ListingPanel(); const row=document.querySelector(`#listingsContent tr[data-listing-id="${CSS.escape(String(l.id))}"]`); if(row) llEnterEditMode(row,l);};
-    document.getElementById('phase5Delete').onclick=async()=>{closePhase5ListingPanel(); await llDeleteListing(l,null);};
-    document.getElementById('phase5OpenEbay')?.addEventListener('click',()=>{ const id=l.ebay_listing_id||l.listing_id; if(id) window.open(`https://www.ebay.com/itm/${encodeURIComponent(id)}`,'_blank','noopener'); });
-    panel.classList.add('open'); back.classList.add('open'); panel.setAttribute('aria-hidden','false');
-  }
-  function closePhase5ListingPanel(){ const p=document.getElementById('phase5Panel'),b=document.getElementById('phase5Backdrop'); p?.classList.remove('open'); b?.classList.remove('open'); p?.setAttribute('aria-hidden','true'); }
-  document.getElementById('phase5Close')?.addEventListener('click',closePhase5ListingPanel);
-  document.getElementById('phase5Backdrop')?.addEventListener('click',closePhase5ListingPanel);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape') closePhase5ListingPanel();});
 
   function wireListingRows() {
     document.querySelectorAll('#listingsContent tr[data-listing-id]').forEach((row) => {
       const id = row.getAttribute('data-listing-id');
       const l = llAll.find((x) => String(x.id) === String(id));
       if (!l) return;
-      row.querySelector('[data-action="view"]')?.addEventListener('click', () => openPhase5ListingPanel(l));
-      row.querySelector('[data-action="quick-edit"]')?.addEventListener('click', (e) => { e.stopPropagation(); llEnterEditMode(row, l); });
+      row.querySelector('[data-action="view"]')?.addEventListener('click', () => llEnterEditMode(row, l));
       row.querySelector('[data-action="menu"]')?.addEventListener('click', () => {
-        const choice = window.confirm('OK = Edit listing\nCancel = Delete listing');
-        if (choice) llEnterEditMode(row, l); else llDeleteListing(l, row);
+        // Simple menu: Edit or Delete.
+        const choice = prompt('Type "edit" to edit, or "delete" to remove this listing:', 'edit');
+        if (!choice) return;
+        const c = choice.trim().toLowerCase();
+        if (c === 'edit') llEnterEditMode(row, l);
+        else if (c === 'delete') llDeleteListing(l, row);
       });
     });
   }
@@ -7265,10 +7056,10 @@
         listEl.innerHTML = currentEbayAccounts.map((acc) => `
           <div class="draft-row" data-account-id="${acc.id}" style="cursor:default; align-items:flex-start;">
             <div class="draft-info" style="flex:1; min-width:220px;">
-              <div class="draft-title">${escapeHtml(accountDisplayLabel(acc))} ${acc.isActive ? '<span class="status-badge published">Active</span>' : ''}</div>
+              <div class="draft-title">${escapeHtml(acc.displayName || accountDisplayLabel(acc))} ${acc.isActive ? '<span class="status-badge published">Active</span>' : ''}</div>
               <div class="draft-meta"><span class="draft-meta-item">eBay ID: ${escapeHtml(acc.ebayUserId)}</span><span class="draft-meta-item">Marketplace: ${escapeHtml(acc.marketplaceId || 'EBAY_US')}</span></div>
-              <div style="display:flex; gap:8px; margin-top:8px; max-width:520px; flex-wrap:wrap;">
-                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="Enter a name for this eBay account" style="flex:1 1 240px; min-width:0; max-width:100%;" />
+              <div style="display:flex; gap:8px; margin-top:8px; max-width:520px;">
+                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="e.g. USA Store / My eBay 1" style="flex:1; min-width:0;" />
                 <button class="btn-small save" data-action="save-name">Save name</button>
               </div>
             </div>
@@ -7991,16 +7782,60 @@
       if (skippedFull) showToast('Image limit reached', 'A draft can have at most 24 images.', 'error');
     }
 
-    function readFilesAsDataUrls(fileList) {
-      const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'));
-      if (!files.length) return;
-      const tooBig = files.filter((f) => f.size > 10 * 1024 * 1024);
-      if (tooBig.length) showToast('File too large', 'Each image must be 10MB or smaller.', 'error');
-      files.filter((f) => f.size <= 10 * 1024 * 1024).forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = () => addImageUrls([reader.result]);
+    async function uploadDraftImage(file) {
+      if (!file || !file.type.startsWith('image/')) return null;
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('File too large', 'Each image must be 10MB or smaller.', 'error');
+        return null;
+      }
+      if (draftImages.length >= MAX_DRAFT_IMAGES) {
+        showToast('Image limit reached', 'A draft can have at most 24 images.', 'error');
+        return null;
+      }
+
+      const reader = new FileReader();
+      const dataUrl = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read the selected image.'));
         reader.readAsDataURL(file);
       });
+
+      const res = await apiFetch(`/api/list-on-ebay/${encodeURIComponent(listing.id)}/images/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageData: dataUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.url) {
+        throw new Error(data.error || 'Could not upload image.');
+      }
+      return data.url;
+    }
+
+    async function readFilesAsDataUrls(fileList) {
+      const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'));
+      if (!files.length) return;
+
+      const available = MAX_DRAFT_IMAGES - draftImages.length;
+      if (available <= 0) {
+        showToast('Image limit reached', 'A draft can have at most 24 images.', 'error');
+        return;
+      }
+
+      const selected = files.slice(0, available);
+      let added = 0;
+      for (const file of selected) {
+        try {
+          const hostedUrl = await uploadDraftImage(file);
+          if (hostedUrl) {
+            addImageUrls([hostedUrl]);
+            added++;
+          }
+        } catch (err) {
+          showToast('Image upload failed', err.message || 'Could not upload image.', 'error');
+        }
+      }
+      if (added) refreshDraftImageGallery();
     }
 
     // "Add images" and "Bulk upload" both open the OS file picker (multiple).
@@ -8009,10 +7844,33 @@
     fileInput?.addEventListener('change', (e) => { readFilesAsDataUrls(e.target.files); fileInput.value = ''; });
 
     // "Add from URL" — paste one or more image URLs (comma/newline separated).
-    document.getElementById('draftAddFromUrlBtn')?.addEventListener('click', () => {
+    document.getElementById('draftAddFromUrlBtn')?.addEventListener('click', async () => {
       const input = prompt('Paste image URL(s) — separate multiple with a comma or new line:');
       if (!input) return;
-      addImageUrls(input.split(/[\n,]+/));
+      const urls = [...new Set(input.split(/[\n,]+/).map((u) => u.trim()).filter(Boolean))];
+      const available = MAX_DRAFT_IMAGES - draftImages.length;
+      if (available <= 0) {
+        showToast('Image limit reached', 'A draft can have at most 24 images.', 'error');
+        return;
+      }
+      let added = 0;
+      for (const imageUrl of urls.slice(0, available)) {
+        try {
+          const res = await apiFetch(`/api/list-on-ebay/${encodeURIComponent(listing.id)}/images/upload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success || !data.url) throw new Error(data.error || 'Could not save image from URL.');
+          addImageUrls([data.url]);
+          added++;
+        } catch (err) {
+          showToast('Image URL failed', err.message || 'Could not save image from URL.', 'error');
+        }
+      }
+      if (urls.length > available) showToast('Image limit reached', `Only ${available} image(s) could be added.`, 'error');
+      if (added) refreshDraftImageGallery();
     });
 
     // Drag & drop zone (also click-to-upload).
@@ -8022,7 +7880,11 @@
       dropZone.addEventListener('click', () => fileInput?.click());
       ['dragover', 'dragenter'].forEach((evt) => dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.add('dragover'); }));
       ['dragleave', 'dragend'].forEach((evt) => dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover')));
-      dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); readFilesAsDataUrls(e.dataTransfer?.files); });
+      dropZone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        await readFilesAsDataUrls(e.dataTransfer?.files);
+      });
     }
 
     const specsTableBody = document.getElementById('draftSpecsTableBody');
@@ -8066,7 +7928,10 @@
       .filter((spec) => spec.name && spec.value);
 
     const imageEls = Array.from(document.querySelectorAll('#draftEditImageGallery img'));
-    const images = imageEls.map((img) => img.getAttribute('src')).filter(Boolean).slice(0, 24);
+    const images = imageEls
+      .map((img) => img.getAttribute('src'))
+      .filter((src) => src && !String(src).startsWith('data:image/'))
+      .slice(0, 24);
     return { ...baseProduct, title, bulletPoints, description, specifications, images, variants: [], variantDimensions: [] };
   }
 
@@ -8115,6 +7980,10 @@
     if (!selectEl) return null;
     const fieldEl = selectEl.closest('.publish-field');
 
+    // The "connect your eBay account first" hint should only show when there
+    // is genuinely no connected account. Once accounts load, we hide it.
+    const connectHint = document.getElementById('draftConnectHint');
+
     draftPublishAccountLoadPromise = (async () => {
       try {
         const res = await apiFetch('/api/ebay-accounts');
@@ -8123,8 +7992,12 @@
         if (!res.ok || !data.success || !data.accounts.length) {
           selectEl.innerHTML = '<option value="">Connect an eBay account in Settings</option>';
           if (fieldEl) fieldEl.style.display = '';
+          if (connectHint) connectHint.style.display = '';
           return null;
         }
+
+        // A connected account exists - the draft can be published, so hide the hint.
+        if (connectHint) connectHint.style.display = 'none';
 
         selectEl.innerHTML = data.accounts
           .map((acc) => `<option value="${acc.id}">${escapeHtml(accountDisplayLabel(acc))}</option>`)
@@ -8141,6 +8014,7 @@
       } catch (err) {
         selectEl.innerHTML = '<option value="">Could not load accounts</option>';
         if (fieldEl) fieldEl.style.display = '';
+        if (connectHint) connectHint.style.display = '';
         return null;
       }
     })();
@@ -8181,7 +8055,15 @@
       const res = await apiFetch(`/api/list-on-ebay/${listing.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, sellPrice, markupPercent, quantity, categoryId: categoryEl?.value?.trim() || '', images: editedProduct?.images || [], mainImage: editedProduct?.images?.[0] || null, accountId: document.getElementById('draftPublishAccountSelect')?.value || listing.ebay_account_id || null, draftProduct: editedProduct, ebayAspects }),
+        body: JSON.stringify({
+          title, sellPrice, markupPercent, quantity,
+          categoryId: categoryEl?.value?.trim() || '',
+          images: (editedProduct?.images || []).filter((src) => !String(src).startsWith('data:image/')).slice(0, 24),
+          mainImage: (editedProduct?.images || []).find((src) => !String(src).startsWith('data:image/')) || null,
+          accountId: document.getElementById('draftPublishAccountSelect')?.value || listing.ebay_account_id || null,
+          draftProduct: editedProduct,
+          ebayAspects
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not save changes.');
@@ -8276,7 +8158,7 @@
         }
 
         statusEl.className = 'success';
-        statusEl.textContent = 'Publish queued. You can keep working while ELMS publishes in the background.';
+        statusEl.textContent = data.immediate ? 'Published to eBay successfully.' : 'Publish completed.';
         setTimeout(() => {
           draftDetailModal.classList.remove('open');
           loadDrafts();
@@ -9629,11 +9511,5 @@
 </script>
 
 
-
-<div class="phase5-backdrop" id="phase5Backdrop"></div>
-<aside class="phase5-panel" id="phase5Panel" aria-hidden="true">
-  <div class="phase5-head"><div><h3 id="phase5Title">Listing details</h3><div class="phase5-sub" id="phase5Sub">Live listing</div></div><button class="phase5-close" id="phase5Close" aria-label="Close">×</button></div>
-  <div class="phase5-body"><div class="phase5-grid" id="phase5Body"></div><div class="phase5-actions" id="phase5Actions"></div><div class="phase5-note">Edit uses the existing ELMS listing revise endpoint. Phase 7 adds price/quantity bulk editing with validation. No fake eBay state is generated in this panel.</div></div>
-</aside>
 </body>
 </html>
