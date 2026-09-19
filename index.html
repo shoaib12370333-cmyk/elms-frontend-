@@ -2980,6 +2980,32 @@
 
   .ll-synced { font-size:12px; color:#667085; align-self:center; margin-right:8px; }
   @media (max-width:700px){ .ll-synced{ display:block; width:100%; margin:0 0 6px; } }
+
+  /* AI: messages + item specifics */
+  .msg-ai { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 12px; padding:10px 14px; background:#fff; border:1px solid var(--line); border-radius:12px; }
+  .msg-ai-title { font-size:13px; font-weight:800; }
+  .msg-ai-seg { display:inline-flex; background:#F1F5F9; border-radius:10px; padding:3px; gap:2px; }
+  .msg-ai-seg button { border:none; background:transparent; padding:6px 13px; border-radius:8px; font:700 12.5px Inter,sans-serif; color:#64748B; cursor:pointer; }
+  .msg-ai-seg button.on { background:#0064D2; color:#fff; } .msg-ai-seg button.on.auto { background:#E53238; }
+  .msg-ai-seg button:disabled { opacity:.5; cursor:not-allowed; }
+  .msg-ai-note { flex:1 1 220px; font-size:11px; line-height:1.4; color:#98A2B3; }
+  .msg-ai-note.warn { color:#B42318; }
+  .msg-tag.ai { background:#FEF3D0; color:#8A5A00; }
+  .msg-ai-banner { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:8px 12px; margin-bottom:8px; border-radius:10px; background:#FFF8E1; border:1px solid #F5D77A; font-size:12.5px; color:#6B4F00; }
+  .msg-ai-banner small { display:block; width:100%; color:#98A2B3; font-size:11px; }
+  .msg-ai-banner.sent { background:#F2F9E5; border-color:#C5E08E; color:#3F6208; }
+  .msg-ai-banner button { margin-left:auto; border:none; background:transparent; color:#6B4F00; font:700 12px Inter,sans-serif; cursor:pointer; text-decoration:underline; }
+  .elms-asp-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:2px 0 10px; }
+  .elms-asp-head b { font:800 13px Inter,sans-serif; color:#101828; } .elms-asp-head span { font:500 12px Inter,sans-serif; color:#667085; flex:1 1 200px; }
+  .elms-asp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px 12px; margin-bottom:18px; }
+  .elms-asp { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .elms-asp label { font:700 11.5px Inter,sans-serif; color:#344054; display:flex; gap:6px; align-items:center; }
+  .elms-asp label em { font-style:normal; font-size:10px; font-weight:800; padding:1px 7px; border-radius:99px; background:#F1F5F9; color:#667085; }
+  .elms-asp label em.req { background:#FDE8E9; color:#B42318; } .elms-asp label em.rec { background:#FEF3D0; color:#8A5A00; }
+  .elms-asp input { height:36px; border:1px solid #dfe3e8; border-radius:8px; padding:0 10px; font:500 13px Inter,sans-serif; min-width:0; }
+  .elms-asp input.ai-filled { border-color:#86B817; background:#F7FBEE; }
+  .elms-asp input.missing { border-color:#E53238; }
+  .elms-asp-sub { font:800 13px Inter,sans-serif; color:#101828; margin:6px 0 8px; }
 </style>
 </head>
 <body>
@@ -3406,6 +3432,15 @@
             <button class="msg-btn primary" id="messageRefreshBtn" type="button">Sync</button>
             <button class="msg-btn" id="messageSnippetsBtn" type="button">Saved replies</button>
           </div>
+        </div>
+        <div class="msg-ai" id="msgAiBox">
+          <span class="msg-ai-title">&#10024; AI replies</span>
+          <span class="msg-ai-seg" role="group" aria-label="AI replies">
+            <button type="button" data-ai-mode="off" class="on">Off</button>
+            <button type="button" data-ai-mode="draft">Draft for me</button>
+            <button type="button" data-ai-mode="auto" class="auto">Auto-send</button>
+          </span>
+          <span class="msg-ai-note" id="msgAiNote">AI can make mistakes. Check replies before sending.</span>
         </div>
         <div class="msg-sync" id="messageSyncStatus"></div>
 
@@ -3885,6 +3920,24 @@
                   </select>
                 </div>
               </div>
+            </section>
+          </div>
+          <div class="ad-two">
+            <section class="st-card">
+              <div class="st-head">
+                <div class="st-ico blue">&#127991;</div>
+                <div class="st-head-txt"><h2>AI item specifics</h2><p>Fills the eBay category's specifics from the product facts.</p></div>
+                <label class="toggle-switch"><input type="checkbox" id="aiAspectsEnabled" /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="st-field"><label>Credits per AI fill</label><input class="st-input" type="number" min="0" step="1" id="aiCostAspects" /></div>
+            </section>
+            <section class="st-card">
+              <div class="st-head">
+                <div class="st-ico red">&#128172;</div>
+                <div class="st-head-txt"><h2>AI message replies</h2><p>Reply drafts (and optional auto-send) for buyer messages. Each seller chooses their own mode on the Messages page.</p></div>
+                <label class="toggle-switch"><input type="checkbox" id="aiReplyEnabled" /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="st-field"><label>Credits per AI reply</label><input class="st-input" type="number" min="0" step="1" id="aiCostReply" /></div>
             </section>
           </div>
           <section class="st-card">
@@ -6271,8 +6324,11 @@
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="specs">
+          <div class="elms-asp-head"><b>eBay item specifics</b><span data-ui-aspects-status>Choose a category on the Product tab to load its item specifics.</span><button type="button" class="elms-ed-btn" data-ui-action="fill-aspects">Fill with AI</button></div>
+          <div class="elms-asp-grid" data-ui-aspects></div>
+          <div class="elms-asp-sub">Custom specifications</div>
           <div data-ui-specs>${(specs.length ? specs : [{}]).map(specRow).join('')}</div>
-          <button type="button" class="elms-ed-btn" data-ui-action="add-spec">+ Add specification</button>
+          <button type="button" class="elms-ed-btn" data-ui-action="add-spec">+ Add custom specification</button>
         </div>
         ${opts.showSave === false ? '' : `<div class="elms-editor-foot"><span class="elms-ed-note" data-ui-status></span><button type="button" class="elms-ed-btn primary" data-ui-action="save-editor">Save changes</button></div>`}
       </div>`;
@@ -6303,6 +6359,7 @@
       stockMonitoring: !!f('stock_monitoring')?.checked,
       priceMonitoring: !!f('price_monitoring')?.checked,
       images: Array.from(ed.querySelectorAll('[data-ui-images] .elms-ed-img')).map((el) => el.getAttribute('data-url')).filter(Boolean),
+      ebayAspects: ed._aspectDefs ? collectEditorAspects(ed) : undefined,
       specifications: Array.from(ed.querySelectorAll('[data-ui-spec]')).map((row) => ({
         name: row.querySelector('[data-ui-spec-name]').value.trim(),
         value: row.querySelector('[data-ui-spec-value]').value.trim(),
@@ -6346,7 +6403,7 @@
             if (!s.categoryId || known.has(String(s.categoryId))) return;
             catSelect.insertAdjacentHTML('beforeend', `<option value="${escapeAttr(s.categoryId)}" title="${escapeAttr(s.fullPath || '')}">${escapeHtml(s.categoryName || 'Category')} (${escapeHtml(s.categoryId)})</option>`);
           });
-          if (!current && list[0]?.categoryId) catSelect.value = String(list[0].categoryId);
+          if (!current && list[0]?.categoryId) { catSelect.value = String(list[0].categoryId); ed._reloadAspects?.(); }
           const cur = Array.from(catSelect.options).find((o) => o.value === current && /^Category /.test(o.textContent));
           const match = list.find((s) => String(s.categoryId) === current);
           if (cur && match) cur.textContent = `${match.categoryName || 'Category'} (${current})`;
@@ -6500,10 +6557,94 @@
 
     ed._initial = collectEditorValues(ed);
     loadEditorChoices(ed, l);
+    wireEditorAspects(ed, l);
   }
 
   // Draft "Save changes": content fields are sent only when the seller changed them, so an untouched
   // description / image gallery keeps falling back to the imported Amazon data.
+  // ---------- Item specifics for the chosen eBay category ----------
+  function collectEditorAspects(ed) {
+    const out = {};
+    ed.querySelectorAll('[data-ui-aspect] input').forEach((inp) => {
+      const raw = inp.value.trim(); if (!raw) return;
+      const def = (ed._aspectDefs || []).find((a) => a.name === inp.dataset.name);
+      out[inp.dataset.name] = def && def.cardinality === 'MULTI' ? raw.split(/\s*[,;]\s*/).filter(Boolean).map((v) => v.slice(0, 65)).slice(0, 30) : [raw.slice(0, 65)];
+    });
+    return out;
+  }
+
+  function wireEditorAspects(ed, l) {
+    const box = ed.querySelector('[data-ui-aspects]');
+    const status = ed.querySelector('[data-ui-aspects-status]');
+    const catSelect = ed.querySelector('[data-ui-field="category"]');
+    if (!box || !catSelect) return;
+    const accountId = () => l.ebay_account_id || document.getElementById('sidebarEbaySelect')?.value || '';
+    let seq = 0;
+    const currentValues = () => (ed._aspectDefs ? collectEditorAspects(ed) : (l.ebay_aspects || {}));
+    const render = (defs, values) => {
+      ed._aspectDefs = defs;
+      box.innerHTML = defs.map((a, i) => {
+        const v = values[a.name];
+        let val = Array.isArray(v) ? v.join(', ') : (v || '');
+        if (!val) val = findAmazonValueForAspect(a.name, { specifications: l.specifications || [], brand: '' }) || '';
+        const tag = a.required ? '<em class="req">Required</em>' : a.usage === 'RECOMMENDED' ? '<em class="rec">Recommended</em>' : '<em>Optional</em>';
+        const list = a.values && a.values.length ? `<datalist id="asp-${l.id}-${i}">${a.values.map((x) => `<option value="${escapeAttr(x)}">`).join('')}</datalist>` : '';
+        return `<div class="elms-asp" data-ui-aspect><label>${escapeHtml(a.name)} ${tag}</label><input type="text" data-name="${escapeAttr(a.name)}" maxlength="${a.cardinality === 'MULTI' ? 400 : 65}" value="${escapeAttr(String(val).slice(0, a.cardinality === 'MULTI' ? 400 : 65))}" ${list ? `list="asp-${l.id}-${i}"` : ''} placeholder="${a.values && a.values.length ? 'Choose or type' : a.cardinality === 'MULTI' ? 'Separate several with commas' : 'Type a value'}" />${list}</div>`;
+      }).join('');
+      const filled = defs.filter((a) => (Array.isArray(values[a.name]) ? values[a.name].length : values[a.name])).length;
+      status.textContent = defs.length ? `${defs.length} specifics from eBay for this category. Required ones are marked.` : 'This category has no item specifics.';
+    };
+    const load = async () => {
+      const cat = catSelect.value;
+      const my = ++seq;
+      if (!cat) { box.innerHTML = ''; ed._aspectDefs = null; status.textContent = 'Choose a category on the Product tab to load its item specifics.'; return; }
+      status.textContent = 'Loading item specifics from eBay\u2026';
+      try {
+        const acc = accountId();
+        const res = await apiFetch(`/api/list-on-ebay/category-aspects?categoryId=${encodeURIComponent(cat)}${acc && acc !== '__ADD_EBAY_ACCOUNT__' ? `&accountId=${encodeURIComponent(acc)}` : ''}`);
+        const d = await res.json();
+        if (my !== seq) return;
+        if (!res.ok || !d.success) throw new Error(d.error || 'Could not load item specifics.');
+        const keep = currentValues();
+        render(d.aspects || [], keep);
+        ed._initial = { ...(ed._initial || {}), ebayAspects: collectEditorAspects(ed) };
+      } catch (err) { if (my === seq) { status.textContent = err.message + ' You can still add custom specifications below.'; ed._aspectDefs = null; } }
+    };
+    catSelect.addEventListener('change', load);
+    ed._reloadAspects = load;
+    if (catSelect.value) load();
+
+    ed.querySelector('[data-ui-action="fill-aspects"]').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const title = (ed.querySelector('[data-ui-field="title"]')?.value || '').trim();
+      if (!ed._aspectDefs || !ed._aspectDefs.length) { showToast('Item specifics', 'Choose a category first so its item specifics load.', 'error'); return; }
+      if (title.length < 3) { showToast('Title needed', 'Type a title first.', 'error'); return; }
+      const label = btn.textContent; btn.disabled = true; btn.textContent = 'Filling\u2026';
+      try {
+        const v = collectEditorValues(ed);
+        const res = await apiFetch('/api/list-on-ebay/fill-aspects', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, categoryName: catSelect.selectedOptions?.[0]?.textContent || '', description: v.description || l.description || '', bulletPoints: l.bullet_points || [], specifications: v.specifications || l.specifications || [], aspects: ed._aspectDefs, existing: collectEditorAspects(ed) }),
+        });
+        const d = await res.json();
+        if (!res.ok || !d.success) throw new Error(d.error || 'Could not fill the item specifics.');
+        let n = 0;
+        ed.querySelectorAll('[data-ui-aspect] input').forEach((inp) => {
+          const vals = d.data?.values?.[inp.dataset.name];
+          if (vals && vals.length && !inp.value.trim()) { inp.value = vals.join(', '); inp.classList.add('ai-filled'); n += 1; }
+        });
+        const missing = ed._aspectDefs.filter((a) => a.required && !collectEditorAspects(ed)[a.name]).length;
+        ed.querySelectorAll('[data-ui-aspect] input').forEach((inp) => {
+          const def = ed._aspectDefs.find((a) => a.name === inp.dataset.name);
+          inp.classList.toggle('missing', !!(def && def.required && !inp.value.trim()));
+        });
+        showToast('Item specifics', n ? `AI filled ${n} specific${n === 1 ? '' : 's'}.${missing ? ` ${missing} required still empty.` : ' Review them, then save.'}` : 'Nothing new to fill. Everything the facts allow is already set.', n ? 'success' : 'info');
+        refreshCreditBalanceChip();
+      } catch (err) { showToast('AI item specifics failed', err.message, 'error'); }
+      finally { btn.disabled = false; btn.textContent = label; }
+    });
+  }
+
   async function saveDraftEditor(ed, l, btn, opts) {
     const status = ed.querySelector('[data-ui-status]');
     const now = collectEditorValues(ed);
@@ -6514,6 +6655,7 @@
     if (changed('categoryId')) body.categoryId = now.categoryId;
     if (changed('description')) body.description = now.description;
     if (changed('specifications')) body.specifications = now.specifications;
+    if (now.ebayAspects && changed('ebayAspects')) body.ebayAspects = now.ebayAspects;
     if (changed('images')) body.images = now.images;
     const accountId = l.ebay_account_id || document.getElementById('sidebarEbaySelect')?.value;
     if (accountId && accountId !== '__ADD_EBAY_ACCOUNT__') body.accountId = accountId;
@@ -6522,7 +6664,7 @@
     btn.disabled = true; btn.textContent = 'Saving…'; if (status) status.textContent = '';
     try {
       if (now.title !== before.title && now.title.length < 3) throw new Error('The title is too short.');
-      const hasContent = ['title', 'categoryId', 'description', 'specifications', 'images'].some((k) => k in body);
+      const hasContent = ['title', 'categoryId', 'description', 'specifications', 'ebayAspects', 'images'].some((k) => k in body);
       const res = hasContent
         ? await apiFetch(`/api/list-on-ebay/${encodeURIComponent(l.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
         : await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/settings`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editorSettingsBody(now)) });
@@ -9723,6 +9865,8 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="msg-item-tags">
             ${r.is_read ? '' : '<span class="msg-tag new">New</span>'}
             ${r.conversation_type === 'FROM_EBAY' ? '<span class="msg-tag">eBay</span>' : ''}
+            ${r.ai_draft && r.ai_draft.status === 'ready' ? '<span class="msg-tag ai">AI draft</span>' : ''}
+            ${r.ai_draft && r.ai_draft.status === 'auto_sent' ? '<span class="msg-tag ai">AI replied</span>' : ''}
             ${r.reference_id ? '<span class="msg-tag order">Linked</span>' : ''}
             <span class="msg-tag store">${escapeHtml(r.ebay_account_display_name || r.ebay_account_username || 'eBay store')}</span>
           </div>
@@ -9747,7 +9891,44 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (_) {}
   }
 
+  // ---------- AI reply drafts ----------
+  let msgAiMode = 'off';
+  let msgAiAvailable = true;
+  let msgAiCost = 1;
+  function renderMsgAiBox() {
+    document.querySelectorAll('#msgAiBox [data-ai-mode]').forEach((b) => {
+      b.classList.toggle('on', b.dataset.aiMode === msgAiMode);
+      b.disabled = !msgAiAvailable;
+    });
+    const note = document.getElementById('msgAiNote'); if (!note) return;
+    const cost = msgAiCost ? ` Each AI reply uses ${msgAiCost} credit${msgAiCost === 1 ? '' : 's'}.` : '';
+    note.classList.toggle('warn', msgAiMode === 'auto');
+    note.textContent = !msgAiAvailable ? 'AI replies are turned off by the administrator.'
+      : msgAiMode === 'off' ? 'You write every reply yourself.' + cost
+      : msgAiMode === 'draft' ? 'New buyer messages get an AI draft in the reply box. You read it, edit it and press Send. AI can make mistakes.' + cost
+      : 'AI sends replies to simple buyer messages without asking you. Refunds, returns, damage and complaints always stay as drafts. AI can make mistakes.' + cost;
+  }
+  async function loadMsgAiSettings() {
+    try {
+      const res = await apiFetch('/api/notifications/ai-reply/settings'); const d = await res.json();
+      if (res.ok && d.success) { msgAiMode = d.mode; msgAiAvailable = d.available !== false; msgAiCost = d.cost; }
+    } catch (_) {}
+    renderMsgAiBox();
+  }
+  document.querySelectorAll('#msgAiBox [data-ai-mode]').forEach((b) => b.addEventListener('click', async () => {
+    const mode = b.dataset.aiMode;
+    if (mode === msgAiMode) return;
+    if (mode === 'auto' && !confirm('Auto-send lets AI answer buyers without you reading the reply first. AI can make mistakes. Only simple messages are answered; refunds, returns, damage and complaints stay as drafts.\n\nTurn on Auto-send?')) return;
+    const before = msgAiMode; msgAiMode = mode; renderMsgAiBox();
+    try {
+      const res = await apiFetch('/api/notifications/ai-reply/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode }) });
+      const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save.');
+      showToast('AI replies', mode === 'off' ? 'Off. You write every reply.' : mode === 'draft' ? 'New buyer messages will get a draft to review.' : 'Auto-send is on for simple messages.', 'success');
+    } catch (err) { msgAiMode = before; renderMsgAiBox(); showToast('AI replies', err.message, 'error'); }
+  }));
+
   async function loadMessagesPage() {
+    loadMsgAiSettings();
     const syncStatus = document.getElementById('messageSyncStatus');
     if (syncStatus) syncStatus.innerHTML = `<span class="sync-dot"></span>Last checked ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} &nbsp;|&nbsp; Auto-sync: <strong style="color:var(--green-dark);">ON</strong>`;
     await Promise.all([loadMessageAccounts(), loadMessages(), loadMessageSnippets()]);
@@ -9884,8 +10065,11 @@ async function autoSuggestEmptyDraftCategories() {
           <details class="msg-note-toggle"><summary>Private note</summary>
             <div class="msg-note-form"><textarea id="messageNoteInput" placeholder="Only visible in ELMS&hellip;"></textarea><button class="msg-btn small" id="messageNoteBtn" type="button">Add note</button></div>
           </details>
+          <button class="msg-btn small" id="messageAiDraftBtn" type="button">Draft with AI</button>
           <span class="msg-hint">Reply is sent through eBay</span>
         </div>
+        ${c.ai_draft && c.ai_draft.status === 'ready' ? `<div class="msg-ai-banner" id="msgAiBanner">&#10024; AI wrote this draft. Read it, edit it, then press Send.<button type="button" id="messageAiDiscardBtn">Discard</button><small>AI can make mistakes. Check names, dates and promises before sending.</small></div>` : ''}
+        ${c.ai_draft && c.ai_draft.status === 'auto_sent' ? `<div class="msg-ai-banner sent">&#10024; AI already replied to the latest message automatically: &ldquo;${escapeHtml(String(c.ai_draft.text || '').slice(0, 160))}&rdquo;<small>AI can make mistakes. Follow up here if needed.</small></div>` : ''}
         <div class="msg-compose-row">
           <textarea id="messageReplyInput" placeholder="Write a reply to ${escapeAttr(name)}&hellip;"></textarea>
           <button class="msg-btn primary send" id="messageReplyBtn" type="button">Send</button>
@@ -9898,6 +10082,27 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('messageBackBtn').addEventListener('click', () => document.getElementById('msgShell')?.classList.remove('thread-open'));
     document.getElementById('messageOpenOrderBtn')?.addEventListener('click', () => showPage('orders'));
     document.getElementById('messageReplyBtn').addEventListener('click', () => sendMessageReply(c.id));
+    if (c.ai_draft && c.ai_draft.status === 'ready') {
+      const box = document.getElementById('messageReplyInput');
+      if (box && !box.value) box.value = c.ai_draft.text || '';
+    }
+    document.getElementById('messageAiDiscardBtn')?.addEventListener('click', async () => {
+      try { await apiFetch(`/api/notifications/${encodeURIComponent(c.id)}/ai-reply/discard`, { method: 'POST' }); } catch (_) {}
+      document.getElementById('messageReplyInput').value = '';
+      document.getElementById('msgAiBanner')?.remove();
+      const row = messageRows.find((x) => x.id === c.id); if (row) row.ai_draft = null;
+    });
+    document.getElementById('messageAiDraftBtn')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget, label = btn.textContent; btn.disabled = true; btn.textContent = 'Writing\u2026';
+      try {
+        const res = await apiFetch(`/api/notifications/${encodeURIComponent(c.id)}/ai-reply/generate`, { method: 'POST' });
+        const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not write a draft.');
+        document.getElementById('messageReplyInput').value = d.text;
+        showToast('AI draft ready', 'Read it, edit it, then press Send.', 'success');
+        refreshCreditBalanceChip();
+      } catch (err) { showToast('AI draft failed', err.message, 'error'); }
+      finally { btn.disabled = false; btn.textContent = label; }
+    });
     document.getElementById('messageNoteBtn').addEventListener('click', () => addMessageNote(c.id));
     document.getElementById('messageArchiveBtn').addEventListener('click', () => archiveMessage(c.id));
     document.getElementById('messageMarkUnreadBtn').addEventListener('click', () => markMessageUnread(c.id));
@@ -10215,6 +10420,10 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('aiDescriptionEnabled').checked = !!d.settings.aiDescriptionEnabled;
       document.getElementById('aiCostTitle').value = d.costs.AI_TITLE ?? 1;
       document.getElementById('aiCostDescription').value = d.costs.AI_DESCRIPTION ?? 1;
+      document.getElementById('aiAspectsEnabled').checked = !!d.settings.aiAspectsEnabled;
+      document.getElementById('aiReplyEnabled').checked = !!d.settings.aiReplyEnabled;
+      document.getElementById('aiCostAspects').value = d.costs.AI_ASPECTS ?? 1;
+      document.getElementById('aiCostReply').value = d.costs.AI_REPLY ?? 1;
       document.getElementById('aiDescriptionLength').value = d.settings.aiDescriptionLength || 'standard';
       document.getElementById('aiModel').value = d.settings.aiModel || '';
       document.getElementById('aiCustomInstructions').value = d.settings.aiCustomInstructions || '';
@@ -10223,7 +10432,9 @@ async function autoSuggestEmptyDraftCategories() {
       const u = d.usage;
       document.getElementById('adminAiUsage').innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Feature</th><th>Successful</th><th>Failed</th><th>Credits spent</th></tr></thead><tbody>
         <tr><td>AI title</td><td>${u.title.calls}</td><td>${u.title.failed}</td><td>${u.title.credits}</td></tr>
-        <tr><td>AI description</td><td>${u.description.calls}</td><td>${u.description.failed}</td><td>${u.description.credits}</td></tr></tbody></table></div>
+        <tr><td>AI description</td><td>${u.description.calls}</td><td>${u.description.failed}</td><td>${u.description.credits}</td></tr>
+        <tr><td>AI item specifics</td><td>${u.aspects.calls}</td><td>${u.aspects.failed}</td><td>${u.aspects.credits}</td></tr>
+        <tr><td>AI message replies</td><td>${u.reply.calls}</td><td>${u.reply.failed}</td><td>${u.reply.credits}</td></tr></tbody></table></div>
         <p class="st-hint">Tokens used: ${u.inputTokens.toLocaleString()} in / ${u.outputTokens.toLocaleString()} out. Failed calls are refunded to the user.</p>`;
     } catch (err) { banner.className = 'ad-banner bad'; banner.textContent = err.message; }
   }
@@ -10234,10 +10445,12 @@ async function autoSuggestEmptyDraftCategories() {
       const body = {
         aiTitleEnabled: document.getElementById('aiTitleEnabled').checked,
         aiDescriptionEnabled: document.getElementById('aiDescriptionEnabled').checked,
+        aiAspectsEnabled: document.getElementById('aiAspectsEnabled').checked,
+        aiReplyEnabled: document.getElementById('aiReplyEnabled').checked,
         aiDescriptionLength: document.getElementById('aiDescriptionLength').value,
         aiModel: document.getElementById('aiModel').value.trim(),
         aiCustomInstructions: document.getElementById('aiCustomInstructions').value.trim(),
-        costs: { AI_TITLE: Number(document.getElementById('aiCostTitle').value), AI_DESCRIPTION: Number(document.getElementById('aiCostDescription').value) },
+        costs: { AI_TITLE: Number(document.getElementById('aiCostTitle').value), AI_DESCRIPTION: Number(document.getElementById('aiCostDescription').value), AI_ASPECTS: Number(document.getElementById('aiCostAspects').value), AI_REPLY: Number(document.getElementById('aiCostReply').value) },
       };
       const res = await apiFetch('/api/admin/settings/ai', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save the AI settings.');
