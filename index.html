@@ -2715,6 +2715,144 @@
   @media (max-width:900px) { .ih-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .ih-stats .ih-import-btn-wrap { grid-column:1 / -1; } }
   @media (max-width:1250px) { .ih-stats { grid-template-columns:repeat(4,minmax(0,1fr)); } .ih-stats .ih-import-btn-wrap { grid-column:1 / -1; } .ih-import-btn { height:48px; } }
   @media (max-width:900px) { .ih-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+  /* ================= Orders page ================= */
+  .ord-head, .msg-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+  .ord-head h1, .msg-top h1 { margin:0; font-size:28px; font-weight:800; letter-spacing:-0.02em; }
+  .ord-head .sub, .msg-top .sub { margin-top:6px; color:var(--grey); font-size:14px; max-width:620px; }
+  .ord-head-actions, .msg-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .ord-btn, .msg-btn { display:inline-flex; align-items:center; justify-content:center; height:40px; padding:0 16px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); font:600 13px Inter,sans-serif; cursor:pointer; text-decoration:none; white-space:nowrap; transition:background .12s, border-color .12s; }
+  .ord-btn:hover:not(:disabled), .msg-btn:hover:not(:disabled) { background:var(--paper-raised); border-color:var(--grey-light); }
+  .ord-btn:disabled, .msg-btn:disabled { opacity:.55; cursor:not-allowed; }
+  .ord-btn.primary, .msg-btn.primary { background:var(--gradient-primary); border-color:transparent; color:#fff; box-shadow:0 4px 12px rgba(37,99,235,.25); }
+  .ord-btn.small, .msg-btn.small { height:34px; padding:0 12px; font-size:12px; }
+  .msg-btn.danger { color:#E53238; }
+  .ord-select, .msg-select { height:40px; padding:0 12px; border:1px solid var(--line); border-radius:10px; background:#fff; font:600 13px Inter,sans-serif; color:var(--ink); max-width:100%; }
+  .msg-select.small { height:34px; font-size:12px; }
+  .ord-sync-status { min-height:0; margin-bottom:12px; font-size:13px; color:var(--grey); }
+  .ord-sync-status.ok { color:#5b8f0e; font-weight:600; } .ord-sync-status.error { color:#E53238; font-weight:600; }
+  .ord-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:18px; }
+  .ord-card { position:relative; overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:0 5px 18px rgba(20,35,60,.04); }
+  .ord-card::before { content:''; position:absolute; left:0; top:0; right:0; height:4px; background:#0064D2; }
+  .ord-card.green::before { background:#86B817; } .ord-card.yellow::before { background:#F5AF02; } .ord-card.red::before { background:#E53238; }
+  .ord-card-label { font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--grey); }
+  .ord-card-value { margin-top:6px; font-size:26px; font-weight:800; line-height:1.1; overflow:hidden; text-overflow:ellipsis; }
+  .ord-card-hint { margin-top:4px; font-size:12px; color:var(--grey); } .ord-card-hint .late { color:#E53238; }
+  .ord-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; margin-bottom:12px; border-bottom:1px solid var(--line); -webkit-overflow-scrolling:touch; }
+  .ord-tab { flex:0 0 auto; padding:11px 14px; border:0; border-bottom:3px solid transparent; background:transparent; color:#4b5563; font:600 14px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  .ord-tab span { margin-left:4px; padding:1px 7px; border-radius:999px; background:#f1f5f9; color:#64748b; font-size:11px; }
+  .ord-tab.active { color:#0064D2; border-bottom-color:#0064D2; } .ord-tab.active span { background:#E7F0FD; color:#0064D2; }
+  .ord-toolbar { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .ord-search { flex:1 1 260px; min-width:0; } .ord-search input { width:100%; box-sizing:border-box; height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; font:500 14px Inter,sans-serif; background:#fff; outline:0; } .ord-search input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  .ord-table-wrap { background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow-x:auto; }
+  .ord-table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; color:#4b5563; min-width:900px; }
+  .ord-table th { text-align:left; padding:0 14px; height:44px; font-size:12px; font-weight:700; color:#687180; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+  .ord-table td { padding:14px; border-bottom:1px solid #edf0f3; vertical-align:middle; }
+  .ord-row { cursor:pointer; } .ord-row:hover td { background:#f6faff; }
+  .ord-id { font-weight:700; color:#374151; word-break:break-all; }
+  .ord-strong { font-weight:600; color:#374151; } .ord-sub { font-size:12px; color:#8a93a2; margin-top:2px; } .ord-sub.good, .good { color:#5b8f0e; } .ord-sub.bad, .bad { color:#E53238; }
+  .ord-late { font-weight:700; color:#E53238; } .ord-soon { font-weight:700; color:#b7830a; }
+  .ord-item { display:flex; align-items:center; gap:12px; min-width:0; } .ord-item.big { align-items:flex-start; }
+  .ord-thumb { flex:0 0 56px; width:56px; height:56px; border-radius:8px; object-fit:cover; background:#f1f3f6; } .ord-item.big .ord-thumb { width:72px; height:72px; flex-basis:72px; }
+  .ord-item-txt { min-width:0; } .ord-title { font-weight:600; color:#374151; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.4; }
+  .ord-pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap; }
+  .ord-pill.blue { background:#E7F0FD; color:#0064D2; } .ord-pill.amber { background:#FEF3DA; color:#b7830a; } .ord-pill.purple { background:#F1EBFC; color:#7C3AED; } .ord-pill.green { background:#EEF6DF; color:#5b8f0e; } .ord-pill.red { background:#FDECEC; color:#E53238; }
+  .ord-actions { text-align:right; white-space:nowrap; }
+  .ord-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; flex-wrap:wrap; font-size:13px; color:var(--grey); }
+  .ord-pager { display:flex; align-items:center; gap:10px; }
+
+  /* order detail drawer */
+  .ord-drawer-overlay { position:fixed; inset:0; z-index:320; background:rgba(15,27,45,.45); display:flex; justify-content:flex-end; animation:modalOverlayIn .2s ease; }
+  .ord-drawer { width:min(560px,100%); height:100%; background:#fff; display:flex; flex-direction:column; box-shadow:-12px 0 38px rgba(15,23,42,.18); animation:draftSheetIn .22s cubic-bezier(.2,.8,.2,1); }
+  .ord-drawer-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:16px 20px; border-bottom:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; }
+  .ord-drawer-kicker { font:800 12px 'Trebuchet MS',Inter,sans-serif; color:#64748b; } .ord-drawer-title { font-size:17px; font-weight:800; word-break:break-all; }
+  .ord-drawer-head-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .ord-x { border:0; background:transparent; font-size:28px; line-height:1; color:#64748b; cursor:pointer; width:36px; height:36px; border-radius:8px; } .ord-x:hover { background:#f1f5f9; }
+  .ord-drawer-body { flex:1 1 auto; overflow:auto; padding:16px 20px; background:#f8fafd; display:grid; gap:14px; align-content:start; }
+  .ord-drawer-foot { display:flex; gap:8px; flex-wrap:wrap; padding:12px 20px; border-top:1px solid var(--line); background:#fff; }
+  .ord-sec { background:#fff; border:1px solid #e3e9f2; border-radius:12px; padding:14px 16px; min-width:0; }
+  .ord-sec h4 { margin:0 0 10px; font-size:13px; font-weight:800; display:flex; align-items:center; justify-content:space-between; gap:8px; } .ord-sec h4 em { font-style:normal; font-weight:500; color:var(--grey); font-size:11px; }
+  .ord-kv { display:flex; justify-content:space-between; gap:12px; padding:5px 0; font-size:13px; color:#566273; border-bottom:1px dashed #edf0f3; } .ord-kv:last-child { border-bottom:0; } .ord-kv b { color:#1f2937; text-align:right; }
+  .ord-address { font-size:14px; line-height:1.55; color:#1f2937; margin-bottom:6px; }
+  .ord-link { border:0; background:transparent; color:var(--blue); font:700 12px Inter,sans-serif; cursor:pointer; padding:0; }
+  .ord-banner { padding:11px 14px; border-radius:10px; font-size:13px; line-height:1.45; } .ord-banner.red { background:#FDECEC; color:#b42318; } .ord-banner.amber { background:#FEF3DA; color:#8a6300; } .ord-banner.blue { background:#EEF4FF; color:#1d4ed8; }
+  .ord-steps { list-style:none; margin:0; padding:14px 16px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+  .ord-steps li { display:grid; justify-items:center; gap:3px; text-align:center; font-size:12px; color:#94a3b8; position:relative; }
+  .ord-steps li .dot { width:14px; height:14px; border-radius:50%; background:#e2e8f0; } .ord-steps li.done .dot { background:#86B817; } .ord-steps li.done { color:#374151; } .ord-steps li small { font-size:11px; color:#8a93a2; min-height:14px; }
+  .ord-field { display:grid; gap:6px; margin-bottom:12px; font-size:12px; font-weight:700; color:#4b5563; } .ord-field em { font-style:normal; font-weight:500; color:#94a3b8; margin-left:4px; }
+  .ord-row-inline { display:flex; gap:8px; flex-wrap:wrap; } .ord-row-inline input, .ord-row-inline select { flex:1 1 140px; min-width:0; height:40px; padding:0 12px; border:1px solid #dfe3e8; border-radius:10px; font:500 14px Inter,sans-serif; background:#fff; }
+  .ord-sec textarea { width:100%; box-sizing:border-box; border:1px solid #dfe3e8; border-radius:10px; padding:10px 12px; font:500 13px Inter,sans-serif; margin-bottom:8px; resize:vertical; }
+  @media (max-width:720px) {
+    .ord-table { min-width:0; } .ord-table thead { display:none; }
+    .ord-table, .ord-table tbody, .ord-table tr, .ord-table td { display:block; width:100%; box-sizing:border-box; }
+    .ord-table tr { padding:12px 14px; border-bottom:8px solid var(--paper-raised); }
+    .ord-table td { border:0; padding:6px 0; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; text-align:right; }
+    .ord-table td::before { content:attr(data-label); flex:0 0 72px; text-align:left; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; }
+    .ord-table td[data-label="Item"] { display:block; text-align:left; } .ord-table td[data-label="Item"]::before { display:none; }
+    .ord-table td.ord-actions { display:block; text-align:left; } .ord-table td.ord-actions::before { display:none; } .ord-actions .ord-btn { width:100%; }
+    .ord-head-actions { width:100%; } .ord-head-actions .ord-btn, .ord-head-actions .ord-select { flex:1 1 140px; }
+    .ord-drawer { width:100%; } .ord-steps { grid-template-columns:repeat(2,1fr); }
+  }
+
+  /* ================= Messages page ================= */
+  .msg-sync { font-size:12px; color:#94a3b8; margin:-8px 0 10px; display:flex; align-items:center; gap:6px; }
+  .msg-shell { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); height:calc(100vh - 210px); min-height:520px; background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow:hidden; }
+  .msg-list-pane { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); background:#fff; }
+  .msg-search { padding:12px 14px 6px; } .msg-search input { width:100%; box-sizing:border-box; height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; font:500 13px Inter,sans-serif; background:var(--paper-raised); outline:0; } .msg-search input:focus { background:#fff; border-color:var(--blue); }
+  .msg-chips, .msg-types { display:flex; gap:6px; padding:6px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .msg-chip, .msg-type { flex:0 0 auto; height:30px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:#fff; color:#566273; font:600 12px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  .msg-chip span { margin-left:3px; color:#94a3b8; } .msg-chip.active { background:#E7F0FD; border-color:#C5DBF8; color:#0064D2; } .msg-chip.active span { color:#0064D2; }
+  .msg-type { border-radius:8px; background:transparent; border-color:transparent; color:#94a3b8; height:26px; } .msg-type.active { background:#f1f5f9; color:#374151; }
+  .msg-conv-head { display:flex; justify-content:space-between; align-items:baseline; padding:8px 16px; border-bottom:1px solid var(--line); font-size:13px; } .msg-conv-head span { font-size:11px; color:#94a3b8; }
+  .msg-list { flex:1 1 auto; overflow-y:auto; min-height:0; }
+  .msg-item { display:flex; gap:12px; padding:14px 16px; border-bottom:1px solid #f0f3f7; cursor:pointer; position:relative; }
+  .msg-item:hover { background:#f6faff; } .msg-item.active { background:#eef4ff; box-shadow:inset 3px 0 0 var(--blue); }
+  .msg-item.unread .msg-item-name { font-weight:800; color:#111827; } .msg-item.unread::after { content:''; position:absolute; right:14px; top:44px; width:9px; height:9px; border-radius:50%; background:var(--blue); }
+  .msg-avatar { flex:0 0 40px; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:#E7F0FD; color:#0064D2; font-weight:800; font-size:16px; } .msg-avatar.ebay { background:#FEF3DA; color:#b7830a; } .msg-avatar.big { flex-basis:44px; width:44px; height:44px; }
+  .msg-item-main { min-width:0; flex:1; }
+  .msg-item-top { display:flex; justify-content:space-between; gap:8px; } .msg-item-name { font-weight:600; font-size:14px; color:#374151; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-item-time { font-size:11px; color:#94a3b8; white-space:nowrap; }
+  .msg-item-subject { font-size:12.5px; font-weight:600; color:#4b5563; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .msg-item-snippet { font-size:12px; color:#8a93a2; margin-top:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; word-break:break-word; }
+  .msg-item-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+  .msg-tag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; background:#f1f3f5; color:#667085; } .msg-tag.new { background:#E7F0FD; color:#0064D2; } .msg-tag.order { background:#EEF6DF; color:#5b8f0e; } .msg-tag.store { background:#F1EBFC; color:#7C3AED; }
+  .msg-thread-pane { display:flex; flex-direction:column; min-width:0; min-height:0; background:#f8fafd; }
+  .msg-empty-detail { margin:auto; max-width:340px; text-align:center; color:#7d8795; padding:30px; } .msg-empty-icon { font-size:38px; margin-bottom:8px; } .msg-empty-detail h3 { margin:0 0 6px; color:#374151; }
+  .msg-thread-head { display:flex; align-items:center; gap:12px; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .msg-back { display:none; border:0; background:transparent; font-size:30px; line-height:1; color:#374151; cursor:pointer; width:34px; height:40px; }
+  .msg-thread-title { min-width:0; flex:1 1 200px; display:grid; } .msg-thread-title b { font-size:15px; } .msg-thread-title span { font-size:12px; color:#8a93a2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-thread-title em { font-size:11px; color:#a15c00; font-style:normal; }
+  .msg-thread-actions { display:flex; gap:6px; flex-wrap:wrap; }
+  .msg-context { display:flex; align-items:center; gap:12px; padding:10px 16px; background:#fff; border-bottom:1px solid var(--line); }
+  .msg-context img, .msg-context-ph { flex:0 0 44px; width:44px; height:44px; border-radius:8px; object-fit:cover; background:#f1f3f6; }
+  .msg-context-txt { min-width:0; flex:1; display:grid; } .msg-context-txt span { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; } .msg-context-txt b { font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-context-txt small { font-size:11px; color:#8a93a2; }
+  .msg-thread-body { flex:1 1 auto; overflow-y:auto; padding:16px; min-height:0; }
+  .msg-day { text-align:center; margin:10px 0; font-size:11px; color:#94a3b8; font-weight:600; }
+  .msg-bubble-row { display:flex; margin-bottom:10px; } .msg-bubble-row.self { justify-content:flex-end; }
+  .msg-bubble { max-width:min(78%,560px); padding:10px 14px; border-radius:16px 16px 16px 4px; background:#fff; border:1px solid #e3e9f2; }
+  .msg-bubble-row.self .msg-bubble { border-radius:16px 16px 4px 16px; background:var(--blue); border-color:var(--blue); color:#fff; }
+  .msg-bubble-text { white-space:pre-wrap; word-break:break-word; font-size:13.5px; line-height:1.55; } .msg-bubble-meta { margin-top:4px; font-size:10.5px; opacity:.65; }
+  .msg-compose { padding:10px 16px 14px; background:#fff; border-top:1px solid var(--line); }
+  .msg-notes { display:grid; gap:5px; margin-bottom:8px; } .msg-note { font-size:11px; color:#7b5b18; background:#fffdf7; border:1px solid #f2dfb6; border-radius:8px; padding:7px 9px; }
+  .msg-compose-tools { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; } .msg-hint { margin-left:auto; font-size:11px; color:#94a3b8; }
+  .msg-note-toggle summary { cursor:pointer; font-size:12px; font-weight:600; color:#b7830a; list-style:none; } .msg-note-toggle summary::-webkit-details-marker { display:none; }
+  .msg-note-form { position:absolute; z-index:5; display:grid; gap:6px; margin-top:6px; padding:10px; background:#fffdf7; border:1px solid #f2dfb6; border-radius:10px; width:min(320px,80vw); } .msg-note-form textarea { min-height:60px; border:1px solid #f2dfb6; border-radius:8px; padding:8px; font:500 12px Inter,sans-serif; }
+  .msg-compose-row { display:flex; gap:10px; align-items:flex-end; } .msg-compose-row textarea { flex:1; min-height:64px; max-height:160px; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:500 13.5px Inter,sans-serif; outline:0; } .msg-compose-row textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  .msg-btn.send { height:44px; padding:0 22px; }
+  @media (max-width:900px) {
+    .msg-shell { grid-template-columns:minmax(0,1fr); height:calc(100vh - 230px); min-height:480px; }
+    .msg-thread-pane { display:none; } .msg-shell.thread-open .msg-list-pane { display:none; } .msg-shell.thread-open .msg-thread-pane { display:flex; }
+    .msg-back { display:block; } .msg-list-pane { border-right:0; }
+    .msg-actions { width:100%; } .msg-actions .msg-select { flex:1 1 140px; min-width:0; }
+    .msg-thread-actions { width:100%; } .msg-bubble { max-width:88%; }
+  }
+
+  /* ================= Import history: stat cards that always fit ================= */
+  .ih-stats { grid-template-columns:repeat(auto-fit,minmax(210px,1fr)) !important; gap:14px; }
+  .ih-stats .ih-stat { padding:16px 16px 14px; gap:12px; min-width:0; }
+  .ih-stat .ih-ico { flex:0 0 42px; }
+  .ih-stat > div:not(.ih-ico) { min-width:0; }
+  .ih-stat .ih-val, .ih-stat .ih-lbl, .ih-stat .ih-lbl-strong { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ih-stats .ih-import-btn-wrap { grid-column:auto !important; }
+  .ih-import-btn { min-height:76px; height:100%; }
 </style>
 </head>
 <body>
@@ -3131,64 +3269,44 @@
       </div>
 
       <div id="page-messages" style="display:none;">
-        <div class="support-center">
-          <div class="support-toolbar">
-            <div>
-              <div class="kicker">Customer communication</div>
-              <h2 style="margin:4px 0 3px;">Messages</h2>
-              <div class="meta-line">Manage eBay member conversations, replies, notes and linked orders from one inbox.</div>
-            </div>
-            <div>
-              <div class="support-toolbar-actions">
-                <select id="messageAccountFilter" class="support-select"><option value="">All eBay stores</option></select>
-                <button class="secondary" id="messageRefreshBtn">Sync</button>
-                <button class="secondary" id="messageSnippetsBtn">Saved replies</button>
-              </div>
-              <div class="message-sync-status" id="messageSyncStatus"></div>
-            </div>
+        <div class="msg-top">
+          <div>
+            <h1>Messages</h1>
+            <div class="sub">Every eBay buyer conversation in one inbox &mdash; reply, add private notes and jump to the linked order.</div>
           </div>
-          <div class="support-layout">
-            <aside class="support-filters">
-              <div class="support-search"><input id="messageSearch" placeholder="Search member or message..." /></div>
-              <div class="support-filter-group">
-                <button class="support-filter active" data-message-filter="all">All <span id="msgAllCount"></span></button>
-                <button class="support-filter" data-message-filter="unread">Unread <span id="msgUnreadCount"></span></button>
-                <button class="support-filter" data-message-filter="awaiting">Awaiting reply <span id="msgAwaitingCount"></span></button>
-                <button class="support-filter" data-message-filter="archived">Archived <span id="msgArchivedCount"></span></button>
-                <button class="support-filter" data-message-filter="trash">Trash <span id="msgTrashCount"></span></button>
-              </div>
-              <div class="support-filter-label">Type</div>
-              <div class="support-type-row">
-                <button class="support-pill active" data-message-type="all">All</button>
-                <button class="support-pill" data-message-type="FROM_MEMBERS">Member</button>
-                <button class="support-pill" data-message-type="FROM_EBAY">eBay</button>
-              </div>
-              <div class="support-filter-label">Message tags</div>
-              <div class="message-tags">
-                <div class="message-tag"><span class="mt-dot" style="background:#38BDF8;"></span>Order related<span class="mt-count">0</span></div>
-                <div class="message-tag"><span class="mt-dot" style="background:#4ADE80;"></span>Shipping<span class="mt-count">0</span></div>
-                <div class="message-tag"><span class="mt-dot" style="background:#FB923C;"></span>Return / Refund<span class="mt-count">0</span></div>
-                <div class="message-tag"><span class="mt-dot" style="background:#A78BFA;"></span>Product question<span class="mt-count">0</span></div>
-                <div class="message-tag"><span class="mt-dot" style="background:#94A3B8;"></span>Other<span class="mt-count">0</span></div>
-              </div>
-            </aside>
-            <section class="support-thread-column">
-              <div class="support-conv-header">
-                <div><div class="support-conv-title">Conversations</div><div class="support-conv-count" id="msgConvCount">0 conversations</div></div>
-                <div class="support-conv-sort"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5h10"/><path d="M11 9h7"/><path d="M11 13h4"/><path d="m3 17 3 3 3-3"/><path d="M6 18V4"/></svg>Newest first</div>
-              </div>
-              <div class="support-thread-list" id="messageList">
-                <div class="state-msg">Loading messages&hellip;</div>
-              </div>
-            </section>
-            <section class="support-thread" id="messageDetail">
-              <div class="support-empty-detail">
-                <div class="support-empty-icon">&#128172;</div>
-                <h3>Select a conversation</h3>
-                <p>Choose a member conversation from the inbox to read the thread, reply, add a private note, or view its linked order.</p>
-              </div>
-            </section>
+          <div class="msg-actions">
+            <select id="messageAccountFilter" class="msg-select"><option value="">All eBay stores</option></select>
+            <button class="msg-btn primary" id="messageRefreshBtn" type="button">Sync</button>
+            <button class="msg-btn" id="messageSnippetsBtn" type="button">Saved replies</button>
           </div>
+        </div>
+        <div class="msg-sync" id="messageSyncStatus"></div>
+
+        <div class="msg-shell" id="msgShell">
+          <section class="msg-list-pane">
+            <div class="msg-search"><input id="messageSearch" type="search" placeholder="Search buyer, subject or message&hellip;" /></div>
+            <div class="msg-chips">
+              <button class="msg-chip active" data-message-filter="all">All <span id="msgAllCount"></span></button>
+              <button class="msg-chip" data-message-filter="unread">Unread <span id="msgUnreadCount"></span></button>
+              <button class="msg-chip" data-message-filter="awaiting">Needs reply <span id="msgAwaitingCount"></span></button>
+              <button class="msg-chip" data-message-filter="archived">Archived <span id="msgArchivedCount"></span></button>
+              <button class="msg-chip" data-message-filter="trash">Trash <span id="msgTrashCount"></span></button>
+            </div>
+            <div class="msg-types">
+              <button class="msg-type active" data-message-type="all">All senders</button>
+              <button class="msg-type" data-message-type="FROM_MEMBERS">Buyers</button>
+              <button class="msg-type" data-message-type="FROM_EBAY">eBay</button>
+            </div>
+            <div class="msg-conv-head"><b>Conversations</b><span id="msgConvCount">0 conversations</span></div>
+            <div class="msg-list" id="messageList"><div class="state-msg">Loading messages&hellip;</div></div>
+          </section>
+          <section class="msg-thread-pane" id="messageDetail">
+            <div class="msg-empty-detail">
+              <div class="msg-empty-icon">&#128172;</div>
+              <h3>Select a conversation</h3>
+              <p>Pick a buyer from the list to read the thread, reply, add a private note or open the linked order.</p>
+            </div>
+          </section>
         </div>
       </div>
 
@@ -3799,7 +3917,7 @@
 
   function showPage(page) {
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
-    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings');
+    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
@@ -6816,174 +6934,373 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // ---------- Orders page ----------
+  // Every eBay order for the connected store(s), laid out like eBay Seller Hub:
+  // status tabs, a searchable table, and a detail drawer with payment, ship-to,
+  // tracking and the ELMS fulfillment steps.
   const FULFILLMENT_STATUSES = ['pending', 'ordered_from_amazon', 'shipped', 'delivered'];
+  const ORDER_STATUS = {
+    awaiting_payment: { label: 'Awaiting payment', cls: 'amber' },
+    awaiting_shipment: { label: 'Awaiting shipment', cls: 'blue' },
+    shipped: { label: 'Shipped', cls: 'purple' },
+    delivered: { label: 'Delivered', cls: 'green' },
+    cancelled: { label: 'Cancelled', cls: 'red' },
+  };
+  const ORDER_TABS = [['all', 'All'], ['awaiting_shipment', 'Awaiting shipment'], ['awaiting_payment', 'Awaiting payment'], ['shipped', 'Shipped'], ['delivered', 'Delivered'], ['cancelled', 'Cancelled']];
+  const CARRIERS = ['', 'USPS', 'UPS', 'FedEx', 'DHL', 'Royal Mail', 'Australia Post', 'Canada Post', 'Other'];
+  const ORDERS_PAGE_SIZE = 25;
 
+  let ordersAll = [];
   let ordersAccountFilter = '';
+  let ordersTab = 'all';
+  let ordersSearch = '';
+  let ordersRange = '90';
+  let ordersPage = 1;
+  let ordersAccounts = [];
+
+  function orderStatusOf(o) {
+    if (o.order_status) return o.order_status;
+    const cancel = String(o.ebay_cancel_status || '').toUpperCase();
+    if (cancel === 'CANCELED' || cancel === 'CANCELLED') return 'cancelled';
+    if (['PENDING', 'FAILED'].includes(String(o.ebay_payment_status || '').toUpperCase())) return 'awaiting_payment';
+    if (o.fulfillment_status === 'delivered') return 'delivered';
+    if (o.fulfillment_status === 'shipped' || String(o.ebay_order_fulfillment_status || '').toUpperCase() === 'FULFILLED') return 'shipped';
+    return 'awaiting_shipment';
+  }
+  const orderDateOf = (o) => o.ebay_created_at || o.created_at;
+  const orderMoney = (o, v) => (v == null || v === '' || !Number.isFinite(Number(v))) ? '—' : formatPrice(Number(v), o.currency || 'USD');
+  const orderShortDate = (v) => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; };
+  const orderLongDate = (v) => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'; };
+  const orderStatusPill = (o) => { const st = ORDER_STATUS[orderStatusOf(o)] || ORDER_STATUS.awaiting_shipment; return `<span class="ord-pill ${st.cls}">${st.label}</span>`; };
+  const orderItemTitle = (o) => o.listing_title || o.item_title || o.sku || 'eBay item';
+  function orderShipBy(o) {
+    if (!o.ship_by_date || orderStatusOf(o) !== 'awaiting_shipment') return { text: o.ship_by_date ? orderShortDate(o.ship_by_date) : '—', late: false };
+    const days = Math.ceil((new Date(o.ship_by_date).getTime() - Date.now()) / 86400000);
+    return { text: orderShortDate(o.ship_by_date), late: days < 0, soon: days >= 0 && days <= 1, note: days < 0 ? `${Math.abs(days)}d late` : days === 0 ? 'today' : `in ${days}d` };
+  }
+  function ebayDomainFor(o) { return (typeof LL_EBAY_DOMAINS !== 'undefined' && LL_EBAY_DOMAINS[o.marketplace_id]) || 'ebay.com'; }
+
+  function ordersFiltered(ignoreTab = false) {
+    const q = ordersSearch.toLowerCase();
+    const cutoff = ordersRange === 'all' ? 0 : Date.now() - Number(ordersRange) * 86400000;
+    return ordersAll.filter((o) => {
+      if (!ignoreTab && ordersTab !== 'all' && orderStatusOf(o) !== ordersTab) return false;
+      if (cutoff && new Date(orderDateOf(o)).getTime() < cutoff) return false;
+      if (q) {
+        const hay = `${o.ebay_order_id || ''} ${o.buyer_username || ''} ${o.shipping_address?.fullName || ''} ${orderItemTitle(o)} ${o.sku || ''} ${o.legacy_item_id || ''} ${o.tracking_number || ''} ${o.amazon_order_id || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
 
   async function loadOrders() {
     const container = document.getElementById('ordersContent');
-    container.innerHTML = '<p class="state-msg">Loading orders&hellip;</p>';
-
+    container.innerHTML = '<div class="draft-loading"><div class="draft-skeleton"></div><div class="draft-skeleton"></div><div class="draft-skeleton"></div></div>';
     try {
       const accountsRes = await apiFetch('/api/ebay-accounts');
       const accountsData = await accountsRes.json();
-      const accounts = (accountsRes.ok && accountsData.success) ? accountsData.accounts : [];
-
-      const filterHtml = accounts.length > 1 ? `
-        <div class="publish-field" style="margin-bottom:16px;">
-          <label>Show orders from</label>
-          <select class="editable-input" id="ordersAccountFilterSelect" style="width:200px;">
-            <option value="">All accounts</option>
-            ${accounts.map((acc) => `<option value="${acc.id}" ${acc.id === ordersAccountFilter ? 'selected' : ''}>${escapeHtml(accountDisplayLabel(acc))}</option>`).join('')}
-          </select>
-        </div>
-      ` : '';
-
-      const query = ordersAccountFilter ? `?accountId=${encodeURIComponent(ordersAccountFilter)}` : '';
-      const res = await apiFetch(`/api/orders${query}`);
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load orders.')}</div>`;
-        return;
-      }
-
-      const syncButton = `<button class="btn-outline" id="syncOrdersBtn" style="margin-bottom:16px;">Refresh from eBay</button><div id="syncOrdersStatus" style="margin-bottom:12px;"></div>`;
-
-      if (!data.orders.length) {
-        container.innerHTML = filterHtml + syncButton + '<div class="empty-state">No orders yet. Orders placed by buyers on your eBay listings will show up here - click "Sync orders from eBay" to check now.</div>';
-        wireSyncOrdersButton();
-        wireOrdersAccountFilter();
-        return;
-      }
-
-      container.innerHTML = filterHtml + syncButton + `
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Listing</th>
-              <th>Account</th>
-              <th>Buyer</th>
-              <th>Sale price</th>
-              <th>Qty</th>
-              <th>Amazon order ID</th>
-              <th>Fulfillment status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            ${data.orders.map((o) => orderRowHtml(o)).join('')}
-          </tbody>
-        </table>
-      `;
-
-      wireOrderRows();
-      wireSyncOrdersButton();
-      wireOrdersAccountFilter();
+      ordersAccounts = (accountsRes.ok && accountsData.success) ? accountsData.accounts : [];
+      await fetchOrdersList();
+      renderOrders();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
   }
 
-  function wireOrdersAccountFilter() {
-    const selectEl = document.getElementById('ordersAccountFilterSelect');
-    if (!selectEl) return;
-    selectEl.addEventListener('change', (e) => {
-      ordersAccountFilter = e.target.value;
-      loadOrders();
-    });
+  async function fetchOrdersList() {
+    const query = ordersAccountFilter ? `?accountId=${encodeURIComponent(ordersAccountFilter)}` : '';
+    const res = await apiFetch(`/api/orders${query}`);
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Could not load orders.');
+    ordersAll = data.orders || [];
   }
 
-  function wireSyncOrdersButton() {
-    const btn = document.getElementById('syncOrdersBtn');
-    if (!btn) return;
+  function renderOrders() {
+    const container = document.getElementById('ordersContent');
+    if (!container) return;
+    const inRange = ordersFiltered(true);
+    const counts = { all: inRange.length };
+    ORDER_TABS.slice(1).forEach(([k]) => { counts[k] = inRange.filter((o) => orderStatusOf(o) === k).length; });
+    const live = inRange.filter((o) => orderStatusOf(o) !== 'cancelled');
+    const revenue = live.reduce((t, o) => t + (Number(o.sale_price) || 0), 0);
+    const profitRows = live.filter((o) => o.profit != null);
+    const profit = profitRows.reduce((t, o) => t + Number(o.profit), 0);
+    const cur = ordersAll.find((o) => o.currency)?.currency || 'USD';
+    const lateCount = inRange.filter((o) => orderShipBy(o).late).length;
 
-    btn.addEventListener('click', async () => {
-      const statusEl = document.getElementById('syncOrdersStatus');
-      btn.disabled = true;
-      statusEl.className = '';
-      statusEl.textContent = 'Syncing\u2026';
+    const filtered = ordersFiltered();
+    const pages = Math.max(1, Math.ceil(filtered.length / ORDERS_PAGE_SIZE));
+    if (ordersPage > pages) ordersPage = pages;
+    const start = (ordersPage - 1) * ORDERS_PAGE_SIZE;
+    const rows = filtered.slice(start, start + ORDERS_PAGE_SIZE);
 
-      try {
-        const res = await apiFetch('/api/orders/sync', { method: 'POST' });
-        const data = await res.json();
+    const card = (cls, label, value, hint) => `<div class="ord-card ${cls}"><div class="ord-card-label">${label}</div><div class="ord-card-value">${value}</div><div class="ord-card-hint">${hint}</div></div>`;
+    container.innerHTML = `
+      <div class="ord-head">
+        <div><h1>Orders</h1><div class="sub">Every eBay order, its payment, shipping address, tracking and fulfillment &mdash; like Seller Hub.</div></div>
+        <div class="ord-head-actions">
+          ${ordersAccounts.length > 1 ? `<select class="ord-select" id="ordersAccountFilterSelect"><option value="">All eBay stores</option>${ordersAccounts.map((a) => `<option value="${escapeAttr(a.id)}"${a.id === ordersAccountFilter ? ' selected' : ''}>${escapeHtml(accountDisplayLabel(a))}</option>`).join('')}</select>` : ''}
+          <button class="ord-btn primary" id="syncOrdersBtn" type="button">Sync from eBay</button>
+          <button class="ord-btn" id="syncOrdersFullBtn" type="button" title="Re-read every order from the last 90 days">Full sync (90 days)</button>
+        </div>
+      </div>
+      <div id="syncOrdersStatus" class="ord-sync-status"></div>
 
-        if (!res.ok || !data.success) {
-          statusEl.className = 'error';
-          statusEl.textContent = data.error || 'Could not sync orders.';
-          btn.disabled = false;
-          return;
-        }
+      <div class="ord-cards">
+        ${card('blue', 'Awaiting shipment', counts.awaiting_shipment, lateCount ? `<b class="late">${lateCount} past ship-by date</b>` : 'Ready to fulfil')}
+        ${card('green', 'Revenue', orders_money(revenue, cur), `${live.length} order${live.length === 1 ? '' : 's'}`)}
+        ${card('yellow', 'Profit', profitRows.length ? orders_money(profit, cur) : '—', profitRows.length ? `From ${profitRows.length} order${profitRows.length === 1 ? '' : 's'}` : 'Needs Amazon price')}
+        ${card('red', 'Cancelled', counts.cancelled, 'In the selected period')}
+      </div>
 
-        statusEl.className = 'success';
-        statusEl.textContent = `Synced ${data.syncedCount} order line item(s).`;
-        loadOrders();
-      } catch (err) {
-        statusEl.className = 'error';
-        statusEl.textContent = 'Could not connect to the server: ' + err.message;
-        btn.disabled = false;
-      }
-    });
+      <div class="ord-tabs" role="tablist">${ORDER_TABS.map(([k, t]) => `<button type="button" class="ord-tab${ordersTab === k ? ' active' : ''}" data-order-tab="${k}">${t} <span>${counts[k] || 0}</span></button>`).join('')}</div>
+      <div class="ord-toolbar">
+        <div class="ord-search"><input type="search" id="ordersSearchInput" placeholder="Search order ID, buyer, item, tracking…" value="${escapeAttr(ordersSearch)}" /></div>
+        <select class="ord-select" id="ordersRangeSelect"><option value="7"${ordersRange === '7' ? ' selected' : ''}>Last 7 days</option><option value="30"${ordersRange === '30' ? ' selected' : ''}>Last 30 days</option><option value="90"${ordersRange === '90' ? ' selected' : ''}>Last 90 days</option><option value="all"${ordersRange === 'all' ? ' selected' : ''}>All time</option></select>
+      </div>
+
+      ${rows.length ? `
+      <div class="ord-table-wrap">
+        <table class="ord-table">
+          <thead><tr><th>Order</th><th>Item</th><th>Buyer</th><th>Total</th><th>Ship by</th><th>Status</th><th></th></tr></thead>
+          <tbody>${rows.map(orderRowHtml).join('')}</tbody>
+        </table>
+      </div>
+      <div class="ord-footer"><span>Showing ${start + 1}–${Math.min(start + ORDERS_PAGE_SIZE, filtered.length)} of ${filtered.length} orders</span>
+        <div class="ord-pager"><button class="ord-btn" data-order-page="${ordersPage - 1}"${ordersPage === 1 ? ' disabled' : ''}>&lsaquo; Prev</button><span>Page ${ordersPage} of ${pages}</span><button class="ord-btn" data-order-page="${ordersPage + 1}"${ordersPage === pages ? ' disabled' : ''}>Next &rsaquo;</button></div></div>`
+      : `<div class="empty-state">${ordersAll.length ? 'No orders match these filters.' : 'No orders yet. Click "Sync from eBay" to load your orders (the last 90 days are imported the first time).'}</div>`}
+    `;
+    wireOrdersPage();
   }
+
+  function orders_money(n, cur) { return formatPrice(n, cur); }
 
   function orderRowHtml(o) {
-    const statusOptions = FULFILLMENT_STATUSES
-      .map((s) => `<option value="${s}" ${s === o.fulfillment_status ? 'selected' : ''}>${s.replace(/_/g, ' ')}</option>`)
-      .join('');
-
+    const ship = orderShipBy(o);
+    const address = o.shipping_address || {};
+    const total = o.line_total ?? o.sale_price;
     return `
-      <tr data-order-id="${o.id}">
-        <td>${o.main_image ? `<img class="row-thumb" src="${o.main_image}" alt="" />` : ''}</td>
-        <td class="row-title">${escapeHtml(o.listing_title || '—')}</td>
-        <td><span class="supplier-badge">${escapeHtml(o.ebay_account_username || '—')}</span></td>
-        <td>${escapeHtml(o.buyer_username || '—')}</td>
-        <td>${o.sale_price != null ? escapeHtml(String(o.sale_price)) : '—'}</td>
-        <td>${o.quantity ?? 1}</td>
-        <td><input class="editable-input" data-field="amazonOrderId" value="${escapeAttr(o.amazon_order_id || '')}" style="width:130px;" placeholder="Not ordered yet" /></td>
-        <td><select class="editable-input" data-field="fulfillmentStatus">${statusOptions}</select></td>
-        <td>
-          <div class="row-actions">
-            <button class="btn-small save" data-action="save">Save</button>
-          </div>
-        </td>
-      </tr>
-    `;
+      <tr class="ord-row" data-order-id="${escapeAttr(o.id)}">
+        <td data-label="Order"><div class="ord-id">${escapeHtml(o.ebay_order_id || '—')}</div><div class="ord-sub">${escapeHtml(orderShortDate(orderDateOf(o)))}</div></td>
+        <td data-label="Item"><div class="ord-item">
+          ${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
+          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${o.ebay_account_username ? ' · ' + escapeHtml(o.ebay_account_username) : ''}</div></div>
+        </div></td>
+        <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
+        <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}</td>
+        <td data-label="Ship by"><div class="${ship.late ? 'ord-late' : ship.soon ? 'ord-soon' : 'ord-strong'}">${escapeHtml(ship.text)}</div>${ship.note ? `<div class="ord-sub ${ship.late ? 'bad' : ''}">${escapeHtml(ship.note)}</div>` : ''}</td>
+        <td data-label="Status">${orderStatusPill(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</td>
+        <td class="ord-actions"><button class="ord-btn small" type="button" data-order-open="${escapeAttr(o.id)}">${orderStatusOf(o) === 'awaiting_shipment' ? 'Fulfil' : 'View'}</button></td>
+      </tr>`;
   }
 
-  function wireOrderRows() {
-    document.querySelectorAll('#ordersContent tr[data-order-id]').forEach((row) => {
-      const id = row.getAttribute('data-order-id');
-      const saveBtn = row.querySelector('[data-action="save"]');
+  function wireOrdersPage() {
+    const root = document.getElementById('ordersContent');
+    root.querySelectorAll('[data-order-tab]').forEach((b) => b.addEventListener('click', () => { ordersTab = b.getAttribute('data-order-tab'); ordersPage = 1; renderOrders(); }));
+    root.querySelectorAll('[data-order-page]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; ordersPage = Number(b.getAttribute('data-order-page')); renderOrders(); root.scrollIntoView({ behavior: 'smooth' }); }));
+    const search = root.querySelector('#ordersSearchInput');
+    search?.addEventListener('input', () => { ordersSearch = search.value.trim(); ordersPage = 1; renderOrders(); const el = document.getElementById('ordersSearchInput'); el?.focus(); el?.setSelectionRange(el.value.length, el.value.length); });
+    root.querySelector('#ordersRangeSelect')?.addEventListener('change', (e) => { ordersRange = e.target.value; ordersPage = 1; renderOrders(); });
+    root.querySelector('#ordersAccountFilterSelect')?.addEventListener('change', async (e) => { ordersAccountFilter = e.target.value; ordersPage = 1; try { await fetchOrdersList(); } catch (err) { showToast('Orders', err.message, 'error'); } renderOrders(); });
+    root.querySelector('#syncOrdersBtn')?.addEventListener('click', () => syncOrdersFromEbay(false));
+    root.querySelector('#syncOrdersFullBtn')?.addEventListener('click', () => syncOrdersFromEbay(true));
+    root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', () => openOrderDetail(row.getAttribute('data-order-id'))));
+  }
 
-      saveBtn.addEventListener('click', async () => {
-        const fulfillmentStatus = row.querySelector('[data-field="fulfillmentStatus"]').value;
-        const amazonOrderId = row.querySelector('[data-field="amazonOrderId"]').value;
+  async function syncOrdersFromEbay(full) {
+    const btn = document.getElementById(full ? 'syncOrdersFullBtn' : 'syncOrdersBtn');
+    const statusEl = document.getElementById('syncOrdersStatus');
+    document.querySelectorAll('#syncOrdersBtn, #syncOrdersFullBtn').forEach((b) => { b.disabled = true; });
+    const label = btn?.textContent;
+    if (btn) btn.textContent = 'Syncing…';
+    if (statusEl) { statusEl.className = 'ord-sync-status'; statusEl.textContent = full ? 'Reading every order from the last 90 days…' : 'Checking eBay for new and changed orders…'; }
+    try {
+      const qs = new URLSearchParams();
+      if (ordersAccountFilter) qs.set('accountId', ordersAccountFilter);
+      if (full) qs.set('full', '1');
+      const res = await apiFetch(`/api/orders/sync${qs.toString() ? '?' + qs.toString() : ''}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not sync orders.');
+      ordersAll = data.orders || ordersAll;
+      const errs = data.errors && data.errors.length ? ` Problem: ${data.errors.join('; ')}` : '';
+      renderOrders();
+      const s2 = document.getElementById('syncOrdersStatus');
+      if (s2) { s2.className = 'ord-sync-status ' + (errs ? 'error' : 'ok'); s2.textContent = `eBay returned ${data.ordersFromEbay ?? 0} order(s); ${data.syncedCount} line item(s) saved.${errs}`; }
+    } catch (err) {
+      renderOrders();
+      const s2 = document.getElementById('syncOrdersStatus');
+      if (s2) { s2.className = 'ord-sync-status error'; s2.textContent = err.message; }
+    } finally {
+      document.querySelectorAll('#syncOrdersBtn, #syncOrdersFullBtn').forEach((b) => { b.disabled = false; });
+      if (btn && label && btn.isConnected) btn.textContent = label;
+    }
+  }
 
-        saveBtn.disabled = true;
-        saveBtn.textContent = 'Saving\u2026';
+  // ----- Order detail drawer -----
+  function closeOrderDrawer() { document.getElementById('ordDrawer')?.remove(); document.body.style.overflow = ''; }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOrderDrawer(); });
 
-        try {
-          const res = await apiFetch(`/api/orders/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fulfillmentStatus, amazonOrderId }),
-          });
-          const data = await res.json();
+  function openOrderDetail(id) {
+    const o = ordersAll.find((x) => String(x.id) === String(id));
+    if (!o) return;
+    closeOrderDrawer();
+    const overlay = document.createElement('div');
+    overlay.className = 'ord-drawer-overlay';
+    overlay.id = 'ordDrawer';
+    overlay.innerHTML = `<aside class="ord-drawer" role="dialog" aria-modal="true" aria-label="Order details"></aside>`;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+    overlay.addEventListener('click', (e) => { if (e.target === overlay || e.target.closest('[data-ord-close]')) closeOrderDrawer(); });
+    renderOrderDrawer(o);
+  }
 
-          if (!res.ok || !data.success) {
-            alert(data.error || 'Could not save changes.');
-          } else {
-            saveBtn.textContent = 'Saved';
-            setTimeout(() => { saveBtn.textContent = 'Save'; }, 1200);
-            loadOrders();
-          }
-        } catch (err) {
-          alert('Could not connect to the server: ' + err.message);
-        } finally {
-          saveBtn.disabled = false;
-        }
-      });
+  function renderOrderDrawer(o) {
+    const drawer = document.querySelector('#ordDrawer .ord-drawer');
+    if (!drawer) return;
+    const st = orderStatusOf(o);
+    const a = o.shipping_address || {};
+    const steps = [['Ordered', orderDateOf(o), true], ['Paid', o.paid_at, st !== 'awaiting_payment' && st !== 'cancelled'], ['Shipped', null, st === 'shipped' || st === 'delivered'], ['Delivered', null, st === 'delivered']];
+    const addressLines = [a.fullName, a.addressLine1, a.addressLine2, [a.city, a.stateOrProvince, a.postalCode].filter(Boolean).join(', '), a.country].filter(Boolean);
+    const domain = ebayDomainFor(o);
+    const shipBy = orderShipBy(o);
+    const kv = (k, v) => `<div class="ord-kv"><span>${k}</span><b>${v}</b></div>`;
+    drawer.innerHTML = `
+      <div class="ord-drawer-head">
+        <div><div class="ord-drawer-kicker"><span style="color:#E53238">E</span><span style="color:#0064D2">L</span><span style="color:#F5AF02">M</span><span style="color:#86B817">S</span> &middot; Order</div>
+        <div class="ord-drawer-title">${escapeHtml(o.ebay_order_id || 'Order')}</div>
+        <div class="ord-sub">${escapeHtml(orderLongDate(orderDateOf(o)))}${o.sales_record ? ' · Sales record #' + escapeHtml(o.sales_record) : ''}</div></div>
+        <div class="ord-drawer-head-right">${orderStatusPill(o)}<button class="ord-x" type="button" data-ord-close aria-label="Close">&times;</button></div>
+      </div>
+      <div class="ord-drawer-body">
+        ${st === 'cancelled' ? '<div class="ord-banner red">This order was cancelled on eBay.</div>' : ''}
+        ${st === 'awaiting_payment' ? '<div class="ord-banner amber">The buyer has not paid yet. Do not ship until eBay shows the order as paid.</div>' : ''}
+        ${shipBy.late ? `<div class="ord-banner red">Ship-by date passed (${escapeHtml(shipBy.text)}). Ship as soon as possible.</div>` : ''}
+        ${o.buyer_note ? `<div class="ord-banner blue"><b>Buyer note:</b> ${escapeHtml(o.buyer_note)}</div>` : ''}
+
+        <ol class="ord-steps">${steps.map(([t, d, done]) => `<li class="${done ? 'done' : ''}"><span class="dot"></span><b>${t}</b><small>${done && d ? escapeHtml(orderShortDate(d)) : done ? '✓' : ''}</small></li>`).join('')}</ol>
+
+        <section class="ord-sec"><h4>Item</h4>
+          <div class="ord-item big">${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
+          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div>
+            <div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}</div>
+            <div class="ord-sub">${o.sku ? 'SKU ' + escapeHtml(o.sku) : ''}${o.legacy_item_id ? ` · <a class="ad-link" href="https://www.${domain}/itm/${encodeURIComponent(o.legacy_item_id)}" target="_blank" rel="noopener noreferrer">Item ${escapeHtml(o.legacy_item_id)}</a>` : ''}</div></div></div>
+        </section>
+
+        <section class="ord-sec"><h4>Payment</h4>
+          ${kv('Item price', escapeHtml(orderMoney(o, o.sale_price)))}
+          ${kv('Shipping paid by buyer', escapeHtml(orderMoney(o, o.delivery_cost)))}
+          ${o.tax != null ? kv('Tax', escapeHtml(orderMoney(o, o.tax))) : ''}
+          ${kv('Total', escapeHtml(orderMoney(o, o.line_total ?? o.sale_price)))}
+          ${o.buy_price != null ? kv('Amazon cost', escapeHtml(orderMoney(o, Number(o.buy_price) * (o.quantity || 1)))) : ''}
+          ${o.profit != null ? kv('Profit', `<span class="${Number(o.profit) >= 0 ? 'good' : 'bad'}">${escapeHtml(orderMoney(o, o.profit))}</span>`) : ''}
+          ${kv('Payment', escapeHtml(String(o.ebay_payment_status || '—').replace(/_/g, ' ').toLowerCase()))}
+        </section>
+
+        <section class="ord-sec"><h4>Ship to <button class="ord-link" type="button" id="ordCopyAddress">Copy address</button></h4>
+          <div class="ord-address">${addressLines.length ? addressLines.map(escapeHtml).join('<br>') : '—'}</div>
+          ${o.buyer_email ? `<div class="ord-sub">${escapeHtml(o.buyer_email)}</div>` : ''}${o.buyer_phone ? `<div class="ord-sub">${escapeHtml(o.buyer_phone)}</div>` : ''}
+          ${o.shipping_service ? kv('Shipping service', escapeHtml(o.shipping_service.replace(/_/g, ' '))) : ''}
+          ${o.est_delivery_max ? kv('Estimated delivery', `${escapeHtml(orderShortDate(o.est_delivery_min))} – ${escapeHtml(orderShortDate(o.est_delivery_max))}`) : ''}
+          ${o.ship_by_date ? kv('Ship by', escapeHtml(orderShortDate(o.ship_by_date))) : ''}
+        </section>
+
+        <section class="ord-sec"><h4>Fulfillment</h4>
+          <label class="ord-field"><span>Amazon order ID <em>after you buy the item on Amazon</em></span>
+            <div class="ord-row-inline"><input id="ordAmazonId" type="text" placeholder="e.g. 111-2222222-3333333" value="${escapeAttr(o.amazon_order_id || '')}" /><button class="ord-btn" type="button" id="ordSaveAmazon">Save</button></div></label>
+          <label class="ord-field"><span>Tracking <em>uploaded to eBay so the buyer sees it</em></span>
+            <div class="ord-row-inline">
+              <select id="ordCarrier">${CARRIERS.map((c) => `<option value="${escapeAttr(c)}"${c === (o.shipping_carrier || '') ? ' selected' : ''}>${c || 'Carrier (auto-detect)'}</option>`).join('')}</select>
+              <input id="ordTracking" type="text" placeholder="Tracking number" value="${escapeAttr(o.tracking_number || '')}" />
+            </div></label>
+          <div class="ord-row-inline">
+            <button class="ord-btn primary" type="button" id="ordMarkShipped"${st === 'cancelled' || st === 'awaiting_payment' ? ' disabled' : ''}>${st === 'shipped' || st === 'delivered' ? 'Update tracking' : 'Mark as shipped on eBay'}</button>
+            <button class="ord-btn" type="button" id="ordMarkDelivered"${st === 'delivered' || st === 'cancelled' ? ' disabled' : ''}>Mark delivered</button>
+          </div>
+          <div class="ord-sub" id="ordActionStatus"></div>
+        </section>
+
+        <section class="ord-sec"><h4>Private note <em>only in ELMS</em></h4>
+          <textarea id="ordNote" rows="3" placeholder="Add a note for yourself…">${escapeHtml(o.seller_note || '')}</textarea>
+          <button class="ord-btn small" type="button" id="ordSaveNote">Save note</button>
+        </section>
+      </div>
+      <div class="ord-drawer-foot">
+        <a class="ord-btn" href="https://www.${domain}/sh/ord/details?orderid=${encodeURIComponent(o.ebay_order_id || '')}" target="_blank" rel="noopener noreferrer">View on eBay</a>
+        <button class="ord-btn" type="button" id="ordRefresh">Refresh from eBay</button>
+        <button class="ord-btn" type="button" id="ordMessage">Message buyer</button>
+        <button class="ord-btn" type="button" id="ordPrint">Packing slip</button>
+      </div>`;
+    wireOrderDrawer(o, drawer, addressLines);
+  }
+
+  function wireOrderDrawer(o, drawer, addressLines) {
+    const $ = (id) => drawer.querySelector('#' + id);
+    const status = (text, cls) => { const el = $('ordActionStatus'); if (el) { el.textContent = text; el.className = 'ord-sub ' + (cls || ''); } };
+    const apply = (updated) => {
+      if (!updated) return;
+      const i = ordersAll.findIndex((x) => x.id === updated.id);
+      if (i >= 0) ordersAll[i] = { ...ordersAll[i], ...updated };
+      renderOrders();
+      renderOrderDrawer(ordersAll[i] || updated);
+    };
+    const run = async (btn, label, work) => {
+      btn.disabled = true; const old = btn.textContent; btn.textContent = label;
+      try { await work(); } catch (err) { status(err.message, 'bad'); showToast('Order', err.message, 'error'); }
+      finally { if (btn.isConnected) { btn.disabled = false; btn.textContent = old; } }
+    };
+    const json = async (path, options) => {
+      const res = await apiFetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Request failed.');
+      return data;
+    };
+
+    $('ordCopyAddress')?.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(addressLines.join('\n')); showToast('Copied', 'Shipping address copied.', 'success'); } catch (_) { showToast('Copy failed', 'Select the address and copy it manually.', 'error'); }
+    });
+    $('ordSaveAmazon').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
+      const amazonOrderId = $('ordAmazonId').value.trim();
+      if (!amazonOrderId) throw new Error('Enter the Amazon order ID.');
+      const keep = o.fulfillment_status && o.fulfillment_status !== 'pending' ? o.fulfillment_status : 'ordered_from_amazon';
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/amazon-order`, { method: 'PUT', body: JSON.stringify({ amazonOrderId, fulfillmentStatus: keep }) });
+      showToast('Saved', 'Amazon order ID saved.', 'success');
+      apply(data.order);
+    }));
+    $('ordMarkShipped').addEventListener('click', (e) => run(e.currentTarget, 'Sending to eBay…', async () => {
+      const trackingNumber = $('ordTracking').value.trim();
+      if (!trackingNumber) throw new Error('Enter the tracking number first.');
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/tracking`, { method: 'PUT', body: JSON.stringify({ trackingNumber, shippingCarrier: $('ordCarrier').value || undefined }) });
+      if (data.ebayNotified) showToast('Shipped', 'Tracking was sent to eBay.', 'success');
+      else showToast('Saved in ELMS only', data.ebayError ? `eBay could not be updated: ${data.ebayError}` : 'This order is not linked to an eBay account, so eBay was not updated.', 'error');
+      apply(data.order);
+    }));
+    $('ordMarkDelivered').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}`, { method: 'PUT', body: JSON.stringify({ fulfillmentStatus: 'delivered' }) });
+      apply(data.order);
+    }));
+    $('ordSaveNote').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/note`, { method: 'PUT', body: JSON.stringify({ note: $('ordNote').value }) });
+      showToast('Saved', 'Note saved.', 'success');
+      const i = ordersAll.findIndex((x) => x.id === o.id);
+      if (i >= 0) ordersAll[i] = { ...ordersAll[i], ...data.order };
+    }));
+    $('ordRefresh').addEventListener('click', (e) => run(e.currentTarget, 'Refreshing…', async () => {
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/refresh`, { method: 'POST' });
+      showToast('Refreshed', 'Order updated from eBay.', 'success');
+      apply(data.order);
+    }));
+    $('ordMessage').addEventListener('click', () => {
+      closeOrderDrawer();
+      showPage('messages');
+      const term = o.buyer_username || '';
+      const input = document.getElementById('messageSearch');
+      if (input && term) { input.value = term; messageSearchTerm = term; setTimeout(() => renderMessageList(), 400); }
+    });
+    $('ordPrint').addEventListener('click', () => {
+      const w = window.open('', '_blank', 'width=640,height=800');
+      if (!w) { showToast('Popup blocked', 'Allow popups to print the packing slip.', 'error'); return; }
+      w.document.write(`<title>Packing slip ${escapeHtml(o.ebay_order_id || '')}</title><body style="font:14px Arial;padding:28px"><h2>Packing slip</h2><p>Order <b>${escapeHtml(o.ebay_order_id || '')}</b> &middot; ${escapeHtml(orderShortDate(orderDateOf(o)))}</p><h3>Ship to</h3><p>${addressLines.map(escapeHtml).join('<br>')}</p><h3>Items</h3><p>${escapeHtml(orderItemTitle(o))}<br>Qty: ${o.quantity ?? 1}${o.sku ? '<br>SKU: ' + escapeHtml(o.sku) : ''}${o.variant_details ? '<br>' + escapeHtml(o.variant_details) : ''}</p><script>window.onload=()=>window.print()<\/script></body>`);
+      w.document.close();
     });
   }
 
@@ -9004,22 +9321,24 @@ async function autoSuggestEmptyDraftCategories() {
       return;
     }
     renderMessagesConvHeader(filtered.length);
-    list.innerHTML = filtered.map((r) => `
-      <div class="support-thread-item ${r.is_read ? '' : 'unread'} ${selectedMessageId === r.id ? 'active' : ''}" data-message-id="${escapeAttr(r.id)}">
-        <div class="support-thread-top">
-          <div class="support-thread-user">${escapeHtml(r.other_party_username || r.from_username || 'eBay')}</div>
-          <div class="support-thread-time">${escapeHtml(messageTime(r.last_message_date))}</div>
+    list.innerHTML = filtered.map((r) => {
+      const name = r.other_party_username || r.from_username || 'eBay';
+      return `
+      <div class="msg-item ${r.is_read ? '' : 'unread'} ${selectedMessageId === r.id ? 'active' : ''}" data-message-id="${escapeAttr(r.id)}">
+        <div class="msg-avatar ${r.conversation_type === 'FROM_EBAY' ? 'ebay' : ''}">${escapeHtml(String(name).trim().charAt(0).toUpperCase() || '?')}</div>
+        <div class="msg-item-main">
+          <div class="msg-item-top"><span class="msg-item-name">${escapeHtml(name)}</span><span class="msg-item-time">${escapeHtml(messageTime(r.last_message_date))}</span></div>
+          <div class="msg-item-subject">${escapeHtml(r.subject || (r.conversation_type === 'FROM_MEMBERS' ? 'Member message' : 'eBay notification'))}</div>
+          <div class="msg-item-snippet">${escapeHtml(r.last_message_snippet || 'No preview available.')}</div>
+          <div class="msg-item-tags">
+            ${r.is_read ? '' : '<span class="msg-tag new">New</span>'}
+            ${r.conversation_type === 'FROM_EBAY' ? '<span class="msg-tag">eBay</span>' : ''}
+            ${r.reference_id ? '<span class="msg-tag order">Linked</span>' : ''}
+            <span class="msg-tag store">${escapeHtml(r.ebay_account_display_name || r.ebay_account_username || 'eBay store')}</span>
+          </div>
         </div>
-        <div class="support-thread-subject">${escapeHtml(r.subject || (r.conversation_type === 'FROM_MEMBERS' ? 'Member message' : 'eBay notification'))}</div>
-        <div class="support-thread-snippet">${escapeHtml(r.last_message_snippet || 'No preview available.')}</div>
-        <div class="support-thread-meta">
-          <span class="support-tag ${r.is_read ? '' : 'new'}">${r.is_read ? 'Read' : 'New'}</span>
-          <span class="support-tag">${escapeHtml(messageTypeLabel(r.conversation_type))}</span>
-          ${r.reference_id ? '<span class="support-tag order">Linked</span>' : ''}
-          <span class="support-tag store">${escapeHtml(r.ebay_account_display_name || r.ebay_account_username || 'eBay store')}</span>
-        </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
     list.querySelectorAll('[data-message-id]').forEach((el) => {
       el.addEventListener('click', () => openMessageThread(el.dataset.messageId));
     });
@@ -9109,6 +9428,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   async function openMessageThread(id) {
     selectedMessageId = id;
+    document.getElementById('msgShell')?.classList.add('thread-open');
     renderMessageList();
     const detail = document.getElementById('messageDetail');
     detail.innerHTML = '<div class="state-msg" style="margin:auto;">Loading conversation&hellip;</div>';
@@ -9132,60 +9452,59 @@ async function autoSuggestEmptyDraftCategories() {
     const messages = Array.isArray(d.messages) ? d.messages : [];
     const notes = c.internal_notes || [];
     const snippets = messageSnippets || [];
+    const name = c.other_party_username || c.from_username || 'eBay';
+    const dayKey = (v) => (v ? new Date(v).toDateString() : '');
+    let lastDay = '';
+    const bubbles = messages.map((m) => {
+      const day = dayKey(m.sentDate);
+      const sep = day && day !== lastDay ? `<div class="msg-day">${escapeHtml(new Date(m.sentDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }))}</div>` : '';
+      lastDay = day || lastDay;
+      return `${sep}<div class="msg-bubble-row ${m.isSelf ? 'self' : ''}"><div class="msg-bubble">
+        <div class="msg-bubble-text">${escapeHtml(m.content || '')}</div>
+        <div class="msg-bubble-meta">${escapeHtml(m.isSelf ? 'You' : (m.fromUsername || name))} &middot; ${escapeHtml(m.sentDate ? new Date(m.sentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '')}</div>
+      </div></div>`;
+    }).join('');
+    const notesHtml = notes.length ? `<div class="msg-notes">${notes.slice(-3).map((n) => `<div class="msg-note"><b>${escapeHtml(n.created_at ? new Date(n.created_at).toLocaleString() : '')}</b><br>${escapeHtml(n.text)}</div>`).join('')}</div>` : '';
+
     document.getElementById('messageDetail').innerHTML = `
-      <div class="support-thread-header">
-        <div class="support-thread-header-row">
-          <div>
-            <h3>${escapeHtml(c.other_party_username || c.from_username || 'eBay')}</h3>
-            <div class="muted">${escapeHtml(c.subject || 'Customer conversation')} &middot; ${escapeHtml(c.ebay_account_display_name || c.ebay_account_username || 'eBay store')}</div>
-            ${c.trashed_at ? `<div class="meta-line" style="margin-top:5px;color:#a15c00;">Trash retention: ${Math.max(0, 30 - Math.floor((Date.now() - new Date(c.trashed_at).getTime()) / 86400000))} day(s) remaining</div>` : ''}
-          </div>
-          <div class="support-thread-actions">
-            <button class="secondary" id="messageArchiveBtn">${c.conversation_status === 'ARCHIVE' ? 'Archived' : 'Archive'}</button>
-            <button class="secondary" id="messageMarkUnreadBtn">Mark unread</button>
-            <button class="secondary" id="messageTrashBtn">${c.conversation_status === 'DELETE' ? 'Restore' : 'Trash'}</button>
-          </div>
+      <div class="msg-thread-head">
+        <button class="msg-back" id="messageBackBtn" type="button" aria-label="Back to conversations">&lsaquo;</button>
+        <div class="msg-avatar big ${c.conversation_type === 'FROM_EBAY' ? 'ebay' : ''}">${escapeHtml(String(name).trim().charAt(0).toUpperCase() || '?')}</div>
+        <div class="msg-thread-title"><b>${escapeHtml(name)}</b><span>${escapeHtml(c.subject || 'Customer conversation')} &middot; ${escapeHtml(c.ebay_account_display_name || c.ebay_account_username || 'eBay store')}</span>
+          ${c.trashed_at ? `<em>Trash retention: ${Math.max(0, 30 - Math.floor((Date.now() - new Date(c.trashed_at).getTime()) / 86400000))} day(s) remaining</em>` : ''}</div>
+        <div class="msg-thread-actions">
+          <button class="msg-btn small" id="messageArchiveBtn" type="button">${c.conversation_status === 'ARCHIVE' ? 'Archived' : 'Archive'}</button>
+          <button class="msg-btn small" id="messageMarkUnreadBtn" type="button">Mark unread</button>
+          <button class="msg-btn small danger" id="messageTrashBtn" type="button">${c.conversation_status === 'DELETE' ? 'Restore' : 'Trash'}</button>
         </div>
       </div>
-      <div class="support-messages" id="supportMessagesScroll">
-        ${messages.length ? messages.map((m) => `
-          <div class="support-message ${m.isSelf ? 'self' : ''}">
-            <div class="who">${escapeHtml(m.isSelf ? 'You' : (m.fromUsername || c.other_party_username || 'eBay'))}</div>
-            <div class="body">${escapeHtml(m.content || '')}</div>
-            <div class="when">${escapeHtml(m.sentDate ? new Date(m.sentDate).toLocaleString() : '')}</div>
-          </div>
-        `).join('') : '<div class="state-msg">No messages were returned by eBay for this conversation.</div>'}
-      </div>
-      <div class="support-context">
-        ${context ? `
-          <div class="support-context-label">${escapeHtml(context.type === 'order' ? 'Related order' : 'Related listing')}</div>
-          <div class="support-context-card" style="margin-top:8px;">
-            ${context.main_image ? `<img src="${escapeAttr(context.main_image)}" alt="" onerror="this.style.display='none'">` : '<div style="width:54px;height:54px;border-radius:8px;background:#f2f4f7;"></div>'}
-            <div>
-              <div class="support-context-value">${escapeHtml(context.listing_title || 'eBay item')}</div>
-              <div class="muted" style="font-size:10px;margin-top:3px;">${context.ebay_order_id ? `Order ${escapeHtml(context.ebay_order_id)} &middot; ${escapeHtml(String(context.fulfillment_status || 'pending'))}` : `Item ${escapeHtml(context.ebay_item_id || '')}`}</div>
-            </div>
-          </div>
-        ` : '<div class="support-context-label">Related order / listing</div><div class="muted" style="font-size:11px;margin-top:6px;">No local ELMS order or listing could be matched to this conversation.</div>'}
-      </div>
-      <div class="support-note">
-        <div class="support-note-title">Internal note — only visible in ELMS</div>
-        ${notes.length ? `<div style="margin-bottom:8px;display:grid;gap:5px;">${notes.slice(-3).map((n) => `<div style="font-size:10px;color:#7b5b18;background:#fffdf7;border:1px solid #f2dfb6;border-radius:7px;padding:7px;"><strong>${escapeHtml(n.created_at ? new Date(n.created_at).toLocaleString() : '')}</strong><br>${escapeHtml(n.text)}</div>`).join('')}</div>` : ''}
-        <div style="display:flex;gap:7px;"><textarea id="messageNoteInput" placeholder="Add a private note for your team..."></textarea><button class="secondary" id="messageNoteBtn">Add note</button></div>
-      </div>
-      <div class="support-compose">
-        <div class="support-compose-tools">
-          <select id="messageSnippetSelect" class="support-select"><option value="">Saved replies...</option>${snippets.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}</select>
-          <span style="font-size:10px;color:#9aa3af;">Reply goes to eBay</span>
+      ${context ? `<div class="msg-context">
+        ${context.main_image ? `<img src="${escapeAttr(context.main_image)}" alt="" onerror="this.style.display='none'">` : '<div class="msg-context-ph"></div>'}
+        <div class="msg-context-txt"><span>${escapeHtml(context.type === 'order' ? 'Related order' : 'Related listing')}</span><b>${escapeHtml(context.listing_title || 'eBay item')}</b>
+          <small>${context.ebay_order_id ? `Order ${escapeHtml(context.ebay_order_id)} &middot; ${escapeHtml(String(context.fulfillment_status || 'pending').replace(/_/g, ' '))}` : `Item ${escapeHtml(context.ebay_item_id || '')}`}</small></div>
+        ${context.ebay_order_id ? '<button class="msg-btn small" id="messageOpenOrderBtn" type="button">Open orders</button>' : ''}
+      </div>` : ''}
+      <div class="msg-thread-body" id="supportMessagesScroll">${bubbles || '<div class="state-msg">No messages were returned by eBay for this conversation.</div>'}</div>
+      <div class="msg-compose">
+        ${notesHtml}
+        <div class="msg-compose-tools">
+          <select id="messageSnippetSelect" class="msg-select small"><option value="">Saved replies&hellip;</option>${snippets.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}</select>
+          <details class="msg-note-toggle"><summary>Private note</summary>
+            <div class="msg-note-form"><textarea id="messageNoteInput" placeholder="Only visible in ELMS&hellip;"></textarea><button class="msg-btn small" id="messageNoteBtn" type="button">Add note</button></div>
+          </details>
+          <span class="msg-hint">Reply is sent through eBay</span>
         </div>
-        <div class="support-compose-row">
-          <textarea id="messageReplyInput" placeholder="Write a reply to ${escapeAttr(c.other_party_username || 'the member')}..."></textarea>
-          <button class="primary" id="messageReplyBtn">Send</button>
+        <div class="msg-compose-row">
+          <textarea id="messageReplyInput" placeholder="Write a reply to ${escapeAttr(name)}&hellip;"></textarea>
+          <button class="msg-btn primary send" id="messageReplyBtn" type="button">Send</button>
         </div>
       </div>
     `;
+    document.getElementById('msgShell')?.classList.add('thread-open');
     const scroll = document.getElementById('supportMessagesScroll');
     if (scroll) scroll.scrollTop = scroll.scrollHeight;
+    document.getElementById('messageBackBtn').addEventListener('click', () => document.getElementById('msgShell')?.classList.remove('thread-open'));
+    document.getElementById('messageOpenOrderBtn')?.addEventListener('click', () => showPage('orders'));
     document.getElementById('messageReplyBtn').addEventListener('click', () => sendMessageReply(c.id));
     document.getElementById('messageNoteBtn').addEventListener('click', () => addMessageNote(c.id));
     document.getElementById('messageArchiveBtn').addEventListener('click', () => archiveMessage(c.id));
