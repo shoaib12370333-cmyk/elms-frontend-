@@ -2476,7 +2476,7 @@
 
   /* ---------- Live listings: AutoDS-style table (sticky left, scrolling right) ---------- */
   .live-listings-wrap.ad-live { border:0; border-radius:0; background:#fff; border-top:1px solid #e5e7eb; }
-  .ad-live-table { border-collapse:separate; border-spacing:0; table-layout:fixed; width:2568px; font-size:14px; color:#4b5563; }
+  .ad-live-table { border-collapse:separate; border-spacing:0; table-layout:fixed; width:2338px; font-size:14px; color:#4b5563; }
   .ad-live-table th, .ad-live-table td { padding:0 12px; background:#fff; border-bottom:1px solid #edf0f3; white-space:nowrap; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; }
   .ad-live-table th.left, .ad-live-table td:not(.c):not(.s1):not(.s5):not(.vfirst) { text-align:left; }
   .ad-live-table thead th { height:44px; font-weight:500; color:#4b5563; border-bottom:1px solid #e5e7eb; }
@@ -2518,6 +2518,74 @@
     .ad-live-table th.s4, .ad-live-table td.s4 { position:sticky; left:508px; z-index:3; }
     .ad-live-table th.s5, .ad-live-table td.s5 { position:sticky; left:638px; z-index:3; box-shadow:6px 0 8px -4px rgba(15,23,42,.18); }
   }
+
+  /* ---------- Live listings: ELMS / eBay palette ---------- */
+  .live-listings-wrap.ad-live { border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; }
+  .ad-live-table thead th.grp { color:#0064D2; border-bottom:1px solid #e5e7eb; }
+  .ad-live-table thead th.vfirst { color:#5b8f0e; box-shadow:inset 0 3px 0 #86B817; }
+  .ad-live-table thead th:nth-child(7) { color:#b7830a; box-shadow:inset 0 3px 0 #F5AF02; }
+  .ad-live-table thead th:nth-child(8) { color:#E53238; box-shadow:inset 0 3px 0 #E53238; }
+  .ad-live-table thead th:nth-child(9) { color:#0064D2; box-shadow:inset 0 3px 0 #0064D2; }
+  .ad-pill.green { background:#86B817; } .ad-pill.yellow { background:#F5AF02; } .ad-pill.red { background:#E53238; }
+  .ad-pill.blue { background:#0064D2; }
+  .ad-lbl { background:#E7F0FD; color:#0064D2; } .ad-lbl.sell { background:#EEF6DF; color:#5b8f0e; }
+  .ad-live-table tbody tr:hover td { background:#f6faff; }
+  .ad-title:hover { color:#0064D2; }
+
+  @media (max-width:640px) { #llEditModal .elms-ed-grid { grid-template-columns:1fr; } }
+  /* ---------- Live listings: full editor modal ---------- */
+  #llEditModal { z-index:300; }
+  #llEditModal .ll-editor-box { max-width:1040px; width:100%; height:min(92vh,860px); padding:0; display:flex; flex-direction:column; overflow:hidden; }
+  .ll-editor-head { display:flex; align-items:center; gap:14px; padding:16px 20px; border-bottom:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; flex:0 0 auto; }
+  .ll-editor-thumb { flex:0 0 56px; width:56px; height:56px; border-radius:8px; object-fit:cover; background:#f1f3f6; }
+  .ll-editor-headtxt { min-width:0; flex:1; }
+  .ll-editor-kicker { font:800 12px 'Trebuchet MS',Inter,sans-serif; letter-spacing:.02em; color:#64748b; }
+  .ll-editor-title { font-size:16px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ll-editor-close { border:0; background:transparent; font-size:28px; line-height:1; color:#64748b; cursor:pointer; width:38px; height:38px; border-radius:8px; }
+  .ll-editor-close:hover { background:#f1f5f9; }
+  .ll-editor-body { flex:1 1 auto; overflow:auto; padding:18px 20px; background:#f8fafd; }
+  .ll-editor-core { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .ll-editor-foot { flex:0 0 auto; display:flex; justify-content:flex-end; gap:10px; padding:14px 20px; border-top:1px solid var(--line); background:#fff; }
+  #llEditModal .elms-editor { margin:0; position:static; width:auto; max-width:none; }
+  @media (max-width:700px) { .ll-editor-core { grid-template-columns:1fr; } #llEditModal .ll-editor-box { height:100vh; max-height:100vh; border-radius:0; } #llEditModal.modal-overlay { padding:0; } }
+  #llEditModal .elms-editor { margin:0 18px 18px 64px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; overflow:hidden; box-sizing:border-box; min-width:0; }
+  #llEditModal .elms-editor-tabs { display:flex; gap:4px; padding:0 14px; border-bottom:1px solid #e5e7eb; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  #llEditModal .elms-editor-tab { flex:0 0 auto; padding:13px 14px; border:0; border-bottom:2px solid transparent; background:transparent; color:#687180; font:600 13px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  #llEditModal .elms-editor-tab:hover { color:#1f2937; }
+  #llEditModal .elms-editor-tab.active { color:#2563eb; border-bottom-color:#2563eb; }
+  #llEditModal .elms-editor-pane { display:none; padding:16px 18px 18px; }
+  #llEditModal .elms-editor-pane.active { display:block; }
+  #llEditModal .elms-ed-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+  #llEditModal .elms-ed-field { display:grid; gap:5px; min-width:0; margin-bottom:12px; }
+  #llEditModal .elms-ed-grid .elms-ed-field { margin-bottom:0; }
+  #llEditModal .elms-ed-field.full { grid-column:1 / -1; }
+  #llEditModal .elms-ed-field > span, #llEditModal .elms-ed-label { font-size:12px; font-weight:700; color:#4b5563; }
+  #llEditModal .elms-ed-field > span em { font-style:normal; font-weight:500; color:#94a3b8; margin-left:6px; }
+  #llEditModal .elms-ed-field input[type="text"], #llEditModal .elms-ed-field input[type="number"], #llEditModal .elms-ed-field select, #llEditModal .elms-ed-field textarea { width:100%; box-sizing:border-box; border:1px solid #dfe3e8; border-radius:8px; padding:0 11px; height:38px; font:500 13px Inter,sans-serif; color:#1f2937; background:#fff; }
+  #llEditModal .elms-ed-field textarea { height:auto; min-height:160px; padding:10px 11px; line-height:1.55; resize:vertical; }
+  #llEditModal .elms-ed-field input:focus, #llEditModal .elms-ed-field select:focus, #llEditModal .elms-ed-field textarea:focus { outline:none; border-color:#9db7e8; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  #llEditModal .elms-ed-row { display:flex; gap:8px; align-items:center; }
+  #llEditModal .elms-ed-row > input { flex:1 1 auto; min-width:0; }
+  #llEditModal .elms-ed-btn { flex:0 0 auto; height:38px; padding:0 14px; border:1px solid #d9dee6; border-radius:8px; background:#fff; color:#344054; font:700 12px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  #llEditModal .elms-ed-btn:hover { background:#f7f9fb; }
+  #llEditModal .elms-ed-toggle { display:flex; align-items:center; gap:10px; padding:8px 0; font-size:13px; font-weight:600; color:#344054; cursor:pointer; }
+  #llEditModal .elms-ed-toggle input { position:absolute; opacity:0; width:0; height:0; }
+  #llEditModal .elms-ed-switch { position:relative; flex:0 0 38px; width:38px; height:22px; border-radius:999px; background:#d0d5dd; transition:background .15s ease; }
+  #llEditModal .elms-ed-switch::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.25); transition:transform .15s ease; }
+  #llEditModal .elms-ed-toggle input:checked + .elms-ed-switch { background:#f59e0b; }
+  #llEditModal .elms-ed-toggle input:checked + .elms-ed-switch::after { transform:translateX(16px); }
+  #llEditModal .elms-ed-toggle input:focus-visible + .elms-ed-switch { box-shadow:0 0 0 3px rgba(245,158,11,.25); }
+  #llEditModal .elms-ed-section { margin:16px 0 4px; padding-top:14px; border-top:1px solid #edf0f3; font-size:13px; font-weight:800; color:#1f2937; }
+  #llEditModal .elms-ed-note { font-size:11.5px; color:#94a3b8; }
+  #llEditModal .elms-ed-images { display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:10px; margin-bottom:14px; }
+  #llEditModal .elms-ed-img { position:relative; aspect-ratio:1; border:1px solid #e1e5eb; border-radius:9px; background:#fff; padding:4px; box-sizing:border-box; }
+  #llEditModal .elms-ed-img img { width:100%; height:100%; object-fit:contain; border-radius:6px; }
+  #llEditModal .elms-ed-img button { position:absolute; right:-6px; top:-6px; width:20px; height:20px; padding:0; border:0; border-radius:50%; background:#dc2626; color:#fff; font-weight:700; line-height:20px; cursor:pointer; }
+  #llEditModal .elms-ed-empty { padding:14px; border:1px dashed #d9dee6; border-radius:9px; color:#94a3b8; font-size:12.5px; text-align:center; }
+  #llEditModal .elms-ed-spec { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:8px; margin-bottom:8px; }
+  #llEditModal .elms-ed-spec input { width:100%; box-sizing:border-box; height:36px; border:1px solid #dfe3e8; border-radius:8px; padding:0 10px; font:500 13px Inter,sans-serif; }
+  #llEditModal .elms-ed-variant { display:flex; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid #edf0f3; border-radius:9px; margin-bottom:8px; font-size:13px; color:#344054; }
+  #llEditModal .ll-editor-body .elms-editor { margin:0; position:static; width:auto; max-width:none; }
 </style>
 </head>
 <body>
@@ -6080,7 +6148,7 @@ async function autoSuggestEmptyDraftCategories() {
       ${filtered.length ? `
       <div class="live-listings-wrap ad-live">
         <table class="ad-live-table">
-          <colgroup><col style="width:48px"><col style="width:340px"><col style="width:120px"><col style="width:130px"><col style="width:60px"><col style="width:100px"><col style="width:100px"><col style="width:120px"><col style="width:90px"><col style="width:90px"><col style="width:170px"><col style="width:130px"><col style="width:200px"><col style="width:80px"><col style="width:80px"><col style="width:150px"><col style="width:130px"><col style="width:90px"><col style="width:100px"><col style="width:100px"><col style="width:140px"></colgroup>
+          <colgroup><col style="width:48px"><col style="width:340px"><col style="width:120px"><col style="width:130px"><col style="width:60px"><col style="width:100px"><col style="width:100px"><col style="width:120px"><col style="width:90px"><col style="width:170px"><col style="width:130px"><col style="width:200px"><col style="width:80px"><col style="width:80px"><col style="width:150px"><col style="width:130px"><col style="width:90px"><col style="width:100px"><col style="width:100px"></colgroup>
           <thead>
             <tr>
               <th class="s1" rowspan="2"><input type="checkbox" id="llSelectAll" /></th>
@@ -6089,9 +6157,9 @@ async function autoSuggestEmptyDraftCategories() {
               <th class="s4 left" rowspan="2">Sourcing Request</th>
               <th class="s5" rowspan="2"></th>
               <th class="grp" colspan="4">Variations</th>
-              <th rowspan="2">OOS Days</th><th rowspan="2" class="left">Price</th><th rowspan="2" class="left">Profit</th><th rowspan="2" class="left">Item ID</th>
+              <th rowspan="2" class="left">Price</th><th rowspan="2" class="left">Profit</th><th rowspan="2" class="left">Item ID</th>
               <th rowspan="2">Sold</th><th rowspan="2">DWS</th><th rowspan="2" class="left">Store</th><th rowspan="2" class="left">ASIN</th>
-              <th rowspan="2">Views</th><th rowspan="2">Watchers</th><th rowspan="2">Days Left</th><th rowspan="2" class="left">Tags</th>
+              <th rowspan="2">Views</th><th rowspan="2">Watchers</th><th rowspan="2">Days Left</th>
             </tr>
             <tr><th class="vfirst">Available</th><th>On Hold</th><th>Out Of Stock</th><th>Total</th></tr>
           </thead>
@@ -6140,7 +6208,6 @@ async function autoSuggestEmptyDraftCategories() {
     const itemId = l.ebay_item_id || l.ebayItemId || l.ebay_listing_id || l.listing_id || '';
     const val = (v) => (v == null || v === '') ? dash : escapeHtml(String(v));
     const link = (href, text) => `<a class="ad-link" href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`;
-    const tags = Array.isArray(l.tags) ? l.tags.join(', ') : l.tags;
     const pair = (a, b) => `<div class="ad-pair"><div><span class="ad-lbl">Buy</span>${a}</div><div><span class="ad-lbl sell">Sell</span>${b}</div></div>`;
     return `
       <tr class="ll-row" data-listing-id="${escapeAttr(l.id)}">
@@ -6157,7 +6224,6 @@ async function autoSuggestEmptyDraftCategories() {
         <td><span class="ad-pill yellow">${onHold}</span></td>
         <td><span class="ad-pill red">${oos}</span></td>
         <td class="c">${total}</td>
-        <td class="c">${val(l.oos_days ?? l.oosDays)}</td>
         <td>${pair(buy != null ? escapeHtml(formatPrice(buy, cur)) : dash, sell != null ? escapeHtml(formatPrice(sell, cur)) : dash)}</td>
         <td>${profit != null ? escapeHtml(formatPrice(profit, cur)) : dash}</td>
         <td>${pair(asin ? link(llAmazonUrl(l, asin), asin) : dash, itemId ? link(llEbayUrl(l, itemId), String(itemId)) : dash)}</td>
@@ -6168,7 +6234,6 @@ async function autoSuggestEmptyDraftCategories() {
         <td class="c">${val(l.views ?? l.view_count)}</td>
         <td class="c">${val(l.watchers ?? l.watch_count)}</td>
         <td class="c">${val(l.days_left ?? l.daysLeft)}</td>
-        <td>${val(tags)}</td>
       </tr>
     `;
   }
@@ -6208,26 +6273,44 @@ async function autoSuggestEmptyDraftCategories() {
     URL.revokeObjectURL(a.href);
   }
 
+  function llCloseEditor() { document.getElementById('llEditModal')?.remove(); document.body.style.overflow = ''; }
+
   function llEnterEditMode(row, l) {
-    const existing = row.nextElementSibling;
-    if (existing && existing.classList.contains('ll-edit-row')) { existing.remove(); row.classList.remove('ll-row-editing'); return; }
-    row.classList.add('ll-row-editing');
-    row.insertAdjacentHTML('afterend', `
-      <tr class="ll-edit-row"><td colspan="21"><div class="ll-edit-panel">
-        <label class="ll-edit-field wide">Title<input class="editable-input" data-field="title" value="${escapeAttr(l.title || '')}" /></label>
-        <label class="ll-edit-field">Sell price<input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" /></label>
-        <label class="ll-edit-field">Quantity<input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" /></label>
-        <label class="ll-edit-field">Category ID<input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" /></label>
-        <div class="ll-edit-actions"><button class="btn-small save" data-action="save">Save</button><button class="btn-small" data-action="cancel" style="background:var(--grey-light);color:var(--ink);">Cancel</button></div>
-      </div></td></tr>`);
-    const panel = row.nextElementSibling;
-    panel.querySelector('[data-action="cancel"]').addEventListener('click', () => { panel.remove(); row.classList.remove('ll-row-editing'); });
-    panel.querySelector('[data-action="save"]').addEventListener('click', async () => {
-      const saveBtn = panel.querySelector('[data-action="save"]');
-      const title = panel.querySelector('[data-field="title"]').value;
-      const sellPrice = Number(panel.querySelector('[data-field="sellPrice"]').value) || null;
-      const quantity = Number(panel.querySelector('[data-field="quantity"]').value) || 1;
-      const categoryId = panel.querySelector('[data-field="categoryId"]').value;
+    llCloseEditor();
+    const cur = CURRENCY_SYMBOLS[l.currency] || (l.currency ? l.currency + ' ' : '$');
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+    overlay.id = 'llEditModal';
+    overlay.innerHTML = `
+      <div class="modal-box ll-editor-box" role="dialog" aria-modal="true" aria-label="Edit listing">
+        <div class="ll-editor-head">
+          ${l.main_image ? `<img class="ll-editor-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="ll-editor-thumb"></div>'}
+          <div class="ll-editor-headtxt"><div class="ll-editor-kicker"><span style="color:#E53238">E</span><span style="color:#0064D2">L</span><span style="color:#F5AF02">M</span><span style="color:#86B817">S</span> &middot; Live listing</div><div class="ll-editor-title">${escapeHtml(l.title || 'Untitled listing')}</div></div>
+          <button type="button" class="ll-editor-close" data-ll-close aria-label="Close">&times;</button>
+        </div>
+        <div class="ll-editor-body">
+          <div class="ll-editor-core">
+            <label class="ll-edit-field">Sell price (${escapeHtml(cur.trim())})<input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" /></label>
+            <label class="ll-edit-field">Quantity<input class="editable-input" data-field="quantity" type="number" min="0" value="${l.quantity ?? 1}" /></label>
+            <label class="ll-edit-field">eBay category ID<input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" /></label>
+          </div>
+          <div id="llEditorHost">${draftEditorHtml(l)}</div>
+        </div>
+        <div class="ll-editor-foot">
+          <button type="button" class="btn-small" data-ll-close style="background:var(--grey-light);color:var(--ink);">Cancel</button>
+          <button type="button" class="btn-small save" data-action="save">Save changes</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+    wireDraftEditor(overlay.querySelector('#llEditorHost'));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay || e.target.closest('[data-ll-close]')) llCloseEditor(); });
+    overlay.querySelector('[data-action="save"]').addEventListener('click', async () => {
+      const saveBtn = overlay.querySelector('[data-action="save"]');
+      const title = overlay.querySelector('[data-ui-field="title"]')?.value ?? l.title;
+      const sellPrice = Number(overlay.querySelector('[data-field="sellPrice"]').value) || null;
+      const quantity = Number(overlay.querySelector('[data-field="quantity"]').value) || 1;
+      const categoryId = overlay.querySelector('[data-field="categoryId"]').value;
       saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026';
       try {
         const isLive = llListingStatus(l) === 'active';
@@ -6237,11 +6320,12 @@ async function autoSuggestEmptyDraftCategories() {
           body: JSON.stringify({ title, sellPrice, quantity, categoryId }),
         });
         const data = await res.json();
-        if (!res.ok || !data.success) { alert(data.error || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save'; return; }
+        if (!res.ok || !data.success) { alert(data.error || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; return; }
         Object.assign(l, { title, sell_price: sellPrice, quantity, category_id: categoryId });
         showToast('Saved', 'Listing updated.', 'success');
+        llCloseEditor();
         renderListings();
-      } catch (err) { alert('Could not connect to the server: ' + err.message); saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+      } catch (err) { alert('Could not connect to the server: ' + err.message); saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; }
     });
   }
 
@@ -6260,6 +6344,7 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) { alert('Could not connect to the server: ' + err.message); }
   }
 
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') llCloseEditor(); });
   function llCloseMenu() { document.getElementById('llFloatingMenu')?.remove(); }
   document.addEventListener('click', llCloseMenu);
   window.addEventListener('scroll', llCloseMenu, true);
