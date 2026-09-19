@@ -1,1 +1,141 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ELMS User Guide · ELMS</title><style>body{font-family:Inter,Arial,sans-serif;margin:0;background:#f5f7fb;color:#172033}main{max-width:820px;margin:50px auto;padding:32px;background:#fff;border:1px solid #e4e8ef;border-radius:16px}h1{margin-top:0}h2{margin-top:28px}p,li{line-height:1.65;color:#556070}a{color:#2563eb}</style></head><body><main><h1>ELMS User Guide</h1><h2>Import</h2><p>Import a product, review the listing details, select the correct eBay account, and publish when ready.</p><h2>Messages</h2><p>The Messages inbox reads cached eBay conversations. Use <strong>Refresh</strong> when you want an immediate eBay sync; new-message webhooks can update the cache automatically when configured.</p><h2>Orders</h2><p>Orders are synchronized in the background. Use <strong>Refresh from eBay</strong> for an immediate manual sync.</p><h2>eBay connection</h2><p>Connect each seller account separately and make sure the required permissions are granted.</p></main></body></html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>User Guide · ELMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--bg:#F5F7FB;--card:#fff;--blue:#0064D2;--red:#E53238;--yellow:#F5AF02;--green:#86B817}
+@media (prefers-color-scheme:dark){:root{--ink:#E5EAF3;--muted:#94A3B8;--line:#26314A;--bg:#0B1220;--card:#111A2E;--blue:#5AA7FF}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
+a{color:var(--blue)}
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:22px;letter-spacing:.04em;text-decoration:none}
+.logo b:nth-child(1){color:var(--red)}.logo b:nth-child(2){color:var(--blue)}.logo b:nth-child(3){color:var(--yellow)}.logo b:nth-child(4){color:var(--green)}
+.nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.nav a{padding:7px 14px;border-radius:99px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px}
+.nav a:hover{background:color-mix(in srgb,var(--blue) 10%,transparent);color:var(--ink)}
+.nav a.on{background:var(--blue);color:#fff}
+.back{font-weight:700;font-size:13.5px;text-decoration:none;padding:7px 14px;border:1.5px solid var(--line);border-radius:99px;color:var(--ink)}
+.hero{max-width:1120px;margin:0 auto;padding:44px 20px 10px}
+.hero h1{margin:0;font-size:clamp(28px,5vw,40px);letter-spacing:-.03em;line-height:1.15}
+.hero p{margin:10px 0 0;color:var(--muted);max-width:660px;font-size:16px}
+.stamp{display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:99px;background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:22px 20px 60px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}
+.toc{position:sticky;top:84px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;font-size:13.5px}
+.toc h4{margin:0 0 8px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.toc a{display:block;padding:6px 10px;border-radius:8px;text-decoration:none;color:var(--ink)}
+.toc a:hover{background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.doc{min-width:0}
+.sec{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:16px}
+.sec::before{content:'';position:absolute;left:0;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--red) 0 25%,var(--blue) 25% 50%,var(--yellow) 50% 75%,var(--green) 75%)}
+.sec h2{margin:0 0 10px;font-size:20px;letter-spacing:-.01em;display:flex;gap:10px;align-items:center}
+.sec h2 i{font-style:normal;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--blue) 14%,transparent);font-size:12px;font-weight:800;color:var(--blue);flex:none}
+.sec h3{margin:18px 0 4px;font-size:15px}
+.sec p,.sec li{color:var(--muted)}.sec p{margin:8px 0}
+.sec ul,.sec ol{padding-left:22px;margin:8px 0}.sec li{margin:4px 0}
+.sec strong{color:var(--ink)}
+.callout{margin:14px 0;padding:14px 16px;border-radius:12px;border:1px solid var(--line);border-left:4px solid var(--blue);background:color-mix(in srgb,var(--blue) 7%,transparent);color:var(--ink);font-size:14px}
+.callout.warn{border-left-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 12%,transparent)}
+.callout.ok{border-left-color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+th{text-align:left;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1.5px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);color:var(--muted);vertical-align:top}td:first-child{color:var(--ink);font-weight:600}
+.tw{overflow-x:auto}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps li{counter-increment:s;position:relative;padding:4px 0 4px 42px;margin:10px 0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center}
+details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0;background:var(--bg)}
+summary{cursor:pointer;font-weight:700;color:var(--ink)}
+code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:1px 6px;border-radius:6px;font-size:13px}
+.foot{max-width:1120px;margin:0 auto;padding:26px 20px 44px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.foot a{color:var(--muted);margin-right:14px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}.toc{position:static}.nav{margin-left:0;width:100%}.sec{padding:22px 18px}}
+</style></head><body>
+<header class="top"><div class="top-in">
+<a class="logo" href="./index.html" aria-label="ELMS"><b>E</b><b>L</b><b>M</b><b>S</b></a>
+<nav class="nav"><a href="./user-guide.html" class="on">User Guide</a><a href="./terms.html">Terms of Service</a><a href="./privacy.html">Privacy Policy</a></nav>
+<a class="back" href="./index.html">&larr; Back to app</a>
+</div></header>
+<div class="hero"><h1>User Guide</h1><p>Everything you need to go from an Amazon link to a live eBay listing, and to run your stores day to day.</p></div>
+<div class="wrap"><aside class="toc"><h4>On this page</h4><a href="#start">1. Getting started</a><a href="#stores">2. Working with more than one store</a><a href="#import">3. Importing products</a><a href="#drafts">4. Drafts and the listing editor</a><a href="#location">5. Item location and postal codes</a><a href="#publish">6. Publishing and live listings</a><a href="#orders">7. Orders and fulfillment</a><a href="#messages">8. Messages</a><a href="#credits">9. Credits</a><a href="#trouble">10. Troubleshooting</a></aside><main class="doc">
+<section class="sec" id="start"><h2><i>1</i>Getting started</h2>
+<p>ELMS turns an Amazon product link into an eBay listing and then helps you keep it running: stock, price, orders and buyer messages live in one place.</p>
+<ol class="steps">
+<li><strong>Connect your eBay store.</strong> Open <em>Settings &rarr; Connect an eBay account</em> and approve the permissions on eBay.</li>
+<li><strong>Set your selling defaults.</strong> In <em>Settings &rarr; Selling settings</em> press <em>Fetch from eBay</em>, then choose your payment, fulfillment and return policies and your item location.</li>
+<li><strong>Import a product.</strong> Paste an Amazon link on the <em>Import</em> page (or use the browser extension).</li>
+<li><strong>Review the draft and publish.</strong> Open the draft, check title, price, images and item specifics, then publish.</li>
+</ol>
+<div class="callout">Publishing needs a payment policy, a fulfillment policy, a return policy and an item location. If one is missing ELMS tells you which.</div></section>
+<section class="sec" id="stores"><h2><i>2</i>Working with more than one store</h2>
+<p>You can connect several eBay stores (for example a US and a UK store). The store selected in the sidebar decides what every page shows.</p>
+<ul>
+<li><strong>Drafts, Live listings, Orders, Messages, notifications, Import history and the Dashboard</strong> only show the selected store.</li>
+<li>Switching store does not delete anything. The other store's data is kept and comes back when you switch back.</li>
+<li>The same Amazon product can be drafted separately in each store.</li>
+<li>Stores show their marketplace tag, e.g. <code>[UK]</code> or <code>[US]</code>. Give each store a clear name in <em>Settings</em>.</li>
+</ul>
+<div class="callout warn"><strong>Disconnecting a store deletes its data from ELMS</strong> (drafts, live listings, orders, messages, notifications and import history). Listings that are already live on eBay are not touched. This cannot be undone.</div></section>
+<section class="sec" id="import"><h2><i>3</i>Importing products</h2>
+<p>Paste an Amazon product link on the <strong>Import</strong> page and choose a markup percentage. ELMS fetches the title, images, price, description and specifications and saves a draft in the selected store.</p>
+<ul>
+<li><strong>Bulk import:</strong> switch to the bulk tab and paste one link per line.</li>
+<li><strong>Browser extension:</strong> copy your extension key from <em>Settings</em>, then import straight from an Amazon page.</li>
+<li><strong>Import history</strong> lists everything you fetched for the selected store.</li>
+</ul></section>
+<section class="sec" id="drafts"><h2><i>4</i>Drafts and the listing editor</h2>
+<p>Every fetched product waits on the <strong>Drafts</strong> page. Click a draft to open the full editor.</p>
+<div class="tw"><table><tr><th>Tab</th><th>What you do there</th></tr>
+<tr><td>Product</td><td>Title (with an AI title suggestion), price, quantity, category, tags and shipping method.</td></tr>
+<tr><td>Description</td><td>Edit the description and bullet points.</td></tr>
+<tr><td>Variants</td><td>Review variation options.</td></tr>
+<tr><td>Images</td><td>Reorder, remove or add images from a URL.</td></tr>
+<tr><td>Item specifications</td><td>Fill in eBay item specifics for the chosen category.</td></tr>
+<tr><td>Settings</td><td>Per-product policies, item location, stock and price monitoring.</td></tr></table></div>
+<h3>Per-product settings</h3>
+<p>With <em>Use dynamic policies</em> on, the store's default policies are used. Turn it off to pick different policies for just this product. A country + postal code saved on the product overrides the store's item location.</p></section>
+<section class="sec" id="location"><h2><i>5</i>Item location and postal codes</h2>
+<p>eBay needs a <strong>complete</strong> postal code for the item location. For the UK that means the full code, for example <code>SW1A 1AA</code>, not just <code>SW1A</code>.</p>
+<ol class="steps">
+<li>In <em>Settings &rarr; Selling settings</em> choose <em>Product location &rarr; Custom</em>.</li>
+<li>Pick the country, type a city and press <strong>Generate valid code</strong>.</li>
+<li>ELMS finds a real postal code for that city and saves it as your inventory location.</li>
+</ol>
+<div class="callout ok">If you type only the first part of a UK postcode, ELMS completes it to a real full postcode when it can, and shows a clear error when it cannot.</div>
+<p>Hong Kong has no postal codes, so none is needed there.</p></section>
+<section class="sec" id="publish"><h2><i>6</i>Publishing and live listings</h2>
+<p>Press <strong>Publish</strong> on a draft, or schedule it. Publishing runs in the background and you get a notification when it succeeds or fails.</p>
+<p>The <strong>Live listings</strong> page shows stock, price, profit, views, watchers and item IDs. Click the Amazon or eBay link to open the source or the live eBay listing. Use <em>Sync from eBay</em> to refresh views and watchers, and the edit button to change a live listing in the full editor.</p>
+<div class="callout">Views and watchers come from eBay. If eBay does not return a number for an item, ELMS leaves it blank instead of guessing.</div></section>
+<section class="sec" id="orders"><h2><i>7</i>Orders and fulfillment</h2>
+<p>Orders from the selected store are synced automatically and grouped like Seller Hub: awaiting payment, awaiting shipment, shipped, delivered and cancelled.</p>
+<ul>
+<li><strong>Sync from eBay</strong> reads recent changes. <strong>Full sync (90 days)</strong> re-reads everything from the last 90 days. Run a full sync once after connecting a store.</li>
+<li>Open an order to see payment, shipping address, tracking and notes.</li>
+<li>Add the Amazon order number and the <strong>tracking number</strong>; ELMS sends the tracking to eBay so the order is marked shipped.</li>
+</ul></section>
+<section class="sec" id="messages"><h2><i>8</i>Messages</h2>
+<p>Buyer conversations for the selected store appear in one inbox. Filter by unread, needs reply, archived or trash, reply through eBay, add private notes that only you can see, and save reusable replies. Use <em>Sync</em> for an immediate refresh; new messages can also arrive automatically.</p></section>
+<section class="sec" id="credits"><h2><i>9</i>Credits</h2>
+<p>Credits pay for actions that use paid data or eBay automation. Your balance is always shown in the top bar; buy more from <strong>Buy Credits</strong>.</p>
+<div class="tw"><table><tr><th>Action</th><th>Cost</th></tr>
+<tr><td>Import a product (link, bulk or extension)</td><td>1 credit</td></tr>
+<tr><td>Publish, scheduled publish or republish</td><td>1 credit each</td></tr>
+<tr><td>Amazon stock check for a live listing</td><td>1 credit per check</td></tr>
+<tr><td>Amazon price check</td><td>Free (comes with the stock check)</td></tr>
+<tr><td>Refreshing variant data</td><td>Free</td></tr>
+<tr><td>Real-time order sync</td><td>10 credits per day</td></tr>
+<tr><td>Custom-interval (polling) order sync</td><td>5 credits per day</td></tr>
+<tr><td>Research tools (rank checker, review analyzer, bestsellers, category finder, listing grader)</td><td>1 credit per lookup</td></tr></table></div>
+<p>If an import or publish fails on our side, the credit is refunded.</p></section>
+<section class="sec" id="trouble"><h2><i>10</i>Troubleshooting</h2>
+<details><summary>"Invalid inventory location" or "full inventory location" on publish</summary><p>The postal code is incomplete. Open <em>Settings &rarr; Selling settings</em>, choose a custom location and press <strong>Generate valid code</strong>, or enter the full postcode. Then publish again.</p></details>
+<details><summary>I can't see my other store's listings</summary><p>Every page shows the store selected in the sidebar. Switch the store there.</p></details>
+<details><summary>Orders are missing</summary><p>Make sure the right store is selected, then use <em>Orders &rarr; Full sync (90 days)</em>. Reconnect the store in Settings if eBay reports the connection has expired.</p></details>
+<details><summary>Views or watchers are empty</summary><p>eBay only returns them for some items. Press <em>Sync from eBay</em> on Live listings and try again later.</p></details>
+<details><summary>Publish failed</summary><p>Check the notification for eBay's exact reason (missing category, policy, item specific or image). Fix the draft and publish again; the credit is refunded automatically.</p></details>
+<p>Still stuck? Open <strong>Support</strong> in the sidebar and send a ticket.</p></section>
+</main></div>
+<footer class="foot"><div><a href="./user-guide.html">User Guide</a><a href="./terms.html">Terms</a><a href="./privacy.html">Privacy</a></div><div>&copy; 2026 ELMS &middot; Amazon-to-eBay listing manager</div></footer>
+</body></html>

@@ -1,1 +1,106 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Terms of Service · ELMS</title><style>body{font-family:Inter,Arial,sans-serif;margin:0;background:#f5f7fb;color:#172033}main{max-width:820px;margin:50px auto;padding:32px;background:#fff;border:1px solid #e4e8ef;border-radius:16px}h1{margin-top:0}h2{margin-top:28px}p,li{line-height:1.65;color:#556070}a{color:#2563eb}</style></head><body><main><h1>Terms of Service</h1><p>By using ELMS, you agree to use the service only for accounts and marketplace activity you are authorized to manage.</p><h2>Marketplace accounts</h2><p>You are responsible for complying with eBay, Amazon, payment-provider, and other applicable marketplace rules when using ELMS.</p><h2>Account security</h2><p>Keep your ELMS credentials and connected marketplace accounts secure. You are responsible for activity performed through your account.</p><h2>Service availability</h2><p>Marketplace APIs and third-party services can change availability or limits. ELMS does not guarantee uninterrupted third-party API access.</p></main></body></html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terms of Service · ELMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--bg:#F5F7FB;--card:#fff;--blue:#0064D2;--red:#E53238;--yellow:#F5AF02;--green:#86B817}
+@media (prefers-color-scheme:dark){:root{--ink:#E5EAF3;--muted:#94A3B8;--line:#26314A;--bg:#0B1220;--card:#111A2E;--blue:#5AA7FF}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
+a{color:var(--blue)}
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:22px;letter-spacing:.04em;text-decoration:none}
+.logo b:nth-child(1){color:var(--red)}.logo b:nth-child(2){color:var(--blue)}.logo b:nth-child(3){color:var(--yellow)}.logo b:nth-child(4){color:var(--green)}
+.nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.nav a{padding:7px 14px;border-radius:99px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px}
+.nav a:hover{background:color-mix(in srgb,var(--blue) 10%,transparent);color:var(--ink)}
+.nav a.on{background:var(--blue);color:#fff}
+.back{font-weight:700;font-size:13.5px;text-decoration:none;padding:7px 14px;border:1.5px solid var(--line);border-radius:99px;color:var(--ink)}
+.hero{max-width:1120px;margin:0 auto;padding:44px 20px 10px}
+.hero h1{margin:0;font-size:clamp(28px,5vw,40px);letter-spacing:-.03em;line-height:1.15}
+.hero p{margin:10px 0 0;color:var(--muted);max-width:660px;font-size:16px}
+.stamp{display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:99px;background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:22px 20px 60px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}
+.toc{position:sticky;top:84px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;font-size:13.5px}
+.toc h4{margin:0 0 8px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.toc a{display:block;padding:6px 10px;border-radius:8px;text-decoration:none;color:var(--ink)}
+.toc a:hover{background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.doc{min-width:0}
+.sec{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:16px}
+.sec::before{content:'';position:absolute;left:0;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--red) 0 25%,var(--blue) 25% 50%,var(--yellow) 50% 75%,var(--green) 75%)}
+.sec h2{margin:0 0 10px;font-size:20px;letter-spacing:-.01em;display:flex;gap:10px;align-items:center}
+.sec h2 i{font-style:normal;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--blue) 14%,transparent);font-size:12px;font-weight:800;color:var(--blue);flex:none}
+.sec h3{margin:18px 0 4px;font-size:15px}
+.sec p,.sec li{color:var(--muted)}.sec p{margin:8px 0}
+.sec ul,.sec ol{padding-left:22px;margin:8px 0}.sec li{margin:4px 0}
+.sec strong{color:var(--ink)}
+.callout{margin:14px 0;padding:14px 16px;border-radius:12px;border:1px solid var(--line);border-left:4px solid var(--blue);background:color-mix(in srgb,var(--blue) 7%,transparent);color:var(--ink);font-size:14px}
+.callout.warn{border-left-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 12%,transparent)}
+.callout.ok{border-left-color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+th{text-align:left;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1.5px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);color:var(--muted);vertical-align:top}td:first-child{color:var(--ink);font-weight:600}
+.tw{overflow-x:auto}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps li{counter-increment:s;position:relative;padding:4px 0 4px 42px;margin:10px 0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center}
+details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0;background:var(--bg)}
+summary{cursor:pointer;font-weight:700;color:var(--ink)}
+code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:1px 6px;border-radius:6px;font-size:13px}
+.foot{max-width:1120px;margin:0 auto;padding:26px 20px 44px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.foot a{color:var(--muted);margin-right:14px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}.toc{position:static}.nav{margin-left:0;width:100%}.sec{padding:22px 18px}}
+</style></head><body>
+<header class="top"><div class="top-in">
+<a class="logo" href="./index.html" aria-label="ELMS"><b>E</b><b>L</b><b>M</b><b>S</b></a>
+<nav class="nav"><a href="./user-guide.html">User Guide</a><a href="./terms.html" class="on">Terms of Service</a><a href="./privacy.html">Privacy Policy</a></nav>
+<a class="back" href="./index.html">&larr; Back to app</a>
+</div></header>
+<div class="hero"><h1>Terms of Service</h1><p>The rules for using ELMS. Please read them before you connect a store.</p><span class="stamp">Last updated September 19, 2026</span></div>
+<div class="wrap"><aside class="toc"><h4>On this page</h4><a href="#accept">1. Acceptance of these terms</a><a href="#service">2. The service</a><a href="#accounts">3. Your account and connected stores</a><a href="#rules">4. Marketplace rules and acceptable use</a><a href="#credits">5. Credits and payments</a><a href="#data">6. Your data</a><a href="#warranty">7. No guarantees</a><a href="#liability">8. Limitation of liability</a><a href="#ending">9. Suspension and ending</a><a href="#changes">10. Changes and contact</a></aside><main class="doc">
+<section class="sec" id="accept"><h2><i>1</i>Acceptance of these terms</h2>
+<p>These Terms of Service ("Terms") govern your use of ELMS, a tool that helps sellers import Amazon product information, create eBay listings and manage related orders and messages. By creating an account or using ELMS you agree to these Terms. If you do not agree, do not use ELMS.</p>
+<p>You must be old enough to enter a binding contract where you live and, if you use ELMS for a business, have authority to bind that business.</p></section>
+<section class="sec" id="service"><h2><i>2</i>The service</h2>
+<p>ELMS connects to third-party services on your behalf, including eBay, Amazon product data providers, our payment provider and, for the optional title suggestion feature, an AI provider. ELMS is an independent tool. It is not affiliated with, endorsed by or sponsored by eBay or Amazon.</p>
+<p>We may add, change or remove features. Third-party services can change or limit access at any time, and we do not guarantee uninterrupted access to them.</p></section>
+<section class="sec" id="accounts"><h2><i>3</i>Your account and connected stores</h2>
+<ul>
+<li>Keep your login and connected marketplace accounts secure. You are responsible for all activity under your ELMS account.</li>
+<li>Connect only eBay accounts you own or are authorized to manage.</li>
+<li>Give us accurate information and keep it up to date.</li>
+<li>You can disconnect a store at any time. <strong>Disconnecting a store deletes the data ELMS holds for it</strong> (listings, drafts, orders, messages, notifications and import history). Listings already live on eBay are not changed.</li>
+</ul></section>
+<section class="sec" id="rules"><h2><i>4</i>Marketplace rules and acceptable use</h2>
+<p>You are solely responsible for what you list and sell. You must comply with eBay's and Amazon's policies and all applicable laws, including consumer, tax, customs and intellectual-property laws.</p>
+<p>You agree not to:</p>
+<ul>
+<li>list items you are not allowed to sell, counterfeit or infringing goods, or misleading listings;</li>
+<li>copy content, images or trademarks you have no right to use;</li>
+<li>abuse, overload, scrape or reverse engineer ELMS or the services it connects to;</li>
+<li>share your account, or use ELMS to harass buyers or to commit fraud.</li>
+</ul>
+<div class="callout warn">Reselling ("dropshipping") is subject to eBay's rules and to the terms of your supplier. Make sure your business model is allowed. ELMS does not check this for you.</div></section>
+<section class="sec" id="credits"><h2><i>5</i>Credits and payments</h2>
+<ul>
+<li>Some actions use credits. The cost of each action is shown in the User Guide and may change; the price you see when you act is the price you pay.</li>
+<li>Credits are bought through our payment provider, Paddle, which handles checkout, taxes and receipts. We do not see or store your full card details.</li>
+<li>Credits are a prepaid usage balance for ELMS. They have no cash value and cannot be transferred.</li>
+<li>If an action fails because of a problem on our side, we refund the credit. Refunds for purchases are handled according to Paddle's terms and applicable consumer law.</li>
+</ul></section>
+<section class="sec" id="data"><h2><i>6</i>Your data</h2>
+<p>You keep ownership of your listings, product content you enter and marketplace data. You give us permission to process it only to run ELMS for you. How we handle personal data is described in the <a href="./privacy.html">Privacy Policy</a>.</p></section>
+<section class="sec" id="warranty"><h2><i>7</i>No guarantees</h2>
+<p>ELMS is provided "as is" and "as available". Prices, stock, product details, profit figures and order data come from third parties and may be delayed, incomplete or wrong. Always check them before you rely on them. We do not guarantee that a listing will be accepted, will sell, or that a monitored item will stay in stock.</p></section>
+<section class="sec" id="liability"><h2><i>8</i>Limitation of liability</h2>
+<p>To the extent the law allows, ELMS and its operators are not liable for indirect or consequential losses, lost profits or lost sales, marketplace fees, account restrictions or suspensions imposed by eBay or Amazon, or losses caused by third-party services. Our total liability for any claim is limited to the amount you paid us in the 12 months before the claim. Nothing in these Terms limits liability that cannot be limited by law.</p></section>
+<section class="sec" id="ending"><h2><i>9</i>Suspension and ending</h2>
+<p>You can stop using ELMS at any time. We may suspend or end access if you break these Terms, put the service or other users at risk, or if we are required to by law or by a marketplace. Unused credits may be forfeited when an account is ended for a breach of these Terms.</p></section>
+<section class="sec" id="changes"><h2><i>10</i>Changes and contact</h2>
+<p>We may update these Terms. When the change is material we will tell you in the app or by email, and the date at the top of this page will change. Continuing to use ELMS after that means you accept the new Terms.</p>
+<p>Questions? Open <strong>Support</strong> inside the app and send a ticket.</p>
+<div class="callout">This document is a general template written for the ELMS service. It is not legal advice; have it reviewed for your country before relying on it.</div></section>
+</main></div>
+<footer class="foot"><div><a href="./user-guide.html">User Guide</a><a href="./terms.html">Terms</a><a href="./privacy.html">Privacy</a></div><div>&copy; 2026 ELMS &middot; Amazon-to-eBay listing manager</div></footer>
+</body></html>
