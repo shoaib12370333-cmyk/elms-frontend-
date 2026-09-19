@@ -2318,7 +2318,7 @@
 
   /* ===== Drafts row: expand panel + three-dot menu ===== */
   #draftsContent .elms-chevron { font-size:13px; line-height:1; cursor:pointer; transition:transform .15s ease, background .15s ease; }
-  #draftsContent .elms-chevron[aria-expanded="true"] { transform:rotate(180deg); background:#eef4ff; border-color:#cbdaf8; color:#2563eb; }
+  #draftsContent .elms-chevron[aria-expanded="true"] { transform:rotate(90deg); background:#eef4ff; border-color:#cbdaf8; color:#2563eb; }
   /* Row three-dot menu (Schedule / Delete): hidden until .open */
   #draftsContent .draft-menu { display:none; position:absolute; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 10px 30px rgba(15,23,42,.14); padding:5px; }
   #draftsContent .draft-menu.open { display:block; }
@@ -2349,6 +2349,49 @@
   #draftsContent .elms-ex-link { font-size:12px; font-weight:700; color:#2563eb; text-decoration:none; }
   @media (max-width:1100px) { #draftsContent .elms-expand-panel { grid-template-columns:96px minmax(0,1fr); padding-left:18px; } #draftsContent .elms-ex-edit { grid-column:1 / -1; } }
   @media (max-width:560px) { #draftsContent .elms-expand-panel { grid-template-columns:1fr; } }
+
+  /* ---------- Drafts: inline tabbed editor (UI only, no backend wiring) ---------- */
+  #draftsContent .elms-product-cell { cursor:pointer; }
+  #draftsContent .elms-supplier-line { margin-top:3px; color:#8a93a2; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #draftsContent .elms-editor { margin:0 18px 18px 64px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; overflow:hidden; box-sizing:border-box; min-width:0; }
+  #draftsContent .elms-editor-tabs { display:flex; gap:4px; padding:0 14px; border-bottom:1px solid #e5e7eb; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  #draftsContent .elms-editor-tab { flex:0 0 auto; padding:13px 14px; border:0; border-bottom:2px solid transparent; background:transparent; color:#687180; font:600 13px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  #draftsContent .elms-editor-tab:hover { color:#1f2937; }
+  #draftsContent .elms-editor-tab.active { color:#2563eb; border-bottom-color:#2563eb; }
+  #draftsContent .elms-editor-pane { display:none; padding:16px 18px 18px; }
+  #draftsContent .elms-editor-pane.active { display:block; }
+  #draftsContent .elms-ed-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+  #draftsContent .elms-ed-field { display:grid; gap:5px; min-width:0; margin-bottom:12px; }
+  #draftsContent .elms-ed-grid .elms-ed-field { margin-bottom:0; }
+  #draftsContent .elms-ed-field.full { grid-column:1 / -1; }
+  #draftsContent .elms-ed-field > span, #draftsContent .elms-ed-label { font-size:12px; font-weight:700; color:#4b5563; }
+  #draftsContent .elms-ed-field > span em { font-style:normal; font-weight:500; color:#94a3b8; margin-left:6px; }
+  #draftsContent .elms-ed-field input[type="text"], #draftsContent .elms-ed-field input[type="number"], #draftsContent .elms-ed-field select, #draftsContent .elms-ed-field textarea { width:100%; box-sizing:border-box; border:1px solid #dfe3e8; border-radius:8px; padding:0 11px; height:38px; font:500 13px Inter,sans-serif; color:#1f2937; background:#fff; }
+  #draftsContent .elms-ed-field textarea { height:auto; min-height:160px; padding:10px 11px; line-height:1.55; resize:vertical; }
+  #draftsContent .elms-ed-field input:focus, #draftsContent .elms-ed-field select:focus, #draftsContent .elms-ed-field textarea:focus { outline:none; border-color:#9db7e8; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  #draftsContent .elms-ed-row { display:flex; gap:8px; align-items:center; }
+  #draftsContent .elms-ed-row > input { flex:1 1 auto; min-width:0; }
+  #draftsContent .elms-ed-btn { flex:0 0 auto; height:38px; padding:0 14px; border:1px solid #d9dee6; border-radius:8px; background:#fff; color:#344054; font:700 12px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  #draftsContent .elms-ed-btn:hover { background:#f7f9fb; }
+  #draftsContent .elms-ed-toggle { display:flex; align-items:center; gap:10px; padding:8px 0; font-size:13px; font-weight:600; color:#344054; cursor:pointer; }
+  #draftsContent .elms-ed-toggle input { position:absolute; opacity:0; width:0; height:0; }
+  #draftsContent .elms-ed-switch { position:relative; flex:0 0 38px; width:38px; height:22px; border-radius:999px; background:#d0d5dd; transition:background .15s ease; }
+  #draftsContent .elms-ed-switch::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.25); transition:transform .15s ease; }
+  #draftsContent .elms-ed-toggle input:checked + .elms-ed-switch { background:#f59e0b; }
+  #draftsContent .elms-ed-toggle input:checked + .elms-ed-switch::after { transform:translateX(16px); }
+  #draftsContent .elms-ed-toggle input:focus-visible + .elms-ed-switch { box-shadow:0 0 0 3px rgba(245,158,11,.25); }
+  #draftsContent .elms-ed-section { margin:16px 0 4px; padding-top:14px; border-top:1px solid #edf0f3; font-size:13px; font-weight:800; color:#1f2937; }
+  #draftsContent .elms-ed-note { font-size:11.5px; color:#94a3b8; }
+  #draftsContent .elms-ed-images { display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:10px; margin-bottom:14px; }
+  #draftsContent .elms-ed-img { position:relative; aspect-ratio:1; border:1px solid #e1e5eb; border-radius:9px; background:#fff; padding:4px; box-sizing:border-box; }
+  #draftsContent .elms-ed-img img { width:100%; height:100%; object-fit:contain; border-radius:6px; }
+  #draftsContent .elms-ed-img button { position:absolute; right:-6px; top:-6px; width:20px; height:20px; padding:0; border:0; border-radius:50%; background:#dc2626; color:#fff; font-weight:700; line-height:20px; cursor:pointer; }
+  #draftsContent .elms-ed-empty { padding:14px; border:1px dashed #d9dee6; border-radius:9px; color:#94a3b8; font-size:12.5px; text-align:center; }
+  #draftsContent .elms-ed-spec { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:8px; margin-bottom:8px; }
+  #draftsContent .elms-ed-spec input { width:100%; box-sizing:border-box; height:36px; border:1px solid #dfe3e8; border-radius:8px; padding:0 10px; font:500 13px Inter,sans-serif; }
+  #draftsContent .elms-ed-variant { display:flex; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid #edf0f3; border-radius:9px; margin-bottom:8px; font-size:13px; color:#344054; }
+  @media (max-width:900px) { #draftsContent .elms-editor { position:sticky; left:0; margin:0 12px 14px; width:calc(100vw - 48px); max-width:calc(100vw - 48px); } }
+  @media (max-width:640px) { #draftsContent .elms-ed-grid { grid-template-columns:1fr; } #draftsContent .elms-ed-spec { grid-template-columns:1fr 1fr; } #draftsContent .elms-ed-spec button { grid-column:1 / -1; } #draftsContent .elms-editor-pane { padding:14px; } }
 
   /* ---------- Drafts: compact AutoDS-style list + in-page detail sheet ---------- */
   #draftsContent .elms-drafts-shell { max-height:calc(100vh - 190px); min-height:420px; display:flex; flex-direction:column; }
@@ -5374,6 +5417,125 @@
     refreshDraftsCountBadge();
   }
 
+  // ----- Inline draft editor (UI only: nothing here is sent to the backend) -----
+  // Field names below (data-ui-field) are snake_case so they can be mapped to the API later.
+  function draftSupplierLabel(l) {
+    const raw = String(l.supplier_country || l.supplierCountry || '').trim();
+    if (raw) return /^amazon/i.test(raw) ? raw : `Amazon ${raw.toUpperCase()}`;
+    const url = String(l.amazon_url || '');
+    if (/amazon\.co\.uk/i.test(url)) return 'Amazon UK';
+    if (/amazon\.com\.au/i.test(url)) return 'Amazon AU';
+    if (/amazon\.com(\/|$|\?)/i.test(url)) return 'Amazon US';
+    return 'Amazon';
+  }
+
+  const DRAFT_COUNTRIES = [['US', 'United States'], ['UK', 'United Kingdom'], ['AU', 'Australia'], ['CA', 'Canada'], ['DE', 'Germany'], ['FR', 'France'], ['IT', 'Italy'], ['ES', 'Spain'], ['NL', 'Netherlands'], ['IN', 'India'], ['CN', 'China']];
+
+  function draftEditorHtml(l) {
+    const title = l.title || l.sku || '';
+    const desc = l.description || l.product_description || '';
+    const images = (Array.isArray(l.images) && l.images.length ? l.images : (l.main_image ? [l.main_image] : [])).filter(Boolean);
+    const variants = Array.isArray(l.variants) ? l.variants : [];
+    const specs = Array.isArray(l.item_specifications) ? l.item_specifications : (Array.isArray(l.specifications) ? l.specifications : []);
+    const country = String(l.country_location || '').toUpperCase();
+    const cats = l.category_id ? `<option value="${escapeAttr(l.category_id)}" selected>Category ${escapeHtml(l.category_id)}</option>` : '';
+    const policySelect = (name, label) => `<label class="elms-ed-field"><span>${label}</span><select data-ui-field="${name}"><option value="">Select ${label.toLowerCase()}</option></select></label>`;
+    const specRow = (s) => `<div class="elms-ed-spec" data-ui-spec><input type="text" data-ui-spec-name placeholder="Name" value="${escapeAttr(s?.name || '')}" /><input type="text" data-ui-spec-value placeholder="Value" value="${escapeAttr(s?.value || '')}" /><button type="button" class="elms-ed-btn" data-ui-action="remove-spec">Remove</button></div>`;
+    return `
+      <div class="elms-editor" data-ui-editor>
+        <div class="elms-editor-tabs" role="tablist">
+          <button type="button" class="elms-editor-tab active" data-ui-tab="product" role="tab">Product</button>
+          <button type="button" class="elms-editor-tab" data-ui-tab="description" role="tab">Description</button>
+          <button type="button" class="elms-editor-tab" data-ui-tab="variants" role="tab">Variants (${variants.length || 1})</button>
+          <button type="button" class="elms-editor-tab" data-ui-tab="images" role="tab">Images</button>
+          <button type="button" class="elms-editor-tab" data-ui-tab="specs" role="tab">Item Specifications</button>
+        </div>
+
+        <div class="elms-editor-pane active" data-ui-pane="product">
+          <label class="elms-ed-field"><span>Title<em data-ui-title-count>${title.length}/80</em></span>
+            <div class="elms-ed-row"><input type="text" data-ui-field="title" maxlength="80" value="${escapeAttr(title)}" /><button type="button" class="elms-ed-btn" data-ui-action="optimize-title">Optimize Title With AI</button></div>
+          </label>
+          <div class="elms-ed-grid">
+            <label class="elms-ed-field"><span>Category</span><select data-ui-field="category"><option value="">Select category</option>${cats}</select></label>
+            <label class="elms-ed-field"><span>Shipping Methods</span><select data-ui-field="shipping_method"><option value="">Select shipping method</option><option value="cheapest_with_tracking">Cheapest with tracking</option><option value="standard">Standard</option><option value="express">Express</option></select></label>
+            <label class="elms-ed-field full"><span>Tags</span><input type="text" data-ui-field="tags" placeholder="Enter tags, separated by commas" value="${escapeAttr(Array.isArray(l.tags) ? l.tags.join(', ') : (l.tags || ''))}" /></label>
+          </div>
+          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="use_dynamic_policies" /><span class="elms-ed-switch"></span>Use Dynamic Policies (Shipping, Payment, Returns)</label>
+          <div class="elms-ed-grid">
+            ${policySelect('payment_policy_id', 'Payment Policy')}
+            ${policySelect('shipping_policy_id', 'Shipping Policy')}
+            ${policySelect('return_policy_id', 'Return Policy')}
+            <label class="elms-ed-field"><span>Country Location</span><select data-ui-field="country_location"><option value="">Select country</option>${DRAFT_COUNTRIES.map(([c, n]) => `<option value="${c}"${c === country ? ' selected' : ''}>${n}</option>`).join('')}</select><small class="elms-ed-note">Zip code coming soon</small></label>
+          </div>
+          <div class="elms-ed-section">Monitoring</div>
+          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="stock_monitoring" checked /><span class="elms-ed-switch"></span>Stock Monitoring</label>
+          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="price_monitoring" checked /><span class="elms-ed-switch"></span>Price Monitoring</label>
+        </div>
+
+        <div class="elms-editor-pane" data-ui-pane="description">
+          <label class="elms-ed-field"><span>Description</span><textarea data-ui-field="description" rows="8">${escapeHtml(desc)}</textarea></label>
+        </div>
+
+        <div class="elms-editor-pane" data-ui-pane="variants">
+          ${variants.length ? variants.map((v, i) => `<div class="elms-ed-variant"><b>${escapeHtml(v.title || v.name || v.sku || `Variant ${i + 1}`)}</b><span>${v.price != null ? escapeHtml(String(v.price)) : ''}</span></div>`).join('') : '<div class="elms-ed-variant"><b>Variants: 1</b><span>Single variant</span></div>'}
+        </div>
+
+        <div class="elms-editor-pane" data-ui-pane="images">
+          <div class="elms-ed-images" data-ui-images>${images.map((u) => draftEditorImageHtml(u)).join('')}</div>
+          <div class="elms-ed-empty" data-ui-images-empty style="${images.length ? 'display:none;' : ''}margin-bottom:12px;">No images yet.</div>
+          <div class="elms-ed-row"><input type="text" data-ui-image-url placeholder="Paste image URL" style="height:38px;border:1px solid #dfe3e8;border-radius:8px;padding:0 11px;font:500 13px Inter,sans-serif;" /><button type="button" class="elms-ed-btn" data-ui-action="add-image-url">Add from URL</button></div>
+        </div>
+
+        <div class="elms-editor-pane" data-ui-pane="specs">
+          <div data-ui-specs>${(specs.length ? specs : [{}]).map(specRow).join('')}</div>
+          <button type="button" class="elms-ed-btn" data-ui-action="add-spec">+ Add specification</button>
+        </div>
+      </div>`;
+  }
+
+  function draftEditorImageHtml(url) {
+    return `<div class="elms-ed-img"><img src="${escapeAttr(url)}" alt="" /><button type="button" data-ui-action="remove-image" aria-label="Remove image">&times;</button></div>`;
+  }
+
+  function wireDraftEditor(expandRow) {
+    const ed = expandRow.querySelector('[data-ui-editor]');
+    if (!ed) return;
+    const q = (sel) => ed.querySelector(sel);
+
+    ed.querySelectorAll('[data-ui-tab]').forEach((tab) => tab.addEventListener('click', () => {
+      const name = tab.getAttribute('data-ui-tab');
+      ed.querySelectorAll('[data-ui-tab]').forEach((t) => t.classList.toggle('active', t === tab));
+      ed.querySelectorAll('[data-ui-pane]').forEach((p) => p.classList.toggle('active', p.getAttribute('data-ui-pane') === name));
+    }));
+
+    const titleInput = q('[data-ui-field="title"]');
+    titleInput?.addEventListener('input', () => { q('[data-ui-title-count]').textContent = `${titleInput.value.length}/80`; });
+
+    const syncImagesEmpty = () => { q('[data-ui-images-empty]').style.display = q('[data-ui-images]').children.length ? 'none' : ''; };
+    ed.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-ui-action]');
+      if (!btn) return;
+      const action = btn.getAttribute('data-ui-action');
+      if (action === 'optimize-title') {
+        showToast('Coming soon', 'AI title optimization is not connected yet.', '');
+      } else if (action === 'remove-image') {
+        btn.closest('.elms-ed-img').remove();
+        syncImagesEmpty();
+      } else if (action === 'add-image-url') {
+        const input = q('[data-ui-image-url]');
+        const url = input.value.trim();
+        if (!/^https?:\/\//i.test(url)) { showToast('Invalid URL', 'Enter a full image URL starting with http(s)://', 'error'); return; }
+        q('[data-ui-images]').insertAdjacentHTML('beforeend', draftEditorImageHtml(url));
+        input.value = '';
+        syncImagesEmpty();
+      } else if (action === 'add-spec') {
+        q('[data-ui-specs]').insertAdjacentHTML('beforeend', `<div class="elms-ed-spec" data-ui-spec><input type="text" data-ui-spec-name placeholder="Name" /><input type="text" data-ui-spec-value placeholder="Value" /><button type="button" class="elms-ed-btn" data-ui-action="remove-spec">Remove</button></div>`);
+      } else if (action === 'remove-spec') {
+        btn.closest('[data-ui-spec]').remove();
+      }
+    });
+  }
+
   function draftRowHtml(l) {
     const status = l.status || 'draft';
     const actionLabel = status === 'error' ? 'Retry' : status === 'scheduled' ? 'Cancel' : status === 'publishing' ? 'Publishing…' : 'Publish';
@@ -5422,21 +5584,21 @@
             ${l.amazon_url ? `<a class="elms-ex-link" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener">View source</a>` : ''}
           </div>
         </div>
-      </div></td></tr>`;
+      </div>${draftEditorHtml(l)}</td></tr>`;
 
     return `
       <tr class="draft-row" data-listing-id="${escapeAttr(l.id)}" data-status="${escapeAttr(status)}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
         <td class="draft-select-cell"><input type="checkbox" class="draft-checkbox" data-action="select" /></td>
-        <td><div class="elms-product-cell" data-action="open-detail">
+        <td><div class="elms-product-cell" data-action="toggle-row">
           ${l.main_image ? `<img class="elms-product-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="elms-product-thumb"></div>'}
-          <div class="elms-product-copy"><div class="elms-product-title">${status === 'error' ? '<span class="elms-warning-dot">!</span>' : ''}${escapeHtml(l.title || l.sku || 'Untitled product')}</div><div class="elms-product-id">ASIN / SKU: ${escapeHtml(asin)}</div><div class="elms-product-fields">${ELMS_FIELDS.map((f) => { const v = f.get(l); return `<span class="elms-pf elms-pf-${f.key}"><b>${f.label}</b> ${v == null || v === '' ? '—' : escapeHtml(String(v))}</span>`; }).join('')}</div></div>
+          <div class="elms-product-copy"><div class="elms-product-title">${status === 'error' ? '<span class="elms-warning-dot">!</span>' : ''}${escapeHtml(l.title || l.sku || 'Untitled product')}</div><div class="elms-product-id">ASIN / SKU: ${escapeHtml(asin)}</div><div class="elms-supplier-line">Supplier: ${escapeHtml(draftSupplierLabel(l))}</div><div class="elms-product-fields">${ELMS_FIELDS.map((f) => { const v = f.get(l); return `<span class="elms-pf elms-pf-${f.key}"><b>${f.label}</b> ${v == null || v === '' ? '—' : escapeHtml(String(v))}</span>`; }).join('')}</div></div>
         </div></td>
         <td><span class="elms-date">${escapeHtml(uploadedText)}</span></td>
         <td><span class="elms-sourcing-request">${escapeHtml(sourcingRequest)}</span></td>
         <td><div class="elms-item-ids"><div><span class="elms-id-label">BUY</span><span class="elms-id-value">${escapeHtml(asin)}</span></div><div><span class="elms-id-label sell">SELL</span><span class="elms-id-value">${escapeHtml(ebayItemId)}</span></div></div></td>
         <td><span class="elms-sold-count">${escapeHtml(String(sold))}</span></td>
         <td data-action="stop-propagation"><div class="elms-row-actions">
-          <button class="elms-publish-btn" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>${actionLabel}</button><button class="elms-icon-btn elms-chevron" data-action="toggle-expand" aria-expanded="false" title="Show details">&#9662;</button><button class="elms-icon-btn" data-action="toggle-menu" title="More actions">⋮</button>
+          <button class="elms-publish-btn" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>${actionLabel}</button><button class="elms-icon-btn elms-chevron" data-action="toggle-expand" aria-expanded="false" title="Show details">&#8250;</button><button class="elms-icon-btn" data-action="toggle-menu" title="More actions">⋮</button>
           <div class="draft-menu-wrap"><div class="draft-menu" data-menu><button data-action="schedule">Schedule Listing</button><button data-action="delete" class="menu-danger">Delete Draft</button></div></div>
         </div>
         <input type="hidden" data-field="sellPrice" value="${escapeAttr(l.sell_price ?? '')}" /><input type="hidden" data-field="quantity" value="${escapeAttr(l.quantity ?? 1)}" /><input type="hidden" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" /><button type="button" data-action="save" hidden>Save</button></td>
@@ -5540,6 +5702,10 @@ async function autoSuggestEmptyDraftCategories() {
         }).observe(saveBtn, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
 
         expandRow.querySelector('[data-action="expand-open"]').addEventListener('click', () => openDraftDetailModal(id));
+
+        // Clicking the product name/thumbnail also toggles the inline editor.
+        row.querySelectorAll('[data-action="toggle-row"]').forEach((el) => el.addEventListener('click', () => expandBtn.click()));
+        wireDraftEditor(expandRow);
       }
 
       saveBtn.addEventListener('click', async () => {
