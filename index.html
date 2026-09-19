@@ -2626,6 +2626,64 @@
     .toast-container { left:12px; right:12px; max-width:none; }
     img, video { max-width:100%; }
   }
+
+  /* ---------- Listing editor: save bar, primary button, zip status ---------- */
+  .elms-editor-foot { display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:12px 18px; border-top:1px solid #e5e7eb; background:#fafbfc; flex-wrap:wrap; }
+  .elms-editor-foot [data-ui-status] { margin-right:auto; }
+  #draftsContent .elms-ed-btn.primary, #llEditModal .elms-ed-btn.primary { background:#2563eb; border-color:#2563eb; color:#fff; }
+  #draftsContent .elms-ed-btn.primary:hover, #llEditModal .elms-ed-btn.primary:hover { background:#1d4ed8; }
+  #draftsContent .elms-ed-btn:disabled, #llEditModal .elms-ed-btn:disabled { opacity:.6; cursor:not-allowed; }
+  #draftsContent .elms-ed-field select:disabled, #llEditModal .elms-ed-field select:disabled { background:#f3f4f6; color:#9aa3b2; }
+  #draftsContent .elms-ed-note, #llEditModal .elms-ed-note { display:block; margin-top:4px; }
+  .elms-ed-note { font-size:11.5px; color:#94a3b8; }
+
+  /* ---------- Import page ---------- */
+  .imp-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+  .imp-head h1 { margin:0; font-size:28px; font-weight:800; letter-spacing:-0.02em; }
+  .imp-head .sub { margin-top:6px; color:var(--grey); font-size:14px; max-width:560px; }
+  .imp-layout { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:18px; align-items:start; }
+  .imp-card { background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 8px 28px rgba(20,35,60,.05); overflow:hidden; min-width:0; }
+  .imp-tabs { display:flex; gap:4px; padding:8px 8px 0; background:var(--paper-raised); border-bottom:1px solid var(--line); }
+  .imp-tab { flex:0 0 auto; padding:11px 20px; border:1px solid transparent; border-bottom:0; border-radius:10px 10px 0 0; background:transparent; color:var(--grey); font:600 14px Inter,sans-serif; cursor:pointer; }
+  .imp-tab:hover { color:var(--ink); }
+  .imp-tab.active { background:#fff; color:var(--blue); border-color:var(--line); margin-bottom:-1px; box-shadow:inset 0 3px 0 var(--blue); }
+  .imp-body { padding:22px; }
+  .imp-label { display:block; font-size:13px; font-weight:700; color:var(--ink); margin-bottom:8px; }
+  .imp-label em { font-style:normal; font-weight:500; color:var(--grey); margin-left:6px; font-size:12px; }
+  .imp-urlbox { display:flex; align-items:center; gap:10px; height:54px; padding:0 16px; border:1.5px solid var(--grey-light); border-radius:12px; background:#fff; transition:border-color .15s, box-shadow .15s; }
+  .imp-urlbox:focus-within { border-color:var(--blue); box-shadow:0 0 0 4px rgba(37,99,235,.10); }
+  .imp-urlbox svg { width:20px; height:20px; color:var(--grey); flex:0 0 20px; }
+  .imp-urlbox input { flex:1; min-width:0; height:100%; border:0; outline:0; background:transparent; font:500 15px Inter,sans-serif; color:var(--ink); }
+  .imp-textarea { width:100%; box-sizing:border-box; border:1.5px solid var(--grey-light); border-radius:12px; padding:12px 14px; font:500 14px Inter,sans-serif; resize:vertical; outline:0; }
+  .imp-textarea:focus { border-color:var(--blue); box-shadow:0 0 0 4px rgba(37,99,235,.10); }
+  .imp-markup { margin-top:22px; padding-top:20px; border-top:1px dashed var(--line); }
+  .imp-markup-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .imp-chips { display:flex; gap:8px; flex-wrap:wrap; }
+  .imp-chip { height:38px; padding:0 16px; border:1px solid var(--line); border-radius:999px; background:#fff; color:var(--ink); font:600 13px Inter,sans-serif; cursor:pointer; transition:all .12s; }
+  .imp-chip:hover { border-color:var(--blue); color:var(--blue); }
+  .imp-chip.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+  .imp-markup-input { display:flex; align-items:center; gap:6px; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:10px; background:#fff; }
+  .imp-markup-input input { width:70px; border:0; outline:0; font:600 14px Inter,sans-serif; text-align:right; background:transparent; }
+  .imp-markup-input span { color:var(--grey); font-weight:700; }
+  .imp-example { margin-top:10px; font-size:12.5px; color:var(--grey); }
+  .imp-cta-row { margin-top:22px; }
+  .imp-cta { width:100%; height:52px; font-size:15px; border-radius:12px; }
+  .imp-side { display:grid; gap:14px; min-width:0; }
+  .imp-side-card { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:0 6px 20px rgba(20,35,60,.04); }
+  .imp-side-title { font-size:14px; font-weight:800; margin-bottom:12px; }
+  .imp-steps { list-style:none; margin:0; padding:0; display:grid; gap:14px; }
+  .imp-steps .pipeline-step { display:flex; align-items:flex-start; gap:12px; font-size:13px; color:var(--grey); font-weight:400; }
+  .imp-steps .pipeline-step .dot { flex:0 0 12px; width:12px; height:12px; margin-top:4px; border-radius:50%; background:var(--grey-light); }
+  .imp-steps .pipeline-step b { display:block; color:var(--ink); font-size:14px; }
+  .imp-steps .pipeline-step small { display:block; margin-top:2px; font-size:12.5px; line-height:1.45; }
+  .imp-steps .pipeline-step.active .dot { background:var(--blue); box-shadow:0 0 0 4px rgba(37,99,235,.15); }
+  .imp-steps .pipeline-step.done .dot { background:var(--green); }
+  .imp-tip { display:flex; gap:12px; align-items:flex-start; background:#EEF4FF; border-color:#DBE7FF; }
+  .imp-tip svg { width:20px; height:20px; color:var(--blue); flex:0 0 20px; margin-top:1px; }
+  .imp-tip b { display:block; font-size:13px; color:var(--blue-dark); }
+  .imp-tip small { display:block; margin-top:3px; font-size:12.5px; color:#475467; line-height:1.5; }
+  @media (max-width:900px) { .imp-layout { grid-template-columns:minmax(0,1fr); } }
+  @media (max-width:520px) { .imp-body { padding:16px; } .imp-head h1 { font-size:24px; } .imp-urlbox { height:50px; } .imp-tab { padding:10px 14px; } }
 </style>
 </head>
 <body>
@@ -2948,64 +3006,76 @@
         <div id="dashboardContent"><p class="state-msg">Loading dashboard&hellip;</p></div>
       </div>
       <div id="page-import" style="display:none;">
-        <div class="import-page-head">
+        <div class="imp-head">
           <div>
             <h1>Import a product</h1>
-            <div class="sub">Paste an Amazon link, price it, and send it to eBay.</div>
+            <div class="sub">Paste an Amazon link, set your markup and ELMS creates the eBay draft for you.</div>
           </div>
           <button type="button" class="import-history-link" data-page="history">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            View import history
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg>
+            Import history
           </button>
         </div>
 
-        <div class="import-lane">
-          <div class="import-step-badge">Step 1 of 3</div>
-          <h2>Bring in a product</h2>
-          <div class="meta-line" style="margin:-12px 0 18px;">Paste your Amazon product link below and we'll fetch the details for you.</div>
+        <div class="imp-layout">
+          <div class="imp-card">
+            <div class="imp-tabs" role="tablist">
+              <button type="button" class="imp-tab active" id="impTabSingle" role="tab">Single link</button>
+              <button type="button" class="imp-tab" id="toggleBulkImportBtn" role="tab">Bulk import</button>
+            </div>
 
-          <div class="lane-row">
-            <input type="text" id="amazonUrl" placeholder="https://www.amazon.com/dp/XXXXXXXXXX" />
-            <input type="number" id="markupPercent" min="-99" max="1000" step="0.01" value="0" placeholder="Markup %" style="max-width:150px;" title="Add this percentage to the Amazon price for the initial eBay selling price" />
-            <button class="primary" id="fetchBtn">Fetch product</button>
+            <div class="imp-body">
+              <div id="impSingle">
+                <label class="imp-label" for="amazonUrl">Amazon product link</label>
+                <div class="imp-urlbox">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  <input type="text" id="amazonUrl" placeholder="https://www.amazon.com/dp/XXXXXXXXXX" autocomplete="off" />
+                </div>
+              </div>
+
+              <div id="bulkImportSection" style="display:none;">
+                <label class="imp-label" for="bulkAmazonUrls">Amazon links <em>one per line, up to 25</em></label>
+                <textarea class="imp-textarea" id="bulkAmazonUrls" rows="6" placeholder="https://www.amazon.com/dp/XXXXXXXXXX&#10;https://www.amazon.com/dp/YYYYYYYYYY"></textarea>
+                <div id="bulkImportStatus" style="margin-top:10px;"></div>
+              </div>
+
+              <div class="imp-markup">
+                <div class="imp-label">Markup <em>added to the Amazon price to get your eBay selling price</em></div>
+                <div class="imp-markup-row">
+                  <div class="imp-chips" id="impMarkupChips">
+                    <button type="button" class="imp-chip" data-markup="0">0%</button>
+                    <button type="button" class="imp-chip" data-markup="10">10%</button>
+                    <button type="button" class="imp-chip" data-markup="15">15%</button>
+                    <button type="button" class="imp-chip" data-markup="20">20%</button>
+                    <button type="button" class="imp-chip" data-markup="30">30%</button>
+                    <button type="button" class="imp-chip" data-markup="50">50%</button>
+                  </div>
+                  <div class="imp-markup-input"><input type="number" id="markupPercent" min="-99" max="1000" step="0.01" value="0" placeholder="Custom" aria-label="Markup percent" title="Add this percentage to the Amazon price for the initial eBay selling price" /><span>%</span></div>
+                </div>
+                <div class="imp-example" id="impMarkupExample"></div>
+              </div>
+
+              <div class="imp-cta-row">
+                <button class="primary imp-cta" id="fetchBtn">Fetch product</button>
+                <button class="primary imp-cta" id="bulkFetchBtn" style="display:none;">Fetch all</button>
+              </div>
+            </div>
           </div>
 
-          <div class="import-info-bar">
-            <div class="info-ico">%</div>
-            <div class="info-txt">Markup is applied to the Amazon price when the draft is created. Example: $100 + 10% = $110 selling price.</div>
-          </div>
-
-          <div class="pipeline-track">
-            <div class="pipeline-step active" id="stepSource"><span class="dot"></span>Source</div>
-            <span class="pipeline-arrow">&rarr;</span>
-            <div class="pipeline-step" id="stepPrice"><span class="dot"></span>Price</div>
-            <span class="pipeline-arrow">&rarr;</span>
-            <div class="pipeline-step" id="stepPublish"><span class="dot"></span>Publish</div>
-          </div>
-
-          <button type="button" class="btn-outline" id="toggleBulkImportBtn" style="margin-top:16px;">Bulk import multiple links</button>
-
-          <div id="bulkImportSection" style="display:none; margin-top:16px;">
-            <label class="edit-label">Amazon links (one per line, up to 25)</label>
-            <textarea class="editable-input editable-textarea" id="bulkAmazonUrls" rows="6" placeholder="https://www.amazon.com/dp/XXXXXXXXXX&#10;https://www.amazon.com/dp/YYYYYYYYYY"></textarea>
-            <button type="button" class="primary" id="bulkFetchBtn" style="margin-top:10px; width:auto; padding:0 26px; height:44px;">Fetch all</button>
-            <div id="bulkImportStatus" style="margin-top:12px;"></div>
-          </div>
-        </div>
-
-        <div class="import-features">
-          <div class="import-feature">
-            <div class="feat-ico green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-            <div><div class="feat-title">Supports Amazon Links</div><div class="feat-body">Paste any Amazon product URL and we'll extract the details.</div></div>
-          </div>
-          <div class="import-feature">
-            <div class="feat-ico purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div>
-            <div><div class="feat-title">Auto Price Calculation</div><div class="feat-body">Set your markup and get the selling price instantly.</div></div>
-          </div>
-          <div class="import-feature">
-            <div class="feat-ico blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-            <div><div class="feat-title">Fast &amp; Easy</div><div class="feat-body">Create eBay drafts in seconds and start selling faster.</div></div>
-          </div>
+          <aside class="imp-side">
+            <div class="imp-side-card">
+              <div class="imp-side-title">How it works</div>
+              <ol class="imp-steps">
+                <li class="pipeline-step active" id="stepSource"><span class="dot"></span><div><b>Source</b><small>Paste the Amazon link and we pull the details.</small></div></li>
+                <li class="pipeline-step" id="stepPrice"><span class="dot"></span><div><b>Price</b><small>Your markup sets the eBay selling price.</small></div></li>
+                <li class="pipeline-step" id="stepPublish"><span class="dot"></span><div><b>Publish</b><small>Review the draft, then publish to eBay.</small></div></li>
+              </ol>
+            </div>
+            <div class="imp-side-card imp-tip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+              <div><b>Tip</b><small>Fetching runs in the background, so you can paste the next link straight away. Finished drafts appear in Drafts.</small></div>
+            </div>
+          </aside>
         </div>
 
         <div id="result"></div>
@@ -3354,23 +3424,36 @@
             <div class="publish-rail" style="border-top:none; padding-top:0;">
               <div class="publish-field">
                 <label>Country</label>
-                <select class="editable-input" id="customLocationCountry" style="width:160px;">
+                <select class="editable-input" id="customLocationCountry" style="width:180px;">
                   <option value="US">United States</option>
                   <option value="GB">United Kingdom</option>
-                  <option value="CA">Canada</option>
-                  <option value="AU">Australia</option>
                   <option value="DE">Germany</option>
                   <option value="FR">France</option>
                   <option value="IT">Italy</option>
                   <option value="ES">Spain</option>
+                  <option value="CA">Canada</option>
+                  <option value="AU">Australia</option>
                   <option value="NL">Netherlands</option>
-                  <option value="IN">India</option>
+                  <option value="CH">Switzerland</option>
+                  <option value="AT">Austria</option>
+                  <option value="BE">Belgium</option>
+                  <option value="IE">Ireland</option>
+                  <option value="PL">Poland</option>
+                  <option value="HK">Hong Kong</option>
+                  <option value="SG">Singapore</option>
+                  <option value="MY">Malaysia</option>
+                  <option value="PH">Philippines</option>
                 </select>
+              </div>
+              <div class="publish-field">
+                <label>City</label>
+                <input type="text" id="customLocationCity" placeholder="e.g. New York" style="width:180px;" />
               </div>
               <div class="publish-field">
                 <label>Postal code</label>
                 <input type="text" id="customLocationPostalCode" placeholder="e.g. 10001" style="width:140px;" />
               </div>
+              <button class="btn-outline" id="generatePostalCodeBtn" type="button">Generate</button>
               <button class="btn-outline" id="lookupPostalCodeBtn" type="button">Look up</button>
             </div>
             <div id="postalLookupResult" style="margin-top:10px;"></div>
@@ -3843,11 +3926,33 @@
     el.addEventListener('click', () => showPage(el.getAttribute('data-page')));
   });
 
-  toggleBulkImportBtn.addEventListener('click', () => {
-    const isHidden = bulkImportSection.style.display === 'none';
-    bulkImportSection.style.display = isHidden ? 'block' : 'none';
-    toggleBulkImportBtn.textContent = isHidden ? 'Hide bulk import' : 'Bulk import multiple links';
-  });
+  function setImportTab(bulk) {
+    document.getElementById('impSingle').style.display = bulk ? 'none' : 'block';
+    bulkImportSection.style.display = bulk ? 'block' : 'none';
+    document.getElementById('fetchBtn').style.display = bulk ? 'none' : '';
+    document.getElementById('bulkFetchBtn').style.display = bulk ? '' : 'none';
+    document.getElementById('impTabSingle').classList.toggle('active', !bulk);
+    toggleBulkImportBtn.classList.toggle('active', bulk);
+  }
+  toggleBulkImportBtn.addEventListener('click', () => setImportTab(true));
+  document.getElementById('impTabSingle').addEventListener('click', () => setImportTab(false));
+
+  // Markup presets + a live worked example under the field.
+  (function wireMarkupControls() {
+    const input = document.getElementById('markupPercent');
+    const example = document.getElementById('impMarkupExample');
+    const chips = document.querySelectorAll('#impMarkupChips .imp-chip');
+    const refresh = () => {
+      const v = input.value === '' ? 0 : Number(input.value);
+      chips.forEach((c) => c.classList.toggle('active', Number(c.dataset.markup) === v));
+      if (!Number.isFinite(v)) { example.textContent = ''; return; }
+      const sell = 100 * (1 + v / 100);
+      example.textContent = `Example: $100 Amazon price + ${v}% = $${sell.toFixed(2)} on eBay.`;
+    };
+    chips.forEach((c) => c.addEventListener('click', () => { input.value = c.dataset.markup; refresh(); }));
+    input.addEventListener('input', refresh);
+    refresh();
+  })();
 
   document.getElementById('bulkFetchBtn').addEventListener('click', async () => {
     const bulkBtn = document.getElementById('bulkFetchBtn');
@@ -5449,6 +5554,7 @@
       }
 
       const allDrafts = data.listings || [];
+      draftListingMap = new Map(allDrafts.map((item) => [String(item.id), item]));
       const counts = allDrafts.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
       if (!allDrafts.length) {
         container.innerHTML = '<div class="empty-state">No drafts yet. Fetch a product from the Import page and it will be saved here automatically, ready to publish anytime.</div>';
@@ -5583,8 +5689,12 @@
     refreshDraftsCountBadge();
   }
 
-  // ----- Inline draft editor (UI only: nothing here is sent to the backend) -----
-  // Field names below (data-ui-field) are snake_case so they can be mapped to the API later.
+  // ----- Listing editor (inline in Drafts, full modal in Live listings) -----
+  // Every field is saved through the backend: content fields with PUT /api/list-on-ebay/:id,
+  // per-product settings with PATCH /api/listings/:id/settings. Field names (data-ui-field)
+  // are snake_case; request bodies use the camelCase names the API already uses.
+  let draftListingMap = new Map();
+
   function draftSupplierLabel(l) {
     const raw = String(l.supplier_country || l.supplierCountry || '').trim();
     if (raw) return /^amazon/i.test(raw) ? raw : `Amazon ${raw.toUpperCase()}`;
@@ -5595,20 +5705,39 @@
     return 'Amazon';
   }
 
-  const DRAFT_COUNTRIES = [['US', 'United States'], ['UK', 'United Kingdom'], ['AU', 'Australia'], ['CA', 'Canada'], ['DE', 'Germany'], ['FR', 'France'], ['IT', 'Italy'], ['ES', 'Spain'], ['NL', 'Netherlands'], ['IN', 'India'], ['CN', 'China']];
+  // The 18 eBay marketplace countries ELMS can generate real postal codes for.
+  const EBAY_COUNTRIES = [['US', 'United States'], ['GB', 'United Kingdom'], ['DE', 'Germany'], ['FR', 'France'], ['IT', 'Italy'], ['ES', 'Spain'], ['CA', 'Canada'], ['AU', 'Australia'], ['NL', 'Netherlands'], ['CH', 'Switzerland'], ['AT', 'Austria'], ['BE', 'Belgium'], ['IE', 'Ireland'], ['PL', 'Poland'], ['HK', 'Hong Kong'], ['SG', 'Singapore'], ['MY', 'Malaysia'], ['PH', 'Philippines']];
+  const MARKETPLACE_COUNTRY = { EBAY_US: 'US', EBAY_GB: 'GB', EBAY_DE: 'DE', EBAY_FR: 'FR', EBAY_IT: 'IT', EBAY_ES: 'ES', EBAY_CA: 'CA', EBAY_AU: 'AU', EBAY_NL: 'NL', EBAY_CH: 'CH', EBAY_AT: 'AT', EBAY_BE: 'BE', EBAY_IE: 'IE', EBAY_PL: 'PL', EBAY_HK: 'HK', EBAY_SG: 'SG', EBAY_MY: 'MY', EBAY_PH: 'PH' };
+  const countryOptionsHtml = (selected, placeholder = 'Select country') => `<option value="">${placeholder}</option>${EBAY_COUNTRIES.map(([c, n]) => `<option value="${c}"${c === selected ? ' selected' : ''}>${n}</option>`).join('')}`;
 
-  function draftEditorHtml(l) {
+  // Generates a real postal code for a city through the backend and reports the outcome as text.
+  async function requestPostalCode(country, cityText) {
+    const parts = String(cityText || '').split(',').map((p) => p.trim()).filter(Boolean);
+    const params = new URLSearchParams({ country, city: parts[0] || '' });
+    if (parts[1]) params.set('state', parts.slice(1).join(', '));
+    const res = await apiFetch(`/api/seller-settings/postal-generate?${params.toString()}`);
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Could not generate a postal code.');
+    return data.location;
+  }
+  function describePostalLocation(loc) {
+    if (loc.notRequired) return `${loc.countryName} does not use postal codes.`;
+    return `${loc.postalCode} · ${[loc.city, loc.state, loc.countryName].filter(Boolean).join(', ')}`;
+  }
+
+  function draftEditorHtml(l, opts = {}) {
     const title = l.title || l.sku || '';
     const desc = l.description || l.product_description || '';
     const images = (Array.isArray(l.images) && l.images.length ? l.images : (l.main_image ? [l.main_image] : [])).filter(Boolean);
     const variants = Array.isArray(l.variants) ? l.variants : [];
     const specs = Array.isArray(l.item_specifications) ? l.item_specifications : (Array.isArray(l.specifications) ? l.specifications : []);
-    const country = String(l.country_location || '').toUpperCase();
+    const country = String(l.country_location || MARKETPLACE_COUNTRY[l.marketplace_id] || '').toUpperCase();
     const cats = l.category_id ? `<option value="${escapeAttr(l.category_id)}" selected>Category ${escapeHtml(l.category_id)}</option>` : '';
-    const policySelect = (name, label) => `<label class="elms-ed-field"><span>${label}</span><select data-ui-field="${name}"><option value="">Select ${label.toLowerCase()}</option></select></label>`;
+    const policySelect = (name, label, saved) => `<label class="elms-ed-field"><span>${label}</span><select data-ui-field="${name}" data-saved="${escapeAttr(saved || '')}"><option value="">Account default</option>${saved ? `<option value="${escapeAttr(saved)}" selected>Saved policy (${escapeHtml(saved)})</option>` : ''}</select></label>`;
     const specRow = (s) => `<div class="elms-ed-spec" data-ui-spec><input type="text" data-ui-spec-name placeholder="Name" value="${escapeAttr(s?.name || '')}" /><input type="text" data-ui-spec-value placeholder="Value" value="${escapeAttr(s?.value || '')}" /><button type="button" class="elms-ed-btn" data-ui-action="remove-spec">Remove</button></div>`;
+    const shipMethods = [['', 'Select shipping method'], ['cheapest_with_tracking', 'Cheapest with tracking'], ['standard', 'Standard'], ['express', 'Express']];
     return `
-      <div class="elms-editor" data-ui-editor>
+      <div class="elms-editor" data-ui-editor data-listing-id="${escapeAttr(l.id)}">
         <div class="elms-editor-tabs" role="tablist">
           <button type="button" class="elms-editor-tab active" data-ui-tab="product" role="tab">Product</button>
           <button type="button" class="elms-editor-tab" data-ui-tab="description" role="tab">Description</button>
@@ -5623,19 +5752,28 @@
           </label>
           <div class="elms-ed-grid">
             <label class="elms-ed-field"><span>Category</span><select data-ui-field="category"><option value="">Select category</option>${cats}</select></label>
-            <label class="elms-ed-field"><span>Shipping Methods</span><select data-ui-field="shipping_method"><option value="">Select shipping method</option><option value="cheapest_with_tracking">Cheapest with tracking</option><option value="standard">Standard</option><option value="express">Express</option></select></label>
+            <label class="elms-ed-field"><span>Shipping Methods</span><select data-ui-field="shipping_method">${shipMethods.map(([v, t]) => `<option value="${v}"${v === (l.shipping_method || '') ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
             <label class="elms-ed-field full"><span>Tags</span><input type="text" data-ui-field="tags" placeholder="Enter tags, separated by commas" value="${escapeAttr(Array.isArray(l.tags) ? l.tags.join(', ') : (l.tags || ''))}" /></label>
           </div>
-          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="use_dynamic_policies" /><span class="elms-ed-switch"></span>Use Dynamic Policies (Shipping, Payment, Returns)</label>
+          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="use_dynamic_policies"${l.use_dynamic_policies ? ' checked' : ''} /><span class="elms-ed-switch"></span>Use Dynamic Policies (Shipping, Payment, Returns)</label>
+          <small class="elms-ed-note" data-ui-policy-note>On: the eBay account's default policies are used. Off: the policies chosen below apply to this product.</small>
+          <div class="elms-ed-grid" style="margin-top:10px;">
+            ${policySelect('payment_policy_id', 'Payment Policy', l.payment_policy_id)}
+            ${policySelect('shipping_policy_id', 'Shipping Policy', l.shipping_policy_id)}
+            ${policySelect('return_policy_id', 'Return Policy', l.return_policy_id)}
+          </div>
+          <div class="elms-ed-section">Item location</div>
           <div class="elms-ed-grid">
-            ${policySelect('payment_policy_id', 'Payment Policy')}
-            ${policySelect('shipping_policy_id', 'Shipping Policy')}
-            ${policySelect('return_policy_id', 'Return Policy')}
-            <label class="elms-ed-field"><span>Country Location</span><select data-ui-field="country_location"><option value="">Select country</option>${DRAFT_COUNTRIES.map(([c, n]) => `<option value="${c}"${c === country ? ' selected' : ''}>${n}</option>`).join('')}</select><small class="elms-ed-note">Zip code coming soon</small></label>
+            <label class="elms-ed-field"><span>Country Location</span><select data-ui-field="country_location">${countryOptionsHtml(country)}</select></label>
+            <label class="elms-ed-field"><span>City</span><input type="text" data-ui-field="location_city" placeholder="e.g. New York" value="${escapeAttr(l.location_city || '')}" /></label>
+            <label class="elms-ed-field full"><span>Zip code</span>
+              <div class="elms-ed-row"><input type="text" data-ui-field="postal_code" maxlength="12" placeholder="Zip / postal code" value="${escapeAttr(l.postal_code || '')}" /><button type="button" class="elms-ed-btn" data-ui-action="generate-zip">Generate</button></div>
+              <small class="elms-ed-note" data-ui-zip-status>Choose a country, type a city and click Generate to fill in a real zip code.</small>
+            </label>
           </div>
           <div class="elms-ed-section">Monitoring</div>
-          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="stock_monitoring" checked /><span class="elms-ed-switch"></span>Stock Monitoring</label>
-          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="price_monitoring" checked /><span class="elms-ed-switch"></span>Price Monitoring</label>
+          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="stock_monitoring"${l.stock_monitoring === false ? '' : ' checked'} /><span class="elms-ed-switch"></span>Stock Monitoring</label>
+          <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="price_monitoring"${l.price_monitoring === false ? '' : ' checked'} /><span class="elms-ed-switch"></span>Price Monitoring</label>
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="description">
@@ -5656,17 +5794,113 @@
           <div data-ui-specs>${(specs.length ? specs : [{}]).map(specRow).join('')}</div>
           <button type="button" class="elms-ed-btn" data-ui-action="add-spec">+ Add specification</button>
         </div>
+        ${opts.showSave === false ? '' : `<div class="elms-editor-foot"><span class="elms-ed-note" data-ui-status></span><button type="button" class="elms-ed-btn primary" data-ui-action="save-editor">Save changes</button></div>`}
       </div>`;
   }
 
   function draftEditorImageHtml(url) {
-    return `<div class="elms-ed-img"><img src="${escapeAttr(url)}" alt="" /><button type="button" data-ui-action="remove-image" aria-label="Remove image">&times;</button></div>`;
+    return `<div class="elms-ed-img" data-url="${escapeAttr(url)}"><img src="${escapeAttr(url)}" alt="" /><button type="button" data-ui-action="remove-image" aria-label="Remove image">&times;</button></div>`;
   }
 
-  function wireDraftEditor(expandRow) {
-    const ed = expandRow.querySelector('[data-ui-editor]');
+  // Reads every field of an editor into one object (camelCase, ready for the API).
+  function collectEditorValues(ed) {
+    const f = (name) => ed.querySelector(`[data-ui-field="${name}"]`);
+    const val = (name) => (f(name)?.value ?? '').trim();
+    const cat = f('category');
+    return {
+      title: val('title'),
+      categoryId: cat ? cat.value : '',
+      description: f('description') ? f('description').value : '',
+      tags: val('tags').split(',').map((t) => t.trim()).filter(Boolean),
+      shippingMethod: val('shipping_method'),
+      useDynamicPolicies: !!f('use_dynamic_policies')?.checked,
+      paymentPolicyId: val('payment_policy_id'),
+      fulfillmentPolicyId: val('shipping_policy_id'),
+      returnPolicyId: val('return_policy_id'),
+      countryLocation: val('country_location'),
+      locationCity: val('location_city'),
+      postalCode: val('postal_code'),
+      stockMonitoring: !!f('stock_monitoring')?.checked,
+      priceMonitoring: !!f('price_monitoring')?.checked,
+      images: Array.from(ed.querySelectorAll('[data-ui-images] .elms-ed-img')).map((el) => el.getAttribute('data-url')).filter(Boolean),
+      specifications: Array.from(ed.querySelectorAll('[data-ui-spec]')).map((row) => ({
+        name: row.querySelector('[data-ui-spec-name]').value.trim(),
+        value: row.querySelector('[data-ui-spec-value]').value.trim(),
+      })).filter((s) => s.name && s.value),
+    };
+  }
+
+  // The subset of the editor that PATCH /api/listings/:id/settings understands.
+  function editorSettingsBody(v) {
+    return {
+      tags: v.tags, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies,
+      paymentPolicyId: v.paymentPolicyId || null, fulfillmentPolicyId: v.fulfillmentPolicyId || null, returnPolicyId: v.returnPolicyId || null,
+      countryLocation: v.countryLocation || null, locationCity: v.locationCity || null, postalCode: v.postalCode || null,
+      stockMonitoring: v.stockMonitoring, priceMonitoring: v.priceMonitoring,
+    };
+  }
+
+  async function saveEditorSettings(listingId, v) {
+    const res = await apiFetch(`/api/listings/${encodeURIComponent(listingId)}/settings`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editorSettingsBody(v)),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Could not save the product settings.');
+    return data.listing;
+  }
+
+  // Fills the category and policy dropdowns from eBay (silent when eBay is not connected yet).
+  async function loadEditorChoices(ed, l) {
+    const accountId = l.ebay_account_id || document.getElementById('sidebarEbaySelect')?.value || '';
+    if (!accountId || accountId === '__ADD_EBAY_ACCOUNT__') return;
+
+    const catSelect = ed.querySelector('[data-ui-field="category"]');
+    if (catSelect && l.title) {
+      apiFetch(`/api/list-on-ebay/suggest-category?title=${encodeURIComponent(l.title)}&accountId=${encodeURIComponent(accountId)}`)
+        .then((r) => r.json()).then((d) => {
+          if (!d.success || !catSelect.isConnected) return;
+          const list = Array.isArray(d.suggestions) && d.suggestions.length ? d.suggestions : (d.topSuggestion ? [d.topSuggestion] : []);
+          const current = catSelect.value;
+          const known = new Set(Array.from(catSelect.options).map((o) => o.value));
+          list.forEach((s) => {
+            if (!s.categoryId || known.has(String(s.categoryId))) return;
+            catSelect.insertAdjacentHTML('beforeend', `<option value="${escapeAttr(s.categoryId)}" title="${escapeAttr(s.fullPath || '')}">${escapeHtml(s.categoryName || 'Category')} (${escapeHtml(s.categoryId)})</option>`);
+          });
+          if (!current && list[0]?.categoryId) catSelect.value = String(list[0].categoryId);
+          const cur = Array.from(catSelect.options).find((o) => o.value === current && /^Category /.test(o.textContent));
+          const match = list.find((s) => String(s.categoryId) === current);
+          if (cur && match) cur.textContent = `${match.categoryName || 'Category'} (${current})`;
+        }).catch(() => {});
+    }
+
+    const marketplaceId = l.marketplace_id || '';
+    apiFetch(`/api/seller-settings/ebay-policies?accountId=${encodeURIComponent(accountId)}${marketplaceId ? `&marketplaceId=${encodeURIComponent(marketplaceId)}` : ''}`)
+      .then((r) => r.json()).then((d) => {
+        if (!d.success) return;
+        const fill = (field, list) => {
+          const sel = ed.querySelector(`[data-ui-field="${field}"]`);
+          if (!sel || !sel.isConnected) return;
+          const saved = sel.getAttribute('data-saved') || '';
+          sel.innerHTML = `<option value="">Account default</option>` + (list || []).map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.name)}</option>`).join('');
+          if (saved && !(list || []).some((p) => String(p.id) === saved)) sel.insertAdjacentHTML('beforeend', `<option value="${escapeAttr(saved)}">Saved policy (${escapeHtml(saved)})</option>`);
+          sel.value = saved;
+        };
+        fill('payment_policy_id', d.paymentPolicies);
+        fill('shipping_policy_id', d.fulfillmentPolicies);
+        fill('return_policy_id', d.returnPolicies);
+      }).catch(() => {});
+  }
+
+  /**
+   * @param {Element} container element that contains the editor markup
+   * @param {object}  l         the listing (mutated with the server's copy after a save)
+   * @param {object}  opts      { onCategoryChange(id) }
+   */
+  function wireDraftEditor(container, l, opts = {}) {
+    const ed = container.querySelector('[data-ui-editor]');
     if (!ed) return;
     const q = (sel) => ed.querySelector(sel);
+    const fld = (name) => q(`[data-ui-field="${name}"]`);
 
     ed.querySelectorAll('[data-ui-tab]').forEach((tab) => tab.addEventListener('click', () => {
       const name = tab.getAttribute('data-ui-tab');
@@ -5674,16 +5908,65 @@
       ed.querySelectorAll('[data-ui-pane]').forEach((p) => p.classList.toggle('active', p.getAttribute('data-ui-pane') === name));
     }));
 
-    const titleInput = q('[data-ui-field="title"]');
+    const titleInput = fld('title');
     titleInput?.addEventListener('input', () => { q('[data-ui-title-count]').textContent = `${titleInput.value.length}/80`; });
+    fld('category')?.addEventListener('change', (e) => opts.onCategoryChange?.(e.target.value));
+
+    // Dynamic policies on = account defaults; the three per-product pickers only apply when it is off.
+    const dyn = fld('use_dynamic_policies');
+    const syncPolicies = () => ['payment_policy_id', 'shipping_policy_id', 'return_policy_id'].forEach((n) => { const s = fld(n); if (s) s.disabled = dyn.checked; });
+    dyn?.addEventListener('change', syncPolicies);
+    syncPolicies();
+
+    // Changing the country clears a zip that no longer belongs to it.
+    let zipCountry = fld('country_location')?.value || '';
+    fld('country_location')?.addEventListener('change', (e) => {
+      if (zipCountry && e.target.value !== zipCountry && fld('postal_code').value) {
+        fld('postal_code').value = '';
+        q('[data-ui-zip-status]').textContent = 'Country changed — click Generate to get a zip code for the new country.';
+      }
+      zipCountry = e.target.value;
+    });
 
     const syncImagesEmpty = () => { q('[data-ui-images-empty]').style.display = q('[data-ui-images]').children.length ? 'none' : ''; };
-    ed.addEventListener('click', (e) => {
+
+    ed.addEventListener('click', async (e) => {
       const btn = e.target.closest('[data-ui-action]');
       if (!btn) return;
       const action = btn.getAttribute('data-ui-action');
+
       if (action === 'optimize-title') {
-        showToast('Coming soon', 'AI title optimization is not connected yet.', '');
+        const title = titleInput.value.trim();
+        if (title.length < 3) { showToast('Title needed', 'Type a title first.', 'error'); return; }
+        const label = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Optimizing…';
+        try {
+          const catSel = fld('category');
+          const res = await apiFetch('/api/list-on-ebay/optimize-title', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, categoryName: catSel?.selectedOptions?.[0]?.textContent || '', description: fld('description')?.value || '' }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || 'Could not optimize the title.');
+          titleInput.value = data.title;
+          titleInput.dispatchEvent(new Event('input'));
+          showToast('Title optimized', data.title, 'success');
+        } catch (err) { showToast('AI title failed', err.message, 'error'); }
+        finally { btn.disabled = false; btn.textContent = label; }
+      } else if (action === 'generate-zip') {
+        const country = fld('country_location').value;
+        const city = fld('location_city').value.trim();
+        const status = q('[data-ui-zip-status]');
+        if (!country) { status.textContent = 'Choose a country first.'; return; }
+        if (!city && country !== 'HK') { status.textContent = 'Type a city first (for example "New York" or "Austin, Texas").'; return; }
+        const label = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Generating…'; status.textContent = 'Finding a real zip code…';
+        try {
+          const loc = await requestPostalCode(country, city);
+          fld('postal_code').value = loc.postalCode || '';
+          status.textContent = describePostalLocation(loc);
+        } catch (err) { status.textContent = err.message; }
+        finally { btn.disabled = false; btn.textContent = label; }
       } else if (action === 'remove-image') {
         btn.closest('.elms-ed-img').remove();
         syncImagesEmpty();
@@ -5691,15 +5974,68 @@
         const input = q('[data-ui-image-url]');
         const url = input.value.trim();
         if (!/^https?:\/\//i.test(url)) { showToast('Invalid URL', 'Enter a full image URL starting with http(s)://', 'error'); return; }
-        q('[data-ui-images]').insertAdjacentHTML('beforeend', draftEditorImageHtml(url));
-        input.value = '';
-        syncImagesEmpty();
+        if (q('[data-ui-images]').children.length >= 24) { showToast('Image limit reached', 'A listing can have at most 24 images.', 'error'); return; }
+        const label = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Adding…';
+        try {
+          const res = await apiFetch(`/api/list-on-ebay/${encodeURIComponent(l.id)}/images/save-url`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: url }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success || !data.url) throw new Error(data.error || 'Could not save that image.');
+          q('[data-ui-images]').insertAdjacentHTML('beforeend', draftEditorImageHtml(data.url));
+          input.value = '';
+          syncImagesEmpty();
+        } catch (err) { showToast('Image failed', err.message, 'error'); }
+        finally { btn.disabled = false; btn.textContent = label; }
       } else if (action === 'add-spec') {
         q('[data-ui-specs]').insertAdjacentHTML('beforeend', `<div class="elms-ed-spec" data-ui-spec><input type="text" data-ui-spec-name placeholder="Name" /><input type="text" data-ui-spec-value placeholder="Value" /><button type="button" class="elms-ed-btn" data-ui-action="remove-spec">Remove</button></div>`);
       } else if (action === 'remove-spec') {
         btn.closest('[data-ui-spec]').remove();
+      } else if (action === 'save-editor') {
+        await saveDraftEditor(ed, l, btn, opts);
       }
     });
+
+    ed._initial = collectEditorValues(ed);
+    loadEditorChoices(ed, l);
+  }
+
+  // Draft "Save changes": content fields are sent only when the seller changed them, so an untouched
+  // description / image gallery keeps falling back to the imported Amazon data.
+  async function saveDraftEditor(ed, l, btn, opts) {
+    const status = ed.querySelector('[data-ui-status]');
+    const now = collectEditorValues(ed);
+    const before = ed._initial || {};
+    const changed = (k) => JSON.stringify(now[k]) !== JSON.stringify(before[k]);
+    const body = { ...editorSettingsBody(now) };
+    if (changed('title')) body.title = now.title;
+    if (changed('categoryId')) body.categoryId = now.categoryId;
+    if (changed('description')) body.description = now.description;
+    if (changed('specifications')) body.specifications = now.specifications;
+    if (changed('images')) body.images = now.images;
+    const accountId = l.ebay_account_id || document.getElementById('sidebarEbaySelect')?.value;
+    if (accountId && accountId !== '__ADD_EBAY_ACCOUNT__') body.accountId = accountId;
+
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Saving…'; if (status) status.textContent = '';
+    try {
+      if (now.title !== before.title && now.title.length < 3) throw new Error('The title is too short.');
+      const hasContent = ['title', 'categoryId', 'description', 'specifications', 'images'].some((k) => k in body);
+      const res = hasContent
+        ? await apiFetch(`/api/list-on-ebay/${encodeURIComponent(l.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        : await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/settings`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editorSettingsBody(now)) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save changes.');
+      Object.assign(l, data.listing || {});
+      ed._initial = now;
+      if (status) status.textContent = 'Saved.';
+      showToast('Saved', 'Listing updated.', 'success');
+      opts.onSaved?.(l);
+    } catch (err) {
+      if (status) status.textContent = err.message;
+      showToast('Save failed', err.message, 'error');
+    } finally { btn.disabled = false; btn.textContent = label; }
   }
 
   function draftRowHtml(l) {
@@ -5872,7 +6208,14 @@ async function autoSuggestEmptyDraftCategories() {
 
         // Clicking the product name/thumbnail also toggles the inline editor.
         row.querySelectorAll('[data-action="toggle-row"]').forEach((el) => el.addEventListener('click', (e) => { if (e.target.closest('a')) return; expandBtn.click(); }));
-        wireDraftEditor(expandRow);
+        const draftListing = draftListingMap.get(String(id));
+        if (draftListing) {
+          wireDraftEditor(expandRow, draftListing, {
+            // keep the row's own Save/Publish fields in step with the category picked in the editor
+            onCategoryChange: (categoryId) => { rowField('categoryId').value = categoryId; const ex = exField('categoryId'); if (ex) ex.value = categoryId; },
+            onSaved: (saved) => { const ex = exField('categoryId'); if (ex && saved.category_id != null) ex.value = saved.category_id; rowField('categoryId').value = saved.category_id || ''; },
+          });
+        }
       }
 
       saveBtn.addEventListener('click', async () => {
@@ -6284,7 +6627,21 @@ async function autoSuggestEmptyDraftCategories() {
   function wireListingsPage() {
     const root = document.getElementById('listingsContent');
     // Header buttons
-    root.querySelector('#llSyncBtn')?.addEventListener('click', () => loadListings());
+    root.querySelector('#llSyncBtn')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const label = btn.innerHTML;
+      btn.disabled = true; btn.textContent = 'Syncing\u2026';
+      try {
+        const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not sync from eBay.');
+        showToast('Synced from eBay', `${data.synced} listing(s) updated with views and watchers${data.failed ? `, ${data.failed} could not be read` : ''}.`, data.failed && !data.synced ? 'error' : 'success');
+        await loadListings();
+      } catch (err) {
+        showToast('Sync failed', err.message, 'error');
+        btn.disabled = false; btn.innerHTML = label;
+      }
+    });
     root.querySelector('#llCreateBtn')?.addEventListener('click', () => showPage('import'));
     // Tabs
     root.querySelectorAll('[data-ll-tab]').forEach((b) => b.addEventListener('click', () => { llTab = b.getAttribute('data-ll-tab'); llPage = 1; renderListings(); }));
@@ -6335,9 +6692,8 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="ll-editor-core">
             <label class="ll-edit-field">Sell price (${escapeHtml(cur.trim())})<input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" /></label>
             <label class="ll-edit-field">Quantity<input class="editable-input" data-field="quantity" type="number" min="0" value="${l.quantity ?? 1}" /></label>
-            <label class="ll-edit-field">eBay category ID<input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" /></label>
           </div>
-          <div id="llEditorHost">${draftEditorHtml(l)}</div>
+          <div id="llEditorHost">${draftEditorHtml(l, { showSave: false })}</div>
         </div>
         <div class="ll-editor-foot">
           <button type="button" class="btn-small" data-ll-close style="background:var(--grey-light);color:var(--ink);">Cancel</button>
@@ -6346,14 +6702,15 @@ async function autoSuggestEmptyDraftCategories() {
       </div>`;
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
-    wireDraftEditor(overlay.querySelector('#llEditorHost'));
+    wireDraftEditor(overlay.querySelector('#llEditorHost'), l);
     overlay.addEventListener('click', (e) => { if (e.target === overlay || e.target.closest('[data-ll-close]')) llCloseEditor(); });
     overlay.querySelector('[data-action="save"]').addEventListener('click', async () => {
       const saveBtn = overlay.querySelector('[data-action="save"]');
-      const title = overlay.querySelector('[data-ui-field="title"]')?.value ?? l.title;
+      const v = collectEditorValues(overlay.querySelector('[data-ui-editor]'));
+      const title = v.title || l.title;
       const sellPrice = Number(overlay.querySelector('[data-field="sellPrice"]').value) || null;
       const quantity = Number(overlay.querySelector('[data-field="quantity"]').value) || 1;
-      const categoryId = overlay.querySelector('[data-field="categoryId"]').value;
+      const categoryId = v.categoryId || l.category_id || '';
       saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026';
       try {
         const isLive = llListingStatus(l) === 'active';
@@ -6365,10 +6722,13 @@ async function autoSuggestEmptyDraftCategories() {
         const data = await res.json();
         if (!res.ok || !data.success) { alert(data.error || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; return; }
         Object.assign(l, { title, sell_price: sellPrice, quantity, category_id: categoryId });
+        // Per-product settings (tags, policies, location, monitoring) are stored on ELMS' side.
+        const savedSettings = await saveEditorSettings(l.id, v);
+        Object.assign(l, savedSettings || {});
         showToast('Saved', 'Listing updated.', 'success');
         llCloseEditor();
         renderListings();
-      } catch (err) { alert('Could not connect to the server: ' + err.message); saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; }
+      } catch (err) { alert(err.message || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; }
     });
   }
 
@@ -7644,6 +8004,33 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) {
       resultEl.className = 'error';
       resultEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Generate: type a city, get a real postal code for it (filled in below and shown as a confirmation).
+  document.getElementById('generatePostalCodeBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('generatePostalCodeBtn');
+    const resultEl = document.getElementById('postalLookupResult');
+    const country = document.getElementById('customLocationCountry').value;
+    const city = document.getElementById('customLocationCity').value.trim();
+    if (!city && country !== 'HK') {
+      resultEl.className = 'error';
+      resultEl.textContent = 'Type a city first, for example "New York" or "Austin, Texas".';
+      return;
+    }
+    btn.disabled = true;
+    resultEl.className = '';
+    resultEl.textContent = 'Finding a real postal code\u2026';
+    try {
+      const loc = await requestPostalCode(country, city);
+      document.getElementById('customLocationPostalCode').value = loc.postalCode || '';
+      resultEl.className = 'success';
+      resultEl.textContent = describePostalLocation(loc);
+    } catch (err) {
+      resultEl.className = 'error';
+      resultEl.textContent = err.message;
     } finally {
       btn.disabled = false;
     }
