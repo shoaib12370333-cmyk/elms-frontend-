@@ -1684,7 +1684,7 @@
   .elms-drafts-select { height:40px; border:1px solid #dfe3e8; border-radius:8px; padding:0 34px 0 11px; background:#fff; color:#374151; font:500 13px Inter,sans-serif; }
   .elms-drafts-toolbar .primary { height:40px !important; border-radius:8px; }
   .elms-drafts-summary { display:flex; align-items:center; gap:8px; padding:12px 20px; border-bottom:1px solid #eef0f3; background:#fafbfc; flex-wrap:wrap; }
-  .elms-summary-pill { height:30px; display:inline-flex; align-items:center; gap:6px; padding:0 11px; border:1px solid #e2e5ea; border-radius:16px; background:#fff; color:#596273; font-size:12px; font-weight:600; }
+  .elms-summary-pill { cursor:pointer; font-family:inherit; height:30px; display:inline-flex; align-items:center; gap:6px; padding:0 11px; border:1px solid #e2e5ea; border-radius:16px; background:#fff; color:#596273; font-size:12px; font-weight:600; }
   .elms-summary-pill strong { color:#172033; font-size:13px; }
   .elms-summary-pill.active { border-color:#cbdaf8; background:#f4f7ff; color:#1d4ed8; }
   .elms-draft-table-wrap { overflow-x:auto; }
@@ -2171,7 +2171,7 @@
   /* ===== AutoDS-style inner sidebar for Drafts ===== */
   .elms-drafts-layout {
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr) 210px;
+    grid-template-columns: minmax(0, 1fr) 210px;
     gap: 16px;
     align-items: start;
     width: 100%;
@@ -2302,8 +2302,8 @@
   .elms-pf b { color:#94A3B8; font-weight:700; }
   .elms-drafts-layout.f-available .elms-pf-available, .elms-drafts-layout.f-onhold .elms-pf-onhold, .elms-drafts-layout.f-oos .elms-pf-oos, .elms-drafts-layout.f-total .elms-pf-total, .elms-drafts-layout.f-oosdays .elms-pf-oosdays, .elms-drafts-layout.f-price .elms-pf-price, .elms-drafts-layout.f-profit .elms-pf-profit, .elms-drafts-layout.f-itemid .elms-pf-itemid, .elms-drafts-layout.f-sold .elms-pf-sold, .elms-drafts-layout.f-dws .elms-pf-dws, .elms-drafts-layout.f-store .elms-pf-store, .elms-drafts-layout.f-asin .elms-pf-asin, .elms-drafts-layout.f-views .elms-pf-views, .elms-drafts-layout.f-watchers .elms-pf-watchers, .elms-drafts-layout.f-daysleft .elms-pf-daysleft, .elms-drafts-layout.f-tags .elms-pf-tags { display:inline-flex; }
   @media (max-width: 1200px) {
-    .elms-drafts-layout { grid-template-columns: 220px minmax(0, 1fr); }
-    .elms-fields-sidebar { grid-column: 2; position: static; max-height: 260px; }
+    .elms-drafts-layout { grid-template-columns: minmax(0, 1fr); }
+    .elms-fields-sidebar { grid-column: 1; position: static; max-height: 260px; }
   }
   @media (max-width: 900px) {
     .elms-fields-sidebar { grid-column: 1; }
@@ -2350,6 +2350,30 @@
   @media (max-width:1100px) { #draftsContent .elms-expand-panel { grid-template-columns:96px minmax(0,1fr); padding-left:18px; } #draftsContent .elms-ex-edit { grid-column:1 / -1; } }
   @media (max-width:560px) { #draftsContent .elms-expand-panel { grid-template-columns:1fr; } }
 
+
+  /* ---------- Drafts list: AutoDS-style rows ---------- */
+  #draftsContent .elms-draft-table th:nth-child(1) { width:44px; }
+  #draftsContent .elms-draft-table th:nth-child(2) { width:36px; padding:0; }
+  #draftsContent .elms-draft-table th:nth-child(3) { width:auto; }
+  #draftsContent .elms-draft-table th:nth-child(4) { width:270px; text-align:right; }
+  #draftsContent .elms-draft-table td { height:96px; }
+  #draftsContent .elms-chevron-cell { padding:0 !important; text-align:center; }
+  #draftsContent .elms-chevron { width:30px; height:30px; border:0; background:transparent; color:#374151; font-size:26px; line-height:1; cursor:pointer; border-radius:6px; transition:transform .15s ease; }
+  #draftsContent .elms-chevron:hover { background:#f1f5f9; }
+  #draftsContent .elms-chevron[aria-expanded="true"] { transform:rotate(90deg); background:transparent; color:#2563eb; border:0; }
+  #draftsContent .elms-product-title { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:16px; font-weight:600; color:#4b5563; }
+  #draftsContent .elms-product-title .elms-warning-dot { margin-right:6px; }
+  #draftsContent .elms-meta-line { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; margin-top:6px; color:#9aa3b2; font-size:13px; }
+  #draftsContent .elms-meta-line b { font-weight:500; }
+  #draftsContent .elms-meta-line i { width:1px; height:14px; background:#d5dae1; }
+  #draftsContent .elms-source-link { display:inline-block; margin-top:4px; color:#9aa3b2; font-size:13px; text-decoration:none; }
+  #draftsContent a.elms-source-link:hover { color:#2563eb; text-decoration:underline; }
+  #draftsContent .elms-row-actions { justify-content:flex-end; gap:12px; }
+  #draftsContent .elms-icon-btn { border:0; background:transparent; color:#374151; font-size:20px; width:34px; height:34px; text-decoration:none; }
+  #draftsContent .elms-icon-btn:hover { background:#f1f5f9; }
+  #draftsContent .elms-row-actions .elms-publish-btn { display:inline-flex; align-items:center; justify-content:center; height:52px; min-width:140px; padding:0 18px; border:1px solid #374151; border-radius:6px; background:#fff; color:#374151; font:500 16px Inter,sans-serif; }
+  #draftsContent .elms-row-actions .elms-publish-btn:hover:not(:disabled) { background:#f7f9fb; }
+  @media (max-width:900px) { #draftsContent .elms-draft-table th:nth-child(4) { width:210px; } #draftsContent .elms-row-actions .elms-publish-btn { min-width:96px; height:42px; font-size:14px; } #draftsContent .elms-product-title { font-size:14px; } }
   /* ---------- Drafts: inline tabbed editor (UI only, no backend wiring) ---------- */
   #draftsContent .elms-product-cell { cursor:pointer; }
   #draftsContent .elms-supplier-line { margin-top:3px; color:#8a93a2; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -2398,12 +2422,6 @@
   #draftsContent .elms-draft-table-wrap { flex:1 1 auto; min-height:0; overflow:auto; }
   #draftsContent .elms-draft-table { min-width:0; width:100%; table-layout:fixed; }
   #draftsContent .elms-draft-table th:first-child { width:48px; }
-  #draftsContent .elms-draft-table th:nth-child(2) { width:34%; }
-  #draftsContent .elms-draft-table th:nth-child(3) { width:125px; }
-  #draftsContent .elms-draft-table th:nth-child(4) { width:150px; }
-  #draftsContent .elms-draft-table th:nth-child(5) { width:225px; }
-  #draftsContent .elms-draft-table th:nth-child(6) { width:75px; text-align:center; }
-  #draftsContent .elms-draft-table th:nth-child(7) { width:130px; }
   #draftsContent .elms-draft-table td { height:88px; padding:10px 14px; }
   #draftsContent .elms-product-cell { gap:12px; }
   #draftsContent .elms-product-thumb { width:68px; height:68px; flex-basis:68px; }
@@ -2417,7 +2435,7 @@
   #draftsContent .elms-id-value { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#596273; font-size:13px; }
   #draftsContent .elms-sold-count { display:block; text-align:center; color:#596273; font-size:14px; }
   #draftsContent .elms-row-actions { justify-content:flex-end; }
-  #draftsContent .elms-row-actions .elms-publish-btn { display:none; }
+  
   #draftsContent .elms-icon-btn { width:36px; height:36px; }
   #draftDetailModal { align-items:stretch; justify-content:flex-end; padding:12px; }
   #draftDetailModal .modal-box { width:min(820px,100%); max-width:820px; height:calc(100vh - 24px); max-height:calc(100vh - 24px); margin:0; border-radius:14px; box-shadow:-12px 0 38px rgba(15,23,42,.16); animation:draftSheetIn .22s cubic-bezier(.2,.8,.2,1); }
@@ -2430,7 +2448,31 @@
     #draftDetailModal .modal-box { width:100%; max-width:none; height:100vh; max-height:100vh; border-radius:0; }
   }
 
->
+
+  /* ---------- Drafts page: AutoDS-flat layout ---------- */
+  #page-drafts .drafts-page-head { display:none; }
+  #draftsContent .elms-drafts-layout { display:block; }
+  #draftsContent .elms-drafts-shell.ad-flat { border:0; box-shadow:none; background:transparent; border-radius:0; max-height:none; min-height:0; overflow:visible; }
+  #draftsContent .ad-flat .elms-draft-table-wrap { overflow-x:auto; }
+  #draftsContent .ad-tabs { display:flex; gap:8px; border-bottom:1px solid #e5e7eb; overflow-x:auto; }
+  #draftsContent .ad-tab { flex:0 0 auto; padding:14px 22px 14px 4px; margin-right:12px; border:0; border-bottom:3px solid transparent; background:transparent; color:#4b5563; font:600 17px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  #draftsContent .ad-tab.active { color:#e0993a; border-bottom-color:#e0993a; }
+  #draftsContent .ad-filterrow { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 0 8px; flex-wrap:wrap; }
+  #draftsContent .ad-filter-toggle { display:inline-flex; align-items:center; gap:10px; border:0; background:transparent; color:#374151; font:600 16px Inter,sans-serif; cursor:pointer; padding:6px 2px; }
+  #draftsContent .ad-outline-btn { height:46px; padding:0 22px; border:1px solid #374151; border-radius:6px; background:#fff; color:#374151; font:500 15px Inter,sans-serif; cursor:pointer; }
+  #draftsContent .ad-outline-btn:hover { background:#f7f9fb; }
+  #draftsContent .ad-filterpanel { display:flex; gap:10px; padding:4px 0 10px; flex-wrap:wrap; }
+  #draftsContent .ad-filterpanel[hidden] { display:none; }
+  #draftsContent .ad-filterpanel input { flex:1 1 260px; min-width:0; height:40px; border:1px solid #dfe3e8; border-radius:8px; padding:0 13px; font:500 14px Inter,sans-serif; }
+  #draftsContent .ad-bulk { display:flex; align-items:center; gap:14px; padding:12px 4px; background:transparent; border:0; border-bottom:1px solid #e5e7eb; flex-wrap:wrap; }
+  #draftsContent .ad-bulk .draft-select-all { font-size:15px; font-weight:500; color:#4b5563; gap:14px; }
+  #draftsContent .ad-bulk .elms-bulk-btn { border:0; background:transparent; height:auto; padding:0; font:500 15px Inter,sans-serif; color:#9aa3b2; cursor:default; }
+  #draftsContent .ad-bulk.has-selection .elms-bulk-btn { color:#374151; cursor:pointer; }
+  #draftsContent .ad-bulk.has-selection .elms-bulk-btn:hover { color:#2563eb; }
+  #draftsContent .ad-bulk:not(.has-selection) .elms-bulk-btn { pointer-events:none; }
+  #draftsContent .ad-sep { width:1px; height:20px; background:#d5dae1; }
+  #draftsContent .ad-flat .elms-draft-table thead th { height:0; padding:0; border:0; font-size:0; line-height:0; }
+  @media (max-width:640px) { #draftsContent .ad-tab { font-size:15px; padding-right:12px; } }
 </style>
 </head>
 <body>
@@ -5259,82 +5301,50 @@
 
       container.innerHTML = `
         <div class="elms-drafts-layout ${elmsFieldsClasses()}" id="elmsDraftsLayout">
-          <aside class="elms-drafts-inner-sidebar" aria-label="Draft filters">
-            <div class="elms-inner-side-head">Listing management</div>
-            <nav class="elms-inner-side-nav">
-              <button class="elms-inner-side-item active" type="button" data-inner-status="all">
-                <span class="elms-inner-side-icon">☷</span><span>All products</span><span class="elms-inner-side-count">${allDrafts.length}</span>
-              </button>
-              <button class="elms-inner-side-item" type="button" data-inner-status="draft">
-                <span class="elms-inner-side-icon">□</span><span>Drafts</span><span class="elms-inner-side-count">${counts.draft || 0}</span>
-              </button>
-              <button class="elms-inner-side-item" type="button" data-inner-status="publishing">
-                <span class="elms-inner-side-icon">↗</span><span>Publishing</span><span class="elms-inner-side-count">${counts.publishing || 0}</span>
-              </button>
-              <button class="elms-inner-side-item" type="button" data-inner-status="scheduled">
-                <span class="elms-inner-side-icon">◷</span><span>Scheduled</span><span class="elms-inner-side-count">${counts.scheduled || 0}</span>
-              </button>
-              <button class="elms-inner-side-item" type="button" data-inner-status="error">
-                <span class="elms-inner-side-icon">!</span><span>Failed</span><span class="elms-inner-side-count">${counts.error || 0}</span>
-              </button>
-            </nav>
-            <div class="elms-inner-side-divider"></div>
-            <div class="elms-inner-side-link" data-inner-import>+ Import product</div>
-          </aside>
 
           <section class="elms-drafts-main">
-            <div class="elms-drafts-shell">
-              <div class="elms-drafts-toolbar">
-            <label class="draft-select-all"><input type="checkbox" id="draftSelectAll" /> Select all</label>
-            <div class="elms-drafts-search"><input id="draftProductSearch" type="search" placeholder="Search by product title, ASIN or SKU…" /></div>
-            <select id="draftStatusFilter" class="elms-drafts-select">
-              <option value="all">All statuses</option><option value="draft">Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option>
-            </select>
-            <select id="draftSort" class="elms-drafts-select">
-              <option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="price">Price high–low</option>
-            </select>
-            <button class="primary" id="draftAddProductBtn" type="button">+ Import product</button>
-          </div>
-          <div class="elms-drafts-summary">
-            <span class="elms-summary-pill active"><strong>${counts.draft || 0}</strong> Drafts</span>
-            <span class="elms-summary-pill"><strong>${counts.publishing || 0}</strong> Publishing</span>
-            <span class="elms-summary-pill"><strong>${counts.scheduled || 0}</strong> Scheduled</span>
-            <span class="elms-summary-pill"><strong>${counts.error || 0}</strong> Failed</span>
-          </div>
-          <div class="elms-bulk-bar" id="draftBulkBar" style="display:none;">
-            <span class="elms-bulk-count" id="draftSelectedCount">0 selected</span>
-            <button class="elms-bulk-btn primary" id="bulkPublishBtn">Publish selected</button>
-            <button class="elms-bulk-btn danger" id="bulkDeleteBtn">Delete selected</button>
-          </div>
-          <div class="elms-draft-table-wrap">
-            <table class="elms-draft-table">
-              <thead><tr>
-                <th></th><th>Name</th><th>Uploaded</th><th>Sourcing Request</th><th>Item ID</th><th>Sold</th><th>Actions</th>
-              </tr></thead>
-              <tbody id="draftProductList"></tbody>
-            </table>
-          </div>
+            <div class="elms-drafts-shell ad-flat">
+              <div class="ad-tabs" role="tablist">
+                <button type="button" class="ad-tab active" data-inner-status="draft">Drafts (${counts.draft || 0})</button>
+                <button type="button" class="ad-tab" data-inner-status="publishing">Publishing (${counts.publishing || 0})</button>
+                <button type="button" class="ad-tab" data-inner-status="scheduled">Scheduled (${counts.scheduled || 0})</button>
+                <button type="button" class="ad-tab" data-inner-status="error">Failed (${counts.error || 0})</button>
+              </div>
+              <div class="ad-filterrow">
+                <button type="button" class="ad-filter-toggle" id="adFilterToggle" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="17" x2="14" y2="17"/></svg>Add Filter</button>
+                <button class="ad-outline-btn" id="draftAddProductBtn" type="button">+ Import product</button>
+              </div>
+              <div class="ad-filterpanel" id="adFilterPanel" hidden>
+                <input id="draftProductSearch" type="search" placeholder="Search by product title, ASIN or SKU…" />
+                <select id="draftSort" class="elms-drafts-select">
+                  <option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="price">Price high–low</option>
+                </select>
+                <select id="draftStatusFilter" style="display:none;"><option value="all">All</option><option value="draft" selected>Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option></select>
+              </div>
+              <div class="elms-bulk-bar ad-bulk" id="draftBulkBar">
+                <label class="draft-select-all"><input type="checkbox" id="draftSelectAll" /> <span id="draftSelectedCount">0 Results Selected</span></label>
+                <span class="ad-sep"></span>
+                <button class="elms-bulk-btn" id="bulkDeleteBtn" type="button">Remove from list</button>
+                <span class="ad-sep"></span>
+                <button class="elms-bulk-btn" id="bulkPublishBtn" type="button">Publish All</button>
+              </div>
+              <div class="elms-draft-table-wrap">
+                <table class="elms-draft-table">
+                  <thead><tr><th></th><th></th><th></th><th></th></tr></thead>
+                  <tbody id="draftProductList"></tbody>
+                </table>
+              </div>
               <div class="draft-footer" id="draftFooter"></div>
             </div>
           </section>
-
-          <aside class="elms-fields-sidebar" aria-label="Show fields">
-            <div class="elms-fields-head"><span>Show fields</span><button type="button" id="elmsFieldsReset">Reset</button></div>
-            <div class="elms-fields-list">${ELMS_FIELDS.map((f) => `<label class="elms-fields-item"><input type="checkbox" data-elms-field="${f.key}" ${elmsFieldsShown().has(f.key) ? 'checked' : ''} /><span>${f.label}</span></label>`).join('')}</div>
-          </aside>
         </div>
       `;
-      document.querySelectorAll('[data-elms-field]').forEach((cb) => cb.addEventListener('change', () => {
-        const shown = Array.from(document.querySelectorAll('[data-elms-field]:checked')).map((x) => x.getAttribute('data-elms-field'));
-        try { localStorage.setItem('elmsDraftFields', JSON.stringify(shown)); } catch (e) {}
-        const layout = document.getElementById('elmsDraftsLayout');
-        if (layout) layout.className = `elms-drafts-layout ${elmsFieldsClasses()}`;
-      }));
-      document.getElementById('elmsFieldsReset')?.addEventListener('click', () => {
-        try { localStorage.removeItem('elmsDraftFields'); } catch (e) {}
-        document.querySelectorAll('[data-elms-field]').forEach((cb) => { cb.checked = false; });
-        const layout = document.getElementById('elmsDraftsLayout');
-        if (layout) layout.className = 'elms-drafts-layout';
+      const filterToggle = document.getElementById('adFilterToggle');
+      filterToggle?.addEventListener('click', () => {
+        const panel = document.getElementById('adFilterPanel');
+        panel.hidden = !panel.hidden;
+        filterToggle.setAttribute('aria-expanded', String(!panel.hidden));
+        if (!panel.hidden) document.getElementById('draftProductSearch')?.focus();
       });
 
       const DRAFTS_PAGE_SIZE = 20;
@@ -5356,7 +5366,7 @@
         const startIdx = (draftPage - 1) * DRAFTS_PAGE_SIZE;
         const pageItems = filtered.slice(startIdx, startIdx + DRAFTS_PAGE_SIZE);
         const list = document.getElementById('draftProductList');
-        if (list) list.innerHTML = pageItems.length ? pageItems.map((l) => draftRowHtml(l)).join('') : `<tr><td colspan="7"><div class="elms-drafts-empty">No products match these filters.</div></td></tr>`;
+        if (list) list.innerHTML = pageItems.length ? pageItems.map((l) => draftRowHtml(l)).join('') : `<tr><td colspan="4"><div class="elms-drafts-empty">No products match these filters.</div></td></tr>`;
         const footer = document.getElementById('draftFooter');
         if (footer) {
           if (!filtered.length) footer.innerHTML = '';
@@ -5557,7 +5567,7 @@
     const panelImg = l.main_image ? `<img class="elms-ex-img" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="elms-ex-img"></div>';
     const exStat = (label, value, extra = '') => `<div class="elms-ex-stat"><span>${label}</span><b${extra}>${value}</b></div>`;
     const expandRow = `
-      <tr class="elms-expand-row" data-expand-for="${escapeAttr(l.id)}"><td colspan="7" class="elms-expand-cell"><div class="elms-expand-panel" data-amazon="${amazonNum ?? ''}" data-currency="${escapeAttr(currency)}">
+      <tr class="elms-expand-row" data-expand-for="${escapeAttr(l.id)}"><td colspan="4" class="elms-expand-cell"><div class="elms-expand-panel" data-amazon="${amazonNum ?? ''}" data-currency="${escapeAttr(currency)}">
         <div class="elms-ex-media">${panelImg}</div>
         <div class="elms-ex-body">
           <div class="elms-ex-title">${escapeHtml(l.title || l.sku || 'Untitled product')}</div>
@@ -5589,17 +5599,18 @@
     return `
       <tr class="draft-row" data-listing-id="${escapeAttr(l.id)}" data-status="${escapeAttr(status)}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
         <td class="draft-select-cell"><input type="checkbox" class="draft-checkbox" data-action="select" /></td>
+        <td class="elms-chevron-cell" data-action="stop-propagation"><button class="elms-chevron" data-action="toggle-expand" aria-expanded="false" title="Show details" aria-label="Show details">&#8250;</button></td>
         <td><div class="elms-product-cell" data-action="toggle-row">
           ${l.main_image ? `<img class="elms-product-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="elms-product-thumb"></div>'}
-          <div class="elms-product-copy"><div class="elms-product-title">${status === 'error' ? '<span class="elms-warning-dot">!</span>' : ''}${escapeHtml(l.title || l.sku || 'Untitled product')}</div><div class="elms-product-id">ASIN / SKU: ${escapeHtml(asin)}</div><div class="elms-supplier-line">Supplier: ${escapeHtml(draftSupplierLabel(l))}</div><div class="elms-product-fields">${ELMS_FIELDS.map((f) => { const v = f.get(l); return `<span class="elms-pf elms-pf-${f.key}"><b>${f.label}</b> ${v == null || v === '' ? '—' : escapeHtml(String(v))}</span>`; }).join('')}</div></div>
+          <div class="elms-product-copy"><div class="elms-product-title">${status === 'error' ? '<span class="elms-warning-dot">!</span>' : ''}${escapeHtml(l.title || l.sku || 'Untitled product')}</div>
+            <div class="elms-meta-line"><span>Destination: <b>${escapeHtml(l.ebay_account_username || '—')}</b></span><i></i><span>Supplier: ${escapeHtml(draftSupplierLabel(l))}</span><i></i><span>Variants: ${Array.isArray(l.variants) && l.variants.length ? l.variants.length : (Number(l.variants_count) || 1)}</span></div>
+            ${l.amazon_url ? `<a class="elms-source-link" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action-link>View Source Product</a>` : '<span class="elms-source-link">View Source Product</span>'}
+            <div class="elms-product-fields">${ELMS_FIELDS.map((f) => { const v = f.get(l); return `<span class="elms-pf elms-pf-${f.key}"><b>${f.label}</b> ${v == null || v === '' ? '—' : escapeHtml(String(v))}</span>`; }).join('')}</div></div>
         </div></td>
-        <td><span class="elms-date">${escapeHtml(uploadedText)}</span></td>
-        <td><span class="elms-sourcing-request">${escapeHtml(sourcingRequest)}</span></td>
-        <td><div class="elms-item-ids"><div><span class="elms-id-label">BUY</span><span class="elms-id-value">${escapeHtml(asin)}</span></div><div><span class="elms-id-label sell">SELL</span><span class="elms-id-value">${escapeHtml(ebayItemId)}</span></div></div></td>
-        <td><span class="elms-sold-count">${escapeHtml(String(sold))}</span></td>
         <td data-action="stop-propagation"><div class="elms-row-actions">
-          <button class="elms-publish-btn" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>${actionLabel}</button><button class="elms-icon-btn elms-chevron" data-action="toggle-expand" aria-expanded="false" title="Show details">&#8250;</button><button class="elms-icon-btn" data-action="toggle-menu" title="More actions">⋮</button>
+          ${l.amazon_url ? `<a class="elms-icon-btn elms-ext-btn" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" title="Open source product">&#8599;</a>` : ''}<button class="elms-icon-btn elms-dots-btn" data-action="toggle-menu" title="More actions">&#8942;</button>
           <div class="draft-menu-wrap"><div class="draft-menu" data-menu><button data-action="schedule">Schedule Listing</button><button data-action="delete" class="menu-danger">Delete Draft</button></div></div>
+          <button class="elms-publish-btn" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>+ ${actionLabel}</button>
         </div>
         <input type="hidden" data-field="sellPrice" value="${escapeAttr(l.sell_price ?? '')}" /><input type="hidden" data-field="quantity" value="${escapeAttr(l.quantity ?? 1)}" /><input type="hidden" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" /><button type="button" data-action="save" hidden>Save</button></td>
       </tr>${expandRow}`;
@@ -5704,7 +5715,7 @@ async function autoSuggestEmptyDraftCategories() {
         expandRow.querySelector('[data-action="expand-open"]').addEventListener('click', () => openDraftDetailModal(id));
 
         // Clicking the product name/thumbnail also toggles the inline editor.
-        row.querySelectorAll('[data-action="toggle-row"]').forEach((el) => el.addEventListener('click', () => expandBtn.click()));
+        row.querySelectorAll('[data-action="toggle-row"]').forEach((el) => el.addEventListener('click', (e) => { if (e.target.closest('a')) return; expandBtn.click(); }));
         wireDraftEditor(expandRow);
       }
 
@@ -5822,7 +5833,7 @@ async function autoSuggestEmptyDraftCategories() {
           alert('Could not connect to the server: ' + err.message);
         } finally {
           publishBtn.disabled = false;
-          publishBtn.textContent = 'Publish';
+          publishBtn.textContent = '+ Publish';
         }
       });
 
@@ -5875,8 +5886,8 @@ async function autoSuggestEmptyDraftCategories() {
     const selectAll = document.getElementById('draftSelectAll');
     if (selectAll) selectAll.checked = boxes.length > 0 && checked.length === boxes.length;
     if (!bar) return;
-    bar.style.display = checked.length > 0 ? 'flex' : 'none';
-    if (countLabel) countLabel.textContent = `${checked.length} selected`;
+    bar.classList.toggle('has-selection', checked.length > 0);
+    if (countLabel) countLabel.textContent = `${checked.length} Results Selected`;
   }
 
   function wireBulkBar() {
@@ -5912,7 +5923,7 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('success', 'Publish request sent', `${ids.length} listing(s) were submitted for immediate eBay publishing.`);
 
       bulkPublishBtn.disabled = false;
-      bulkPublishBtn.textContent = 'Publish selected';
+      bulkPublishBtn.textContent = 'Publish All';
       loadDrafts();
     });
 
@@ -5933,7 +5944,7 @@ async function autoSuggestEmptyDraftCategories() {
         showToast('error', 'Bulk delete failed', err.message);
       } finally {
         bulkDeleteBtn.disabled = false;
-        bulkDeleteBtn.textContent = 'Delete selected';
+        bulkDeleteBtn.textContent = 'Remove from list';
         loadDrafts();
       }
     });
