@@ -2448,7 +2448,31 @@
     #draftDetailModal .modal-box { width:100%; max-width:none; height:100vh; max-height:100vh; border-radius:0; }
   }
 
->
+
+  /* ---------- Drafts page: AutoDS-flat layout ---------- */
+  #page-drafts .drafts-page-head { display:none; }
+  #draftsContent .elms-drafts-layout { display:block; }
+  #draftsContent .elms-drafts-shell.ad-flat { border:0; box-shadow:none; background:transparent; border-radius:0; max-height:none; min-height:0; overflow:visible; }
+  #draftsContent .ad-flat .elms-draft-table-wrap { overflow-x:auto; }
+  #draftsContent .ad-tabs { display:flex; gap:8px; border-bottom:1px solid #e5e7eb; overflow-x:auto; }
+  #draftsContent .ad-tab { flex:0 0 auto; padding:14px 22px 14px 4px; margin-right:12px; border:0; border-bottom:3px solid transparent; background:transparent; color:#4b5563; font:600 17px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  #draftsContent .ad-tab.active { color:#e0993a; border-bottom-color:#e0993a; }
+  #draftsContent .ad-filterrow { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 0 8px; flex-wrap:wrap; }
+  #draftsContent .ad-filter-toggle { display:inline-flex; align-items:center; gap:10px; border:0; background:transparent; color:#374151; font:600 16px Inter,sans-serif; cursor:pointer; padding:6px 2px; }
+  #draftsContent .ad-outline-btn { height:46px; padding:0 22px; border:1px solid #374151; border-radius:6px; background:#fff; color:#374151; font:500 15px Inter,sans-serif; cursor:pointer; }
+  #draftsContent .ad-outline-btn:hover { background:#f7f9fb; }
+  #draftsContent .ad-filterpanel { display:flex; gap:10px; padding:4px 0 10px; flex-wrap:wrap; }
+  #draftsContent .ad-filterpanel[hidden] { display:none; }
+  #draftsContent .ad-filterpanel input { flex:1 1 260px; min-width:0; height:40px; border:1px solid #dfe3e8; border-radius:8px; padding:0 13px; font:500 14px Inter,sans-serif; }
+  #draftsContent .ad-bulk { display:flex; align-items:center; gap:14px; padding:12px 4px; background:transparent; border:0; border-bottom:1px solid #e5e7eb; flex-wrap:wrap; }
+  #draftsContent .ad-bulk .draft-select-all { font-size:15px; font-weight:500; color:#4b5563; gap:14px; }
+  #draftsContent .ad-bulk .elms-bulk-btn { border:0; background:transparent; height:auto; padding:0; font:500 15px Inter,sans-serif; color:#9aa3b2; cursor:default; }
+  #draftsContent .ad-bulk.has-selection .elms-bulk-btn { color:#374151; cursor:pointer; }
+  #draftsContent .ad-bulk.has-selection .elms-bulk-btn:hover { color:#2563eb; }
+  #draftsContent .ad-bulk:not(.has-selection) .elms-bulk-btn { pointer-events:none; }
+  #draftsContent .ad-sep { width:1px; height:20px; background:#d5dae1; }
+  #draftsContent .ad-flat .elms-draft-table thead th { height:0; padding:0; border:0; font-size:0; line-height:0; }
+  @media (max-width:640px) { #draftsContent .ad-tab { font-size:15px; padding-right:12px; } }
 </style>
 </head>
 <body>
@@ -5279,59 +5303,48 @@
         <div class="elms-drafts-layout ${elmsFieldsClasses()}" id="elmsDraftsLayout">
 
           <section class="elms-drafts-main">
-            <div class="elms-drafts-shell">
-              <div class="elms-drafts-toolbar">
-            <label class="draft-select-all"><input type="checkbox" id="draftSelectAll" /> Select all</label>
-            <div class="elms-drafts-search"><input id="draftProductSearch" type="search" placeholder="Search by product title, ASIN or SKU…" /></div>
-            <select id="draftStatusFilter" class="elms-drafts-select">
-              <option value="all">All statuses</option><option value="draft">Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option>
-            </select>
-            <select id="draftSort" class="elms-drafts-select">
-              <option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="price">Price high–low</option>
-            </select>
-            <button class="primary" id="draftAddProductBtn" type="button">+ Import product</button>
-          </div>
-          <div class="elms-drafts-summary">
-            <button type="button" class="elms-summary-pill active" data-inner-status="all"><strong>${allDrafts.length}</strong> All</button>
-            <button type="button" class="elms-summary-pill" data-inner-status="draft"><strong>${counts.draft || 0}</strong> Drafts</button>
-            <button type="button" class="elms-summary-pill" data-inner-status="publishing"><strong>${counts.publishing || 0}</strong> Publishing</button>
-            <button type="button" class="elms-summary-pill" data-inner-status="scheduled"><strong>${counts.scheduled || 0}</strong> Scheduled</button>
-            <button type="button" class="elms-summary-pill" data-inner-status="error"><strong>${counts.error || 0}</strong> Failed</button>
-          </div>
-          <div class="elms-bulk-bar" id="draftBulkBar" style="display:none;">
-            <span class="elms-bulk-count" id="draftSelectedCount">0 selected</span>
-            <button class="elms-bulk-btn primary" id="bulkPublishBtn">Publish selected</button>
-            <button class="elms-bulk-btn danger" id="bulkDeleteBtn">Delete selected</button>
-          </div>
-          <div class="elms-draft-table-wrap">
-            <table class="elms-draft-table">
-              <thead><tr>
-                <th></th><th></th><th>Name</th><th></th>
-              </tr></thead>
-              <tbody id="draftProductList"></tbody>
-            </table>
-          </div>
+            <div class="elms-drafts-shell ad-flat">
+              <div class="ad-tabs" role="tablist">
+                <button type="button" class="ad-tab active" data-inner-status="draft">Drafts (${counts.draft || 0})</button>
+                <button type="button" class="ad-tab" data-inner-status="publishing">Publishing (${counts.publishing || 0})</button>
+                <button type="button" class="ad-tab" data-inner-status="scheduled">Scheduled (${counts.scheduled || 0})</button>
+                <button type="button" class="ad-tab" data-inner-status="error">Failed (${counts.error || 0})</button>
+              </div>
+              <div class="ad-filterrow">
+                <button type="button" class="ad-filter-toggle" id="adFilterToggle" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="17" x2="14" y2="17"/></svg>Add Filter</button>
+                <button class="ad-outline-btn" id="draftAddProductBtn" type="button">+ Import product</button>
+              </div>
+              <div class="ad-filterpanel" id="adFilterPanel" hidden>
+                <input id="draftProductSearch" type="search" placeholder="Search by product title, ASIN or SKU…" />
+                <select id="draftSort" class="elms-drafts-select">
+                  <option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="price">Price high–low</option>
+                </select>
+                <select id="draftStatusFilter" style="display:none;"><option value="all">All</option><option value="draft" selected>Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option></select>
+              </div>
+              <div class="elms-bulk-bar ad-bulk" id="draftBulkBar">
+                <label class="draft-select-all"><input type="checkbox" id="draftSelectAll" /> <span id="draftSelectedCount">0 Results Selected</span></label>
+                <span class="ad-sep"></span>
+                <button class="elms-bulk-btn" id="bulkDeleteBtn" type="button">Remove from list</button>
+                <span class="ad-sep"></span>
+                <button class="elms-bulk-btn" id="bulkPublishBtn" type="button">Publish All</button>
+              </div>
+              <div class="elms-draft-table-wrap">
+                <table class="elms-draft-table">
+                  <thead><tr><th></th><th></th><th></th><th></th></tr></thead>
+                  <tbody id="draftProductList"></tbody>
+                </table>
+              </div>
               <div class="draft-footer" id="draftFooter"></div>
             </div>
           </section>
-
-          <aside class="elms-fields-sidebar" aria-label="Show fields">
-            <div class="elms-fields-head"><span>Show fields</span><button type="button" id="elmsFieldsReset">Reset</button></div>
-            <div class="elms-fields-list">${ELMS_FIELDS.map((f) => `<label class="elms-fields-item"><input type="checkbox" data-elms-field="${f.key}" ${elmsFieldsShown().has(f.key) ? 'checked' : ''} /><span>${f.label}</span></label>`).join('')}</div>
-          </aside>
         </div>
       `;
-      document.querySelectorAll('[data-elms-field]').forEach((cb) => cb.addEventListener('change', () => {
-        const shown = Array.from(document.querySelectorAll('[data-elms-field]:checked')).map((x) => x.getAttribute('data-elms-field'));
-        try { localStorage.setItem('elmsDraftFields', JSON.stringify(shown)); } catch (e) {}
-        const layout = document.getElementById('elmsDraftsLayout');
-        if (layout) layout.className = `elms-drafts-layout ${elmsFieldsClasses()}`;
-      }));
-      document.getElementById('elmsFieldsReset')?.addEventListener('click', () => {
-        try { localStorage.removeItem('elmsDraftFields'); } catch (e) {}
-        document.querySelectorAll('[data-elms-field]').forEach((cb) => { cb.checked = false; });
-        const layout = document.getElementById('elmsDraftsLayout');
-        if (layout) layout.className = 'elms-drafts-layout';
+      const filterToggle = document.getElementById('adFilterToggle');
+      filterToggle?.addEventListener('click', () => {
+        const panel = document.getElementById('adFilterPanel');
+        panel.hidden = !panel.hidden;
+        filterToggle.setAttribute('aria-expanded', String(!panel.hidden));
+        if (!panel.hidden) document.getElementById('draftProductSearch')?.focus();
       });
 
       const DRAFTS_PAGE_SIZE = 20;
@@ -5873,8 +5886,8 @@ async function autoSuggestEmptyDraftCategories() {
     const selectAll = document.getElementById('draftSelectAll');
     if (selectAll) selectAll.checked = boxes.length > 0 && checked.length === boxes.length;
     if (!bar) return;
-    bar.style.display = checked.length > 0 ? 'flex' : 'none';
-    if (countLabel) countLabel.textContent = `${checked.length} selected`;
+    bar.classList.toggle('has-selection', checked.length > 0);
+    if (countLabel) countLabel.textContent = `${checked.length} Results Selected`;
   }
 
   function wireBulkBar() {
@@ -5910,7 +5923,7 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('success', 'Publish request sent', `${ids.length} listing(s) were submitted for immediate eBay publishing.`);
 
       bulkPublishBtn.disabled = false;
-      bulkPublishBtn.textContent = 'Publish selected';
+      bulkPublishBtn.textContent = 'Publish All';
       loadDrafts();
     });
 
@@ -5931,7 +5944,7 @@ async function autoSuggestEmptyDraftCategories() {
         showToast('error', 'Bulk delete failed', err.message);
       } finally {
         bulkDeleteBtn.disabled = false;
-        bulkDeleteBtn.textContent = 'Delete selected';
+        bulkDeleteBtn.textContent = 'Remove from list';
         loadDrafts();
       }
     });
