@@ -1755,9 +1755,6 @@
   #draftDetailModal #draftDetailPublishBtn:disabled { opacity: .6; cursor: not-allowed; }
 
   @media (max-width: 1180px) {
-    #draftsContent .draft-list {
-      width: min(1080px, calc(100% - 32px));
-    }
     .draft-row {
       grid-template-columns: 20px 64px minmax(210px, 1.1fr) minmax(260px, 0.95fr) minmax(145px, auto);
       gap: 10px;
@@ -1765,23 +1762,13 @@
       padding-left: 14px;
       padding-right: 14px;
     }
-    .draft-quick-fields { gap: 6px; }
-    .draft-quick-fields .draft-price-field { flex-basis: 160px; }
-    .draft-quick-fields > input[data-field="quantity"] { width: 48px !important; }
-    .draft-quick-fields > div:last-child input { width: 100px !important; }
   }
   @media (max-width: 900px) {
-    #draftsContent .draft-list {
-      width: calc(100% - 24px);
-      max-width: none;
-    }
     .draft-row {
       grid-template-columns: 20px 56px minmax(0, 1fr);
       align-items: start;
       min-height: 0;
     }
-    .draft-quick-fields { grid-column: 3; width: 100%; flex-wrap: wrap; }
-    .draft-actions { grid-column: 3; justify-content: flex-start; }
   }
 
   .empty-state {
@@ -1845,9 +1832,6 @@
   .draft-loading { display:grid; gap:10px; }
   .draft-skeleton { height:86px; border:1px solid #e8ecf2; border-radius:12px; background:linear-gradient(90deg,#f5f7fa 25%,#eef1f5 37%,#f5f7fa 63%); background-size:400% 100%; animation:elmsSkeleton 1.2s ease infinite; }
   @keyframes elmsSkeleton { 0%{background-position:100% 0}100%{background-position:-100% 0} }
-  .draft-queue-summary { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
-  .draft-queue-chip { border:1px solid #e5e9f0; background:#fff; border-radius:999px; padding:6px 9px; font-size:10px; color:#667085; }
-  .draft-queue-chip strong { color:#1d2939; }
   .support-toolbar { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:22px 24px; border-bottom:1px solid var(--line); }
   .support-toolbar-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .support-select, .support-search input, .support-compose textarea, .support-note textarea, .snippet-form input, .snippet-form textarea { border:1px solid var(--line); background:#fff; border-radius:9px; padding:9px 11px; font:inherit; color:var(--ink); outline:none; }
@@ -2164,181 +2148,6 @@
     box-sizing: border-box !important;
   }
 
-  #draftsContent .draft-list {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-row {
-    display: grid !important;
-    grid-template-columns: 20px 82px minmax(0, 1fr) 330px 245px !important;
-    align-items: center !important;
-    column-gap: 10px !important;
-    row-gap: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    min-height: 100px !important;
-    height: auto !important;
-    margin: 0 0 12px !important;
-    padding: 9px 12px !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
-
-  #draftsContent .draft-row > * {
-    min-width: 0 !important;
-    max-width: 100% !important;
-  }
-
-  #draftsContent .draft-checkbox {
-    width: 18px !important;
-    height: 18px !important;
-  }
-
-  #draftsContent .draft-thumb {
-    width: 78px !important;
-    height: 78px !important;
-    max-width: 78px !important;
-    max-height: 78px !important;
-    object-fit: contain !important;
-  }
-
-  #draftsContent .draft-info {
-    min-width: 0 !important;
-    width: 100% !important;
-    overflow: hidden !important;
-  }
-
-  #draftsContent .draft-title {
-    font-size: 18px !important;
-    line-height: 1.25 !important;
-    font-weight: 700 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  #draftsContent .draft-meta {
-    margin-top: 5px !important;
-    gap: 9px !important;
-    font-size: 13px !important;
-    line-height: 1.25 !important;
-  }
-
-  #draftsContent .supplier-badge {
-    font-size: 12px !important;
-    padding: 3px 9px !important;
-  }
-
-  #draftsContent .draft-source-link {
-    font-size: 13px !important;
-    white-space: nowrap !important;
-  }
-
-  #draftsContent .draft-error-text {
-    font-size: 12px !important;
-    line-height: 1.3 !important;
-    margin-top: 4px !important;
-    max-width: 100% !important;
-  }
-
-  #draftsContent .draft-quick-fields {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 52px 105px !important;
-    align-items: center !important;
-    gap: 6px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
-
-  #draftsContent .draft-price-field {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto 68px !important;
-    align-items: center !important;
-    gap: 4px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-  }
-
-  #draftsContent .draft-price-field > div {
-    min-width: 0 !important;
-  }
-
-  #draftsContent .draft-price-field > div:first-child {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    font-size: 11px !important;
-  }
-
-  #draftsContent .draft-price-field > div:nth-child(2) {
-    display: flex !important;
-    align-items: center !important;
-    min-width: 0 !important;
-  }
-
-  #draftsContent .draft-price-field > div:nth-child(3) {
-    min-width: 68px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: clip !important;
-    text-align: right !important;
-    font-size: 11px !important;
-  }
-
-  #draftsContent .draft-price-field input[data-field="sellPrice"] {
-    width: 62px !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-quick-fields > input[data-field="quantity"] {
-    width: 52px !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-quick-fields > div:last-child {
-    width: 105px !important;
-    min-width: 0 !important;
-  }
-
-  #draftsContent .draft-quick-fields > div:last-child input[data-field="categoryId"] {
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  #draftsContent .draft-actions {
-    display: grid !important;
-    grid-template-columns: 64px 88px 38px !important;
-    align-items: center !important;
-    justify-content: end !important;
-    gap: 6px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
-
-  #draftsContent .draft-actions .btn-small {
-    width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    white-space: nowrap !important;
-    padding-left: 7px !important;
-    padding-right: 7px !important;
-  }
-
   #draftsContent .draft-menu-wrap {
     position: relative !important;
     min-width: 0 !important;
@@ -2348,57 +2157,7 @@
     z-index: 100 !important;
   }
 
-  @media (max-width: 1250px) {
-    #draftsContent .draft-row {
-      grid-template-columns: 20px 72px minmax(0, 1fr) 300px 220px !important;
-      column-gap: 8px !important;
-      min-height: 96px !important;
-      padding-left: 9px !important;
-      padding-right: 9px !important;
-    }
-    #draftsContent .draft-thumb {
-      width: 68px !important;
-      height: 68px !important;
-    }
-    #draftsContent .draft-quick-fields {
-      grid-template-columns: minmax(0, 1fr) 50px 92px !important;
-    }
-    #draftsContent .draft-quick-fields > input[data-field="quantity"] {
-      width: 50px !important;
-    }
-    #draftsContent .draft-quick-fields > div:last-child {
-      width: 92px !important;
-    }
-    #draftsContent .draft-actions {
-      grid-template-columns: 58px 80px 34px !important;
-      gap: 4px !important;
-    }
-  }
-
-  @media (max-width: 1000px) {
-    #draftsContent .draft-row {
-      grid-template-columns: 20px 62px minmax(0, 1fr) !important;
-      min-height: 0 !important;
-      padding: 9px !important;
-    }
-    #draftsContent .draft-thumb {
-      width: 60px !important;
-      height: 60px !important;
-    }
-    #draftsContent .draft-quick-fields {
-      grid-column: 3 !important;
-      grid-template-columns: minmax(145px, 1fr) 50px 92px !important;
-      margin-top: 4px !important;
-    }
-    #draftsContent .draft-actions {
-      grid-column: 3 !important;
-      justify-content: start !important;
-      grid-template-columns: 58px 80px 34px !important;
-      margin-top: 4px !important;
-    }
-  }
-
-  /* FINAL: table view takes precedence over legacy draft-card layout */
+  /* Drafts table row overrides */
   #draftsContent .elms-draft-table .draft-row { display:table-row !important; width:auto !important; min-width:0 !important; height:auto !important; min-height:0 !important; margin:0 !important; padding:0 !important; border:0 !important; border-radius:0 !important; background:#fff !important; box-shadow:none !important; transform:none !important; overflow:visible !important; cursor:default !important; }
   #draftsContent .elms-draft-table .draft-row:hover td { background:#fcfdff !important; border-color:#edf0f3 !important; }
   #draftsContent .elms-draft-table .draft-row > * { max-width:none !important; min-width:0 !important; }
@@ -2556,6 +2315,40 @@
     .elms-inner-side-nav { grid-template-columns: 1fr; }
   }
 
+
+  /* ===== Drafts row: expand panel + three-dot menu ===== */
+  #draftsContent .elms-chevron { font-size:13px; line-height:1; cursor:pointer; transition:transform .15s ease, background .15s ease; }
+  #draftsContent .elms-chevron[aria-expanded="true"] { transform:rotate(180deg); background:#eef4ff; border-color:#cbdaf8; color:#2563eb; }
+  /* Row three-dot menu (Schedule / Delete): hidden until .open */
+  #draftsContent .draft-menu { display:none; position:absolute; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 10px 30px rgba(15,23,42,.14); padding:5px; }
+  #draftsContent .draft-menu.open { display:block; }
+  #draftsContent .draft-menu button { display:block; width:100%; text-align:left; padding:9px 11px; border:0; background:transparent; border-radius:7px; font:600 13px Inter,sans-serif; color:#344054; cursor:pointer; white-space:nowrap; }
+  #draftsContent .draft-menu button:hover { background:#f1f5f9; }
+  #draftsContent .draft-menu button.menu-danger { color:#dc2626; }
+  #draftsContent .draft-menu button.menu-danger:hover { background:#fef2f2; }
+  /* Expandable details panel under a draft row */
+  #draftsContent .elms-draft-table tr.elms-expand-row { display:none; }
+  #draftsContent .elms-draft-table tr.elms-expand-row.open { display:table-row; }
+  #draftsContent .elms-draft-table td.elms-expand-cell { height:auto; padding:0; background:#f8fafd; border-bottom:1px solid #e3e9f2; }
+  #draftsContent .elms-draft-table tr.draft-row.expanded td { border-bottom-color:transparent; }
+  #draftsContent .elms-expand-panel { display:grid; grid-template-columns:96px minmax(0,1fr) 300px; gap:18px; padding:16px 18px 18px 64px; align-items:start; }
+  #draftsContent .elms-ex-img { width:96px; height:96px; object-fit:contain; border:1px solid #e1e5eb; border-radius:10px; background:#fff; display:block; }
+  #draftsContent .elms-ex-title { font-size:14px; font-weight:700; color:#1f2937; line-height:1.4; margin-bottom:12px; }
+  #draftsContent .elms-ex-stats { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px 16px; }
+  #draftsContent .elms-ex-stat span { display:block; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8; margin-bottom:2px; }
+  #draftsContent .elms-ex-stat b { font-size:13px; font-weight:700; color:#334155; word-break:break-word; }
+  #draftsContent .elms-ex-error { display:flex; gap:8px; align-items:flex-start; margin-top:12px; padding:9px 11px; border:1px solid #fee2e2; background:#fff7f7; border-radius:8px; color:#dc2626; font-size:12px; line-height:1.4; }
+  #draftsContent .elms-ex-edit { display:grid; gap:10px; padding:14px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; }
+  #draftsContent .elms-ex-edit label { display:grid; gap:4px; font-size:11px; font-weight:700; color:#64748b; }
+  #draftsContent .elms-ex-edit input { height:36px; box-sizing:border-box; width:100%; border:1px solid #dfe3e8; border-radius:8px; padding:0 10px; font:600 13px Inter,sans-serif; color:#1f2937; background:#fff; }
+  #draftsContent .elms-ex-edit input:focus { outline:none; border-color:#9db7e8; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  #draftsContent .elms-ex-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  #draftsContent .elms-ex-btn { height:36px; padding:0 14px; border:1px solid #d9dee6; border-radius:8px; background:#fff; font:700 12px Inter,sans-serif; color:#344054; cursor:pointer; }
+  #draftsContent .elms-ex-btn.primary { background:#2563eb; border-color:#2563eb; color:#fff; }
+  #draftsContent .elms-ex-btn:disabled { opacity:.55; cursor:not-allowed; }
+  #draftsContent .elms-ex-link { font-size:12px; font-weight:700; color:#2563eb; text-decoration:none; }
+  @media (max-width:1100px) { #draftsContent .elms-expand-panel { grid-template-columns:96px minmax(0,1fr); padding-left:18px; } #draftsContent .elms-ex-edit { grid-column:1 / -1; } }
+  @media (max-width:560px) { #draftsContent .elms-expand-panel { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -5552,6 +5345,46 @@
     const sold = l.sold_count ?? l.sold ?? l.quantity_sold ?? 0;
     const sourcingRequest = l.sourcing_request || l.sourcingRequest || '—';
 
+    // Values for the expandable details panel (row below the main row).
+    const currency = CURRENCY_SYMBOLS[l.currency] || (l.currency ? `${l.currency} ` : '$');
+    const amazonNum = l.amazon_price != null && Number.isFinite(Number(l.amazon_price)) ? Number(l.amazon_price) : null;
+    const sellNum = l.sell_price != null && Number.isFinite(Number(l.sell_price)) ? Number(l.sell_price) : null;
+    const money = (n) => n == null ? '—' : `${currency}${n.toFixed(2)}`;
+    const profitNum = amazonNum != null && sellNum != null ? sellNum - amazonNum : null;
+    const fmtDateTime = (v) => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.toLocaleString() : '—'; };
+    const destination = l.ebay_account_username || (status === 'draft' ? 'Not yet published' : 'Not connected');
+    const panelImg = l.main_image ? `<img class="elms-ex-img" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="elms-ex-img"></div>';
+    const exStat = (label, value, extra = '') => `<div class="elms-ex-stat"><span>${label}</span><b${extra}>${value}</b></div>`;
+    const expandRow = `
+      <tr class="elms-expand-row" data-expand-for="${escapeAttr(l.id)}"><td colspan="7" class="elms-expand-cell"><div class="elms-expand-panel" data-amazon="${amazonNum ?? ''}" data-currency="${escapeAttr(currency)}">
+        <div class="elms-ex-media">${panelImg}</div>
+        <div class="elms-ex-body">
+          <div class="elms-ex-title">${escapeHtml(l.title || l.sku || 'Untitled product')}</div>
+          <div class="elms-ex-stats">
+            ${exStat('Amazon price', escapeHtml(money(amazonNum)))}
+            ${exStat('Profit', escapeHtml(money(profitNum)), ' data-ex-profit')}
+            ${exStat('Markup', `${Number(l.markup_percent || 0).toFixed(2).replace(/\.00$/, '')}%`)}
+            ${exStat('Destination', escapeHtml(destination))}
+            ${exStat('Marketplace', escapeHtml(l.marketplace_id || 'eBay'))}
+            ${exStat('Status', escapeHtml(status))}
+            ${exStat('Uploaded', escapeHtml(fmtDateTime(uploaded)))}
+            ${exStat('Updated', escapeHtml(fmtDateTime(l.updated_at)))}
+            ${status === 'scheduled' && l.scheduled_at ? exStat('Scheduled', escapeHtml(fmtDateTime(l.scheduled_at))) : ''}
+          </div>
+          ${status === 'error' && l.error_message ? `<div class="elms-ex-error"><span class="elms-warning-dot">!</span><span>${escapeHtml(l.error_message)}</span></div>` : ''}
+        </div>
+        <div class="elms-ex-edit">
+          <label>Sell price<input type="number" step="0.01" data-expand-field="sellPrice" placeholder="Price" /></label>
+          <label>Quantity<input type="number" min="1" data-expand-field="quantity" /></label>
+          <label>eBay category ID<input type="text" data-expand-field="categoryId" placeholder="e.g. 15052" /></label>
+          <div class="elms-ex-actions">
+            <button type="button" class="elms-ex-btn primary" data-action="expand-save">Save changes</button>
+            <button type="button" class="elms-ex-btn" data-action="expand-open">Full editor</button>
+            ${l.amazon_url ? `<a class="elms-ex-link" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener">View source</a>` : ''}
+          </div>
+        </div>
+      </div></td></tr>`;
+
     return `
       <tr class="draft-row" data-listing-id="${escapeAttr(l.id)}" data-status="${escapeAttr(status)}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
         <td class="draft-select-cell"><input type="checkbox" class="draft-checkbox" data-action="select" /></td>
@@ -5564,11 +5397,11 @@
         <td><div class="elms-item-ids"><div><span class="elms-id-label">BUY</span><span class="elms-id-value">${escapeHtml(asin)}</span></div><div><span class="elms-id-label sell">SELL</span><span class="elms-id-value">${escapeHtml(ebayItemId)}</span></div></div></td>
         <td><span class="elms-sold-count">${escapeHtml(String(sold))}</span></td>
         <td data-action="stop-propagation"><div class="elms-row-actions">
-          <button class="elms-publish-btn" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>${actionLabel}</button><button class="elms-icon-btn" data-action="toggle-menu" title="More actions">⋮</button>
+          <button class="elms-publish-btn" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>${actionLabel}</button><button class="elms-icon-btn elms-chevron" data-action="toggle-expand" aria-expanded="false" title="Show details">&#9662;</button><button class="elms-icon-btn" data-action="toggle-menu" title="More actions">⋮</button>
           <div class="draft-menu-wrap"><div class="draft-menu" data-menu><button data-action="schedule">Schedule Listing</button><button data-action="delete" class="menu-danger">Delete Draft</button></div></div>
         </div>
         <input type="hidden" data-field="sellPrice" value="${escapeAttr(l.sell_price ?? '')}" /><input type="hidden" data-field="quantity" value="${escapeAttr(l.quantity ?? 1)}" /><input type="hidden" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" /><button type="button" data-action="save" hidden>Save</button></td>
-      </tr>`;
+      </tr>${expandRow}`;
   }
 
 async function autoSuggestEmptyDraftCategories() {
@@ -5620,6 +5453,55 @@ async function autoSuggestEmptyDraftCategories() {
       });
 
       checkbox.addEventListener('change', updateBulkBar);
+
+      // Expandable details panel (separate <tr class="elms-expand-row"> right after this row).
+      // Its inputs mirror the row's hidden data-field inputs, and "Save changes" simply
+      // triggers this row's existing Save handler, so save/publish logic stays in one place.
+      const expandBtn = row.querySelector('[data-action="toggle-expand"]');
+      const expandRow = row.nextElementSibling && row.nextElementSibling.classList.contains('elms-expand-row') ? row.nextElementSibling : null;
+      if (expandBtn && expandRow) {
+        const panel = expandRow.querySelector('.elms-expand-panel');
+        const exSave = expandRow.querySelector('[data-action="expand-save"]');
+        const rowField = (name) => row.querySelector(`[data-field="${name}"]`);
+        const exField = (name) => expandRow.querySelector(`[data-expand-field="${name}"]`);
+        const updateExProfit = () => {
+          const el = expandRow.querySelector('[data-ex-profit]');
+          const amazon = parseFloat(panel.getAttribute('data-amazon'));
+          const sell = parseFloat(exField('sellPrice').value);
+          if (el) el.textContent = Number.isFinite(amazon) && Number.isFinite(sell) ? `${panel.getAttribute('data-currency') || '$'}${(sell - amazon).toFixed(2)}` : '—';
+        };
+
+        expandBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const open = !expandRow.classList.contains('open');
+          if (open) {
+            ['sellPrice', 'quantity', 'categoryId'].forEach((name) => { exField(name).value = rowField(name).value; });
+            exSave.disabled = saveBtn.disabled;
+            updateExProfit();
+          }
+          expandRow.classList.toggle('open', open);
+          row.classList.toggle('expanded', open);
+          expandBtn.setAttribute('aria-expanded', String(open));
+          expandBtn.title = open ? 'Hide details' : 'Show details';
+        });
+
+        ['sellPrice', 'quantity', 'categoryId'].forEach((name) => {
+          exField(name).addEventListener('input', () => {
+            rowField(name).value = exField(name).value;
+            if (name === 'categoryId') rowField(name).dataset.userEdited = '1';
+            if (name === 'sellPrice') updateExProfit();
+          });
+        });
+
+        exSave.addEventListener('click', () => saveBtn.click());
+        // Mirror the row Save button's "Saving… / Saved" state on the panel button.
+        new MutationObserver(() => {
+          exSave.textContent = saveBtn.textContent.trim() === 'Save' ? 'Save changes' : saveBtn.textContent;
+          exSave.disabled = saveBtn.disabled;
+        }).observe(saveBtn, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
+
+        expandRow.querySelector('[data-action="expand-open"]').addEventListener('click', () => openDraftDetailModal(id));
+      }
 
       saveBtn.addEventListener('click', async () => {
         const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
@@ -5763,7 +5645,9 @@ async function autoSuggestEmptyDraftCategories() {
             return;
           }
 
+          if (expandRow) expandRow.remove();
           row.remove();
+          updateBulkBar();
         } catch (err) {
           alert('Could not connect to the server: ' + err.message);
         }
