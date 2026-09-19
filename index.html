@@ -2412,7 +2412,7 @@
   /* ===== AutoDS-style inner sidebar for Drafts ===== */
   .elms-drafts-layout {
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 220px minmax(0, 1fr) 210px;
     gap: 16px;
     align-items: start;
     width: 100%;
@@ -2508,7 +2508,46 @@
   .elms-inner-side-link:hover { background:#F8FAFC; color:var(--ink); }
   .elms-drafts-main { min-width: 0; }
   .elms-drafts-main .elms-drafts-toolbar { margin-top: 0; }
+  /* Separate "Show fields" sidebar: stays inside the page, scrolls on its own */
+  .elms-fields-sidebar {
+    position: sticky;
+    top: 14px;
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(15,23,42,.04);
+    overflow: hidden;
+  }
+  .elms-fields-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #94A3B8;
+  }
+  .elms-fields-head button { border:0; background:transparent; color:var(--blue); font:700 11px inherit; cursor:pointer; text-transform:none; letter-spacing:0; }
+  .elms-fields-list { overflow-y: auto; padding: 6px 8px 10px; }
+  .elms-fields-item { display:flex; align-items:center; gap:9px; padding:8px; border-radius:8px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; user-select:none; }
+  .elms-fields-item:hover { background:#F1F5F9; color:var(--ink); }
+  .elms-fields-item input { margin:0; accent-color: var(--blue); }
+  .elms-product-fields { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
+  .elms-pf { display:none; align-items:center; gap:4px; padding:2px 7px; border:1px solid #E2E8F0; background:#F8FAFC; border-radius:6px; font-size:10.5px; color:#334155; }
+  .elms-pf b { color:#94A3B8; font-weight:700; }
+  .elms-drafts-layout.f-available .elms-pf-available, .elms-drafts-layout.f-onhold .elms-pf-onhold, .elms-drafts-layout.f-oos .elms-pf-oos, .elms-drafts-layout.f-total .elms-pf-total, .elms-drafts-layout.f-oosdays .elms-pf-oosdays, .elms-drafts-layout.f-price .elms-pf-price, .elms-drafts-layout.f-profit .elms-pf-profit, .elms-drafts-layout.f-itemid .elms-pf-itemid, .elms-drafts-layout.f-sold .elms-pf-sold, .elms-drafts-layout.f-dws .elms-pf-dws, .elms-drafts-layout.f-store .elms-pf-store, .elms-drafts-layout.f-asin .elms-pf-asin, .elms-drafts-layout.f-views .elms-pf-views, .elms-drafts-layout.f-watchers .elms-pf-watchers, .elms-drafts-layout.f-daysleft .elms-pf-daysleft, .elms-drafts-layout.f-tags .elms-pf-tags { display:inline-flex; }
+  @media (max-width: 1200px) {
+    .elms-drafts-layout { grid-template-columns: 220px minmax(0, 1fr); }
+    .elms-fields-sidebar { grid-column: 2; position: static; max-height: 260px; }
+  }
   @media (max-width: 900px) {
+    .elms-fields-sidebar { grid-column: 1; }
     .elms-drafts-layout { grid-template-columns: 1fr; }
     .elms-drafts-inner-sidebar { position: static; }
     .elms-inner-side-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -5291,6 +5330,33 @@
     }
   }
 
+  // "Show fields" sidebar. Ticked fields appear as chips under each product
+  // name; values show a dash when a draft has no such data yet.
+  const ELMS_FIELDS = [
+    { key: 'available', label: 'Available', get: (l) => l.quantity ?? 1 },
+    { key: 'onhold', label: 'On Hold', get: (l) => l.on_hold ?? l.onHold },
+    { key: 'oos', label: 'Out Of Stock', get: (l) => (l.out_of_stock ?? l.outOfStock) == null ? null : ((l.out_of_stock ?? l.outOfStock) ? 'Yes' : 'No') },
+    { key: 'total', label: 'Total', get: (l) => l.total_quantity ?? l.total },
+    { key: 'oosdays', label: 'OOS Days', get: (l) => l.oos_days ?? l.oosDays },
+    { key: 'price', label: 'Price', get: (l) => l.sell_price != null && Number.isFinite(Number(l.sell_price)) ? Number(l.sell_price).toFixed(2) : null },
+    { key: 'profit', label: 'Profit', get: (l) => (l.sell_price != null && l.amazon_price != null && Number.isFinite(Number(l.sell_price)) && Number.isFinite(Number(l.amazon_price))) ? (Number(l.sell_price) - Number(l.amazon_price)).toFixed(2) : null },
+    { key: 'itemid', label: 'Item ID', get: (l) => l.ebay_item_id ?? l.ebayItemId ?? l.ebay_listing_id ?? l.item_id },
+    { key: 'sold', label: 'Sold', get: (l) => l.sold_count ?? l.sold ?? l.quantity_sold },
+    { key: 'dws', label: 'DWS', get: (l) => l.dws },
+    { key: 'store', label: 'Store', get: (l) => l.ebay_account_username },
+    { key: 'asin', label: 'ASIN', get: (l) => l.asin || l.sku || l.source_asin },
+    { key: 'views', label: 'Views', get: (l) => l.views ?? l.view_count },
+    { key: 'watchers', label: 'Watchers', get: (l) => l.watchers ?? l.watch_count },
+    { key: 'daysleft', label: 'Days Left', get: (l) => l.days_left ?? l.daysLeft },
+    { key: 'tags', label: 'Tags', get: (l) => Array.isArray(l.tags) ? l.tags.join(', ') : l.tags },
+  ];
+  function elmsFieldsShown() {
+    try { return new Set(JSON.parse(localStorage.getItem('elmsDraftFields') || '[]')); } catch (e) { return new Set(); }
+  }
+  function elmsFieldsClasses() {
+    return Array.from(elmsFieldsShown()).map((k) => `f-${k}`).join(' ');
+  }
+
   async function loadDrafts() {
     const container = document.getElementById('draftsContent');
     container.innerHTML = `<div class="draft-loading"><div class="draft-skeleton"></div><div class="draft-skeleton"></div><div class="draft-skeleton"></div></div>`;
@@ -5317,7 +5383,7 @@
       }
 
       container.innerHTML = `
-        <div class="elms-drafts-layout">
+        <div class="elms-drafts-layout ${elmsFieldsClasses()}" id="elmsDraftsLayout">
           <aside class="elms-drafts-inner-sidebar" aria-label="Draft filters">
             <div class="elms-inner-side-head">Listing management</div>
             <nav class="elms-inner-side-nav">
@@ -5376,8 +5442,25 @@
               <div class="draft-footer" id="draftFooter"></div>
             </div>
           </section>
+
+          <aside class="elms-fields-sidebar" aria-label="Show fields">
+            <div class="elms-fields-head"><span>Show fields</span><button type="button" id="elmsFieldsReset">Reset</button></div>
+            <div class="elms-fields-list">${ELMS_FIELDS.map((f) => `<label class="elms-fields-item"><input type="checkbox" data-elms-field="${f.key}" ${elmsFieldsShown().has(f.key) ? 'checked' : ''} /><span>${f.label}</span></label>`).join('')}</div>
+          </aside>
         </div>
       `;
+      document.querySelectorAll('[data-elms-field]').forEach((cb) => cb.addEventListener('change', () => {
+        const shown = Array.from(document.querySelectorAll('[data-elms-field]:checked')).map((x) => x.getAttribute('data-elms-field'));
+        try { localStorage.setItem('elmsDraftFields', JSON.stringify(shown)); } catch (e) {}
+        const layout = document.getElementById('elmsDraftsLayout');
+        if (layout) layout.className = `elms-drafts-layout ${elmsFieldsClasses()}`;
+      }));
+      document.getElementById('elmsFieldsReset')?.addEventListener('click', () => {
+        try { localStorage.removeItem('elmsDraftFields'); } catch (e) {}
+        document.querySelectorAll('[data-elms-field]').forEach((cb) => { cb.checked = false; });
+        const layout = document.getElementById('elmsDraftsLayout');
+        if (layout) layout.className = 'elms-drafts-layout';
+      });
 
       const DRAFTS_PAGE_SIZE = 20;
       let draftPage = 1;
@@ -5474,7 +5557,7 @@
         <td class="draft-select-cell"><input type="checkbox" class="draft-checkbox" data-action="select" /></td>
         <td><div class="elms-product-cell" data-action="open-detail">
           ${l.main_image ? `<img class="elms-product-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="elms-product-thumb"></div>'}
-          <div class="elms-product-copy"><div class="elms-product-title">${status === 'error' ? '<span class="elms-warning-dot">!</span>' : ''}${escapeHtml(l.title || l.sku || 'Untitled product')}</div><div class="elms-product-id">ASIN / SKU: ${escapeHtml(asin)}</div></div>
+          <div class="elms-product-copy"><div class="elms-product-title">${status === 'error' ? '<span class="elms-warning-dot">!</span>' : ''}${escapeHtml(l.title || l.sku || 'Untitled product')}</div><div class="elms-product-id">ASIN / SKU: ${escapeHtml(asin)}</div><div class="elms-product-fields">${ELMS_FIELDS.map((f) => { const v = f.get(l); return `<span class="elms-pf elms-pf-${f.key}"><b>${f.label}</b> ${v == null || v === '' ? '—' : escapeHtml(String(v))}</span>`; }).join('')}</div></div>
         </div></td>
         <td><span class="elms-date">${escapeHtml(uploadedText)}</span></td>
         <td><span class="elms-sourcing-request">${escapeHtml(sourcingRequest)}</span></td>
