@@ -2853,6 +2853,87 @@
   .ih-stat .ih-val, .ih-stat .ih-lbl, .ih-stat .ih-lbl-strong { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ih-stats .ih-import-btn-wrap { grid-column:auto !important; }
   .ih-import-btn { min-height:76px; height:100%; }
+
+  /* ===== Settings + Buy credits ===== */
+  .st-top { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+  .st-top h1 { margin:0; font-size:26px; letter-spacing:-.02em; }
+  .st-top .sub { color:var(--grey); font-size:13.5px; margin-top:4px; max-width:620px; }
+  .st-card { position:relative; overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px 24px 22px; margin-bottom:18px; box-shadow:0 6px 22px rgba(20,35,60,.04); min-width:0; }
+  .st-card::before { content:''; position:absolute; left:0; top:0; right:0; height:4px; background:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%); }
+  .st-head { display:flex; align-items:center; gap:14px; margin-bottom:16px; flex-wrap:wrap; }
+  .st-head-txt { flex:1; min-width:180px; }
+  .st-head-txt h2 { margin:0; font-size:17px; letter-spacing:-.01em; }
+  .st-head-txt p { margin:3px 0 0; color:var(--grey); font-size:13px; }
+  .st-ico { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-size:20px; flex:none; }
+  .st-ico.blue { background:#E8F1FD; } .st-ico.green { background:#EDF7DC; } .st-ico.yellow { background:#FEF3D0; } .st-ico.red { background:#FDE8E9; }
+  .st-two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+  .st-two .st-card { margin-bottom:0; }
+  .st-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px 16px; }
+  .st-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:14px; }
+  .st-field { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; min-width:0; }
+  .st-grid .st-field, .st-row .st-field { margin-bottom:0; }
+  .st-field.grow { flex:1; min-width:220px; }
+  .st-field label { font-size:11.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#64748B; }
+  .st-input { width:100%; min-width:0; height:42px; padding:0 12px; border:1.5px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); font:inherit; font-size:14px; transition:border-color .15s, box-shadow .15s; }
+  .st-input:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
+  .st-input.mono { font-family:ui-monospace,Consolas,monospace; letter-spacing:.03em; }
+  .st-btn { height:42px; padding:0 18px; border-radius:10px; border:1.5px solid var(--line); background:#fff; color:var(--ink); font:inherit; font-size:13.5px; font-weight:700; cursor:pointer; white-space:nowrap; transition:background .15s, transform .05s; }
+  .st-btn:hover { background:#F1F5F9; } .st-btn:active { transform:translateY(1px); }
+  .st-btn.primary { background:#0064D2; border-color:#0064D2; color:#fff; } .st-btn.primary:hover { background:#0055B3; }
+  .st-btn.danger { color:#B91C1C; border-color:#FCA5A5; } .st-btn.danger:hover { background:#FEF2F2; }
+  .st-btn:disabled { opacity:.55; cursor:not-allowed; }
+  .st-btn.small { height:34px; padding:0 12px; font-size:12.5px; }
+  .st-actions { display:flex; align-items:center; gap:12px; margin-top:16px; flex-wrap:wrap; }
+  .st-actions > div:empty { display:none; }
+  .st-custom { margin-top:18px; padding:16px; border:1.5px dashed #BFD6F3; border-radius:12px; background:#F5F9FE; }
+  .st-custom-title { font-weight:800; font-size:13px; margin-bottom:12px; color:#0B4FA0; }
+  .st-hint { margin-top:12px; font-size:12.5px; color:#475569; line-height:1.5; }
+  .st-accts { display:grid; gap:12px; }
+  .st-acct { display:flex; gap:14px; align-items:center; flex-wrap:wrap; padding:14px 16px; border:1.5px solid var(--line); border-radius:14px; background:#FBFCFE; }
+  .st-acct.active { border-color:#86B817; background:#F7FBEE; }
+  .st-acct-flag { width:44px; height:44px; border-radius:12px; background:#0F172A; color:#fff; font-weight:800; display:grid; place-items:center; font-size:14px; flex:none; }
+  .st-acct-main { flex:1; min-width:200px; }
+  .st-acct-name { font-weight:800; font-size:15px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .st-pill { font-size:11px; font-weight:800; padding:3px 9px; border-radius:99px; background:#EDF7DC; color:#4C7A0B; }
+  .st-acct-meta { color:var(--grey); font-size:12.5px; margin-top:2px; }
+  .st-acct-name-edit { display:flex; gap:8px; margin-top:10px; max-width:480px; }
+  .st-acct-name-edit .st-input { height:36px; }
+  .st-acct-actions { display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
+  .st-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  .st-table th { text-align:left; font-size:11.5px; letter-spacing:.04em; text-transform:uppercase; color:#64748B; padding:8px 10px; border-bottom:1.5px solid var(--line); }
+  .st-table td { padding:12px 10px; border-bottom:1px solid #EEF2F7; }
+  .st-table-wrap { overflow-x:auto; }
+  /* Buy credits */
+  .bc-balance { display:flex; align-items:baseline; gap:8px; padding:12px 20px; border-radius:14px; background:#0F172A; color:#fff; }
+  .bc-balance span { font-size:12px; letter-spacing:.05em; text-transform:uppercase; opacity:.7; }
+  .bc-balance b { font-size:28px; letter-spacing:-.02em; } .bc-balance em { font-style:normal; font-size:13px; opacity:.8; }
+  .bc-plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; margin-top:6px; }
+  .bc-plan { position:relative; overflow:hidden; background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:26px 22px 22px; display:flex; flex-direction:column; gap:6px; box-shadow:0 6px 22px rgba(20,35,60,.05); transition:transform .15s, box-shadow .15s; }
+  .bc-plan:hover { transform:translateY(-3px); box-shadow:0 12px 30px rgba(20,35,60,.10); }
+  .bc-plan::before { content:''; position:absolute; left:0; top:0; right:0; height:5px; background:#0064D2; }
+  .bc-plan:nth-child(4n+2)::before { background:#86B817; } .bc-plan:nth-child(4n+3)::before { background:#F5AF02; } .bc-plan:nth-child(4n+4)::before { background:#E53238; }
+  .bc-plan.best { border-color:#0064D2; box-shadow:0 12px 34px rgba(0,100,210,.16); }
+  .bc-badge { position:absolute; top:14px; right:14px; background:#0064D2; color:#fff; font-size:11px; font-weight:800; padding:4px 10px; border-radius:99px; letter-spacing:.03em; }
+  .bc-plan-name { font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#64748B; }
+  .bc-plan-credits { font-size:34px; font-weight:800; letter-spacing:-.03em; line-height:1.1; margin-top:6px; }
+  .bc-plan-credits small { font-size:14px; font-weight:600; color:var(--grey); margin-left:4px; letter-spacing:0; }
+  .bc-plan-price { font-size:22px; font-weight:800; margin-top:4px; }
+  .bc-plan-per { font-size:12.5px; color:var(--grey); }
+  .bc-plan-icons { display:flex; gap:6px; align-items:center; margin:14px 0 4px; flex-wrap:wrap; }
+  .bc-plan-icons svg { height:22px; width:auto; border-radius:4px; }
+  .bc-plan-label { font-size:12px; color:var(--grey); margin-bottom:12px; }
+  .bc-buy { margin-top:auto; height:46px; border:none; border-radius:12px; background:#0064D2; color:#fff; font:inherit; font-weight:800; font-size:15px; cursor:pointer; }
+  .bc-buy:hover { background:#0055B3; } .bc-buy:disabled { opacity:.6; cursor:wait; }
+  .bc-plan.best .bc-buy { background:linear-gradient(135deg,#0064D2,#4F46E5); }
+  .bc-trust { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-top:20px; }
+  .bc-trust div { display:flex; flex-direction:column; gap:3px; padding:14px 16px; background:#fff; border:1px solid var(--line); border-radius:14px; }
+  .bc-trust b { font-size:13.5px; } .bc-trust span { font-size:12.5px; color:var(--grey); }
+  @media (max-width: 860px) { .st-two { grid-template-columns:1fr; } }
+  @media (max-width: 600px) {
+    .st-card { padding:18px 16px; } .st-top h1 { font-size:22px; }
+    .st-acct-actions { width:100%; margin-left:0; } .st-acct-actions .st-btn { flex:1; }
+    .st-btn { padding:0 14px; } .bc-balance { width:100%; justify-content:center; }
+  }
 </style>
 </head>
 <body>
@@ -3456,97 +3537,45 @@
         <div class="meta-line" style="margin-top:10px;"><strong>Pro Tip:</strong> Start with a specific ASIN when you want product-level data, then use its category ID to explore bestseller results.</div>
       </div>
     </div>
-  </div>
 
       <div id="page-settings" style="display:none;">
-        <div class="import-lane">
-          <div class="kicker">eBay accounts</div>
-          <h2>Your connected eBay accounts</h2>
-          <p class="meta-line" id="ebayAccountLimitLabel"></p>
-          <div id="ebayAccountsList"><p class="state-msg">Loading&hellip;</p></div>
-          <button class="primary" id="connectEbayBtn" style="margin-top:14px;">+ Connect an eBay account</button>
+        <div class="st-top">
+          <div>
+            <h1>Settings</h1>
+            <div class="sub">Connect your eBay stores, set where items ship from and choose how often ELMS syncs.</div>
+          </div>
+        </div>
+
+        <section class="st-card">
+          <div class="st-head">
+            <div class="st-ico blue">&#127978;</div>
+            <div class="st-head-txt"><h2>eBay stores</h2><p id="ebayAccountLimitLabel"></p></div>
+            <button class="st-btn primary" id="connectEbayBtn" type="button">+ Connect an eBay account</button>
+          </div>
+          <div id="ebayAccountsList" class="st-accts"><p class="state-msg">Loading&hellip;</p></div>
           <div id="ebayConnectStatus" style="margin-top:10px;"></div>
-        </div>
+        </section>
 
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Browser extension</div>
-          <p class="meta-line">Connect the ELMS Chrome extension to import products directly from the Amazon page without a paid Amazon API fetch.</p>
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;">
-            <input class="editable-input" id="extensionKeyDisplay" type="password" readonly placeholder="Loading your extension key&hellip;" style="flex:1; min-width:260px; font-family:monospace; letter-spacing:.02em;" />
-            <button class="btn-outline" id="toggleExtensionKeyBtn" type="button">Show</button>
-            <button class="btn-outline" id="copyExtensionKeyBtn" type="button">Copy</button>
-            <button class="btn-small delete" id="regenerateExtensionKeyBtn" type="button">Regenerate</button>
+        <section class="st-card">
+          <div class="st-head">
+            <div class="st-ico green">&#128230;</div>
+            <div class="st-head-txt"><h2>Selling settings</h2><p>Policies and item location for one store. All four are required before you can publish.</p></div>
           </div>
-          <div id="extensionKeyStatus" style="margin-top:10px;"></div>
-        </div>
-
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Order sync</div>
-          <p class="meta-line">Choose how quickly new eBay orders show up in ELMS.</p>
-          <div class="publish-rail" style="border-top:none; padding-top:0;">
-            <div class="publish-field">
-              <label>Sync mode</label>
-              <select class="editable-input" id="orderSyncModeSelect" style="width:220px;">
-                <option value="realtime">Real-time (webhook + safety net) &mdash; 10 credits/day</option>
-                <option value="polling">Custom interval (polling only) &mdash; 5 credits/day</option>
+          <div class="st-row">
+            <div class="st-field grow">
+              <label>Editing settings for</label>
+              <select class="st-input" id="policiesAccountSelector">
+                <option value="">Connect an eBay account first&hellip;</option>
               </select>
             </div>
-            <div class="publish-field" id="orderSyncIntervalField">
-              <label id="orderSyncIntervalLabel">Safety-net check every</label>
-              <select class="editable-input" id="orderSyncIntervalSelect" style="width:140px;">
-                <option value="5">5 minutes</option>
-                <option value="10">10 minutes</option>
-                <option value="15">15 minutes</option>
-                <option value="30">30 minutes</option>
-                <option value="60">60 minutes</option>
-              </select>
-            </div>
+            <button class="st-btn" id="fetchEbayPoliciesBtn" type="button">Fetch from eBay</button>
           </div>
-          <button class="btn-publish" id="saveOrderSyncSettingsBtn" style="margin-top:10px;">Save</button>
-          <div id="orderSyncSettingsStatus" style="margin-top:10px;"></div>
-        </div>
+          <div id="fetchPoliciesStatus" style="margin-bottom:10px;"></div>
 
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Business policies</div>
-          <div class="publish-field" style="margin-bottom:16px;">
-            <label>Editing settings for</label>
-            <select class="editable-input" id="policiesAccountSelector" style="width:240px;">
-              <option value="">Connect an eBay account first&hellip;</option>
-            </select>
-          </div>
-          <p class="meta-line">These come from your eBay Seller Hub (Account &rarr; Business Policies) and your Inventory Location. All four are required before you can publish a listing.</p>
-          <button class="btn-outline" id="fetchEbayPoliciesBtn" style="margin-bottom:16px;">Fetch from eBay</button>
-          <div id="fetchPoliciesStatus" style="margin-bottom:12px;"></div>
-
-          <div class="publish-rail" style="border-top:none; padding-top:0;">
-            <div class="publish-field">
-              <label>Product location</label>
-              <select class="editable-input" id="settingMerchantLocationKey" style="width:220px;">
-                <option value="">Select after fetching&hellip;</option>
-                <option value="__custom__">Custom (enter postal code)</option>
-              </select>
-            </div>
-            <div class="publish-field">
-              <label>Payment policy</label>
-              <select class="editable-input" id="settingPaymentPolicyId" style="width:220px;">
-                <option value="">Select after fetching&hellip;</option>
-              </select>
-            </div>
-            <div class="publish-field">
-              <label>Fulfillment policy</label>
-              <select class="editable-input" id="settingFulfillmentPolicyId" style="width:220px;">
-                <option value="">Select after fetching&hellip;</option>
-              </select>
-            </div>
-            <div class="publish-field">
-              <label>Return policy</label>
-              <select class="editable-input" id="settingReturnPolicyId" style="width:220px;">
-                <option value="">Select after fetching&hellip;</option>
-              </select>
-            </div>
-            <div class="publish-field">
+          <div class="st-grid">
+            <div class="st-field">
               <label>Marketplace</label>
-              <select class="editable-input" id="settingMarketplaceId" style="width:200px;">
+              <select class="st-input" id="settingMarketplaceId">
                 <option value="EBAY_US">United States (.com)</option>
                 <option value="EBAY_GB">United Kingdom (.co.uk)</option>
                 <option value="EBAY_DE">Germany (.de)</option>
@@ -3567,13 +3596,39 @@
                 <option value="EBAY_PH">Philippines (.ph)</option>
               </select>
             </div>
+            <div class="st-field">
+              <label>Product location</label>
+              <select class="st-input" id="settingMerchantLocationKey">
+                <option value="">Select after fetching&hellip;</option>
+                <option value="__custom__">Custom (enter postal code)</option>
+              </select>
+            </div>
+            <div class="st-field">
+              <label>Payment policy</label>
+              <select class="st-input" id="settingPaymentPolicyId">
+                <option value="">Select after fetching&hellip;</option>
+              </select>
+            </div>
+            <div class="st-field">
+              <label>Fulfillment policy</label>
+              <select class="st-input" id="settingFulfillmentPolicyId">
+                <option value="">Select after fetching&hellip;</option>
+              </select>
+            </div>
+            <div class="st-field">
+              <label>Return policy</label>
+              <select class="st-input" id="settingReturnPolicyId">
+                <option value="">Select after fetching&hellip;</option>
+              </select>
+            </div>
           </div>
 
-          <div id="customLocationFields" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--line);">
-            <div class="publish-rail" style="border-top:none; padding-top:0;">
-              <div class="publish-field">
+          <div id="customLocationFields" class="st-custom" style="display:none;">
+            <div class="st-custom-title">Custom item location</div>
+            <div class="st-grid">
+              <div class="st-field">
                 <label>Country</label>
-                <select class="editable-input" id="customLocationCountry" style="width:180px;">
+                <select class="st-input" id="customLocationCountry">
                   <option value="US">United States</option>
                   <option value="GB">United Kingdom</option>
                   <option value="DE">Germany</option>
@@ -3594,31 +3649,101 @@
                   <option value="PH">Philippines</option>
                 </select>
               </div>
-              <div class="publish-field">
+              <div class="st-field">
                 <label>City</label>
-                <input type="text" id="customLocationCity" placeholder="e.g. New York" style="width:180px;" />
+                <input class="st-input" type="text" id="customLocationCity" placeholder="e.g. Manchester" />
               </div>
-              <div class="publish-field">
+              <div class="st-field">
                 <label>Postal code</label>
-                <input type="text" id="customLocationPostalCode" placeholder="e.g. 10001" style="width:140px;" />
+                <input class="st-input" type="text" id="customLocationPostalCode" placeholder="Full code, e.g. M1 1AE" />
               </div>
-              <button class="btn-outline" id="generatePostalCodeBtn" type="button">Generate</button>
+              <div class="st-field">
+                <label>&nbsp;</label>
+                <button class="st-btn" id="generatePostalCodeBtn" type="button">Generate valid code</button>
+              </div>
             </div>
+            <div class="st-hint">UK and other countries need the <b>full</b> postal code, not just the first part. Generate finds a real one for the city and saves it as your inventory location.</div>
             <div id="postalLookupResult" style="margin-top:10px;"></div>
           </div>
 
-          <button class="btn-publish" id="saveSellerSettingsBtn" style="margin-top:16px;">Save settings</button>
-          <div id="sellerSettingsStatus"></div>
+          <div class="st-actions">
+            <button class="st-btn primary" id="saveSellerSettingsBtn" type="button">Save settings</button>
+            <div id="sellerSettingsStatus"></div>
+          </div>
+        </section>
+
+        <div class="st-two">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico yellow">&#128260;</div>
+              <div class="st-head-txt"><h2>Order sync</h2><p>How quickly new eBay orders show up in ELMS.</p></div>
+            </div>
+            <div class="st-field">
+              <label>Sync mode</label>
+              <select class="st-input" id="orderSyncModeSelect">
+                <option value="realtime">Real-time (webhook + safety net) &mdash; 10 credits/day</option>
+                <option value="polling">Custom interval (polling only) &mdash; 5 credits/day</option>
+              </select>
+            </div>
+            <div class="st-field" id="orderSyncIntervalField">
+              <label id="orderSyncIntervalLabel">Safety-net check every</label>
+              <select class="st-input" id="orderSyncIntervalSelect">
+                <option value="5">5 minutes</option>
+                <option value="10">10 minutes</option>
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="60">60 minutes</option>
+              </select>
+            </div>
+            <div class="st-actions">
+              <button class="st-btn primary" id="saveOrderSyncSettingsBtn" type="button">Save</button>
+              <div id="orderSyncSettingsStatus"></div>
+            </div>
+          </section>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#129513;</div>
+              <div class="st-head-txt"><h2>Browser extension</h2><p>Import from the Amazon page without a paid API fetch.</p></div>
+            </div>
+            <div class="st-field">
+              <label>Your extension key</label>
+              <input class="st-input mono" id="extensionKeyDisplay" type="password" readonly placeholder="Loading your extension key&hellip;" />
+            </div>
+            <div class="st-actions wrap">
+              <button class="st-btn" id="toggleExtensionKeyBtn" type="button">Show</button>
+              <button class="st-btn" id="copyExtensionKeyBtn" type="button">Copy</button>
+              <button class="st-btn danger" id="regenerateExtensionKeyBtn" type="button">Regenerate</button>
+            </div>
+            <div id="extensionKeyStatus" style="margin-top:10px;"></div>
+          </section>
         </div>
       </div>
 
       <div id="page-pricing" style="display:none;">
+        <div class="st-top">
+          <div>
+            <h1>Buy credits</h1>
+            <div class="sub">Credits pay for imports, publishing and order syncing. Pick a pack and check out securely.</div>
+          </div>
+          <div class="bc-balance"><span>Your balance</span><b id="pricingBalance">0</b><em>credits</em></div>
+        </div>
+
         <div id="pricingContent"><p class="state-msg">Loading&hellip;</p></div>
 
-        <div class="product-card" style="margin-top:24px;">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Your purchase history</div>
-          <div id="purchaseHistoryContent"><p class="state-msg">Loading&hellip;</p></div>
+        <div class="bc-trust">
+          <div><b>&#128274; Secure checkout</b><span>Payments are handled by Paddle. ELMS never sees your card.</span></div>
+          <div><b>&#9889; Instant credits</b><span>Credits land in your balance within a minute of payment.</span></div>
+          <div><b>&#128179; Cards, PayPal &amp; more</b><span>Pay the way you prefer.</span></div>
         </div>
+
+        <section class="st-card" style="margin-top:20px;">
+          <div class="st-head">
+            <div class="st-ico blue">&#129534;</div>
+            <div class="st-head-txt"><h2>Purchase history</h2><p>Every credit pack you have bought.</p></div>
+          </div>
+          <div id="purchaseHistoryContent"><p class="state-msg">Loading&hellip;</p></div>
+        </section>
       </div>
 
       <div id="page-support" style="display:none;">
@@ -4740,7 +4865,39 @@
   // with session restoration (or an old token can still be in another request).
   let authBootstrapping = true;
 
+  // ---------- Active eBay store scoping ----------
+  // Every store-specific list (drafts, live listings, orders, messages, notifications,
+  // import history, dashboard) is requested for the store that is selected in the
+  // sidebar. Other stores' data stays in the backend and comes back when that store
+  // is selected again.
+  const STORE_SCOPED_GET = /^\/api\/(listings(\/queue|\/counts)?|dashboard|imports|system-notifications(\/unread-count)?|orders|notifications(\/unread-count)?)$/;
+  const STORE_SCOPED_POST = /^\/api\/(orders\/sync|notifications\/sync|system-notifications\/mark-all-read)$/;
+  let activeStoreId; // undefined = not loaded yet, '' = no store connected
+  let activeStorePromise = null;
+  function setActiveStoreId(id) { activeStoreId = id || ''; activeStorePromise = null; }
+  async function getActiveStoreId() {
+    if (activeStoreId !== undefined) return activeStoreId;
+    if (!activeStorePromise) {
+      const token = localStorage.getItem('elmsSessionToken');
+      activeStorePromise = fetch(`${API_BASE}/api/ebay-accounts`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+        .then((r) => r.json())
+        .then((d) => { const a = (d.accounts || []).find((x) => x.isActive) || (d.accounts || [])[0]; if (activeStoreId === undefined) activeStoreId = a ? a.id : ''; return activeStoreId; })
+        .catch(() => { activeStorePromise = null; return ''; });
+    }
+    return activeStorePromise;
+  }
+  async function scopeToActiveStore(path, options) {
+    const [pathname, query = ''] = String(path).split('?');
+    const method = String(options.method || 'GET').toUpperCase();
+    const scoped = (method === 'GET' && STORE_SCOPED_GET.test(pathname)) || (method === 'POST' && STORE_SCOPED_POST.test(pathname));
+    if (!scoped || /(^|&)accountId=/.test(query)) return path;
+    const id = await getActiveStoreId();
+    if (!id) return path;
+    return `${pathname}?${query ? query + '&' : ''}accountId=${encodeURIComponent(id)}`;
+  }
+
   async function apiFetch(path, options = {}) {
+    path = await scopeToActiveStore(path, options);
     const sessionToken = localStorage.getItem('elmsSessionToken');
     const headers = { ...(options.headers || {}) };
     if (sessionToken) {
@@ -4822,6 +4979,7 @@
     const chip = document.getElementById('creditBalanceChip');
     if (!chip || creditBalance == null) return;
     document.getElementById('creditBalanceAmount').textContent = creditBalance.toLocaleString();
+    const pb = document.getElementById('pricingBalance'); if (pb) pb.textContent = creditBalance.toLocaleString();
     chip.style.display = 'flex';
   }
 
@@ -4863,11 +5021,13 @@
     document.getElementById('marketplaceModal').classList.add('open');
   }
 
+  const STORE_MARKET_TAG = { EBAY_US: 'US', EBAY_GB: 'UK', EBAY_AU: 'AU', EBAY_CA: 'CA', EBAY_DE: 'DE', EBAY_FR: 'FR', EBAY_IT: 'IT', EBAY_ES: 'ES', EBAY_IE: 'IE', EBAY_NL: 'NL', EBAY_AT: 'AT', EBAY_BE: 'BE', EBAY_CH: 'CH', EBAY_PL: 'PL', EBAY_HK: 'HK', EBAY_SG: 'SG', EBAY_MY: 'MY', EBAY_PH: 'PH' };
   function accountDisplayLabel(acc) {
     const nickname = String(acc?.displayName || '').trim();
     const username = String(acc?.ebayUserId || '').trim();
-    if (nickname && username) return `${nickname} · ${username}`;
-    return nickname || username || 'eBay account';
+    const tag = STORE_MARKET_TAG[acc?.marketplaceId] ? ` [${STORE_MARKET_TAG[acc.marketplaceId]}]` : '';
+    if (nickname && username) return `${nickname} · ${username}${tag}`;
+    return (nickname || username || 'eBay account') + tag;
   }
 
   async function populateSidebarEbayWidget() {
@@ -4884,11 +5044,13 @@
         selectEl.style.display = 'none';
         addBtn.style.display = 'none';
         connectBtn.style.display = 'block';
+        setActiveStoreId('');
         return;
       }
 
       const limitReached = data.limit && data.limit.connected >= data.limit.max;
       const activeAccount = data.accounts.find((acc) => acc.isActive) || data.accounts[0];
+      setActiveStoreId(activeAccount ? activeAccount.id : '');
       selectEl.innerHTML = data.accounts
         .map((acc) => `<option value="${acc.id}" ${activeAccount && acc.id === activeAccount.id ? 'selected' : ''}>${escapeHtml(accountDisplayLabel(acc))}</option>`)
         .join('');
@@ -4907,6 +5069,15 @@
       addBtn.style.display = 'none';
       connectBtn.style.display = 'block';
     }
+  }
+
+  function resetStoreScopedState() {
+    try {
+      ordersAll = []; ordersPage = 1; ordersAccountFilter = '';
+      messageAccountFilter = ''; selectedMessageId = null;
+      systemNotifications = [];
+      document.getElementById('msgShell')?.classList.remove('thread-open');
+    } catch (_) { /* pages that were never opened have nothing to reset */ }
   }
 
   document.getElementById('sidebarEbayConnectBtn').addEventListener('click', openEbayConnectModal);
@@ -4933,9 +5104,13 @@
       const res = await apiFetch(`/api/ebay-accounts/${accountId}/activate`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not switch eBay account.');
+      setActiveStoreId(accountId);
+      resetStoreScopedState();
       await populateSidebarEbayWidget();
       const currentPage = document.querySelector('.sidebar-nav a.active')?.getAttribute('data-page');
       if (currentPage) showPage(currentPage);
+      refreshSystemNotificationBadge();
+      refreshMessageBadge();
     } catch (err) {
       alert('Could not switch accounts: ' + err.message);
       await populateSidebarEbayWidget();
@@ -6772,7 +6947,7 @@ async function autoSuggestEmptyDraftCategories() {
       const label = btn.innerHTML;
       btn.disabled = true; btn.textContent = 'Syncing\u2026';
       try {
-        const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: (await getActiveStoreId()) || undefined }) });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not sync from eBay.');
         showToast('Synced from eBay', `${data.synced} listing(s) updated with views and watchers${data.failed ? `, ${data.failed} could not be read` : ''}.`, data.failed && !data.synced ? 'error' : 'success');
@@ -7039,7 +7214,6 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="ord-head">
         <div><h1>Orders</h1><div class="sub">Every eBay order, its payment, shipping address, tracking and fulfillment &mdash; like Seller Hub.</div></div>
         <div class="ord-head-actions">
-          ${ordersAccounts.length > 1 ? `<select class="ord-select" id="ordersAccountFilterSelect"><option value="">All eBay stores</option>${ordersAccounts.map((a) => `<option value="${escapeAttr(a.id)}"${a.id === ordersAccountFilter ? ' selected' : ''}>${escapeHtml(accountDisplayLabel(a))}</option>`).join('')}</select>` : ''}
           <button class="ord-btn primary" id="syncOrdersBtn" type="button">Sync from eBay</button>
           <button class="ord-btn" id="syncOrdersFullBtn" type="button" title="Re-read every order from the last 90 days">Full sync (90 days)</button>
         </div>
@@ -8037,18 +8211,19 @@ async function autoSuggestEmptyDraftCategories() {
         listEl.innerHTML = '<div class="empty-state">No eBay accounts connected yet.</div>';
       } else {
         listEl.innerHTML = currentEbayAccounts.map((acc) => `
-          <div class="draft-row" data-account-id="${acc.id}" style="cursor:default; align-items:flex-start;">
-            <div class="draft-info" style="flex:1; min-width:220px;">
-              <div class="draft-title">${escapeHtml(acc.displayName || accountDisplayLabel(acc))} ${acc.isActive ? '<span class="status-badge published">Active</span>' : ''}</div>
-              <div class="draft-meta"><span class="draft-meta-item">eBay ID: ${escapeHtml(acc.ebayUserId)}</span><span class="draft-meta-item">Marketplace: ${escapeHtml(acc.marketplaceId || 'EBAY_US')}</span></div>
-              <div style="display:flex; gap:8px; margin-top:8px; max-width:520px;">
-                <input class="editable-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="e.g. USA Store / My eBay 1" style="flex:1; min-width:0;" />
-                <button class="btn-small save" data-action="save-name">Save name</button>
+          <div class="st-acct ${acc.isActive ? 'active' : ''}" data-account-id="${acc.id}">
+            <div class="st-acct-flag">${escapeHtml(STORE_MARKET_TAG[acc.marketplaceId] || 'eB')}</div>
+            <div class="st-acct-main">
+              <div class="st-acct-name">${escapeHtml(acc.displayName || acc.ebayUserId || 'eBay account')} ${acc.isActive ? '<span class="st-pill">Selected</span>' : ''}</div>
+              <div class="st-acct-meta">eBay ID: ${escapeHtml(acc.ebayUserId)} &middot; ${escapeHtml(acc.marketplaceId || 'EBAY_US')}</div>
+              <div class="st-acct-name-edit">
+                <input class="st-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="e.g. USA Store / UK Store" />
+                <button class="st-btn small" data-action="save-name" type="button">Save name</button>
               </div>
             </div>
-            <div class="row-actions">
-              ${!acc.isActive ? `<button class="btn-small" data-action="activate-account">Set active</button>` : ''}
-              <button class="btn-small delete" data-action="remove-account">Disconnect</button>
+            <div class="st-acct-actions">
+              ${!acc.isActive ? `<button class="st-btn small" data-action="activate-account" type="button">Switch to this store</button>` : ''}
+              <button class="st-btn small danger" data-action="remove-account" type="button">Disconnect</button>
             </div>
           </div>
         `).join('');
@@ -8077,6 +8252,11 @@ async function autoSuggestEmptyDraftCategories() {
               activateBtn.disabled = false;
               return;
             }
+            setActiveStoreId(accountId);
+            resetStoreScopedState();
+            populateSidebarEbayWidget();
+            refreshSystemNotificationBadge();
+            refreshMessageBadge();
             loadEbayAccountsList();
           } catch (err) {
             alert('Could not connect to the server: ' + err.message);
@@ -9350,8 +9530,10 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/ebay-accounts');
       const data = await res.json();
       if (!res.ok || !data.success) return;
-      select.innerHTML = '<option value="">All eBay stores</option>' + (data.accounts || []).map((acc) => `<option value="${escapeAttr(acc.id)}">${escapeHtml(accountDisplayLabel(acc))}</option>`).join('');
-      select.value = messageAccountFilter;
+      const active = (data.accounts || []).find((a) => a.isActive) || (data.accounts || [])[0];
+      select.innerHTML = active ? `<option value="${escapeAttr(active.id)}">${escapeHtml(accountDisplayLabel(active))}</option>` : '<option value="">No eBay store</option>';
+      select.disabled = true;
+      select.title = 'Switch store from the sidebar';
     } catch (_) {}
   }
 
@@ -9697,8 +9879,7 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       container.innerHTML = `
-
-        <table class="data-table">
+        <div class="st-table-wrap"><table class="st-table">
           <thead>
             <tr><th>Subject</th><th>Message</th><th>Status</th><th>Admin reply</th><th>Opened</th></tr>
           </thead>
@@ -10334,6 +10515,8 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function loadPricingPage() {
+    const bal = document.getElementById('pricingBalance');
+    if (bal) bal.textContent = document.getElementById('creditBalanceAmount')?.textContent || '0';
     ensurePaddleInitialized();
     await loadPlanCards();
     await loadPurchaseHistory();
@@ -10375,21 +10558,20 @@ async function autoSuggestEmptyDraftCategories() {
       }, null)?.id;
 
       container.innerHTML = `
-        <div class="pricing-grid">
+        <div class="bc-plans">
           ${data.plans.map((p) => {
             const isBest = p.id === bestValuePlanId && data.plans.length > 1;
             const perCredit = (p.priceUsd / p.credits * 100).toFixed(2);
             return `
-              <div class="pricing-card ${isBest ? 'best-value' : ''}">
-                ${isBest ? '<div class="pricing-best-badge">Best Value</div>' : ''}
-                <div class="pricing-card-name">${escapeHtml(p.name)}</div>
-                <div class="pricing-card-price">$${p.priceUsd.toFixed(2)}</div>
-                <div class="pricing-card-credits">${p.credits.toLocaleString()} credits</div>
-                <div class="pricing-card-per-credit">&#8776; ${perCredit}&cent; per credit</div>
-                <hr class="pricing-card-divider" />
-                <div class="pricing-payment-icons">${PAYMENT_ICONS_SVG}</div>
-                <div class="pricing-payment-label">Credit/Debit Card, PayPal &amp; more</div>
-                <button class="primary pricing-buy-btn" data-plan-id="${p.id}">Buy</button>
+              <div class="bc-plan ${isBest ? 'best' : ''}">
+                ${isBest ? '<div class="bc-badge">Best value</div>' : ''}
+                <div class="bc-plan-name">${escapeHtml(p.name)}</div>
+                <div class="bc-plan-credits">${p.credits.toLocaleString()}<small>credits</small></div>
+                <div class="bc-plan-price">$${p.priceUsd.toFixed(2)}</div>
+                <div class="bc-plan-per">&#8776; ${perCredit}&cent; per credit</div>
+                <div class="bc-plan-icons">${PAYMENT_ICONS_SVG}</div>
+                <div class="bc-plan-label">Card, PayPal &amp; more</div>
+                <button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${p.credits.toLocaleString()} credits</button>
               </div>
             `;
           }).join('')}
@@ -10472,7 +10654,7 @@ async function autoSuggestEmptyDraftCategories() {
               </tr>
             `).join('')}
           </tbody>
-        </table>
+        </table></div>
       `;
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
