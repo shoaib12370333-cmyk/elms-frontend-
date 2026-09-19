@@ -1684,7 +1684,7 @@
   .elms-drafts-select { height:40px; border:1px solid #dfe3e8; border-radius:8px; padding:0 34px 0 11px; background:#fff; color:#374151; font:500 13px Inter,sans-serif; }
   .elms-drafts-toolbar .primary { height:40px !important; border-radius:8px; }
   .elms-drafts-summary { display:flex; align-items:center; gap:8px; padding:12px 20px; border-bottom:1px solid #eef0f3; background:#fafbfc; flex-wrap:wrap; }
-  .elms-summary-pill { height:30px; display:inline-flex; align-items:center; gap:6px; padding:0 11px; border:1px solid #e2e5ea; border-radius:16px; background:#fff; color:#596273; font-size:12px; font-weight:600; }
+  .elms-summary-pill { cursor:pointer; font-family:inherit; height:30px; display:inline-flex; align-items:center; gap:6px; padding:0 11px; border:1px solid #e2e5ea; border-radius:16px; background:#fff; color:#596273; font-size:12px; font-weight:600; }
   .elms-summary-pill strong { color:#172033; font-size:13px; }
   .elms-summary-pill.active { border-color:#cbdaf8; background:#f4f7ff; color:#1d4ed8; }
   .elms-draft-table-wrap { overflow-x:auto; }
@@ -2171,7 +2171,7 @@
   /* ===== AutoDS-style inner sidebar for Drafts ===== */
   .elms-drafts-layout {
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr) 210px;
+    grid-template-columns: minmax(0, 1fr) 210px;
     gap: 16px;
     align-items: start;
     width: 100%;
@@ -2302,8 +2302,8 @@
   .elms-pf b { color:#94A3B8; font-weight:700; }
   .elms-drafts-layout.f-available .elms-pf-available, .elms-drafts-layout.f-onhold .elms-pf-onhold, .elms-drafts-layout.f-oos .elms-pf-oos, .elms-drafts-layout.f-total .elms-pf-total, .elms-drafts-layout.f-oosdays .elms-pf-oosdays, .elms-drafts-layout.f-price .elms-pf-price, .elms-drafts-layout.f-profit .elms-pf-profit, .elms-drafts-layout.f-itemid .elms-pf-itemid, .elms-drafts-layout.f-sold .elms-pf-sold, .elms-drafts-layout.f-dws .elms-pf-dws, .elms-drafts-layout.f-store .elms-pf-store, .elms-drafts-layout.f-asin .elms-pf-asin, .elms-drafts-layout.f-views .elms-pf-views, .elms-drafts-layout.f-watchers .elms-pf-watchers, .elms-drafts-layout.f-daysleft .elms-pf-daysleft, .elms-drafts-layout.f-tags .elms-pf-tags { display:inline-flex; }
   @media (max-width: 1200px) {
-    .elms-drafts-layout { grid-template-columns: 220px minmax(0, 1fr); }
-    .elms-fields-sidebar { grid-column: 2; position: static; max-height: 260px; }
+    .elms-drafts-layout { grid-template-columns: minmax(0, 1fr); }
+    .elms-fields-sidebar { grid-column: 1; position: static; max-height: 260px; }
   }
   @media (max-width: 900px) {
     .elms-fields-sidebar { grid-column: 1; }
@@ -5277,28 +5277,6 @@
 
       container.innerHTML = `
         <div class="elms-drafts-layout ${elmsFieldsClasses()}" id="elmsDraftsLayout">
-          <aside class="elms-drafts-inner-sidebar" aria-label="Draft filters">
-            <div class="elms-inner-side-head">Listing management</div>
-            <nav class="elms-inner-side-nav">
-              <button class="elms-inner-side-item active" type="button" data-inner-status="all">
-                <span class="elms-inner-side-icon">☷</span><span>All products</span><span class="elms-inner-side-count">${allDrafts.length}</span>
-              </button>
-              <button class="elms-inner-side-item" type="button" data-inner-status="draft">
-                <span class="elms-inner-side-icon">□</span><span>Drafts</span><span class="elms-inner-side-count">${counts.draft || 0}</span>
-              </button>
-              <button class="elms-inner-side-item" type="button" data-inner-status="publishing">
-                <span class="elms-inner-side-icon">↗</span><span>Publishing</span><span class="elms-inner-side-count">${counts.publishing || 0}</span>
-              </button>
-              <button class="elms-inner-side-item" type="button" data-inner-status="scheduled">
-                <span class="elms-inner-side-icon">◷</span><span>Scheduled</span><span class="elms-inner-side-count">${counts.scheduled || 0}</span>
-              </button>
-              <button class="elms-inner-side-item" type="button" data-inner-status="error">
-                <span class="elms-inner-side-icon">!</span><span>Failed</span><span class="elms-inner-side-count">${counts.error || 0}</span>
-              </button>
-            </nav>
-            <div class="elms-inner-side-divider"></div>
-            <div class="elms-inner-side-link" data-inner-import>+ Import product</div>
-          </aside>
 
           <section class="elms-drafts-main">
             <div class="elms-drafts-shell">
@@ -5314,10 +5292,11 @@
             <button class="primary" id="draftAddProductBtn" type="button">+ Import product</button>
           </div>
           <div class="elms-drafts-summary">
-            <span class="elms-summary-pill active"><strong>${counts.draft || 0}</strong> Drafts</span>
-            <span class="elms-summary-pill"><strong>${counts.publishing || 0}</strong> Publishing</span>
-            <span class="elms-summary-pill"><strong>${counts.scheduled || 0}</strong> Scheduled</span>
-            <span class="elms-summary-pill"><strong>${counts.error || 0}</strong> Failed</span>
+            <button type="button" class="elms-summary-pill active" data-inner-status="all"><strong>${allDrafts.length}</strong> All</button>
+            <button type="button" class="elms-summary-pill" data-inner-status="draft"><strong>${counts.draft || 0}</strong> Drafts</button>
+            <button type="button" class="elms-summary-pill" data-inner-status="publishing"><strong>${counts.publishing || 0}</strong> Publishing</button>
+            <button type="button" class="elms-summary-pill" data-inner-status="scheduled"><strong>${counts.scheduled || 0}</strong> Scheduled</button>
+            <button type="button" class="elms-summary-pill" data-inner-status="error"><strong>${counts.error || 0}</strong> Failed</button>
           </div>
           <div class="elms-bulk-bar" id="draftBulkBar" style="display:none;">
             <span class="elms-bulk-count" id="draftSelectedCount">0 selected</span>
