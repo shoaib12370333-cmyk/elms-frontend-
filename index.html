@@ -2586,6 +2586,46 @@
   #llEditModal .elms-ed-spec input { width:100%; box-sizing:border-box; height:36px; border:1px solid #dfe3e8; border-radius:8px; padding:0 10px; font:500 13px Inter,sans-serif; }
   #llEditModal .elms-ed-variant { display:flex; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid #edf0f3; border-radius:9px; margin-bottom:8px; font-size:13px; color:#344054; }
   #llEditModal .ll-editor-body .elms-editor { margin:0; position:static; width:auto; max-width:none; }
+
+  /* ---------- Dashboard: 4 stat cards + two contained scroll boxes ---------- */
+  .dashboard-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .dashboard-columns { grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); align-items:start; }
+  .dashboard-columns > * { min-width:0; }
+  .dash-box { overflow:hidden; }
+  .dash-scroll { max-height:460px; overflow-y:auto; overflow-x:hidden; margin-top:6px; padding-right:4px; }
+  .publish-result .pr-error { margin-top:3px; font-size:11px; color:var(--red); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dash-notif { position:relative; padding:12px 8px 12px 18px; border-bottom:1px solid var(--line); cursor:pointer; min-width:0; }
+  .dash-notif:last-child { border-bottom:0; }
+  .dash-notif:hover { background:var(--paper-raised); }
+  .dash-notif.unread::before { content:""; position:absolute; left:4px; top:19px; width:7px; height:7px; border-radius:50%; background:var(--blue); }
+  .dash-notif .dn-title { font-weight:700; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dash-notif .dn-msg { font-size:12px; color:#566273; line-height:1.4; margin-top:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; word-break:break-word; }
+  .dash-notif .dn-time { font-size:10px; color:#929baa; margin-top:4px; }
+  @media (max-width:900px) { .dashboard-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .dashboard-columns { grid-template-columns:minmax(0,1fr); } }
+  @media (max-width:480px) { .dash-welcome h1 { font-size:24px; } .dash-card { padding:14px; gap:10px; } .dash-card .dash-ico { width:38px; height:38px; } .dash-card .value { font-size:20px; } .dash-scroll { max-height:380px; } }
+
+  /* ---------- Mobile fit (whole app) ---------- */
+  @media (max-width:720px) {
+    html, body { overflow-x:hidden; }
+    .main { min-width:0; }
+    .topbar { padding:10px 14px; gap:8px; }
+    .topbar > div:not(.auth-area) { min-width:0; flex:1 1 auto; }
+    .topbar h1 { font-size:18px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .topbar .subline { display:none; }
+    .mobile-menu-btn { margin-right:2px; padding:6px; }
+    .auth-area { gap:8px; flex:0 0 auto; }
+    .user-chip-meta, .user-chip-caret { display:none; }
+    .user-chip-trigger { padding:3px; }
+    .credit-balance-chip { padding:6px 10px; font-size:12px; }
+    .credit-balance-chip svg { display:none; }
+    .content, .content.drafts-wide, .content.messages-wide { padding:14px !important; }
+    .data-table { display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .import-page-head h1, .dash-welcome h1 { font-size:24px; }
+    .ll-head, .ih-head { flex-wrap:wrap; }
+    .notification-panel { position:fixed; top:56px; left:10px; right:10px; width:auto; max-width:none; }
+    .toast-container { left:12px; right:12px; max-width:none; }
+    img, video { max-width:100%; }
+  }
 </style>
 </head>
 <body>
@@ -5027,50 +5067,59 @@
     if (!container) return;
     container.innerHTML = '<p class="state-msg">Loading dashboard&hellip;</p>';
     try {
-      const res = await apiFetch('/api/dashboard');
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load dashboard.');
-      const s = data.stats;
+      const [dashRes, ordersRes, notifRes] = await Promise.all([
+        apiFetch('/api/dashboard'),
+        apiFetch('/api/orders').catch(() => null),
+        apiFetch('/api/system-notifications?limit=8').catch(() => null),
+      ]);
+      const data = await dashRes.json();
+      if (!dashRes.ok || !data.success) throw new Error(data.error || 'Could not load dashboard.');
+      const s = data.stats || {};
       const recent = data.recentPublishes || [];
 
-      // Welcome header: greeting by time of day + user's first name.
+      let orders = [];
+      try { const od = ordersRes && ordersRes.ok ? await ordersRes.json() : null; if (od && od.success) orders = od.orders || []; } catch (_) {}
+      try { const nd = notifRes && notifRes.ok ? await notifRes.json() : null; if (nd && nd.success) systemNotifications = Array.isArray(nd.notifications) ? nd.notifications : []; } catch (_) {}
+
+      // Revenue = sum of order sale prices; profit = sum of the per-order profit ELMS already
+      // computes from the saved Amazon price. Orders with no buy price are skipped for profit.
+      const numOrNull = (v) => (v != null && v !== '' && Number.isFinite(Number(v))) ? Number(v) : null;
+      const revenue = orders.reduce((t, o) => t + (numOrNull(o.sale_price) ?? 0), 0);
+      const profitRows = orders.map((o) => numOrNull(o.profit)).filter((v) => v != null);
+      const profit = profitRows.reduce((t, v) => t + v, 0);
+      const cur = orders.find((o) => o.currency)?.currency;
+      const money = (n) => formatPrice(n, cur || 'USD');
+
       const hour = new Date().getHours();
       const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
       const fullName = (window.currentUser && (window.currentUser.name || window.currentUser.username)) || '';
       const firstName = fullName ? fullName.trim().split(/\s+/)[0] : '';
-      const today = new Date();
-      const dateStr = today.toLocaleDateString(undefined, { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+      const dateStr = new Date().toLocaleDateString(undefined, { weekday:'short', year:'numeric', month:'short', day:'numeric' });
 
-      // Inline SVG icons for each stat card.
       const ICONS = {
-        credits: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>',
-        live: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
-        queue: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
-        errors: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-        drafts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-        imports: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+        profit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+        revenue: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
         orders: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
-        attention: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
-        box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+        products: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
         cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
-        bulb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>',
-        send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
-        grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
-        chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-        coins: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>'
+        box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
       };
 
-      const attention = Number(s.unreadNotifications || 0) + Number(s.unreadMessages || 0);
       const cards = [
-        { ico:'credits', theme:'blue', label:'Credits', value:Number(s.credits || 0).toLocaleString(), hint:'Available balance' },
-        { ico:'live', theme:'green', label:'Live listings', value:s.published, hint:'Currently published' },
-        { ico:'queue', theme:'amber', label:'Publish queue', value:s.queued, hint:'Running in background' },
-        { ico:'errors', theme:'red', label:'Publish errors', value:s.errors, hint:'Needs review / retry' },
-        { ico:'drafts', theme:'purple', label:'Drafts', value:s.drafts, hint:'Ready to publish' },
-        { ico:'imports', theme:'teal', label:'Imports', value:s.imports, hint:'Products saved' },
-        { ico:'orders', theme:'pink', label:'Orders', value:s.orders, hint:'eBay orders synced' },
-        { ico:'attention', theme:'sky', label:'Attention', value:attention, hint:'Unread notifications + messages' }
+        { ico:'profit', theme:'green', label:'Profit', value: profitRows.length ? money(profit) : '\u2014', hint: profitRows.length ? 'From ' + profitRows.length + ' order' + (profitRows.length === 1 ? '' : 's') : 'No order profit yet' },
+        { ico:'revenue', theme:'blue', label:'Total revenue', value: orders.length ? money(revenue) : '\u2014', hint:'Sales from eBay orders' },
+        { ico:'orders', theme:'pink', label:'Orders', value: orders.length || Number(s.orders || 0), hint:'eBay orders synced' },
+        { ico:'products', theme:'purple', label:'New products', value: Number(s.imports || 0), hint:'Products imported' }
       ];
+
+      const unread = systemNotifications.filter((n) => !n.is_read).length;
+      const notifHtml = systemNotifications.length
+        ? systemNotifications.slice(0, 8).map((n) => `<div class="dash-notif ${n.is_read ? '' : 'unread'}" data-notification-id="${escapeAttr(n.id)}">
+            <div class="dn-title">${escapeHtml(n.title || 'Notification')}</div>
+            <div class="dn-msg">${escapeHtml(n.message || '')}</div>
+            <div class="dn-time">${escapeHtml(notificationTime(n.created_at))}</div>
+          </div>`).join('')
+        : '<div class="empty-state" style="border:0;padding:30px 10px;">You are all caught up.</div>';
 
       container.innerHTML = `
         <div class="dash-welcome">
@@ -5084,42 +5133,36 @@
           </div>
         </div>
         <div class="dashboard-grid">
-          ${cards.map(c => `<div class="dash-card">
+          ${cards.map((c) => `<div class="dash-card">
             <div class="dash-ico ${c.theme}">${ICONS[c.ico]}</div>
-            <div class="dash-body"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="hint">${c.hint}</div></div>
+            <div class="dash-body"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="hint">${escapeHtml(c.hint)}</div></div>
           </div>`).join('')}
         </div>
         <div class="dashboard-columns">
-          <div class="product-card">
+          <div class="product-card dash-box">
             <div class="dash-section-head"><div class="section-title" style="margin:0;padding:0;border-top:none;">Recent publish activity</div><button class="view-all" data-dashboard-action="listings">View all</button></div>
-            ${recent.length ? recent.map(r => {
+            <div class="dash-scroll">
+            ${recent.length ? recent.map((r) => {
               const img = r.image || r.imageUrl || r.thumbnail || '';
               const thumb = img
                 ? `<img class="pr-thumb" src="${escapeAttr(img)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" /><div class="pr-thumb-fallback" style="display:none;">${ICONS.box}</div>`
                 : `<div class="pr-thumb-fallback">${ICONS.box}</div>`;
+              const meta = `${r.sku || ''} · ${r.listingId ? 'eBay listing ' + r.listingId : 'No listing ID yet'}${r.offerId ? ' · Offer ' + r.offerId : ''}`;
               return `<div class="publish-result">
               ${thumb}
-              <div class="pr-main"><div class="pr-title">${escapeHtml(r.title)}</div><div class="pr-meta">${escapeHtml(r.sku)} · ${r.listingId ? 'eBay listing '+escapeHtml(r.listingId) : 'No listing ID yet'}${r.offerId ? ' · Offer '+escapeHtml(r.offerId) : ''}${r.errorMessage ? ' · '+escapeHtml(r.errorMessage) : ''}</div></div>
-              <div class="pr-right"><span class="status-badge ${escapeAttr(r.status)}">${escapeHtml(r.status === 'publishing' ? 'Queued' : r.status)}</span>${r.publishedAt || r.createdAt ? `<span class="pr-time">${escapeHtml(notificationTime(r.publishedAt || r.createdAt))}</span>` : ''}</div>
+              <div class="pr-main"><div class="pr-title">${escapeHtml(r.title)}</div><div class="pr-meta">${escapeHtml(meta)}</div>${r.errorMessage ? `<div class="pr-error" title="${escapeAttr(r.errorMessage)}">${escapeHtml(r.errorMessage)}</div>` : ''}</div>
+              <div class="pr-right"><span class="status-badge ${escapeAttr(r.status)}">${escapeHtml(r.status === 'publishing' ? 'Queued' : r.status)}</span>${r.publishedAt || r.updatedAt || r.createdAt ? `<span class="pr-time">${escapeHtml(notificationTime(r.publishedAt || r.updatedAt || r.createdAt))}</span>` : ''}</div>
             </div>`; }).join('') : '<div class="empty-state">No publish activity yet.</div>'}
+            </div>
           </div>
-          <div>
-            <div class="product-card"><div class="section-title" style="margin-top:0;padding-top:0;border-top:none;">Quick actions</div>
-              <div class="quick-actions">
-                <button class="quick-action-btn primary" data-dashboard-action="import">${ICONS.imports} Import a product</button>
-                <button class="quick-action-btn" data-dashboard-action="drafts">${ICONS.send} Open drafts</button>
-                <button class="quick-action-btn" data-dashboard-action="listings">${ICONS.grid} View live listings</button>
-                <button class="quick-action-btn" data-dashboard-action="messages">${ICONS.chat} Open Messages</button>
-                <button class="quick-action-btn" data-dashboard-action="pricing">${ICONS.coins} Buy credits</button>
-              </div>
-            </div>
-            <div class="dash-protip">
-              ${ICONS.bulb}
-              <div><div class="pt-title">Pro Tip</div><div class="pt-body">Use templates to save time and publish faster.</div></div>
-            </div>
+          <div class="product-card dash-box">
+            <div class="dash-section-head"><div class="section-title" style="margin:0;padding:0;border-top:none;">Notifications${unread ? ` <span class="nav-badge" style="margin-left:6px;">${unread}</span>` : ''}</div><button class="view-all" id="dashNotifViewAll">View all</button></div>
+            <div class="dash-scroll">${notifHtml}</div>
           </div>
         </div>`;
-      container.querySelectorAll('[data-dashboard-action]').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.dashboardAction)));
+      container.querySelectorAll('[data-dashboard-action]').forEach((btn) => btn.addEventListener('click', () => showPage(btn.dataset.dashboardAction)));
+      document.getElementById('dashNotifViewAll')?.addEventListener('click', () => openNotificationCenter());
+      container.querySelectorAll('.dash-notif[data-notification-id]').forEach((el) => el.addEventListener('click', () => openNotificationCenter(el.dataset.notificationId)));
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">${escapeHtml(err.message || 'Could not load dashboard.')}</div>`;
     }
