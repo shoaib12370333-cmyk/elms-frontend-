@@ -2473,6 +2473,51 @@
   #draftsContent .ad-sep { width:1px; height:20px; background:#d5dae1; }
   #draftsContent .ad-flat .elms-draft-table thead th { height:0; padding:0; border:0; font-size:0; line-height:0; }
   @media (max-width:640px) { #draftsContent .ad-tab { font-size:15px; padding-right:12px; } }
+
+  /* ---------- Live listings: AutoDS-style table (sticky left, scrolling right) ---------- */
+  .live-listings-wrap.ad-live { border:0; border-radius:0; background:#fff; border-top:1px solid #e5e7eb; }
+  .ad-live-table { border-collapse:separate; border-spacing:0; table-layout:fixed; width:2568px; font-size:14px; color:#4b5563; }
+  .ad-live-table th, .ad-live-table td { padding:0 12px; background:#fff; border-bottom:1px solid #edf0f3; white-space:nowrap; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; }
+  .ad-live-table th.left, .ad-live-table td:not(.c):not(.s1):not(.s5):not(.vfirst) { text-align:left; }
+  .ad-live-table thead th { height:44px; font-weight:500; color:#4b5563; border-bottom:1px solid #e5e7eb; }
+  .ad-live-table thead th.grp { height:36px; font-weight:700; text-align:left; border-left:1px solid #e5e7eb; }
+  .ad-live-table thead th.vfirst, .ad-live-table td.vfirst { border-left:1px solid #e5e7eb; }
+  .ad-live-table tbody tr:hover td { background:#fdfaf1; }
+  .ad-live-table tbody tr.ll-row td { height:130px; }
+  .ad-live-table th:nth-child(1){width:48px} .ad-live-table th:nth-child(2){width:340px} .ad-live-table th:nth-child(3){width:120px} .ad-live-table th:nth-child(4){width:130px} .ad-live-table th:nth-child(5){width:60px}
+  .ad-live-table .s1 { width:48px; }
+  .ad-live-table td.s2, .ad-live-table th.s2 { padding-left:4px; }
+  .ad-name { display:flex; align-items:center; gap:12px; cursor:pointer; min-width:0; }
+  .ad-thumb { flex:0 0 88px; width:88px; height:88px; object-fit:cover; border-radius:4px; background:#f1f3f6; }
+  .ad-title { font-weight:600; color:#4b5563; white-space:normal; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; line-height:1.45; }
+  .ad-name .elms-warning-dot { flex:0 0 22px; }
+  .ad-dots { border:0; background:transparent; color:#9aa3b2; font-size:22px; cursor:pointer; width:32px; height:32px; border-radius:6px; }
+  .ad-dots:hover { background:#f1f5f9; }
+  .ad-link { color:#4b5563; text-decoration:none; }
+  .ad-link:hover { color:#2563eb; text-decoration:underline; }
+  .ad-dash { color:#6b7280; }
+  .ad-pill { display:inline-flex; align-items:center; justify-content:center; min-width:76px; height:34px; border-radius:6px; color:#fff; font-weight:700; font-size:15px; }
+  .ad-pill.green { background:#57cf88; } .ad-pill.yellow { background:#fdd035; } .ad-pill.red { background:#ef4444; }
+  .ad-pair { display:grid; gap:14px; }
+  .ad-pair > div { display:flex; align-items:center; gap:10px; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .ad-lbl { flex:0 0 42px; display:inline-flex; justify-content:center; padding:3px 0; border-radius:4px; background:#f1f3f5; color:#5b6575; font-size:11px; font-weight:800; }
+  .ad-lbl.sell { background:#f5f5f5; }
+  .ll-edit-row td { padding:0; height:auto; text-align:left; background:#f8fafd; }
+  .ll-edit-panel { position:sticky; left:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; width:min(780px, calc(100vw - 96px)); padding:16px 18px; box-sizing:border-box; }
+  .ll-edit-field { display:grid; gap:4px; font-size:11px; font-weight:700; color:#64748b; }
+  .ll-edit-field.wide { grid-column:1 / -1; }
+  .ll-edit-actions { grid-column:1 / -1; display:flex; gap:8px; }
+  .ll-floating-menu { position:fixed; z-index:400; min-width:150px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 10px 30px rgba(15,23,42,.14); padding:5px; }
+  .ll-floating-menu button { display:block; width:100%; text-align:left; padding:9px 11px; border:0; background:transparent; border-radius:7px; font:600 13px Inter,sans-serif; color:#344054; cursor:pointer; }
+  .ll-floating-menu button:hover { background:#f1f5f9; }
+  .ll-floating-menu button.danger { color:#dc2626; }
+  @media (min-width:1100px) {
+    .ad-live-table th.s1, .ad-live-table td.s1 { position:sticky; left:0; z-index:3; }
+    .ad-live-table th.s2, .ad-live-table td.s2 { position:sticky; left:48px; z-index:3; }
+    .ad-live-table th.s3, .ad-live-table td.s3 { position:sticky; left:388px; z-index:3; }
+    .ad-live-table th.s4, .ad-live-table td.s4 { position:sticky; left:508px; z-index:3; }
+    .ad-live-table th.s5, .ad-live-table td.s5 { position:sticky; left:638px; z-index:3; box-shadow:6px 0 8px -4px rgba(15,23,42,.18); }
+  }
 </style>
 </head>
 <body>
@@ -3533,7 +3578,7 @@
 
   function showPage(page) {
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
-    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts');
+    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
@@ -6033,20 +6078,22 @@ async function autoSuggestEmptyDraftCategories() {
       </div>
 
       ${filtered.length ? `
-      <div class="live-listings-wrap">
-        <table class="data-table">
+      <div class="live-listings-wrap ad-live">
+        <table class="ad-live-table">
+          <colgroup><col style="width:48px"><col style="width:340px"><col style="width:120px"><col style="width:130px"><col style="width:60px"><col style="width:100px"><col style="width:100px"><col style="width:120px"><col style="width:90px"><col style="width:90px"><col style="width:170px"><col style="width:130px"><col style="width:200px"><col style="width:80px"><col style="width:80px"><col style="width:150px"><col style="width:130px"><col style="width:90px"><col style="width:100px"><col style="width:100px"><col style="width:140px"></colgroup>
           <thead>
             <tr>
-              <th style="width:34px;"><input type="checkbox" id="llSelectAll" /></th>
-              <th>Item</th>
-              <th>Title</th>
-              <th>SKU</th>
-              <th>Price</th>
-              <th>Qty</th>
-              <th>Category ID</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th class="s1" rowspan="2"><input type="checkbox" id="llSelectAll" /></th>
+              <th class="s2 left" rowspan="2">Name</th>
+              <th class="s3 left" rowspan="2">Uploaded</th>
+              <th class="s4 left" rowspan="2">Sourcing Request</th>
+              <th class="s5" rowspan="2"></th>
+              <th class="grp" colspan="4">Variations</th>
+              <th rowspan="2">OOS Days</th><th rowspan="2" class="left">Price</th><th rowspan="2" class="left">Profit</th><th rowspan="2" class="left">Item ID</th>
+              <th rowspan="2">Sold</th><th rowspan="2">DWS</th><th rowspan="2" class="left">Store</th><th rowspan="2" class="left">ASIN</th>
+              <th rowspan="2">Views</th><th rowspan="2">Watchers</th><th rowspan="2">Days Left</th><th rowspan="2" class="left">Tags</th>
             </tr>
+            <tr><th class="vfirst">Available</th><th>On Hold</th><th>Out Of Stock</th><th>Total</th></tr>
           </thead>
           <tbody>${pageRows.map((l) => listingRowHtml(l)).join('')}</tbody>
         </table>
@@ -6071,26 +6118,57 @@ async function autoSuggestEmptyDraftCategories() {
     return `<div class="ll-pagination">${items.join('')}</div>`;
   }
 
+  const LL_EBAY_DOMAINS = { EBAY_US:'ebay.com', EBAY_GB:'ebay.co.uk', EBAY_AU:'ebay.com.au', EBAY_CA:'ebay.ca', EBAY_DE:'ebay.de', EBAY_FR:'ebay.fr', EBAY_IT:'ebay.it', EBAY_ES:'ebay.es', EBAY_NL:'ebay.nl', EBAY_CH:'ebay.ch', EBAY_AT:'ebay.at', EBAY_BE:'ebay.be', EBAY_IE:'ebay.ie', EBAY_PL:'ebay.pl', EBAY_HK:'ebay.com.hk', EBAY_SG:'ebay.com.sg', EBAY_MY:'ebay.com.my', EBAY_PH:'ebay.ph' };
+  function llEbayUrl(l, itemId) { return `https://www.${LL_EBAY_DOMAINS[l.marketplace_id] || 'ebay.com'}/itm/${encodeURIComponent(itemId)}`; }
+  function llAmazonUrl(l, asin) { return l.amazon_url || `https://www.amazon.com/dp/${encodeURIComponent(asin)}`; }
+
   function listingRowHtml(l) {
     const st = llListingStatus(l);
-    const statusColors = { active:'var(--green-dark)', sold:'var(--blue)', ended:'var(--grey)', issues:'var(--red)' };
-    const statusLabel = { active:'Published', sold:'Sold', ended:'Ended', issues:'Issue' }[st] || (l.status || '');
+    const dash = '<span class="ad-dash">-</span>';
+    const cur = l.currency;
+    const num = (v) => (v != null && v !== '' && Number.isFinite(Number(v))) ? Number(v) : null;
+    const buy = num(l.amazon_price), sell = num(l.sell_price);
+    const profit = buy != null && sell != null ? sell - buy : null;
+    const count = (v, fallback = 0) => { if (typeof v === 'boolean') return v ? 1 : 0; const n = num(v); return n == null ? fallback : n; };
+    const available = count(l.quantity, 1);
+    const onHold = count(l.on_hold ?? l.onHold);
+    const oos = count(l.out_of_stock ?? l.outOfStock);
+    const total = count(l.total_quantity ?? l.total, available);
+    const uploaded = l.created_at || l.imported_at || l.updated_at;
+    const uploadedText = uploaded && !isNaN(new Date(uploaded)) ? new Date(uploaded).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '-';
+    const asin = l.asin || l.source_asin || '';
+    const itemId = l.ebay_item_id || l.ebayItemId || l.ebay_listing_id || l.listing_id || '';
+    const val = (v) => (v == null || v === '') ? dash : escapeHtml(String(v));
+    const link = (href, text) => `<a class="ad-link" href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`;
+    const tags = Array.isArray(l.tags) ? l.tags.join(', ') : l.tags;
+    const pair = (a, b) => `<div class="ad-pair"><div><span class="ad-lbl">Buy</span>${a}</div><div><span class="ad-lbl sell">Sell</span>${b}</div></div>`;
     return `
-      <tr data-listing-id="${l.id}">
-        <td><input type="checkbox" class="ll-row-check" /></td>
-        <td>${l.main_image ? `<img class="row-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="row-thumb"></div>'}</td>
-        <td class="row-title" data-cell="title">${escapeHtml(l.title || '—')}</td>
-        <td data-cell="sku">${escapeHtml(l.sku || '—')}</td>
-        <td data-cell="sellPrice">${l.sell_price != null ? escapeHtml((CURRENCY_SYMBOLS[l.currency] || '$') + Number(l.sell_price).toFixed(2)) : '—'}</td>
-        <td data-cell="quantity">${l.quantity ?? 1}</td>
-        <td data-cell="categoryId">${escapeHtml(l.category_id || '—')}</td>
-        <td><span class="ll-status-dot" style="color:${statusColors[st] || 'var(--grey)'};font-weight:600;font-size:12.5px;">${escapeHtml(statusLabel)}</span>${l.error_message ? `<div style="font-size:11px;color:var(--red);margin-top:4px;max-width:180px;white-space:normal;">${escapeHtml(l.error_message)}</div>` : ''}</td>
-        <td>
-          <div class="row-actions" style="display:flex;align-items:center;">
-            <button class="ll-view-btn" data-action="view">View</button>
-            <button class="ll-menu-btn" data-action="menu" title="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>
-          </div>
-        </td>
+      <tr class="ll-row" data-listing-id="${escapeAttr(l.id)}">
+        <td class="s1"><input type="checkbox" class="ll-row-check" /></td>
+        <td class="s2"><div class="ad-name" data-action="view">
+          ${l.main_image ? `<img class="ad-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="ad-thumb"></div>'}
+          ${st === 'issues' ? '<span class="elms-warning-dot" title="' + escapeAttr(l.error_message || 'Issue') + '">!</span>' : ''}
+          <span class="ad-title">${escapeHtml(l.title || '-')}</span>
+        </div></td>
+        <td class="s3">${escapeHtml(uploadedText)}</td>
+        <td class="s4">${val(l.sourcing_request || l.sourcingRequest)}</td>
+        <td class="s5"><button class="ad-dots" data-action="menu" title="More" aria-label="More actions">&#8942;</button></td>
+        <td class="vfirst"><span class="ad-pill green">${available}</span></td>
+        <td><span class="ad-pill yellow">${onHold}</span></td>
+        <td><span class="ad-pill red">${oos}</span></td>
+        <td class="c">${total}</td>
+        <td class="c">${val(l.oos_days ?? l.oosDays)}</td>
+        <td>${pair(buy != null ? escapeHtml(formatPrice(buy, cur)) : dash, sell != null ? escapeHtml(formatPrice(sell, cur)) : dash)}</td>
+        <td>${profit != null ? escapeHtml(formatPrice(profit, cur)) : dash}</td>
+        <td>${pair(asin ? link(llAmazonUrl(l, asin), asin) : dash, itemId ? link(llEbayUrl(l, itemId), String(itemId)) : dash)}</td>
+        <td class="c">${count(l.sold_count ?? l.sold ?? l.quantity_sold)}</td>
+        <td class="c">${val(l.dws)}</td>
+        <td>${val(l.ebay_account_username)}</td>
+        <td>${asin ? link(llAmazonUrl(l, asin), asin) : dash}</td>
+        <td class="c">${val(l.views ?? l.view_count)}</td>
+        <td class="c">${val(l.watchers ?? l.watch_count)}</td>
+        <td class="c">${val(l.days_left ?? l.daysLeft)}</td>
+        <td>${val(tags)}</td>
       </tr>
     `;
   }
@@ -6131,20 +6209,25 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   function llEnterEditMode(row, l) {
+    const existing = row.nextElementSibling;
+    if (existing && existing.classList.contains('ll-edit-row')) { existing.remove(); row.classList.remove('ll-row-editing'); return; }
     row.classList.add('ll-row-editing');
-    row.querySelector('[data-cell="title"]').innerHTML = `<input class="editable-input" data-field="title" value="${escapeAttr(l.title || '')}" style="width:100%;" />`;
-    row.querySelector('[data-cell="sellPrice"]').innerHTML = `<input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" style="width:90px;" />`;
-    row.querySelector('[data-cell="quantity"]').innerHTML = `<input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" style="width:60px;" />`;
-    row.querySelector('[data-cell="categoryId"]').innerHTML = `<input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" style="width:100px;" />`;
-    const actions = row.querySelector('.row-actions');
-    actions.innerHTML = `<button class="btn-small save" data-action="save">Save</button><button class="btn-small" data-action="cancel" style="background:var(--grey-light);color:var(--ink);">Cancel</button>`;
-    actions.querySelector('[data-action="cancel"]').addEventListener('click', () => renderListings());
-    actions.querySelector('[data-action="save"]').addEventListener('click', async () => {
-      const saveBtn = actions.querySelector('[data-action="save"]');
-      const title = row.querySelector('[data-field="title"]').value;
-      const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
-      const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
-      const categoryId = row.querySelector('[data-field="categoryId"]').value;
+    row.insertAdjacentHTML('afterend', `
+      <tr class="ll-edit-row"><td colspan="21"><div class="ll-edit-panel">
+        <label class="ll-edit-field wide">Title<input class="editable-input" data-field="title" value="${escapeAttr(l.title || '')}" /></label>
+        <label class="ll-edit-field">Sell price<input class="editable-input" data-field="sellPrice" type="number" step="0.01" value="${l.sell_price ?? ''}" /></label>
+        <label class="ll-edit-field">Quantity<input class="editable-input" data-field="quantity" type="number" value="${l.quantity ?? 1}" /></label>
+        <label class="ll-edit-field">Category ID<input class="editable-input" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" /></label>
+        <div class="ll-edit-actions"><button class="btn-small save" data-action="save">Save</button><button class="btn-small" data-action="cancel" style="background:var(--grey-light);color:var(--ink);">Cancel</button></div>
+      </div></td></tr>`);
+    const panel = row.nextElementSibling;
+    panel.querySelector('[data-action="cancel"]').addEventListener('click', () => { panel.remove(); row.classList.remove('ll-row-editing'); });
+    panel.querySelector('[data-action="save"]').addEventListener('click', async () => {
+      const saveBtn = panel.querySelector('[data-action="save"]');
+      const title = panel.querySelector('[data-field="title"]').value;
+      const sellPrice = Number(panel.querySelector('[data-field="sellPrice"]').value) || null;
+      const quantity = Number(panel.querySelector('[data-field="quantity"]').value) || 1;
+      const categoryId = panel.querySelector('[data-field="categoryId"]').value;
       saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026';
       try {
         const isLive = llListingStatus(l) === 'active';
@@ -6155,7 +6238,6 @@ async function autoSuggestEmptyDraftCategories() {
         });
         const data = await res.json();
         if (!res.ok || !data.success) { alert(data.error || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save'; return; }
-        // Update local copy and re-render.
         Object.assign(l, { title, sell_price: sellPrice, quantity, category_id: categoryId });
         showToast('Saved', 'Listing updated.', 'success');
         renderListings();
@@ -6178,19 +6260,37 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) { alert('Could not connect to the server: ' + err.message); }
   }
 
+  function llCloseMenu() { document.getElementById('llFloatingMenu')?.remove(); }
+  document.addEventListener('click', llCloseMenu);
+  window.addEventListener('scroll', llCloseMenu, true);
+
   function wireListingRows() {
-    document.querySelectorAll('#listingsContent tr[data-listing-id]').forEach((row) => {
+    document.querySelectorAll('#listingsContent tr.ll-row').forEach((row) => {
       const id = row.getAttribute('data-listing-id');
       const l = llAll.find((x) => String(x.id) === String(id));
       if (!l) return;
       row.querySelector('[data-action="view"]')?.addEventListener('click', () => llEnterEditMode(row, l));
-      row.querySelector('[data-action="menu"]')?.addEventListener('click', () => {
-        // Simple menu: Edit or Delete.
-        const choice = prompt('Type "edit" to edit, or "delete" to remove this listing:', 'edit');
-        if (!choice) return;
-        const c = choice.trim().toLowerCase();
-        if (c === 'edit') llEnterEditMode(row, l);
-        else if (c === 'delete') llDeleteListing(l, row);
+      row.querySelector('[data-action="menu"]')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const had = document.getElementById('llFloatingMenu');
+        llCloseMenu();
+        if (had && had.dataset.for === String(id)) return;
+        const r = e.currentTarget.getBoundingClientRect();
+        const menu = document.createElement('div');
+        menu.id = 'llFloatingMenu';
+        menu.dataset.for = String(id);
+        menu.className = 'll-floating-menu';
+        menu.style.top = (r.bottom + 4) + 'px';
+        menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 168)) + 'px';
+        menu.innerHTML = '<button data-m="edit">Edit</button><button data-m="delete" class="danger">Delete</button>';
+        menu.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const m = ev.target.closest('[data-m]')?.getAttribute('data-m');
+          llCloseMenu();
+          if (m === 'edit') llEnterEditMode(row, l);
+          else if (m === 'delete') llDeleteListing(l, row);
+        });
+        document.body.appendChild(menu);
       });
     });
   }
