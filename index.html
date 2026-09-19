@@ -4040,7 +4040,38 @@
     admin: ['Admin', 'Manage users, credits, and support tickets.'],
   };
 
-  function showPage(page) {
+  // ---------- Page URLs ----------
+  // Every page has its own address (elmstool.com/listing, /draft, ...), so a refresh,
+  // a bookmark or a shared link opens the same page instead of the dashboard.
+  const PAGE_PATHS = {
+    dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders',
+    messages: '/messages', history: '/import-history', 'research-tools': '/research-tools',
+    settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin',
+  };
+  const PATH_ALIASES = { '/drafts': 'drafts', '/listings': 'listings', '/order': 'orders', '/message': 'messages', '/history': 'history', '/pricing': 'pricing', '/credits': 'pricing', '/index.html': 'dashboard', '/': 'dashboard' };
+  function pageFromPath(pathname) {
+    const p = String(pathname || '/').replace(/\/+$/, '') || '/';
+    const hit = Object.keys(PAGE_PATHS).find((k) => PAGE_PATHS[k] === p);
+    return hit || PATH_ALIASES[p] || null;
+  }
+  function syncUrlToPage(page, replace) {
+    const path = PAGE_PATHS[page];
+    if (!path) return;
+    try {
+      if (window.location.pathname === path) return;
+      window.history[replace ? 'replaceState' : 'pushState']({ page }, '', path + window.location.search + window.location.hash);
+    } catch (_) { /* file:// or sandboxed frames cannot change the URL */ }
+  }
+  window.addEventListener('popstate', () => {
+    if (document.getElementById('appShell').style.display === 'none') return;
+    const page = pageFromPath(window.location.pathname) || 'dashboard';
+    if (page === 'admin' && window.currentUser?.role !== 'admin') return showPage('dashboard', { replace: true });
+    showPage(page, { fromPop: true });
+  });
+
+  function showPage(page, opts = {}) {
+    if (!PAGE_TITLES[page]) page = 'dashboard';
+    if (!opts.fromPop) syncUrlToPage(page, !!opts.replace);
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
@@ -4052,6 +4083,7 @@
     const [title, subline] = PAGE_TITLES[page];
     document.getElementById('pageTitle').textContent = title;
     document.getElementById('pageSubline').textContent = subline;
+    document.title = `${title} \u00b7 ELMS`;
 
     if (page === 'dashboard') loadDashboard();
     if (page === 'drafts') loadDrafts();
@@ -4959,13 +4991,16 @@
     // Individual page navigation remains client-side after the initial boot.
     const params = new URLSearchParams(window.location.search);
     if (!(params.get('goToAdminPanel') === 'true' && user.role === 'admin')) {
-      showPage('dashboard');
+      // Open the page named in the address bar (refresh / bookmark); dashboard otherwise.
+      let startPage = pageFromPath(window.location.pathname) || 'dashboard';
+      if (startPage === 'admin' && user.role !== 'admin') startPage = 'dashboard';
+      showPage(startPage, { replace: true });
     }
 
     // If we just arrived here from the dedicated /admin.html login page,
     // jump straight into the Admin Panel instead of the default Dashboard.
     if (params.get('goToAdminPanel') === 'true' && user.role === 'admin') {
-      showPage('admin');
+      showPage('admin', { replace: true });
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }
