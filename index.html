@@ -2934,6 +2934,52 @@
     .st-acct-actions { width:100%; margin-left:0; } .st-acct-actions .st-btn { flex:1; }
     .st-btn { padding:0 14px; } .bc-balance { width:100%; justify-content:center; }
   }
+
+  /* ===== Admin panel ===== */
+  .ad-tabs { display:flex; gap:6px; overflow-x:auto; padding:5px; margin-bottom:18px; background:#fff; border:1px solid var(--line); border-radius:14px; scrollbar-width:none; }
+  .ad-tabs::-webkit-scrollbar { display:none; }
+  .ad-tab { flex:none; border:none; background:transparent; padding:10px 16px; border-radius:10px; font:inherit; font-size:13.5px; font-weight:700; color:#64748B; cursor:pointer; white-space:nowrap; }
+  .ad-tab:hover { background:#F1F5F9; color:var(--ink); }
+  .ad-tab.active { background:#0064D2; color:#fff; }
+  .ad-count { display:inline-block; min-width:18px; padding:0 6px; margin-left:6px; border-radius:99px; background:#E53238; color:#fff; font-size:11px; line-height:18px; text-align:center; }
+  .ad-two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-bottom:0; }
+  .ad-two .st-card { margin-bottom:18px; }
+  .ad-search { max-width:260px; height:38px; }
+  .ad-banner:empty { display:none; }
+  .ad-banner { margin-bottom:16px; padding:12px 16px; border-radius:12px; font-size:13.5px; font-weight:600; border:1px solid; }
+  .ad-banner.ok { background:#F2F9E5; border-color:#C5E08E; color:#3F6208; }
+  .ad-banner.bad { background:#FEF2F2; border-color:#FCA5A5; color:#991B1B; }
+  .ad-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:18px; }
+  .ad-stat { position:relative; overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:0 5px 18px rgba(20,35,60,.04); }
+  .ad-stat::before { content:''; position:absolute; left:0; top:0; right:0; height:4px; background:#0064D2; }
+  .ad-stat.green::before { background:#86B817; } .ad-stat.yellow::before { background:#F5AF02; } .ad-stat.red::before { background:#E53238; }
+  .ad-stat span { display:block; font-size:11.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#64748B; }
+  .ad-stat b { display:block; font-size:28px; letter-spacing:-.02em; margin-top:4px; }
+  .ad-stat em { font-style:normal; font-size:12.5px; color:var(--grey); }
+  .ad-bars { display:grid; gap:10px; }
+  .ad-bar { display:grid; grid-template-columns:96px 1fr 44px; gap:10px; align-items:center; font-size:13px; }
+  .ad-bar-track { height:10px; background:#EEF2F7; border-radius:99px; overflow:hidden; }
+  .ad-bar-fill { height:100%; border-radius:99px; background:#0064D2; }
+  .ad-health { display:grid; gap:8px; }
+  .ad-health div { display:flex; align-items:center; gap:10px; font-size:13.5px; }
+  .ad-dot { width:10px; height:10px; border-radius:50%; background:#86B817; flex:none; } .ad-dot.off { background:#E53238; }
+  .ad-health small { color:var(--grey); margin-left:auto; }
+  .ad-list { display:grid; gap:2px; }
+  .ad-list div { display:flex; justify-content:space-between; gap:12px; padding:9px 2px; border-bottom:1px solid #EEF2F7; font-size:13.5px; }
+  .ad-list div:last-child { border-bottom:none; } .ad-list small { color:var(--grey); }
+  .ad-cost-group { margin:16px 0 8px; font-size:11.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#64748B; }
+  .ad-cost-row { display:grid; grid-template-columns:minmax(0,1fr) 96px; gap:14px; align-items:center; padding:12px 14px; border:1px solid var(--line); border-radius:12px; margin-bottom:8px; background:#FBFCFE; }
+  .ad-cost-row b { font-size:13.5px; } .ad-cost-row small { display:block; color:var(--grey); font-size:12px; margin-top:2px; line-height:1.45; }
+  .ad-cost-row .tag { display:inline-block; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:99px; background:#E8F1FD; color:#0B4FA0; margin-left:6px; }
+  .ad-cost-row .tag.ai { background:#FEF3D0; color:#8A5A00; } .ad-cost-row .tag.custom { background:#EDF7DC; color:#4C7A0B; }
+  #page-admin .data-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  #page-admin .data-table th { text-align:left; font-size:11.5px; letter-spacing:.04em; text-transform:uppercase; color:#64748B; padding:8px 10px; border-bottom:1.5px solid var(--line); background:transparent; }
+  #page-admin .data-table td { padding:10px; border-bottom:1px solid #EEF2F7; vertical-align:middle; }
+  #page-admin #adminUsersContent, #page-admin #adminTicketsContent, #page-admin #adminPlansContent { overflow-x:auto; }
+  @media (max-width: 860px) { .ad-two { grid-template-columns:1fr; } .ad-search { max-width:none; width:100%; } }
+
+  .ll-synced { font-size:12px; color:#667085; align-self:center; margin-right:8px; }
+  @media (max-width:700px){ .ll-synced{ display:block; width:100%; margin:0 0 6px; } }
 </style>
 </head>
 <body>
@@ -3769,105 +3815,180 @@
       </div>
 
       <div id="page-admin" style="display:none;">
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Users</div>
-          <div id="adminUsersContent"><p class="state-msg">Loading&hellip;</p></div>
-        </div>
-
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Welcome bonus</div>
-          <p class="meta-line">Automatically grant new accounts a starting credit balance.</p>
-
-          <div class="welcome-bonus-row">
-            <label class="toggle-switch">
-              <input type="checkbox" id="welcomeBonusToggle" />
-              <span class="toggle-slider"></span>
-            </label>
-            <span class="welcome-bonus-label" id="welcomeBonusStateLabel">Off</span>
-
-            <div class="welcome-bonus-credits-field">
-              <label>Credits per new user</label>
-              <input type="number" id="welcomeBonusCredits" min="0" value="10" style="width:100px;" />
-            </div>
-
-            <button class="btn-publish" id="saveWelcomeBonusBtn">Save</button>
+        <div class="st-top">
+          <div>
+            <h1>Admin</h1>
+            <div class="sub">Users, credits, AI, pricing and support in one place.</div>
           </div>
-          <div id="welcomeBonusStatus" style="margin-top:10px;"></div>
+          <button class="st-btn" id="adminRefreshBtn" type="button">Refresh</button>
         </div>
 
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Browser extension</div>
-          <p class="meta-line">Set the public registration link shown in the ELMS Chrome extension.</p>
-          <div class="publish-rail" style="border-top:none; padding-top:0; align-items:flex-end;">
-            <div class="publish-field" style="flex:1; min-width:280px;">
-              <label>Registration URL</label>
-              <input class="editable-input" type="url" id="extensionRegistrationUrl" placeholder="https://your-site.com/register" style="width:100%;" />
+        <div class="ad-tabs" id="adminTabs" role="tablist">
+          <button class="ad-tab active" data-admin-tab="overview" type="button">Overview</button>
+          <button class="ad-tab" data-admin-tab="users" type="button">Users</button>
+          <button class="ad-tab" data-admin-tab="ai" type="button">AI</button>
+          <button class="ad-tab" data-admin-tab="costs" type="button">Credit costs</button>
+          <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
+          <button class="ad-tab" data-admin-tab="tickets" type="button">Support <span class="ad-count" id="adminTicketsCount" style="display:none;"></span></button>
+          <button class="ad-tab" data-admin-tab="settings" type="button">Settings</button>
+        </div>
+
+        <!-- Overview -->
+        <div class="ad-panel" data-admin-panel="overview">
+          <div id="adminOverviewContent"><p class="state-msg">Loading&hellip;</p></div>
+        </div>
+
+        <!-- Users -->
+        <div class="ad-panel" data-admin-panel="users" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128101;</div>
+              <div class="st-head-txt"><h2>Users</h2><p>Search, adjust credits, stock-check interval and the number of eBay stores each user can connect.</p></div>
+              <input class="st-input ad-search" id="adminUserSearch" type="search" placeholder="Search name or email&hellip;" />
             </div>
-            <button class="btn-publish" id="saveExtensionRegistrationUrlBtn">Save</button>
+            <div id="adminUsersContent"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+        </div>
+
+        <!-- AI -->
+        <div class="ad-panel" data-admin-panel="ai" style="display:none;">
+          <div id="adminAiStatus" class="ad-banner"></div>
+          <div class="ad-two">
+            <section class="st-card">
+              <div class="st-head">
+                <div class="st-ico yellow">&#10024;</div>
+                <div class="st-head-txt"><h2>AI title</h2><p>Rewrites a product title for eBay search (80 characters).</p></div>
+                <label class="toggle-switch"><input type="checkbox" id="aiTitleEnabled" /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="st-field">
+                <label>Credits per AI title</label>
+                <input class="st-input" type="number" min="0" step="1" id="aiCostTitle" />
+              </div>
+            </section>
+            <section class="st-card">
+              <div class="st-head">
+                <div class="st-ico green">&#128221;</div>
+                <div class="st-head-txt"><h2>AI description</h2><p>Writes the eBay listing description from the product facts.</p></div>
+                <label class="toggle-switch"><input type="checkbox" id="aiDescriptionEnabled" /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="st-grid">
+                <div class="st-field">
+                  <label>Credits per AI description</label>
+                  <input class="st-input" type="number" min="0" step="1" id="aiCostDescription" />
+                </div>
+                <div class="st-field">
+                  <label>Description length</label>
+                  <select class="st-input" id="aiDescriptionLength">
+                    <option value="short">Short (60&ndash;90 words)</option>
+                    <option value="standard">Standard (120&ndash;180 words)</option>
+                    <option value="detailed">Detailed (220&ndash;320 words)</option>
+                  </select>
+                </div>
+              </div>
+            </section>
           </div>
-          <div id="extensionRegistrationUrlStatus" style="margin-top:10px;"></div>
-          <div class="publish-rail" style="border-top:1px solid var(--line); margin-top:14px; padding-top:14px; align-items:flex-end;">
-            <div class="publish-field" style="flex:1; min-width:280px;">
-              <label>ELMS Backend URL</label>
-              <input class="editable-input" type="url" id="extensionBackendUrl" placeholder="https://elms-backend.example.com" style="width:100%;" />
-              <div class="meta-line" style="margin-top:5px;">Central extension API endpoint. Users cannot edit this in the extension.</div>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#129504;</div>
+              <div class="st-head-txt"><h2>Model and style</h2><p>Applies to both AI title and AI description for every user.</p></div>
             </div>
-            <button class="btn-publish" id="saveExtensionBackendUrlBtn">Save</button>
+            <div class="st-grid">
+              <div class="st-field">
+                <label>Claude model</label>
+                <input class="st-input mono" id="aiModel" placeholder="claude-haiku-4-5-20251001" />
+              </div>
+            </div>
+            <div class="st-field" style="margin-top:12px;">
+              <label>Extra instructions (optional)</label>
+              <textarea class="st-input" id="aiCustomInstructions" rows="3" maxlength="600" style="height:auto;padding:10px 12px;" placeholder="e.g. Use British English. Keep a friendly, professional tone. Never mention shipping speed."></textarea>
+            </div>
+            <div class="st-actions">
+              <button class="st-btn primary" id="saveAiSettingsBtn" type="button">Save AI settings</button>
+              <div id="aiSettingsStatus"></div>
+            </div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#128200;</div>
+              <div class="st-head-txt"><h2>Usage (last 30 days)</h2><p>Successful calls, failures and credits users spent on AI.</p></div>
+            </div>
+            <div id="adminAiUsage"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+        </div>
+
+        <!-- Credit costs -->
+        <div class="ad-panel" data-admin-panel="costs" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico yellow">&#129689;</div>
+              <div class="st-head-txt"><h2>Credit costs</h2><p>How many credits each action uses. Changes apply immediately, no redeploy.</p></div>
+              <button class="st-btn primary" id="saveActionCostsBtn" type="button">Save credit costs</button>
+            </div>
+            <div id="actionCostsStatus" style="margin-bottom:10px;"></div>
+            <div id="adminActionCostsContent"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+        </div>
+
+        <!-- Plans -->
+        <div class="ad-panel" data-admin-panel="plans" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico green">&#128179;</div>
+              <div class="st-head-txt"><h2>Credit plans</h2><p>The packs shown on Buy credits. Get the Price ID from Paddle: Catalog &rarr; Products &rarr; the price you created.</p></div>
+            </div>
+            <div id="adminPlansContent"><p class="state-msg">Loading&hellip;</p></div>
+            <div class="st-custom">
+              <div class="st-custom-title">Add a plan</div>
+              <div class="st-grid">
+                <div class="st-field"><label>Plan name</label><input class="st-input" type="text" id="newPlanName" placeholder="e.g. Starter" /></div>
+                <div class="st-field"><label>Price (USD)</label><input class="st-input" type="number" id="newPlanPrice" step="0.01" placeholder="10" /></div>
+                <div class="st-field"><label>Credits</label><input class="st-input" type="number" id="newPlanCredits" placeholder="300" /></div>
+                <div class="st-field"><label>Paddle Price ID</label><input class="st-input mono" type="text" id="newPlanPaddleId" placeholder="pri_01..." /></div>
+              </div>
+              <div class="st-actions"><button class="st-btn primary" id="addPlanBtn" type="button">Add plan</button><div id="addPlanStatus"></div></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Support -->
+        <div class="ad-panel" data-admin-panel="tickets" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#127384;</div>
+              <div class="st-head-txt"><h2>Support tickets</h2><p>Open a ticket to read it, reply and resolve.</p></div>
+            </div>
+            <div id="adminTicketsContent"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+        </div>
+
+        <!-- Settings -->
+        <div class="ad-panel" data-admin-panel="settings" style="display:none;">
+          <div class="ad-two">
+            <section class="st-card">
+              <div class="st-head">
+                <div class="st-ico green">&#127873;</div>
+                <div class="st-head-txt"><h2>Welcome bonus</h2><p>Credits a brand-new account starts with.</p></div>
+                <label class="toggle-switch"><input type="checkbox" id="welcomeBonusToggle" /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="st-field">
+                <label>Credits per new user <span class="welcome-bonus-label" id="welcomeBonusStateLabel" style="text-transform:none;letter-spacing:0;">Off</span></label>
+                <input class="st-input" type="number" id="welcomeBonusCredits" min="0" value="10" />
+              </div>
+              <div class="st-actions"><button class="st-btn primary" id="saveWelcomeBonusBtn" type="button">Save</button><div id="welcomeBonusStatus"></div></div>
+            </section>
+            <section class="st-card">
+              <div class="st-head">
+                <div class="st-ico blue">&#129513;</div>
+                <div class="st-head-txt"><h2>Browser extension</h2><p>Links and IDs used by the ELMS Chrome extension.</p></div>
+              </div>
+              <div class="st-field"><label>Registration URL</label><input class="st-input" type="url" id="extensionRegistrationUrl" placeholder="https://your-site.com/register" /></div>
+              <div class="st-actions" style="margin-top:0;margin-bottom:12px;"><button class="st-btn small" id="saveExtensionRegistrationUrlBtn" type="button">Save URL</button><div id="extensionRegistrationUrlStatus"></div></div>
+              <div class="st-field"><label>ELMS backend URL</label><input class="st-input" type="url" id="extensionBackendUrl" placeholder="https://elms-backend.example.com" /></div>
+              <div class="st-actions" style="margin-top:0;margin-bottom:12px;"><button class="st-btn small" id="saveExtensionBackendUrlBtn" type="button">Save URL</button><div id="extensionBackendUrlStatus"></div></div>
+              <div class="st-field"><label>Chrome extension ID</label><input class="st-input mono" id="chromeExtensionId" maxlength="32" placeholder="32-character Chrome extension ID" /></div>
+              <div class="st-actions" style="margin-top:0;"><button class="st-btn small" id="saveChromeExtensionIdBtn" type="button">Save ID</button><div id="chromeExtensionIdStatus"></div></div>
+            </section>
           </div>
-          <div id="extensionBackendUrlStatus" style="margin-top:10px;"></div>
-        </div>
-
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Credit costs</div>
-          <p class="meta-line">Control exactly how many credits each ELMS action consumes. Changes apply immediately without a redeploy.</p>
-          <div id="adminActionCostsContent"><p class="state-msg">Loading&hellip;</p></div>
-          <button class="btn-publish" id="saveActionCostsBtn" style="margin-top:14px;">Save credit costs</button>
-          <div id="actionCostsStatus" style="margin-top:10px;"></div>
-        </div>
-
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Chrome extension</div>
-          <p class="meta-line">Optional production extension ID used for deployment configuration. The extension key remains the per-user authentication credential.</p>
-          <div class="publish-rail" style="border-top:none;padding-top:0;align-items:flex-end;">
-            <div class="publish-field" style="flex:1;min-width:280px;">
-              <label>Chrome Extension ID</label>
-              <input class="editable-input" id="chromeExtensionId" maxlength="32" placeholder="32-character Chrome extension ID" style="width:100%;" />
-            </div>
-            <button class="btn-publish" id="saveChromeExtensionIdBtn">Save</button>
-          </div>
-          <div id="chromeExtensionIdStatus" style="margin-top:10px;"></div>
-        </div>
-
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Manage plans</div>
-          <p class="meta-line">Get the Price ID from Paddle: Catalog &rarr; Products &rarr; your product &rarr; the price you created.</p>
-          <div id="adminPlansContent"><p class="state-msg">Loading&hellip;</p></div>
-
-          <div class="publish-rail" style="border-top:1px solid var(--line); margin-top:16px; padding-top:16px;">
-            <div class="publish-field">
-              <label>Plan name</label>
-              <input type="text" id="newPlanName" placeholder="e.g. Starter" style="width:140px;" />
-            </div>
-            <div class="publish-field">
-              <label>Price (USD)</label>
-              <input type="number" id="newPlanPrice" step="0.01" placeholder="10" style="width:100px;" />
-            </div>
-            <div class="publish-field">
-              <label>Credits</label>
-              <input type="number" id="newPlanCredits" placeholder="300" style="width:100px;" />
-            </div>
-            <div class="publish-field">
-              <label>Paddle Price ID</label>
-              <input type="text" id="newPlanPaddleId" placeholder="pri_01..." style="width:180px;" />
-            </div>
-          </div>
-          <button class="btn-publish" id="addPlanBtn" style="margin-top:14px;">Add plan</button>
-          <div id="addPlanStatus" style="margin-top:10px;"></div>
-        </div>
-
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Support tickets</div>
-          <div id="adminTicketsContent"><p class="state-msg">Loading&hellip;</p></div>
         </div>
       </div>
     </div>
@@ -4042,7 +4163,7 @@
 
   function showPage(page) {
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
-    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history');
+    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history' || page === 'admin');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
@@ -6100,7 +6221,8 @@
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="description">
-          <label class="elms-ed-field"><span>Description</span><textarea data-ui-field="description" rows="8">${escapeHtml(desc)}</textarea></label>
+          <div class="elms-ed-row" style="margin-bottom:8px;justify-content:space-between;"><span style="font:600 12px Inter,sans-serif;color:#667085;">Let AI write a clean eBay description from this product's facts.</span><button type="button" class="elms-ed-btn" data-ui-action="generate-description">Generate Description With AI</button></div>
+          <label class="elms-ed-field"><span>Description</span><textarea data-ui-field="description" rows="12">${escapeHtml(desc)}</textarea></label>
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="variants">
@@ -6274,7 +6396,28 @@
           titleInput.value = data.title;
           titleInput.dispatchEvent(new Event('input'));
           showToast('Title optimized', data.title, 'success');
+          refreshCreditBalanceChip();
         } catch (err) { showToast('AI title failed', err.message, 'error'); }
+        finally { btn.disabled = false; btn.textContent = label; }
+      } else if (action === 'generate-description') {
+        const title = titleInput.value.trim();
+        if (title.length < 3) { showToast('Title needed', 'Type a title first.', 'error'); return; }
+        const label = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Writing\u2026';
+        try {
+          const catSel = fld('category');
+          const res = await apiFetch('/api/list-on-ebay/optimize-description', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, categoryName: catSel?.selectedOptions?.[0]?.textContent || '', description: fld('description')?.value || '', bulletPoints: l.bullet_points || [], specifications: l.specifications || [] }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || 'Could not write the description.');
+          const area = fld('description');
+          area.value = data.description;
+          area.dispatchEvent(new Event('input'));
+          showToast('Description written', 'Read it through, then save.', 'success');
+          refreshCreditBalanceChip();
+        } catch (err) { showToast('AI description failed', err.message, 'error'); }
         finally { btn.disabled = false; btn.textContent = label; }
       } else if (action === 'generate-zip') {
         const country = fld('country_location').value;
@@ -6793,9 +6936,35 @@ async function autoSuggestEmptyDraftCategories() {
       llAll = data.listings || [];
       llPage = 1;
       renderListings();
+      llAutoRefresh();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
+  }
+
+  // Views and watchers refresh on their own every 30 minutes on the server. Opening the page also
+  // refreshes them quietly when they are older than 10 minutes; the button does it on demand.
+  function llLastSynced() {
+    return llAll.reduce((max, l) => { const t = l.stats_synced_at ? new Date(l.stats_synced_at).getTime() : 0; return t > max ? t : max; }, 0);
+  }
+  function llSyncedText() {
+    const t = llLastSynced();
+    if (!t) return 'Views & watchers: not synced yet';
+    const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
+    return 'Views & watchers synced ' + (mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : Math.round(mins / 60) + ' h ago') + ' \u00b7 auto every 30 min';
+  }
+  async function llAutoRefresh() {
+    if (!llAll.length) return;
+    const t = llLastSynced();
+    if (t && Date.now() - t < 10 * 60 * 1000) return;
+    try {
+      const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: (await getActiveStoreId()) || undefined }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      const byId = new Map((data.listings || []).map((x) => [x.id, x]));
+      llAll.forEach((l) => { const x = byId.get(l.id); if (x) { l.views = x.views; l.watchers = x.watchers; l.stats_synced_at = x.stats_synced_at; } });
+      if (document.getElementById('page-listings').style.display !== 'none') renderListings();
+    } catch (_) { /* the server job will catch up */ }
   }
 
   function llFiltered() {
@@ -6831,6 +7000,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="ll-head">
         <div><h1>Live listings</h1><div class="sub">Everything published to eBay from ELMS.</div></div>
         <div class="ll-head-actions">
+          <span class="ll-synced" id="llSyncedLabel">${escapeHtml(llSyncedText())}</span>
           <button class="ll-btn outline" id="llSyncBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync from eBay</button>
           <button class="ll-btn primary" id="llCreateBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create listing</button>
         </div>
@@ -9951,8 +10121,96 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel ----------
   async function loadAdminPage() {
-    await Promise.all([loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets()]);
   }
+
+  // ---------- Admin Panel: tabs ----------
+  function setAdminTab(name) {
+    document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.classList.toggle('active', t.dataset.adminTab === name));
+    document.querySelectorAll('[data-admin-panel]').forEach((p) => { p.style.display = p.dataset.adminPanel === name ? 'block' : 'none'; });
+    try { sessionStorage.setItem('elmsAdminTab', name); } catch (_) {}
+  }
+  document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.addEventListener('click', () => setAdminTab(t.dataset.adminTab)));
+  document.getElementById('adminRefreshBtn')?.addEventListener('click', () => loadAdminPage());
+  try { const saved = sessionStorage.getItem('elmsAdminTab'); if (saved) setAdminTab(saved); } catch (_) {}
+
+  // ---------- Admin Panel: Overview ----------
+  const money = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  async function loadAdminOverview() {
+    const el = document.getElementById('adminOverviewContent'); if (!el) return;
+    try {
+      const res = await apiFetch('/api/admin/overview'); const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the overview.');
+      const t = d.totals, l = d.listings;
+      const stat = (cls, label, value, hint) => `<div class="ad-stat ${cls}"><span>${label}</span><b>${value}</b><em>${hint}</em></div>`;
+      const totalListings = Object.values(l).reduce((a, b) => a + b, 0) || 1;
+      const bar = (label, n, color) => `<div class="ad-bar"><span>${label}</span><div class="ad-bar-track"><div class="ad-bar-fill" style="width:${Math.round((n / totalListings) * 100)}%;background:${color}"></div></div><b>${n}</b></div>`;
+      const health = (label, ok, hint) => `<div><span class="ad-dot${ok ? '' : ' off'}"></span>${label}<small>${ok ? 'Connected' : hint}</small></div>`;
+      el.innerHTML = `
+        <div class="ad-stats">
+          ${stat('', 'Users', t.users.toLocaleString(), '+' + t.newUsers7d + ' in the last 7 days')}
+          ${stat('green', 'Revenue (30 days)', money(t.revenue30dUsd), money(t.revenueUsd) + ' all time \u00b7 ' + t.purchases + ' purchases')}
+          ${stat('yellow', 'Credits outstanding', t.creditsOutstanding.toLocaleString(), t.creditsSold.toLocaleString() + ' credits sold in total')}
+          ${stat('', 'eBay stores', t.storesConnected.toLocaleString(), t.orders.toLocaleString() + ' orders synced')}
+          ${stat('yellow', 'AI calls (30 days)', t.aiCalls30d.toLocaleString(), 'title + description')}
+          ${stat('red', 'Open tickets', t.openTickets.toLocaleString(), t.openTickets ? 'Waiting for a reply' : 'All caught up')}
+        </div>
+        <div class="ad-two">
+          <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Listings</h2><p>Across every user and store.</p></div></div>
+            <div class="ad-bars">${bar('Live', l.published, '#86B817')}${bar('Drafts', l.draft, '#0064D2')}${bar('Scheduled', l.scheduled, '#F5AF02')}${bar('Publishing', l.publishing, '#8B5CF6')}${bar('Errors', l.error, '#E53238')}</div></section>
+          <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Service health</h2><p>Server settings that the app depends on.</p></div></div>
+            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (Paddle)', d.health.paddle, 'PADDLE keys missing')}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
+        </div>
+        <div class="ad-two">
+          <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Newest users</h2></div></div>
+            <div class="ad-list">${d.recentUsers.map((u) => `<div><span>${escapeHtml(u.name || u.email)}<br><small>${escapeHtml(u.email)}</small></span><small>${new Date(u.createdAt).toLocaleDateString()}</small></div>`).join('') || '<div><small>No users yet.</small></div>'}</div></section>
+          <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Latest purchases</h2></div></div>
+            <div class="ad-list">${d.recentPurchases.map((p) => `<div><span>${escapeHtml(p.email || 'Unknown user')}<br><small>${p.credits.toLocaleString()} credits \u00b7 ${new Date(p.createdAt).toLocaleDateString()}</small></span><b>${money(p.priceUsd)}</b></div>`).join('') || '<div><small>No purchases yet.</small></div>'}</div></section>
+        </div>`;
+    } catch (err) { el.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
+  }
+
+  // ---------- Admin Panel: AI ----------
+  async function loadAdminAi() {
+    const banner = document.getElementById('adminAiStatus'); if (!banner) return;
+    try {
+      const res = await apiFetch('/api/admin/settings/ai'); const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the AI settings.');
+      document.getElementById('aiTitleEnabled').checked = !!d.settings.aiTitleEnabled;
+      document.getElementById('aiDescriptionEnabled').checked = !!d.settings.aiDescriptionEnabled;
+      document.getElementById('aiCostTitle').value = d.costs.AI_TITLE ?? 1;
+      document.getElementById('aiCostDescription').value = d.costs.AI_DESCRIPTION ?? 1;
+      document.getElementById('aiDescriptionLength').value = d.settings.aiDescriptionLength || 'standard';
+      document.getElementById('aiModel').value = d.settings.aiModel || '';
+      document.getElementById('aiCustomInstructions').value = d.settings.aiCustomInstructions || '';
+      banner.className = 'ad-banner ' + (d.apiKeyConfigured ? 'ok' : 'bad');
+      banner.textContent = d.apiKeyConfigured ? 'AI is connected. Users are charged the credit cost below each time they use an AI button.' : 'ANTHROPIC_API_KEY is not set on the server, so every AI button will fail. Add it in Render \u2192 Environment.';
+      const u = d.usage;
+      document.getElementById('adminAiUsage').innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Feature</th><th>Successful</th><th>Failed</th><th>Credits spent</th></tr></thead><tbody>
+        <tr><td>AI title</td><td>${u.title.calls}</td><td>${u.title.failed}</td><td>${u.title.credits}</td></tr>
+        <tr><td>AI description</td><td>${u.description.calls}</td><td>${u.description.failed}</td><td>${u.description.credits}</td></tr></tbody></table></div>
+        <p class="st-hint">Tokens used: ${u.inputTokens.toLocaleString()} in / ${u.outputTokens.toLocaleString()} out. Failed calls are refunded to the user.</p>`;
+    } catch (err) { banner.className = 'ad-banner bad'; banner.textContent = err.message; }
+  }
+  document.getElementById('saveAiSettingsBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('saveAiSettingsBtn'), st = document.getElementById('aiSettingsStatus');
+    btn.disabled = true; st.className = ''; st.textContent = 'Saving\u2026';
+    try {
+      const body = {
+        aiTitleEnabled: document.getElementById('aiTitleEnabled').checked,
+        aiDescriptionEnabled: document.getElementById('aiDescriptionEnabled').checked,
+        aiDescriptionLength: document.getElementById('aiDescriptionLength').value,
+        aiModel: document.getElementById('aiModel').value.trim(),
+        aiCustomInstructions: document.getElementById('aiCustomInstructions').value.trim(),
+        costs: { AI_TITLE: Number(document.getElementById('aiCostTitle').value), AI_DESCRIPTION: Number(document.getElementById('aiCostDescription').value) },
+      };
+      const res = await apiFetch('/api/admin/settings/ai', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save the AI settings.');
+      st.className = 'success'; st.textContent = 'Saved. Active immediately.';
+      loadAdminActionCosts();
+    } catch (err) { st.className = 'error'; st.textContent = err.message; }
+    finally { btn.disabled = false; }
+  });
 
   async function loadExtensionRegistrationUrl() {
     const input = document.getElementById('extensionRegistrationUrl');
@@ -10024,12 +10282,10 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/admin/settings/action-costs'); const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not load credit costs.');
       adminActionCosts = data.actionCosts || [];
-      el.innerHTML = `<div style="display:grid;gap:8px;">${adminActionCosts.map((a) => `
-        <div style="display:grid;grid-template-columns:minmax(220px,1.4fr) minmax(90px,.35fr) 1.6fr;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;">
-          <div><strong style="font-size:12px;">${escapeHtml(a.label)}</strong><div style="font-size:10px;color:var(--grey);margin-top:3px;">${escapeHtml(a.description)}</div></div>
-          <input class="editable-input admin-cost-input" type="number" min="0" step="1" data-cost-key="${escapeAttr(a.key)}" value="${Number(a.cost || 0)}" style="width:80px;" />
-          <div style="font-size:10px;color:var(--grey);">${a.usesCanopy ? 'Canopy-backed action' : 'No Canopy call'} · Default ${Number(a.defaultCost || 0)} · ${a.isOverridden ? 'Custom override active' : 'Using default'}</div>
-        </div>`).join('')}</div>`;
+      const groupOf = (k) => /^(AI_)/.test(k) ? 'AI' : /^(KEYWORD|REVIEW|BESTSELLER|CATEGORY_FINDER|LISTING_GRADER|IMAGE)/.test(k) ? 'Research tools' : /^(AMAZON|BROWSER|VARIANT)/.test(k) ? 'Importing' : /^(EBAY_PUBLISH|SCHEDULED|REPUBLISH)/.test(k) ? 'Publishing' : 'Monitoring and automation';
+      const order = ['Importing', 'Publishing', 'AI', 'Monitoring and automation', 'Research tools'];
+      const row = (a) => `<div class="ad-cost-row"><div><b>${escapeHtml(a.label)}${a.usesAi ? '<span class="tag ai">AI</span>' : ''}${a.usesCanopy ? '<span class="tag">Canopy call</span>' : ''}${a.isOverridden ? '<span class="tag custom">Custom</span>' : ''}</b><small>${escapeHtml(a.description)} Default: ${Number(a.defaultCost || 0)}.</small></div><input class="st-input admin-cost-input" type="number" min="0" step="1" data-cost-key="${escapeAttr(a.key)}" value="${Number(a.cost || 0)}" /></div>`;
+      el.innerHTML = order.map((g) => { const rows = adminActionCosts.filter((a) => groupOf(a.key) === g); return rows.length ? `<div class="ad-cost-group">${g}</div>${rows.map(row).join('')}` : ''; }).join('');
     } catch (err) { el.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
   }
   document.getElementById('saveActionCostsBtn')?.addEventListener('click', async () => {
@@ -10129,7 +10385,7 @@ async function autoSuggestEmptyDraftCategories() {
 
       container.innerHTML = `
 
-        <table class="data-table">
+        <table class="data-table" id="adminUsersTable">
           <thead>
             <tr><th>User</th><th>Role</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
           </thead>
@@ -10149,10 +10405,19 @@ async function autoSuggestEmptyDraftCategories() {
       `;
 
       wireAdminUserRows();
+      applyAdminUserSearch();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
   }
+
+  function applyAdminUserSearch() {
+    const q = (document.getElementById('adminUserSearch')?.value || '').trim().toLowerCase();
+    document.querySelectorAll('#adminUsersContent tr[data-user-id]').forEach((row) => {
+      row.style.display = !q || row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+  document.getElementById('adminUserSearch')?.addEventListener('input', applyAdminUserSearch);
 
   function wireAdminUserRows() {
     document.querySelectorAll('#adminUsersContent tr[data-user-id]').forEach((row) => {
@@ -10225,6 +10490,9 @@ async function autoSuggestEmptyDraftCategories() {
         return;
       }
 
+      const openCount = data.tickets.filter((t) => t.status !== 'resolved').length;
+      const badge = document.getElementById('adminTicketsCount');
+      if (badge) { badge.textContent = openCount; badge.style.display = openCount ? 'inline-block' : 'none'; }
       if (!data.tickets.length) {
         container.innerHTML = '<div class="empty-state">No support tickets yet.</div>';
         return;
