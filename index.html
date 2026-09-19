@@ -2684,6 +2684,37 @@
   .imp-tip small { display:block; margin-top:3px; font-size:12.5px; color:#475467; line-height:1.5; }
   @media (max-width:900px) { .imp-layout { grid-template-columns:minmax(0,1fr); } }
   @media (max-width:520px) { .imp-body { padding:16px; } .imp-head h1 { font-size:24px; } .imp-urlbox { height:50px; } .imp-tab { padding:10px 14px; } }
+
+  /* ---------- Import history ---------- */
+  .ih-head { margin-bottom:18px; }
+  .ih-stats { grid-template-columns:repeat(4,minmax(0,1fr)) auto; }
+  .ih-stat { position:relative; overflow:hidden; border-radius:14px; }
+  .ih-stat::before { content:''; position:absolute; left:0; top:0; right:0; height:4px; background:#0064D2; }
+  .ih-stats .ih-stat:nth-child(2)::before { background:#86B817; }
+  .ih-stats .ih-stat:nth-child(3)::before { background:#E53238; }
+  .ih-stats .ih-stat:nth-child(4)::before { background:#F5AF02; }
+  .ih-import-btn { background:var(--gradient-primary); border-radius:14px; box-shadow:0 6px 16px rgba(37,99,235,.28); }
+  .ih-import-btn:hover { filter:brightness(1.06); background:var(--gradient-primary); }
+  .ih-wrap { border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; border-radius:0; }
+  .ih-table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; color:#4b5563; min-width:920px; }
+  .ih-table th { text-align:left; padding:0 14px; height:46px; font-size:12px; font-weight:700; color:#687180; background:#fff; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+  .ih-table td { padding:12px 14px; border-bottom:1px solid #edf0f3; background:#fff; vertical-align:middle; }
+  .ih-table tbody tr:hover td { background:#f6faff; }
+  .ih-table .row-title { max-width:380px; font-weight:600; color:#374151; }
+  .ih-table .row-thumb { width:64px; height:64px; border-radius:8px; object-fit:cover; flex:0 0 64px; }
+  a.amazon-badge { text-decoration:none; }
+  a.amazon-badge:hover { background:#dbe7ff; }
+  .ih-price { display:inline-block; padding:5px 10px; border-radius:7px; font-weight:700; font-size:13px; white-space:nowrap; }
+  .ih-price.buy { background:#E7F0FD; color:#0064D2; }
+  .ih-price.sell { background:#EEF6DF; color:#5b8f0e; }
+  .ih-profit { color:#5b8f0e; }
+  .ih-status { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
+  .ih-status.success { background:#EEF6DF; color:#5b8f0e; }
+  .ih-status.failed { background:#FDECEC; color:#E53238; }
+  .re-fetch-btn { border-color:#0064D2; color:#0064D2; }
+  @media (max-width:900px) { .ih-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .ih-stats .ih-import-btn-wrap { grid-column:1 / -1; } }
+  @media (max-width:1250px) { .ih-stats { grid-template-columns:repeat(4,minmax(0,1fr)); } .ih-stats .ih-import-btn-wrap { grid-column:1 / -1; } .ih-import-btn { height:48px; } }
+  @media (max-width:900px) { .ih-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 </style>
 </head>
 <body>
@@ -3454,7 +3485,6 @@
                 <input type="text" id="customLocationPostalCode" placeholder="e.g. 10001" style="width:140px;" />
               </div>
               <button class="btn-outline" id="generatePostalCodeBtn" type="button">Generate</button>
-              <button class="btn-outline" id="lookupPostalCodeBtn" type="button">Look up</button>
             </div>
             <div id="postalLookupResult" style="margin-top:10px;"></div>
           </div>
@@ -6086,7 +6116,7 @@
             ${l.amazon_url ? `<a class="elms-ex-link" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener">View source</a>` : ''}
           </div>
         </div>
-      </div>${draftEditorHtml(l)}</td></tr>`;
+      </div></td></tr>`;
 
     return `
       <tr class="draft-row" data-listing-id="${escapeAttr(l.id)}" data-status="${escapeAttr(status)}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
@@ -6204,18 +6234,10 @@ async function autoSuggestEmptyDraftCategories() {
           exSave.disabled = saveBtn.disabled;
         }).observe(saveBtn, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
 
-        expandRow.querySelector('[data-action="expand-open"]').addEventListener('click', () => openDraftDetailModal(id));
-
-        // Clicking the product name/thumbnail also toggles the inline editor.
-        row.querySelectorAll('[data-action="toggle-row"]').forEach((el) => el.addEventListener('click', (e) => { if (e.target.closest('a')) return; expandBtn.click(); }));
-        const draftListing = draftListingMap.get(String(id));
-        if (draftListing) {
-          wireDraftEditor(expandRow, draftListing, {
-            // keep the row's own Save/Publish fields in step with the category picked in the editor
-            onCategoryChange: (categoryId) => { rowField('categoryId').value = categoryId; const ex = exField('categoryId'); if (ex) ex.value = categoryId; },
-            onSaved: (saved) => { const ex = exField('categoryId'); if (ex && saved.category_id != null) ex.value = saved.category_id; rowField('categoryId').value = saved.category_id || ''; },
-          });
-        }
+        // The full editor (same one Live listings use) opens from the name, the thumbnail or "Full editor".
+        const openEditor = () => { const l = draftListingMap.get(String(id)); if (l) openListingEditor(l, { mode: 'draft', onDone: () => loadDrafts() }); else openDraftDetailModal(id); };
+        expandRow.querySelector('[data-action="expand-open"]').addEventListener('click', openEditor);
+        row.querySelectorAll('[data-action="toggle-row"]').forEach((el) => el.addEventListener('click', (e) => { if (e.target.closest('a')) return; openEditor(); }));
       }
 
       saveBtn.addEventListener('click', async () => {
@@ -6675,7 +6697,10 @@ async function autoSuggestEmptyDraftCategories() {
 
   function llCloseEditor() { document.getElementById('llEditModal')?.remove(); document.body.style.overflow = ''; }
 
-  function llEnterEditMode(row, l) {
+  function llEnterEditMode(row, l) { openListingEditor(l, { mode: 'live' }); }
+
+  function openListingEditor(l, opts = {}) {
+    const isDraftMode = opts.mode === 'draft';
     llCloseEditor();
     const cur = CURRENCY_SYMBOLS[l.currency] || (l.currency ? l.currency + ' ' : '$');
     const overlay = document.createElement('div');
@@ -6685,7 +6710,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="modal-box ll-editor-box" role="dialog" aria-modal="true" aria-label="Edit listing">
         <div class="ll-editor-head">
           ${l.main_image ? `<img class="ll-editor-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="ll-editor-thumb"></div>'}
-          <div class="ll-editor-headtxt"><div class="ll-editor-kicker"><span style="color:#E53238">E</span><span style="color:#0064D2">L</span><span style="color:#F5AF02">M</span><span style="color:#86B817">S</span> &middot; Live listing</div><div class="ll-editor-title">${escapeHtml(l.title || 'Untitled listing')}</div></div>
+          <div class="ll-editor-headtxt"><div class="ll-editor-kicker"><span style="color:#E53238">E</span><span style="color:#0064D2">L</span><span style="color:#F5AF02">M</span><span style="color:#86B817">S</span> &middot; ${isDraftMode ? 'Draft' : 'Live listing'}</div><div class="ll-editor-title">${escapeHtml(l.title || 'Untitled listing')}</div></div>
           <button type="button" class="ll-editor-close" data-ll-close aria-label="Close">&times;</button>
         </div>
         <div class="ll-editor-body">
@@ -6713,11 +6738,18 @@ async function autoSuggestEmptyDraftCategories() {
       const categoryId = v.categoryId || l.category_id || '';
       saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026';
       try {
-        const isLive = llListingStatus(l) === 'active';
+        const isLive = !isDraftMode && llListingStatus(l) === 'active';
+        const requestBody = { title, sellPrice, quantity, categoryId };
+        if (!isLive) {
+          // Untouched description / images / specs are left out so they keep falling back to the Amazon import.
+          const before = overlay.querySelector('[data-ui-editor]')._initial || {};
+          ['description', 'specifications', 'images'].forEach((k) => { if (JSON.stringify(v[k]) !== JSON.stringify(before[k])) requestBody[k] = v[k]; });
+          if (l.ebay_account_id) requestBody.accountId = l.ebay_account_id;
+        }
         const res = await apiFetch(isLive ? `/api/listings/${l.id}/revise` : `/api/list-on-ebay/${l.id}`, {
           method: isLive ? 'POST' : 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, sellPrice, quantity, categoryId }),
+          body: JSON.stringify(requestBody),
         });
         const data = await res.json();
         if (!res.ok || !data.success) { alert(data.error || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; return; }
@@ -6725,9 +6757,9 @@ async function autoSuggestEmptyDraftCategories() {
         // Per-product settings (tags, policies, location, monitoring) are stored on ELMS' side.
         const savedSettings = await saveEditorSettings(l.id, v);
         Object.assign(l, savedSettings || {});
-        showToast('Saved', 'Listing updated.', 'success');
+        showToast('Saved', isDraftMode ? 'Draft updated.' : 'Listing updated.', 'success');
         llCloseEditor();
-        renderListings();
+        if (opts.onDone) opts.onDone(); else renderListings();
       } catch (err) { alert(err.message || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; }
     });
   }
@@ -7409,7 +7441,7 @@ async function autoSuggestEmptyDraftCategories() {
       </div>
 
       ${filtered.length ? `
-      <table class="data-table">
+      <div class="live-listings-wrap ad-live ih-wrap"><table class="ih-table">
         <thead>
           <tr>
             <th style="width:34px;"></th>
@@ -7417,12 +7449,14 @@ async function autoSuggestEmptyDraftCategories() {
             <th class="ih-th-sort" data-sort="asin">ASIN ${sortArrows}</th>
             <th class="ih-th-sort" data-sort="amazon_price">Amazon price ${sortArrows}</th>
             <th class="ih-th-sort" data-sort="suggested_price">Suggested price ${sortArrows}</th>
+            <th>Profit</th>
+            <th>Status</th>
             <th class="ih-th-sort" data-sort="created_at">Fetched ${sortArrows}</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>${pageRows.map((i) => historyRowHtml(i)).join('')}</tbody>
-      </table>
+      </table></div>
       <div class="ih-footer">
         <div class="ih-showing">Showing ${filtered.length ? start + 1 : 0} to ${Math.min(start + IH_PAGE_SIZE, filtered.length)} of ${filtered.length} products</div>
         ${ihPaginationHtml(ihPage, pages)}
@@ -7500,12 +7534,14 @@ async function autoSuggestEmptyDraftCategories() {
         <td class="row-title">
           ${i.main_image ? `<div style="display:flex;gap:11px;align-items:flex-start;"><img class="row-thumb" src="${escapeAttr(i.main_image)}" alt="" /><div>` : '<div>'}
             <div>${escapeHtml(i.title || '—')}</div>
-            <span class="amazon-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.93 17.09c-2.02 1.49-4.95 2.28-7.47 2.28-3.53 0-6.71-1.31-9.11-3.48-.19-.17-.02-.4.21-.27 2.59 1.5 5.79 2.41 9.1 2.41 2.24 0 4.7-.46 6.97-1.43.34-.14.63.23.3.49z"/><path d="M16.76 16.15c-.26-.33-1.71-.16-2.36-.08-.2.02-.23-.15-.05-.28 1.15-.81 3.05-.58 3.27-.31.22.28-.06 2.18-1.14 3.09-.17.14-.33.06-.25-.12.25-.61.81-1.96.58-2.22z"/></svg>Amazon</span>
+            <a class="amazon-badge" href="${escapeAttr(i.amazon_url || (asin ? `https://www.amazon.com/dp/${asin}` : '#'))}" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.93 17.09c-2.02 1.49-4.95 2.28-7.47 2.28-3.53 0-6.71-1.31-9.11-3.48-.19-.17-.02-.4.21-.27 2.59 1.5 5.79 2.41 9.1 2.41 2.24 0 4.7-.46 6.97-1.43.34-.14.63.23.3.49z"/><path d="M16.76 16.15c-.26-.33-1.71-.16-2.36-.08-.2.02-.23-.15-.05-.28 1.15-.81 3.05-.58 3.27-.31.22.28-.06 2.18-1.14 3.09-.17.14-.33.06-.25-.12.25-.61.81-1.96.58-2.22z"/></svg>Amazon</a>
           ${i.main_image ? '</div></div>' : '</div>'}
         </td>
         <td><span class="asin-cell">${escapeHtml(asin || '—')}${asin ? `<button class="copy-asin" data-asin="${escapeAttr(asin)}" title="Copy ASIN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>` : ''}</span></td>
-        <td>${i.amazon_price != null ? escapeHtml((i.currency || 'USD') + ' ' + i.amazon_price) : '—'}</td>
-        <td>${i.suggested_price != null ? escapeHtml((i.currency || 'USD') + ' ' + i.suggested_price) : '—'}</td>
+        <td>${i.amazon_price != null ? `<span class="ih-price buy">${escapeHtml(formatPrice(i.amazon_price, i.currency))}</span>` : '—'}</td>
+        <td>${i.suggested_price != null ? `<span class="ih-price sell">${escapeHtml(formatPrice(i.suggested_price, i.currency))}</span>` : '—'}</td>
+        <td>${(i.amazon_price != null && i.suggested_price != null) ? `<b class="ih-profit">${escapeHtml(formatPrice(Number(i.suggested_price) - Number(i.amazon_price), i.currency))}</b>` : '—'}</td>
+        <td><span class="ih-status ${ihImportStatus(i)}">${ihImportStatus(i) === 'failed' ? 'Failed' : 'Success'}</span></td>
         <td><div>${escapeHtml(fetchedFull || i.created_at || '—')}</div>${fetchedRel ? `<div class="fetched-time">${escapeHtml(fetchedRel)}</div>` : ''}</td>
         <td>
           <div class="row-actions" style="display:flex;align-items:center;">
@@ -7972,43 +8008,6 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('customLocationFields').style.display = e.target.value === '__custom__' ? 'block' : 'none';
   });
 
-  document.getElementById('lookupPostalCodeBtn').addEventListener('click', async () => {
-    const btn = document.getElementById('lookupPostalCodeBtn');
-    const resultEl = document.getElementById('postalLookupResult');
-    const country = document.getElementById('customLocationCountry').value;
-    const postalCode = document.getElementById('customLocationPostalCode').value.trim();
-
-    if (!postalCode) {
-      resultEl.className = 'error';
-      resultEl.textContent = 'Please enter a postal code first.';
-      return;
-    }
-
-    btn.disabled = true;
-    resultEl.className = '';
-    resultEl.textContent = 'Looking up\u2026';
-
-    try {
-      const res = await apiFetch(`/api/seller-settings/postal-lookup?country=${encodeURIComponent(country)}&postalCode=${encodeURIComponent(postalCode)}`);
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        resultEl.className = 'error';
-        resultEl.textContent = data.error || 'That postal code could not be found.';
-        return;
-      }
-
-      const loc = data.location;
-      resultEl.className = 'success';
-      resultEl.textContent = `Found: ${loc.placeName || ''}${loc.state ? ', ' + loc.state : ''}, ${loc.countryName || ''}`;
-    } catch (err) {
-      resultEl.className = 'error';
-      resultEl.textContent = 'Could not connect to the server: ' + err.message;
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
   // Generate: type a city, get a real postal code for it (filled in below and shown as a confirmation).
   document.getElementById('generatePostalCodeBtn').addEventListener('click', async () => {
     const btn = document.getElementById('generatePostalCodeBtn');
@@ -8028,6 +8027,14 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('customLocationPostalCode').value = loc.postalCode || '';
       resultEl.className = 'success';
       resultEl.textContent = describePostalLocation(loc);
+      if (loc.postalCode) {
+        // A generated code is already verified, so it becomes the inventory location right away:
+        // switch to "Custom", keep the country/postal code, and save exactly like Save settings does.
+        const locSelect = document.getElementById('settingMerchantLocationKey');
+        if (locSelect.value !== '__custom__') { locSelect.value = '__custom__'; locSelect.dispatchEvent(new Event('change')); }
+        resultEl.textContent = describePostalLocation(loc) + ' \u2014 saving as your inventory location\u2026';
+        document.getElementById('saveSellerSettingsBtn').click();
+      }
     } catch (err) {
       resultEl.className = 'error';
       resultEl.textContent = err.message;
