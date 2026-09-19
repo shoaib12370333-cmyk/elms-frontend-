@@ -8294,7 +8294,7 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       row.querySelector('[data-action="remove-account"]').addEventListener('click', async () => {
-        if (!confirm('Disconnect this eBay account? Listings already published through it are not affected.')) return;
+        if (!confirm('Disconnect this eBay store? All of its drafts, live listings, orders, messages and notifications will be deleted from ELMS. Listings already live on eBay are not affected. This cannot be undone.')) return;
 
         try {
           const res = await apiFetch('/api/ebay-connect/disconnect', {
@@ -8307,6 +8307,11 @@ async function autoSuggestEmptyDraftCategories() {
             alert(data.error || 'Could not disconnect this account.');
             return;
           }
+          setActiveStoreId(undefined);
+          resetStoreScopedState();
+          await populateSidebarEbayWidget();
+          refreshSystemNotificationBadge();
+          refreshMessageBadge();
           loadEbayAccountsList();
         } catch (err) {
           alert('Could not connect to the server: ' + err.message);
