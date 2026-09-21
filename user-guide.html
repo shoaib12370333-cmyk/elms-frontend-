@@ -58,7 +58,7 @@ code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:1px 6px;b
 <a class="back" href="./index.html">&larr; Back to app</a>
 </div></header>
 <div class="hero"><h1>User Guide</h1><p>Everything you need to go from an Amazon link to a live eBay listing, and to run your stores day to day.</p></div>
-<div class="wrap"><aside class="toc"><h4>On this page</h4><a href="#start">1. Getting started</a><a href="#stores">2. Working with more than one store</a><a href="#import">3. Importing products</a><a href="#drafts">4. Drafts and the listing editor</a><a href="#location">5. Item location and postal codes</a><a href="#publish">6. Publishing and live listings</a><a href="#orders">7. Orders and fulfillment</a><a href="#messages">8. Messages</a><a href="#credits">9. Credits</a><a href="#trouble">10. Troubleshooting</a></aside><main class="doc">
+<div class="wrap"><aside class="toc"><h4>On this page</h4><a href="#start">1. Getting started</a><a href="#stores">2. Working with more than one store</a><a href="#import">3. Importing products</a><a href="#drafts">4. Drafts and the listing editor</a><a href="#location">5. Item location and postal codes</a><a href="#publish">6. Publishing and live listings</a><a href="#orders">7. Orders and fulfillment</a><a href="#security">8. Security and devices</a><a href="#messages">9. Messages</a><a href="#credits">10. Credits</a><a href="#trouble">11. Troubleshooting</a></aside><main class="doc">
 <section class="sec" id="start"><h2><i>1</i>Getting started</h2>
 <p>ELMS turns an Amazon product link into an eBay listing and then helps you keep it running: stock, price, orders and buyer messages live in one place.</p>
 <ol class="steps">
@@ -115,9 +115,17 @@ code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:1px 6px;b
 <li>Open an order to see payment, shipping address, tracking and notes.</li>
 <li>Add the Amazon order number and the <strong>tracking number</strong>; ELMS sends the tracking to eBay so the order is marked shipped.</li>
 </ul></section>
-<section class="sec" id="messages"><h2><i>8</i>Messages</h2>
+<section class="sec" id="security"><h2><i>8</i>Security and devices</h2>
+<p>Open <em>Settings &rarr; Security</em> to see where your account is signed in and what happened recently.</p>
+<ul>
+<li><strong>Devices signed in:</strong> browser, system, approximate place and last activity. Press <em>Log out</em> to end one device, <em>Log out other devices</em> to keep only this one, or <em>Log out everywhere</em> if you think someone else has your account.</li>
+<li><strong>New-device alerts:</strong> when your account signs in from a device it has not used before you get a notification in ELMS and, if you keep the switch on, an email.</li>
+<li><strong>Login activity:</strong> your recent sign-ins and failed password attempts (kept for 180 days). Places are approximate and come from the IP address.</li>
+</ul>
+<div class="callout warn">If you see a sign-in you do not recognise: press <em>Log out everywhere</em>, then change your password.</div></section>
+<section class="sec" id="messages"><h2><i>9</i>Messages</h2>
 <p>Buyer conversations for the selected store appear in one inbox. Filter by unread, needs reply, archived or trash, reply through eBay, add private notes that only you can see, and save reusable replies. Use <em>Sync</em> for an immediate refresh; new messages can also arrive automatically.</p></section>
-<section class="sec" id="credits"><h2><i>9</i>Credits</h2>
+<section class="sec" id="credits"><h2><i>10</i>Credits</h2>
 <p>Credits pay for actions that use paid data or eBay automation. Your balance is always shown in the top bar; buy more from <strong>Buy Credits</strong>.</p>
 <div class="tw"><table><tr><th>Action</th><th>Cost</th></tr>
 <tr><td>Import a product (link, bulk or extension)</td><td>1 credit</td></tr>
@@ -129,7 +137,7 @@ code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:1px 6px;b
 <tr><td>Custom-interval (polling) order sync</td><td>5 credits per day</td></tr>
 <tr><td>Research tools (rank checker, review analyzer, bestsellers, category finder, listing grader)</td><td>1 credit per lookup</td></tr></table></div>
 <p>If an import or publish fails on our side, the credit is refunded.</p></section>
-<section class="sec" id="trouble"><h2><i>10</i>Troubleshooting</h2>
+<section class="sec" id="trouble"><h2><i>11</i>Troubleshooting</h2>
 <details><summary>"Invalid inventory location" or "full inventory location" on publish</summary><p>The postal code is incomplete. Open <em>Settings &rarr; Selling settings</em>, choose a custom location and press <strong>Generate valid code</strong>, or enter the full postcode. Then publish again.</p></details>
 <details><summary>I can't see my other store's listings</summary><p>Every page shows the store selected in the sidebar. Switch the store there.</p></details>
 <details><summary>Orders are missing</summary><p>Make sure the right store is selected, then use <em>Orders &rarr; Full sync (90 days)</em>. Reconnect the store in Settings if eBay reports the connection has expired.</p></details>
