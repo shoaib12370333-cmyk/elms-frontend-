@@ -3033,6 +3033,139 @@
   .sp-empty { text-align:center; padding:34px 12px; color:var(--grey); }
   .sp-empty b { display:block; font-size:15px; color:var(--ink); margin-bottom:4px; }
   @media (max-width: 900px) { .sp-layout { grid-template-columns:1fr; } }
+
+  /* ===== ELMS product cards: Drafts (dv-) and Live listings (lv-) ===== */
+  .dv, .lv { --dv-card:#fff; --dv-line:#E6EAF0; --dv-soft:#F5F7FB; --dv-ink:#0F172A; --dv-mute:#667085; }
+  .dv-hero { position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:22px 24px 20px; margin-bottom:16px; border-radius:20px; background:linear-gradient(135deg,#0F172A 0%,#172554 100%); color:#fff; overflow:hidden; }
+  .dv-hero::after { content:''; position:absolute; left:0; right:0; bottom:0; height:4px; background:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75%); }
+  .dv-hero h1 { margin:0; font-size:26px; letter-spacing:-.02em; color:#fff; } .dv-hero p { margin:4px 0 0; font-size:13.5px; opacity:.72; max-width:560px; }
+  .dv-hero-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .dv-hero .dv-synced { font-size:12px; opacity:.7; }
+  .dv-btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 16px; border:1.5px solid var(--dv-line); border-radius:11px; background:#fff; color:var(--dv-ink); font:700 13px Inter,sans-serif; cursor:pointer; white-space:nowrap; transition:background .15s, transform .05s, box-shadow .15s; text-decoration:none; }
+  .dv-btn:hover { background:#F1F5F9; } .dv-btn:active { transform:translateY(1px); }
+  .dv-btn.primary { background:#0064D2; border-color:#0064D2; color:#fff; } .dv-btn.primary:hover { background:#0055B3; }
+  .dv-btn.ghost { background:transparent; } .dv-btn.small { height:32px; padding:0 12px; font-size:12.5px; border-radius:9px; }
+  .dv-btn.danger { color:#B42318; } .dv-btn:disabled { opacity:.55; cursor:not-allowed; }
+  .dv-hero .dv-btn:not(.primary) { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.25); color:#fff; } .dv-hero .dv-btn:not(.primary):hover { background:rgba(255,255,255,.18); }
+
+  /* stage strip / KPI strip */
+  .dv-stages, .lv-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:16px; }
+  .dv-stage { position:relative; text-align:left; display:grid; grid-template-columns:auto 1fr; gap:2px 12px; align-items:center; padding:14px 16px; background:var(--dv-card); border:1.5px solid var(--dv-line); border-radius:16px; cursor:pointer; font-family:inherit; transition:border-color .15s, box-shadow .15s, transform .15s; }
+  .dv-stage:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(15,23,42,.06); }
+  .dv-stage i { grid-row:1 / span 2; width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-style:normal; font-size:18px; background:#E8F1FD; }
+  .dv-stage b { font-size:24px; letter-spacing:-.02em; line-height:1; color:var(--dv-ink); } .dv-stage span { font-size:12.5px; font-weight:600; color:var(--dv-mute); }
+  .dv-stage.publishing i { background:#F1EBFC; } .dv-stage.scheduled i { background:#FEF3D0; } .dv-stage.error i { background:#FDE8E9; }
+  .dv-stage.active { border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.12); }
+  .lv-kpi { padding:14px 16px; background:var(--dv-card); border:1.5px solid var(--dv-line); border-radius:16px; }
+  .lv-kpi span { display:block; font-size:11.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--dv-mute); }
+  .lv-kpi b { display:block; font-size:24px; letter-spacing:-.02em; margin-top:3px; } .lv-kpi em { font-style:normal; font-size:12px; color:var(--dv-mute); }
+  .lv-kpi.good b { color:#4C7A0B; } .lv-kpi.bad b { color:#B42318; }
+
+  /* toolbar */
+  .dv-toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .dv-search { position:relative; flex:1 1 260px; min-width:200px; }
+  .dv-search svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:#98A2B3; }
+  .dv-search input { width:100%; height:40px; padding:0 12px 0 36px; border:1.5px solid var(--dv-line); border-radius:12px; background:#fff; font:500 14px Inter,sans-serif; outline:none; transition:border-color .15s, box-shadow .15s; }
+  .dv-search input:focus { border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.12); }
+  .dv-select { height:40px; padding:0 12px; border:1.5px solid var(--dv-line); border-radius:12px; background:#fff; font:600 13px Inter,sans-serif; color:var(--dv-ink); }
+  .dv-seg { display:inline-flex; background:#EEF2F7; border-radius:11px; padding:3px; gap:2px; }
+  .dv-seg button { border:none; background:transparent; height:32px; padding:0 12px; border-radius:8px; font:700 12.5px Inter,sans-serif; color:#64748B; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .dv-seg button.on { background:#fff; color:var(--dv-ink); box-shadow:0 1px 4px rgba(15,23,42,.1); }
+  .dv-selectall { display:inline-flex; align-items:center; gap:8px; font:600 13px Inter,sans-serif; color:var(--dv-mute); cursor:pointer; }
+  .dv-selectall input, .dv-check { width:18px; height:18px; accent-color:#0064D2; cursor:pointer; }
+
+  /* draft cards */
+  .dv-list { display:grid; gap:16px; }
+  .dv-list.dv-grid { grid-template-columns:repeat(auto-fill,minmax(285px,1fr)); }
+  .dv-card { position:relative; display:flex; flex-direction:column; background:var(--dv-card); border:1.5px solid var(--dv-line); border-radius:18px; overflow:hidden; transition:box-shadow .18s, transform .18s, border-color .18s; }
+  .dv-card:hover { box-shadow:0 14px 30px rgba(15,23,42,.09); transform:translateY(-2px); }
+  .dv-card:has(.dv-check:checked) { border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
+  .dv-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:#86B817; z-index:1; }
+  .dv-card[data-status="publishing"]::before { background:#8B5CF6; } .dv-card[data-status="scheduled"]::before { background:#F5AF02; } .dv-card[data-status="error"]::before { background:#E53238; }
+  .dv-media { position:relative; aspect-ratio:4/3; background:#F1F5F9; cursor:pointer; overflow:hidden; }
+  .dv-media img { width:100%; height:100%; object-fit:contain; background:#fff; display:block; }
+  .dv-media .dv-noimg { width:100%; height:100%; display:grid; place-items:center; color:#CBD5E1; font-size:38px; }
+  .dv-checkwrap { position:absolute; left:12px; top:12px; width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,.92); display:grid; place-items:center; box-shadow:0 1px 6px rgba(15,23,42,.15); }
+  .dv-pill { position:absolute; right:10px; top:10px; padding:4px 10px; border-radius:99px; font:800 11px Inter,sans-serif; background:#EDF7DC; color:#3F6208; box-shadow:0 1px 6px rgba(15,23,42,.1); }
+  .dv-pill.publishing { background:#F1EBFC; color:#5B21B6; } .dv-pill.scheduled { background:#FEF3D0; color:#8A5A00; } .dv-pill.error { background:#FDE8E9; color:#B42318; }
+  .dv-body { display:flex; flex-direction:column; gap:10px; padding:14px 16px 12px 18px; flex:1; }
+  .dv-title { margin:0; font:700 14px/1.4 Inter,sans-serif; color:var(--dv-ink); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
+  .dv-title:hover { color:#0064D2; }
+  .dv-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .dv-chip { font:600 11.5px Inter,sans-serif; padding:3px 9px; border-radius:99px; background:var(--dv-soft); color:#475569; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-decoration:none; }
+  a.dv-chip:hover { background:#E8F1FD; color:#0064D2; }
+  .dv-error { display:flex; gap:8px; padding:8px 10px; border-radius:10px; background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; font:600 12px/1.4 Inter,sans-serif; word-break:break-word; }
+  .dv-when { font:600 12px Inter,sans-serif; color:#8A5A00; }
+  .dv-money { display:grid; grid-template-columns:1fr 1fr 70px; gap:8px; align-items:end; padding-top:10px; border-top:1px dashed var(--dv-line); margin-top:auto; }
+  .dv-money label { display:flex; flex-direction:column; gap:3px; font:700 10.5px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:var(--dv-mute); }
+  .dv-money label b { font:800 15px Inter,sans-serif; color:var(--dv-ink); letter-spacing:0; text-transform:none; height:34px; display:flex; align-items:center; }
+  .dv-money input { height:34px; width:100%; padding:0 8px; border:1.5px solid var(--dv-line); border-radius:9px; font:800 14px Inter,sans-serif; color:var(--dv-ink); background:#fff; min-width:0; }
+  .dv-money input:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.12); }
+  .dv-profit { grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between; padding:7px 10px; border-radius:10px; background:var(--dv-soft); font:700 12.5px Inter,sans-serif; color:var(--dv-mute); }
+  .dv-profit b { font-size:13.5px; } .dv-profit.good { background:#F2F9E5; color:#3F6208; } .dv-profit.bad { background:#FEF2F2; color:#B42318; }
+  .dv-foot { display:flex; gap:8px; padding:0 16px 14px 18px; align-items:center; }
+  .dv-foot .dv-btn.primary { flex:1; }
+  .dv-menuwrap { position:relative; }
+  .dv-dots { width:38px; padding:0; font-size:18px; }
+  .dv-menu { display:none; position:absolute; right:0; bottom:calc(100% + 6px); z-index:20; min-width:170px; padding:6px; background:#fff; border:1px solid var(--dv-line); border-radius:12px; box-shadow:0 14px 34px rgba(15,23,42,.16); }
+  .dv-menu.open { display:block; }
+  .dv-menu button { display:block; width:100%; text-align:left; padding:9px 11px; border:0; background:transparent; border-radius:8px; font:600 13px Inter,sans-serif; color:var(--dv-ink); cursor:pointer; } .dv-menu button:hover { background:#F1F5F9; } .dv-menu button.danger { color:#B42318; } .dv-menu button.danger:hover { background:#FEF2F2; }
+
+  /* list view */
+  .dv-list.dv-rows { grid-template-columns:1fr; gap:10px; }
+  .dv-rows .dv-card { display:grid; grid-template-columns:96px minmax(0,1fr) auto; align-items:center; border-radius:16px; }
+  .dv-rows .dv-card:hover { transform:none; }
+  .dv-rows .dv-media { aspect-ratio:auto; height:96px; }
+  .dv-rows .dv-pill { top:6px; right:6px; font-size:10px; padding:2px 8px; } .dv-rows .dv-checkwrap { left:6px; top:6px; width:24px; height:24px; }
+  .dv-rows .dv-body { padding:12px 14px; gap:6px; }
+  .dv-rows .dv-money { grid-template-columns:auto auto 70px auto; margin-top:0; border-top:0; padding-top:0; }
+  .dv-rows .dv-profit { grid-column:auto; }
+  .dv-rows .dv-foot { padding:12px 16px 12px 0; }
+  .dv-rows .dv-foot .dv-btn.primary { flex:none; }
+  .dv-rows .dv-menu { bottom:auto; top:calc(100% + 6px); }
+
+  /* floating bulk bar */
+  .dv-bulk { position:fixed; left:50%; bottom:22px; transform:translate(-50%,140%); z-index:80; display:flex; align-items:center; gap:10px; padding:10px 12px 10px 18px; background:#0F172A; color:#fff; border-radius:16px; box-shadow:0 18px 44px rgba(15,23,42,.35); transition:transform .22s cubic-bezier(.2,.8,.2,1); max-width:calc(100vw - 24px); flex-wrap:wrap; }
+  .dv-bulk.has-selection { transform:translate(-50%,0); }
+  .dv-bulk b { font:800 13.5px Inter,sans-serif; margin-right:6px; }
+  .dv-bulk .dv-btn { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.2); color:#fff; height:34px; } .dv-bulk .dv-btn:hover { background:rgba(255,255,255,.2); }
+  .dv-bulk .dv-btn.primary { background:#0064D2; border-color:#0064D2; }
+  .dv-empty { text-align:center; padding:54px 16px; background:#fff; border:1.5px dashed var(--dv-line); border-radius:18px; color:var(--dv-mute); }
+  .dv-empty b { display:block; font-size:16px; color:var(--dv-ink); margin-bottom:6px; } .dv-empty .dv-btn { margin-top:14px; }
+  .dv-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:18px; font:600 13px Inter,sans-serif; color:var(--dv-mute); }
+  .dv-pager { display:inline-flex; gap:6px; align-items:center; }
+  .dv-pager button { min-width:34px; height:34px; border:1.5px solid var(--dv-line); border-radius:9px; background:#fff; font:700 13px Inter,sans-serif; cursor:pointer; } .dv-pager button.active { background:#0064D2; border-color:#0064D2; color:#fff; } .dv-pager button:disabled { opacity:.4; cursor:not-allowed; }
+
+  /* live listing cards */
+  .lv-list { display:grid; gap:12px; }
+  .lv-card { position:relative; display:grid; grid-template-columns:92px minmax(0,1.4fr) minmax(0,2.2fr) auto; gap:16px; align-items:center; padding:14px 16px 14px 18px; background:var(--dv-card); border:1.5px solid var(--dv-line); border-radius:18px; overflow:hidden; transition:box-shadow .18s, border-color .18s; }
+  .lv-card:hover { box-shadow:0 12px 28px rgba(15,23,42,.08); }
+  .lv-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:#86B817; }
+  .lv-card.sold::before { background:#0064D2; } .lv-card.ended::before { background:#98A2B3; } .lv-card.issues::before { background:#E53238; }
+  .lv-img { width:92px; height:92px; border-radius:14px; background:#F1F5F9; object-fit:contain; cursor:pointer; }
+  .lv-main { min-width:0; display:flex; flex-direction:column; gap:8px; }
+  .lv-title { margin:0; font:700 14px/1.4 Inter,sans-serif; color:var(--dv-ink); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; } .lv-title:hover { color:#0064D2; }
+  .lv-status { display:inline-flex; align-items:center; gap:6px; width:fit-content; font:800 11px Inter,sans-serif; padding:3px 10px; border-radius:99px; background:#EDF7DC; color:#3F6208; }
+  .lv-status::before { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; }
+  .lv-card.sold .lv-status { background:#E8F1FD; color:#0B4FA0; } .lv-card.ended .lv-status { background:#F2F4F7; color:#475467; } .lv-card.issues .lv-status { background:#FDE8E9; color:#B42318; }
+  .lv-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(92px,1fr)); gap:8px; }
+  .lv-m { padding:8px 10px; background:var(--dv-soft); border-radius:12px; min-width:0; }
+  .lv-m span { display:block; font:700 10.5px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:var(--dv-mute); }
+  .lv-m b { display:block; font:800 15px Inter,sans-serif; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .lv-m small { display:block; font:600 11px Inter,sans-serif; color:var(--dv-mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lv-m.good b { color:#4C7A0B; } .lv-m.bad b { color:#B42318; }
+  .lv-stock { display:flex; height:6px; border-radius:99px; overflow:hidden; background:#E6EAF0; margin-top:6px; } .lv-stock i { display:block; height:100%; } .lv-stock .a { background:#86B817; } .lv-stock .h { background:#F5AF02; } .lv-stock .o { background:#E53238; }
+  .lv-actions { display:flex; gap:8px; align-items:center; }
+  .lv-issue { display:flex; gap:6px; font:600 12px/1.4 Inter,sans-serif; color:#B42318; }
+  .lv-synced { font-size:12px; opacity:.7; }
+  @media (max-width: 1100px) { .lv-card { grid-template-columns:92px minmax(0,1fr) auto; } .lv-metrics { grid-column:1 / -1; } }
+  @media (max-width: 640px) {
+    .dv-hero { padding:18px 16px; } .dv-hero h1 { font-size:22px; }
+    .dv-list.dv-grid { grid-template-columns:1fr; }
+    .dv-rows .dv-card { grid-template-columns:84px minmax(0,1fr); } .dv-rows .dv-media { height:84px; } .dv-rows .dv-foot { grid-column:1 / -1; padding:0 14px 12px; }
+    .dv-rows .dv-money { grid-template-columns:1fr 1fr 70px; } .dv-rows .dv-profit { grid-column:1 / -1; }
+    .lv-card { grid-template-columns:76px minmax(0,1fr); padding:12px 12px 12px 16px; gap:12px; } .lv-img { width:76px; height:76px; } .lv-actions { grid-column:1 / -1; }
+    .lv-actions .dv-btn { flex:1; } .dv-seg button span { display:none; }
+  }
 </style>
 </head>
 <body>
@@ -6155,57 +6288,48 @@
       draftListingMap = new Map(allDrafts.map((item) => [String(item.id), item]));
       const counts = allDrafts.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
       if (!allDrafts.length) {
-        container.innerHTML = '<div class="empty-state">No drafts yet. Fetch a product from the Import page and it will be saved here automatically, ready to publish anytime.</div>';
+        container.innerHTML = '<div class="dv"><div class="dv-empty"><b>No drafts yet</b>Import an Amazon product and it is saved here automatically, ready to review and publish.<br><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div></div>';
+        document.getElementById('draftAddProductBtn')?.addEventListener('click', () => { showPage('import'); setTimeout(() => document.getElementById('amazonUrl')?.focus(), 50); });
         return;
       }
 
+      let dvView = 'grid';
+      try { dvView = localStorage.getItem('elmsDraftsView') === 'rows' ? 'rows' : 'grid'; } catch (_) {}
+      const stage = (key, icon, label, cls = '') => `<button type="button" class="dv-stage ${cls}${key === 'draft' ? ' active' : ''}" data-inner-status="${key}"><i>${icon}</i><b>${counts[key] || 0}</b><span>${label}</span></button>`;
       container.innerHTML = `
-        <div class="elms-drafts-layout ${elmsFieldsClasses()}" id="elmsDraftsLayout">
-
-          <section class="elms-drafts-main">
-            <div class="elms-drafts-shell ad-flat">
-              <div class="ad-tabs" role="tablist">
-                <button type="button" class="ad-tab active" data-inner-status="draft">Drafts (${counts.draft || 0})</button>
-                <button type="button" class="ad-tab" data-inner-status="publishing">Publishing (${counts.publishing || 0})</button>
-                <button type="button" class="ad-tab" data-inner-status="scheduled">Scheduled (${counts.scheduled || 0})</button>
-                <button type="button" class="ad-tab" data-inner-status="error">Failed (${counts.error || 0})</button>
-              </div>
-              <div class="ad-filterrow">
-                <button type="button" class="ad-filter-toggle" id="adFilterToggle" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="17" x2="14" y2="17"/></svg>Add Filter</button>
-                <button class="ad-outline-btn" id="draftAddProductBtn" type="button">+ Import product</button>
-              </div>
-              <div class="ad-filterpanel" id="adFilterPanel" hidden>
-                <input id="draftProductSearch" type="search" placeholder="Search by product title, ASIN or SKU…" />
-                <select id="draftSort" class="elms-drafts-select">
-                  <option value="updated">Recently updated</option><option value="title">Title A–Z</option><option value="price">Price high–low</option>
-                </select>
-                <select id="draftStatusFilter" style="display:none;"><option value="all">All</option><option value="draft" selected>Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option></select>
-              </div>
-              <div class="elms-bulk-bar ad-bulk" id="draftBulkBar">
-                <label class="draft-select-all"><input type="checkbox" id="draftSelectAll" /> <span id="draftSelectedCount">0 Results Selected</span></label>
-                <span class="ad-sep"></span>
-                <button class="elms-bulk-btn" id="bulkDeleteBtn" type="button">Remove from list</button>
-                <span class="ad-sep"></span>
-                <button class="elms-bulk-btn" id="bulkPublishBtn" type="button">Publish All</button>
-              </div>
-              <div class="elms-draft-table-wrap">
-                <table class="elms-draft-table">
-                  <thead><tr><th></th><th></th><th></th><th></th></tr></thead>
-                  <tbody id="draftProductList"></tbody>
-                </table>
-              </div>
-              <div class="draft-footer" id="draftFooter"></div>
-            </div>
-          </section>
+        <div class="dv" id="elmsDraftsLayout">
+          <header class="dv-hero">
+            <div><h1>Drafts</h1><p>Products you imported and have not published yet. Check the numbers, open the editor, then send them to eBay.</p></div>
+            <div class="dv-hero-actions"><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div>
+          </header>
+          <div class="dv-stages">
+            ${stage('draft', '&#128221;', 'Ready to publish')}${stage('publishing', '&#9889;', 'Publishing now', 'publishing')}${stage('scheduled', '&#128339;', 'Scheduled', 'scheduled')}${stage('error', '&#9888;&#65039;', 'Needs attention', 'error')}
+          </div>
+          <div class="dv-toolbar">
+            <label class="dv-selectall"><input type="checkbox" id="draftSelectAll" /> Select all</label>
+            <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
+            <select id="draftSort" class="dv-select"><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
+            <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
+            <select id="draftStatusFilter" style="display:none;"><option value="all">All</option><option value="draft" selected>Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option></select>
+          </div>
+          <div class="dv-list ${dvView === 'rows' ? 'dv-rows' : 'dv-grid'}" id="draftProductList"></div>
+          <div class="dv-footer" id="draftFooter"></div>
+          <div class="dv-bulk" id="draftBulkBar">
+            <b id="draftSelectedCount">0 selected</b>
+            <button class="dv-btn primary small" id="bulkPublishBtn" type="button">Publish all</button>
+            <button class="dv-btn small" id="bulkDeleteBtn" type="button">Remove</button>
+            <button class="dv-btn small" id="bulkClearBtn" type="button">Clear</button>
+          </div>
         </div>
       `;
-      const filterToggle = document.getElementById('adFilterToggle');
-      filterToggle?.addEventListener('click', () => {
-        const panel = document.getElementById('adFilterPanel');
-        panel.hidden = !panel.hidden;
-        filterToggle.setAttribute('aria-expanded', String(!panel.hidden));
-        if (!panel.hidden) document.getElementById('draftProductSearch')?.focus();
-      });
+      document.querySelectorAll('#draftsContent [data-dv-view]').forEach((b) => b.addEventListener('click', () => {
+        dvView = b.dataset.dvView;
+        try { localStorage.setItem('elmsDraftsView', dvView); } catch (_) {}
+        document.querySelectorAll('#draftsContent [data-dv-view]').forEach((x) => x.classList.toggle('on', x === b));
+        const list = document.getElementById('draftProductList');
+        list.classList.toggle('dv-rows', dvView === 'rows'); list.classList.toggle('dv-grid', dvView === 'grid');
+      }));
+      document.getElementById('bulkClearBtn')?.addEventListener('click', () => { document.querySelectorAll('#draftsContent .dv-check').forEach((cb) => { cb.checked = false; }); updateBulkBar(); });
 
       const DRAFTS_PAGE_SIZE = 20;
       let draftPage = 1;
@@ -6219,6 +6343,7 @@
         }).sort((a,b) => {
           if (sort === 'title') return String(a.title || a.sku || '').localeCompare(String(b.title || b.sku || ''));
           if (sort === 'price') return Number(b.sell_price || 0) - Number(a.sell_price || 0);
+          if (sort === 'profit') return (Number(b.sell_price || 0) - Number(b.amazon_price || 0)) - (Number(a.sell_price || 0) - Number(a.amazon_price || 0));
           return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
         });
         const pages = Math.max(1, Math.ceil(filtered.length / DRAFTS_PAGE_SIZE));
@@ -6226,7 +6351,7 @@
         const startIdx = (draftPage - 1) * DRAFTS_PAGE_SIZE;
         const pageItems = filtered.slice(startIdx, startIdx + DRAFTS_PAGE_SIZE);
         const list = document.getElementById('draftProductList');
-        if (list) list.innerHTML = pageItems.length ? pageItems.map((l) => draftRowHtml(l)).join('') : `<tr><td colspan="4"><div class="elms-drafts-empty">No products match these filters.</div></td></tr>`;
+        if (list) list.innerHTML = pageItems.length ? pageItems.map((l) => draftRowHtml(l)).join('') : `<div class="dv-empty" style="grid-column:1/-1"><b>Nothing here</b>No products match this view. Try another stage or clear the search.</div>`;
         const footer = document.getElementById('draftFooter');
         if (footer) {
           if (!filtered.length) footer.innerHTML = '';
@@ -6234,14 +6359,14 @@
             let pag = '';
             if (pages > 1) {
               const btns = [];
-              btns.push(`<button class="draft-page-btn" data-draft-page="${draftPage-1}"${draftPage===1?' disabled':''}>&lsaquo;</button>`);
+              btns.push(`<button data-draft-page="${draftPage-1}"${draftPage===1?' disabled':''}>&lsaquo;</button>`);
               const nums = new Set([1, pages, draftPage, draftPage-1, draftPage+1]);
               let last = 0;
-              for (let p = 1; p <= pages; p++) { if (!nums.has(p)) continue; if (p-last>1) btns.push('<span class="ih-page-ellipsis">&hellip;</span>'); btns.push(`<button class="draft-page-btn${p===draftPage?' active':''}" data-draft-page="${p}">${p}</button>`); last=p; }
-              btns.push(`<button class="draft-page-btn" data-draft-page="${draftPage+1}"${draftPage===pages?' disabled':''}>&rsaquo;</button>`);
-              pag = `<div class="draft-pagination">${btns.join('')}</div>`;
+              for (let p = 1; p <= pages; p++) { if (!nums.has(p)) continue; if (p-last>1) btns.push('<span class="ih-page-ellipsis">&hellip;</span>'); btns.push(`<button class="${p===draftPage?'active':''}" data-draft-page="${p}">${p}</button>`); last=p; }
+              btns.push(`<button data-draft-page="${draftPage+1}"${draftPage===pages?' disabled':''}>&rsaquo;</button>`);
+              pag = `<div class="dv-pager">${btns.join('')}</div>`;
             }
-            footer.innerHTML = `<div class="draft-showing">Showing ${startIdx+1}–${Math.min(startIdx+DRAFTS_PAGE_SIZE, filtered.length)} of ${filtered.length} drafts</div>${pag}`;
+            footer.innerHTML = `<div>Showing ${startIdx+1}&ndash;${Math.min(startIdx+DRAFTS_PAGE_SIZE, filtered.length)} of ${filtered.length}</div>${pag}`;
             footer.querySelectorAll('[data-draft-page]').forEach((btn) => btn.addEventListener('click', () => { if (btn.disabled) return; draftPage = Number(btn.getAttribute('data-draft-page')); renderDraftProductList(); window.scrollTo({top:0,behavior:'smooth'}); }));
           }
         }
@@ -6249,7 +6374,7 @@
         if (selectAll) selectAll.checked = false;
         wireDraftRows();
       };
-      ['draftProductSearch','draftStatusFilter','draftSort'].forEach((id) => document.getElementById(id)?.addEventListener('input', () => {
+      ['draftProductSearch','draftStatusFilter','draftSort'].forEach((id) => document.getElementById(id)?.addEventListener(id === 'draftSort' ? 'change' : 'input', () => {
         if (id === 'draftStatusFilter') {
           const value = document.getElementById(id)?.value || 'all';
           document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item.getAttribute('data-inner-status') === value));
@@ -6272,7 +6397,7 @@
         setTimeout(() => document.getElementById('amazonUrl')?.focus(), 50);
       });
       document.getElementById('draftSelectAll')?.addEventListener('change', (e) => {
-        document.querySelectorAll('#draftsContent .draft-checkbox').forEach((cb) => { cb.checked = e.target.checked; });
+        document.querySelectorAll('#draftsContent .dv-check').forEach((cb) => { cb.checked = e.target.checked; });
         updateBulkBar();
       });
       document.getElementById('draftAddProductBtn')?.addEventListener('click', () => {
@@ -6749,78 +6874,56 @@
 
   function draftRowHtml(l) {
     const status = l.status || 'draft';
-    const actionLabel = status === 'error' ? 'Retry' : status === 'scheduled' ? 'Cancel' : status === 'publishing' ? 'Publishing…' : 'Publish';
-    const uploaded = l.created_at || l.imported_at || l.updated_at;
-    const uploadedText = uploaded ? new Date(uploaded).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '—';
-    const asin = l.asin || l.sku || l.source_asin || '—';
-    const ebayItemId = l.ebay_item_id || l.ebayItemId || l.ebay_listing_id || '—';
-    const sold = l.sold_count ?? l.sold ?? l.quantity_sold ?? 0;
-    const sourcingRequest = l.sourcing_request || l.sourcingRequest || '—';
-
-    // Values for the expandable details panel (row below the main row).
-    const currency = CURRENCY_SYMBOLS[l.currency] || (l.currency ? `${l.currency} ` : '$');
+    const label = { draft: 'Ready', publishing: 'Publishing\u2026', scheduled: 'Scheduled', error: 'Failed' }[status] || status;
+    const actionLabel = status === 'error' ? 'Retry' : status === 'scheduled' ? 'Cancel schedule' : status === 'publishing' ? 'Publishing\u2026' : 'Publish';
+    const asin = l.asin || l.sku || l.source_asin || '';
+    const sym = CURRENCY_SYMBOLS[l.currency] || (l.currency ? `${l.currency} ` : '$');
     const amazonNum = l.amazon_price != null && Number.isFinite(Number(l.amazon_price)) ? Number(l.amazon_price) : null;
     const sellNum = l.sell_price != null && Number.isFinite(Number(l.sell_price)) ? Number(l.sell_price) : null;
-    const money = (n) => n == null ? '—' : `${currency}${n.toFixed(2)}`;
-    const profitNum = amazonNum != null && sellNum != null ? sellNum - amazonNum : null;
-    const fmtDateTime = (v) => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.toLocaleString() : '—'; };
-    const destination = l.ebay_account_username || (status === 'draft' ? 'Not yet published' : 'Not connected');
-    const panelImg = l.main_image ? `<img class="elms-ex-img" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="elms-ex-img"></div>';
-    const exStat = (label, value, extra = '') => `<div class="elms-ex-stat"><span>${label}</span><b${extra}>${value}</b></div>`;
-    const expandRow = `
-      <tr class="elms-expand-row" data-expand-for="${escapeAttr(l.id)}"><td colspan="4" class="elms-expand-cell"><div class="elms-expand-panel" data-amazon="${amazonNum ?? ''}" data-currency="${escapeAttr(currency)}">
-        <div class="elms-ex-media">${panelImg}</div>
-        <div class="elms-ex-body">
-          <div class="elms-ex-title">${escapeHtml(l.title || l.sku || 'Untitled product')}</div>
-          <div class="elms-ex-stats">
-            ${exStat('Amazon price', escapeHtml(money(amazonNum)))}
-            ${exStat('Profit', escapeHtml(money(profitNum)), ' data-ex-profit')}
-            ${exStat('Markup', `${Number(l.markup_percent || 0).toFixed(2).replace(/\.00$/, '')}%`)}
-            ${exStat('Destination', escapeHtml(destination))}
-            ${exStat('Marketplace', escapeHtml(l.marketplace_id || 'eBay'))}
-            ${exStat('Status', escapeHtml(status))}
-            ${exStat('Uploaded', escapeHtml(fmtDateTime(uploaded)))}
-            ${exStat('Updated', escapeHtml(fmtDateTime(l.updated_at)))}
-            ${status === 'scheduled' && l.scheduled_at ? exStat('Scheduled', escapeHtml(fmtDateTime(l.scheduled_at))) : ''}
-          </div>
-          ${status === 'error' && l.error_message ? `<div class="elms-ex-error"><span class="elms-warning-dot">!</span><span>${escapeHtml(l.error_message)}</span></div>` : ''}
-        </div>
-        <div class="elms-ex-edit">
-          <label>Sell price<input type="number" step="0.01" data-expand-field="sellPrice" placeholder="Price" /></label>
-          <label>Quantity<input type="number" min="1" data-expand-field="quantity" /></label>
-          <label>eBay category ID<input type="text" data-expand-field="categoryId" placeholder="e.g. 15052" /></label>
-          <div class="elms-ex-actions">
-            <button type="button" class="elms-ex-btn primary" data-action="expand-save">Save changes</button>
-            <button type="button" class="elms-ex-btn" data-action="expand-open">Full editor</button>
-            ${l.amazon_url ? `<a class="elms-ex-link" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener">View source</a>` : ''}
-          </div>
-        </div>
-      </div></td></tr>`;
-
+    const money = (n) => n == null ? '\u2014' : `${sym}${n.toFixed(2)}`;
+    const profit = amazonNum != null && sellNum != null ? sellNum - amazonNum : null;
+    const margin = profit != null && sellNum ? Math.round((profit / sellNum) * 100) : null;
+    const variants = Array.isArray(l.variants) && l.variants.length ? l.variants.length : (Number(l.variants_count) || 1);
+    const when = status === 'scheduled' && l.scheduled_at && !isNaN(new Date(l.scheduled_at)) ? new Date(l.scheduled_at).toLocaleString() : '';
     return `
-      <tr class="draft-row" data-listing-id="${escapeAttr(l.id)}" data-status="${escapeAttr(status)}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
-        <td class="draft-select-cell"><input type="checkbox" class="draft-checkbox" data-action="select" /></td>
-        <td class="elms-chevron-cell" data-action="stop-propagation"><button class="elms-chevron" data-action="toggle-expand" aria-expanded="false" title="Show details" aria-label="Show details">&#8250;</button></td>
-        <td><div class="elms-product-cell" data-action="toggle-row">
-          ${l.main_image ? `<img class="elms-product-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="elms-product-thumb"></div>'}
-          <div class="elms-product-copy"><div class="elms-product-title">${status === 'error' ? '<span class="elms-warning-dot">!</span>' : ''}${escapeHtml(l.title || l.sku || 'Untitled product')}</div>
-            <div class="elms-meta-line"><span>Destination: <b>${escapeHtml(l.ebay_account_username || '—')}</b></span><i></i><span>Supplier: ${escapeHtml(draftSupplierLabel(l))}</span><i></i><span>Variants: ${Array.isArray(l.variants) && l.variants.length ? l.variants.length : (Number(l.variants_count) || 1)}</span></div>
-            ${l.amazon_url ? `<a class="elms-source-link" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action-link>View Source Product</a>` : '<span class="elms-source-link">View Source Product</span>'}
-            <div class="elms-product-fields">${ELMS_FIELDS.map((f) => { const v = f.get(l); return `<span class="elms-pf elms-pf-${f.key}"><b>${f.label}</b> ${v == null || v === '' ? '—' : escapeHtml(String(v))}</span>`; }).join('')}</div></div>
-        </div></td>
-        <td data-action="stop-propagation"><div class="elms-row-actions">
-          ${l.amazon_url ? `<a class="elms-icon-btn elms-ext-btn" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" title="Open source product">&#8599;</a>` : ''}<button class="elms-icon-btn elms-dots-btn" data-action="toggle-menu" title="More actions">&#8942;</button>
-          <div class="draft-menu-wrap"><div class="draft-menu" data-menu><button data-action="schedule">Schedule Listing</button><button data-action="delete" class="menu-danger">Delete Draft</button></div></div>
-          <button class="elms-publish-btn" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>+ ${actionLabel}</button>
+      <article class="dv-card" data-listing-id="${escapeAttr(l.id)}" data-status="${escapeAttr(status)}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
+        <div class="dv-media" data-action="toggle-row" title="Open the editor">
+          ${l.main_image ? `<img src="${escapeAttr(l.main_image)}" alt="" loading="lazy" />` : '<div class="dv-noimg">&#128444;</div>'}
+          <label class="dv-checkwrap" data-action="stop-propagation"><input type="checkbox" class="dv-check" data-action="select" aria-label="Select" /></label>
+          <span class="dv-pill ${escapeAttr(status)}">${escapeHtml(label)}</span>
         </div>
-        <input type="hidden" data-field="sellPrice" value="${escapeAttr(l.sell_price ?? '')}" /><input type="hidden" data-field="quantity" value="${escapeAttr(l.quantity ?? 1)}" /><input type="hidden" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" /><button type="button" data-action="save" hidden>Save</button></td>
-      </tr>${expandRow}`;
+        <div class="dv-body">
+          <h3 class="dv-title" data-action="toggle-row">${escapeHtml(l.title || l.sku || 'Untitled product')}</h3>
+          <div class="dv-chips">
+            ${asin ? (l.amazon_url ? `<a class="dv-chip" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation" title="Open the Amazon product">${escapeHtml(asin)} &#8599;</a>` : `<span class="dv-chip">${escapeHtml(asin)}</span>`) : ''}
+            <span class="dv-chip">${escapeHtml(draftSupplierLabel(l))}</span>
+            ${l.ebay_account_username ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_username)}</span>` : ''}
+            ${variants > 1 ? `<span class="dv-chip">${variants} variants</span>` : ''}
+          </div>
+          ${status === 'error' && l.error_message ? `<div class="dv-error"><span>!</span><span>${escapeHtml(l.error_message)}</span></div>` : ''}
+          ${when ? `<div class="dv-when">Goes live ${escapeHtml(when)}</div>` : ''}
+          <div class="dv-money" data-amazon="${amazonNum ?? ''}" data-sym="${escapeAttr(sym)}">
+            <label>Cost<b>${escapeHtml(money(amazonNum))}</b></label>
+            <label>Sell price<input type="number" step="0.01" min="0" data-field="sellPrice" value="${escapeAttr(l.sell_price ?? '')}" data-action-stop /></label>
+            <label>Qty<input type="number" min="1" data-field="quantity" value="${escapeAttr(l.quantity ?? 1)}" /></label>
+            <div class="dv-profit ${profit == null ? '' : profit >= 0 ? 'good' : 'bad'}" data-profit>Profit <b>${profit == null ? '\u2014' : `${profit >= 0 ? '+' : '-'}${sym}${Math.abs(profit).toFixed(2)}${margin != null ? ` \u00b7 ${margin}%` : ''}`}</b></div>
+          </div>
+          <input type="hidden" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" />
+        </div>
+        <div class="dv-foot" data-action="stop-propagation">
+          <button type="button" class="dv-btn ghost" data-action="open-editor">Edit</button>
+          <button type="button" class="dv-btn primary" data-action="publish"${status === 'publishing' ? ' disabled' : ''}>${actionLabel}</button>
+          <div class="dv-menuwrap"><button type="button" class="dv-btn dv-dots" data-action="toggle-menu" title="More" aria-label="More actions">&#8942;</button>
+            <div class="dv-menu" data-menu><button data-action="schedule">Schedule listing</button><button data-action="delete" class="danger">Delete draft</button></div></div>
+          <button type="button" data-action="save" hidden>Save</button>
+        </div>
+      </article>`;
   }
 
 async function autoSuggestEmptyDraftCategories() {
     const accountId = await ensureSelectedEbayAccountId();
     if (!accountId) return;
-    const rows = Array.from(document.querySelectorAll('#draftsContent .draft-row'));
+    const rows = Array.from(document.querySelectorAll('#draftsContent .dv-card'));
     for (const row of rows) {
       const input = row.querySelector('[data-field="categoryId"]');
       if (!input || input.value.trim()) continue;
@@ -6842,7 +6945,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   function wireDraftRows() {
-    document.querySelectorAll('#draftsContent .draft-row').forEach((row) => {
+    document.querySelectorAll('#draftsContent .dv-card').forEach((row) => {
       const id = row.getAttribute('data-listing-id');
       const saveBtn = row.querySelector('[data-action="save"]');
       const publishBtn = row.querySelector('[data-action="publish"]');
@@ -6851,7 +6954,22 @@ async function autoSuggestEmptyDraftCategories() {
       const scheduleBtn = row.querySelector('[data-action="schedule"]');
       const deleteBtn = row.querySelector('[data-action="delete"]');
       const checkbox = row.querySelector('[data-action="select"]');
-      const isScheduled = publishBtn.textContent.trim() === 'Cancel Schedule';
+      // Card actions: the picture / title / Edit button open the editor; price and quantity save themselves.
+      const openEditorNow = () => { const l = draftListingMap.get(String(id)); if (l) openListingEditor(l, { mode: 'draft', onDone: () => loadDrafts() }); else openDraftDetailModal(id); };
+      row.querySelectorAll('[data-action="toggle-row"]').forEach((el) => el.addEventListener('click', (e) => { if (e.target.closest('a,input,label')) return; openEditorNow(); }));
+      row.querySelector('[data-action="open-editor"]')?.addEventListener('click', openEditorNow);
+      const moneyBox = row.querySelector('.dv-money');
+      const liveProfit = () => {
+        const amazon = parseFloat(moneyBox.getAttribute('data-amazon')); const sell = parseFloat(row.querySelector('[data-field="sellPrice"]').value);
+        const el = moneyBox.querySelector('[data-profit]'); const sym = moneyBox.getAttribute('data-sym') || '$';
+        if (!Number.isFinite(amazon) || !Number.isFinite(sell)) { el.className = 'dv-profit'; el.innerHTML = 'Profit <b>\u2014</b>'; return; }
+        const p = sell - amazon; const m = sell ? Math.round((p / sell) * 100) : 0;
+        el.className = 'dv-profit ' + (p >= 0 ? 'good' : 'bad'); el.innerHTML = 'Profit <b>' + (p >= 0 ? '+' : '-') + sym + Math.abs(p).toFixed(2) + ' \u00b7 ' + m + '%</b>';
+      };
+      row.querySelector('[data-field="sellPrice"]').addEventListener('input', liveProfit);
+      ['sellPrice', 'quantity'].forEach((name) => row.querySelector('[data-field="' + name + '"]').addEventListener('change', () => saveBtn.click()));
+      row.querySelectorAll('.dv-money input').forEach((i) => i.addEventListener('click', (e) => e.stopPropagation()));
+      const isScheduled = row.getAttribute('data-status') === 'scheduled';
       const isPublishing = row.getAttribute('data-status') === 'publishing';
       if (isPublishing) { publishBtn.disabled = true; saveBtn.disabled = true; }
       const isError = row.getAttribute('data-status') === 'error' || row.querySelector('.status-badge.error') !== null;
@@ -7033,13 +7151,13 @@ async function autoSuggestEmptyDraftCategories() {
           alert('Could not connect to the server: ' + err.message);
         } finally {
           publishBtn.disabled = false;
-          publishBtn.textContent = '+ Publish';
+          publishBtn.textContent = 'Publish';
         }
       });
 
       menuToggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        document.querySelectorAll('.draft-menu.open').forEach((m) => { if (m !== menu) m.classList.remove('open'); });
+        document.querySelectorAll('.dv-menu.open').forEach((m) => { if (m !== menu) m.classList.remove('open'); });
         menu.classList.toggle('open');
       });
 
@@ -7072,22 +7190,22 @@ async function autoSuggestEmptyDraftCategories() {
 
     // Close any open three-dot menu when clicking elsewhere on the page.
     document.addEventListener('click', () => {
-      document.querySelectorAll('.draft-menu.open').forEach((m) => m.classList.remove('open'));
+      document.querySelectorAll('.dv-menu.open').forEach((m) => m.classList.remove('open'));
     }, { once: true });
 
     wireBulkBar();
   }
 
   function updateBulkBar() {
-    const boxes = document.querySelectorAll('#draftsContent .draft-checkbox');
-    const checked = document.querySelectorAll('#draftsContent .draft-checkbox:checked');
+    const boxes = document.querySelectorAll('#draftsContent .dv-check');
+    const checked = document.querySelectorAll('#draftsContent .dv-check:checked');
     const bar = document.getElementById('draftBulkBar');
     const countLabel = document.getElementById('draftSelectedCount');
     const selectAll = document.getElementById('draftSelectAll');
     if (selectAll) selectAll.checked = boxes.length > 0 && checked.length === boxes.length;
     if (!bar) return;
     bar.classList.toggle('has-selection', checked.length > 0);
-    if (countLabel) countLabel.textContent = `${checked.length} Results Selected`;
+    if (countLabel) countLabel.textContent = `${checked.length} selected`;
   }
 
   function wireBulkBar() {
@@ -7096,8 +7214,8 @@ async function autoSuggestEmptyDraftCategories() {
     if (!bulkPublishBtn || !bulkDeleteBtn) return;
 
     function getSelectedIds() {
-      return Array.from(document.querySelectorAll('#draftsContent .draft-checkbox:checked')).map(
-        (cb) => cb.closest('.draft-row').getAttribute('data-listing-id')
+      return Array.from(document.querySelectorAll('#draftsContent .dv-check:checked')).map(
+        (cb) => cb.closest('.dv-card').getAttribute('data-listing-id')
       );
     }
 
@@ -7123,7 +7241,7 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('success', 'Publish request sent', `${ids.length} listing(s) were submitted for immediate eBay publishing.`);
 
       bulkPublishBtn.disabled = false;
-      bulkPublishBtn.textContent = 'Publish All';
+      bulkPublishBtn.textContent = 'Publish all';
       loadDrafts();
     });
 
@@ -7144,7 +7262,7 @@ async function autoSuggestEmptyDraftCategories() {
         showToast('error', 'Bulk delete failed', err.message);
       } finally {
         bulkDeleteBtn.disabled = false;
-        bulkDeleteBtn.textContent = 'Remove from list';
+        bulkDeleteBtn.textContent = 'Remove';
         loadDrafts();
       }
     });
@@ -7155,7 +7273,8 @@ async function autoSuggestEmptyDraftCategories() {
   let llTab = 'all';
   let llSearch = '';
   let llPage = 1;
-  const LL_PAGE_SIZE = 10;
+  let llSort = 'newest';
+  const LL_PAGE_SIZE = 12;
 
   function llListingStatus(l) {
     const s = String(l.status || '').toLowerCase();
@@ -7210,6 +7329,19 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (_) { /* the server job will catch up */ }
   }
 
+  function llSorted(rows) {
+    const profitOf = (l) => (Number(l.sell_price) || 0) - (Number(l.amazon_price) || 0);
+    const by = {
+      newest: (a, b) => new Date(b.created_at || b.updated_at || 0) - new Date(a.created_at || a.updated_at || 0),
+      price: (a, b) => (Number(b.sell_price) || 0) - (Number(a.sell_price) || 0),
+      profit: (a, b) => profitOf(b) - profitOf(a),
+      views: (a, b) => (Number(b.views) || 0) - (Number(a.views) || 0),
+      watchers: (a, b) => (Number(b.watchers) || 0) - (Number(a.watchers) || 0),
+      sold: (a, b) => (Number(b.sold_count) || 0) - (Number(a.sold_count) || 0),
+    };
+    return rows.slice().sort(by[llSort] || by.newest);
+  }
+
   function llFiltered() {
     return llAll.filter((l) => {
       if (llTab !== 'all' && llListingStatus(l) !== llTab) return false;
@@ -7231,73 +7363,65 @@ async function autoSuggestEmptyDraftCategories() {
       ended: llAll.filter((l) => llListingStatus(l) === 'ended').length,
       issues: llAll.filter((l) => llListingStatus(l) === 'issues').length,
     };
-    const filtered = llFiltered();
+    const filtered = llSorted(llFiltered());
     const pages = Math.max(1, Math.ceil(filtered.length / LL_PAGE_SIZE));
     if (llPage > pages) llPage = pages;
     const start = (llPage - 1) * LL_PAGE_SIZE;
     const pageRows = filtered.slice(start, start + LL_PAGE_SIZE);
 
-    const tab = (key, label, n) => `<button class="ll-tab${llTab === key ? ' active' : ''}" data-ll-tab="${key}">${label} (${n})</button>`;
+    const tab = (key, label, n) => `<button type="button" class="${llTab === key ? 'on' : ''}" data-ll-tab="${key}">${label} <span>${n}</span></button>`;
+    const sum = (f) => llAll.reduce((a, l) => a + (Number(f(l)) || 0), 0);
+    const margins = llAll.filter((l) => Number(l.amazon_price) > 0 && Number(l.sell_price) > 0).map((l) => (Number(l.sell_price) - Number(l.amazon_price)) / Number(l.sell_price));
+    const avgMargin = margins.length ? Math.round((margins.reduce((a, b) => a + b, 0) / margins.length) * 100) : null;
+    const kpi = (label, value, hint, cls = '') => `<div class="lv-kpi ${cls}"><span>${label}</span><b>${value}</b><em>${hint}</em></div>`;
 
     container.innerHTML = `
-      <div class="ll-head">
-        <div><h1>Live listings</h1><div class="sub">Everything published to eBay from ELMS.</div></div>
-        <div class="ll-head-actions">
-          <span class="ll-synced" id="llSyncedLabel">${escapeHtml(llSyncedText())}</span>
-          <button class="ll-btn outline" id="llSyncBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync from eBay</button>
-          <button class="ll-btn primary" id="llCreateBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create listing</button>
+      <div class="lv">
+        <header class="dv-hero">
+          <div><h1>Live listings</h1><p>Everything you have published to eBay: price, profit, stock and how buyers are reacting.</p></div>
+          <div class="dv-hero-actions">
+            <span class="dv-synced" id="llSyncedLabel">${escapeHtml(llSyncedText())}</span>
+            <button class="dv-btn" id="llSyncBtn" type="button">Sync from eBay</button>
+            <button class="dv-btn primary" id="llCreateBtn" type="button">+ Create listing</button>
+          </div>
+        </header>
+        <div class="lv-kpis">
+          ${kpi('Live now', counts.active, counts.all + ' listings in total')}
+          ${kpi('Units sold', sum((l) => l.sold_count).toLocaleString(), 'from synced orders')}
+          ${kpi('Views', sum((l) => l.views).toLocaleString(), 'on eBay')}
+          ${kpi('Watchers', sum((l) => l.watchers).toLocaleString(), 'people following')}
+          ${kpi('Average margin', avgMargin == null ? '\u2014' : avgMargin + '%', 'sell vs. Amazon cost', avgMargin == null ? '' : avgMargin >= 15 ? 'good' : avgMargin < 5 ? 'bad' : '')}
+          ${kpi('Need attention', counts.issues, counts.issues ? 'open the card to fix' : 'no problems', counts.issues ? 'bad' : 'good')}
         </div>
+        <div class="dv-toolbar">
+          <span class="dv-seg" role="tablist">${tab('all', 'All', counts.all)}${tab('active', 'Active', counts.active)}${tab('sold', 'Sold', counts.sold)}${tab('ended', 'Ended', counts.ended)}${tab('issues', 'Issues', counts.issues)}</span>
+          <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search title, SKU or item ID" value="${escapeAttr(llSearch)}" /></div>
+          <select id="llSortSelect" class="dv-select">
+            ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['profit', 'Profit high\u2013low'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
+          </select>
+          <button class="dv-btn" id="llExportBtn" type="button">Export CSV</button>
+        </div>
+        ${filtered.length ? `
+        <div class="lv-list">${pageRows.map((l) => listingRowHtml(l)).join('')}</div>
+        <div class="dv-footer">
+          <div>Showing ${start + 1}&ndash;${Math.min(start + LL_PAGE_SIZE, filtered.length)} of ${filtered.length} listings</div>
+          ${llPaginationHtml(llPage, pages)}
+        </div>` : `<div class="dv-empty"><b>${llAll.length ? 'No listings in this view' : 'No live listings yet'}</b>${llAll.length ? 'Try another tab or clear the search.' : 'Publish a draft and it appears here with its price, profit and stats.'}</div>`}
       </div>
-
-      <div class="ll-tabs">
-        ${tab('all','All',counts.all)}${tab('active','Active',counts.active)}${tab('sold','Sold',counts.sold)}${tab('ended','Ended',counts.ended)}${tab('issues','With issues',counts.issues)}
-      </div>
-
-      <div class="ll-toolbar">
-        <div class="ll-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search in live listings..." value="${escapeAttr(llSearch)}" /></div>
-        <button class="ll-tool-btn" id="llFilterBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Filter</button>
-        <button class="ll-tool-btn" id="llExportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
-      </div>
-
-      ${filtered.length ? `
-      <div class="live-listings-wrap ad-live">
-        <table class="ad-live-table">
-          <colgroup><col style="width:48px"><col style="width:340px"><col style="width:120px"><col style="width:130px"><col style="width:60px"><col style="width:100px"><col style="width:100px"><col style="width:120px"><col style="width:90px"><col style="width:170px"><col style="width:130px"><col style="width:200px"><col style="width:80px"><col style="width:80px"><col style="width:150px"><col style="width:130px"><col style="width:90px"><col style="width:100px"><col style="width:100px"></colgroup>
-          <thead>
-            <tr>
-              <th class="s1" rowspan="2"><input type="checkbox" id="llSelectAll" /></th>
-              <th class="s2 left" rowspan="2">Name</th>
-              <th class="s3 left" rowspan="2">Uploaded</th>
-              <th class="s4 left" rowspan="2">Sourcing Request</th>
-              <th class="s5" rowspan="2"></th>
-              <th class="grp" colspan="4">Variations</th>
-              <th rowspan="2" class="left">Price</th><th rowspan="2" class="left">Profit</th><th rowspan="2" class="left">Item ID</th>
-              <th rowspan="2">Sold</th><th rowspan="2">DWS</th><th rowspan="2" class="left">Store</th><th rowspan="2" class="left">ASIN</th>
-              <th rowspan="2">Views</th><th rowspan="2">Watchers</th><th rowspan="2">Days Left</th>
-            </tr>
-            <tr><th class="vfirst">Available</th><th>On Hold</th><th>Out Of Stock</th><th>Total</th></tr>
-          </thead>
-          <tbody>${pageRows.map((l) => listingRowHtml(l)).join('')}</tbody>
-        </table>
-      </div>
-      <div class="ll-footer">
-        <div class="ll-showing">Showing ${start + 1} to ${Math.min(start + LL_PAGE_SIZE, filtered.length)} of ${filtered.length} listings</div>
-        ${llPaginationHtml(llPage, pages)}
-      </div>` : `<div class="empty-state">${llAll.length ? 'No listings match this view.' : 'No listings yet. Publish a product from the Drafts page to see it here.'}</div>`}
     `;
 
     wireListingsPage();
   }
 
   function llPaginationHtml(current, pages) {
-    if (pages <= 1) return '<div class="ll-pagination"></div>';
+    if (pages <= 1) return '<div class="dv-pager"></div>';
     const items = [];
-    items.push(`<button class="ll-page-btn" data-ll-page="${current-1}"${current===1?' disabled':''}>&lsaquo;</button>`);
+    items.push(`<button data-ll-page="${current-1}"${current===1?' disabled':''}>&lsaquo;</button>`);
     const nums = new Set([1, pages, current, current-1, current+1]);
     let last = 0;
-    for (let p = 1; p <= pages; p++) { if (!nums.has(p)) continue; if (p-last>1) items.push('<span class="ih-page-ellipsis">&hellip;</span>'); items.push(`<button class="ll-page-btn${p===current?' active':''}" data-ll-page="${p}">${p}</button>`); last=p; }
-    items.push(`<button class="ll-page-btn" data-ll-page="${current+1}"${current===pages?' disabled':''}>&rsaquo;</button>`);
-    return `<div class="ll-pagination">${items.join('')}</div>`;
+    for (let p = 1; p <= pages; p++) { if (!nums.has(p)) continue; if (p-last>1) items.push('<span class="ih-page-ellipsis">&hellip;</span>'); items.push(`<button class="${p===current?'active':''}" data-ll-page="${p}">${p}</button>`); last=p; }
+    items.push(`<button data-ll-page="${current+1}"${current===pages?' disabled':''}>&rsaquo;</button>`);
+    return `<div class="dv-pager">${items.join('')}</div>`;
   }
 
   const LL_EBAY_DOMAINS = { EBAY_US:'ebay.com', EBAY_GB:'ebay.co.uk', EBAY_AU:'ebay.com.au', EBAY_CA:'ebay.ca', EBAY_DE:'ebay.de', EBAY_FR:'ebay.fr', EBAY_IT:'ebay.it', EBAY_ES:'ebay.es', EBAY_NL:'ebay.nl', EBAY_CH:'ebay.ch', EBAY_AT:'ebay.at', EBAY_BE:'ebay.be', EBAY_IE:'ebay.ie', EBAY_PL:'ebay.pl', EBAY_HK:'ebay.com.hk', EBAY_SG:'ebay.com.sg', EBAY_MY:'ebay.com.my', EBAY_PH:'ebay.ph' };
@@ -7306,50 +7430,51 @@ async function autoSuggestEmptyDraftCategories() {
 
   function listingRowHtml(l) {
     const st = llListingStatus(l);
-    const dash = '<span class="ad-dash">-</span>';
+    const dash = '\u2014';
     const cur = l.currency;
     const num = (v) => (v != null && v !== '' && Number.isFinite(Number(v))) ? Number(v) : null;
     const buy = num(l.amazon_price), sell = num(l.sell_price);
     const profit = buy != null && sell != null ? sell - buy : null;
+    const margin = profit != null && sell ? Math.round((profit / sell) * 100) : null;
     const count = (v, fallback = 0) => { if (typeof v === 'boolean') return v ? 1 : 0; const n = num(v); return n == null ? fallback : n; };
     const available = count(l.quantity, 1);
     const onHold = count(l.on_hold ?? l.onHold);
     const oos = count(l.out_of_stock ?? l.outOfStock);
-    const total = count(l.total_quantity ?? l.total, available);
+    const total = Math.max(1, count(l.total_quantity ?? l.total, available + onHold + oos));
     const uploaded = l.created_at || l.imported_at || l.updated_at;
-    const uploadedText = uploaded && !isNaN(new Date(uploaded)) ? new Date(uploaded).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '-';
+    const uploadedText = uploaded && !isNaN(new Date(uploaded)) ? new Date(uploaded).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
     const asin = l.asin || l.source_asin || '';
     const itemId = l.ebay_item_id || l.ebayItemId || l.ebay_listing_id || l.listing_id || '';
     const val = (v) => (v == null || v === '') ? dash : escapeHtml(String(v));
-    const link = (href, text) => `<a class="ad-link" href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`;
-    const pair = (a, b) => `<div class="ad-pair"><div><span class="ad-lbl">Buy</span>${a}</div><div><span class="ad-lbl sell">Sell</span>${b}</div></div>`;
+    const chip = (href, text, title) => `<a class="dv-chip" href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer" title="${escapeAttr(title)}">${escapeHtml(text)} &#8599;</a>`;
+    const statusText = { active: 'Active', sold: 'Sold out', ended: 'Ended', issues: 'Needs attention' }[st] || st;
+    const pct = (n) => Math.max(0, Math.min(100, Math.round((n / total) * 100)));
     return `
-      <tr class="ll-row" data-listing-id="${escapeAttr(l.id)}">
-        <td class="s1"><input type="checkbox" class="ll-row-check" /></td>
-        <td class="s2"><div class="ad-name" data-action="view">
-          ${l.main_image ? `<img class="ad-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="ad-thumb"></div>'}
-          ${st === 'issues' ? '<span class="elms-warning-dot" title="' + escapeAttr(l.error_message || 'Issue') + '">!</span>' : ''}
-          <span class="ad-title">${escapeHtml(l.title || '-')}</span>
-        </div></td>
-        <td class="s3">${escapeHtml(uploadedText)}</td>
-        <td class="s4">${val(l.sourcing_request || l.sourcingRequest)}</td>
-        <td class="s5"><button class="ad-dots" data-action="menu" title="More" aria-label="More actions">&#8942;</button></td>
-        <td class="vfirst"><span class="ad-pill green">${available}</span></td>
-        <td><span class="ad-pill yellow">${onHold}</span></td>
-        <td><span class="ad-pill red">${oos}</span></td>
-        <td class="c">${total}</td>
-        <td>${pair(buy != null ? escapeHtml(formatPrice(buy, cur)) : dash, sell != null ? escapeHtml(formatPrice(sell, cur)) : dash)}</td>
-        <td>${profit != null ? escapeHtml(formatPrice(profit, cur)) : dash}</td>
-        <td>${pair(asin ? link(llAmazonUrl(l, asin), asin) : dash, itemId ? link(llEbayUrl(l, itemId), String(itemId)) : dash)}</td>
-        <td class="c">${count(l.sold_count ?? l.sold ?? l.quantity_sold)}</td>
-        <td class="c">${val(l.dws)}</td>
-        <td>${val(l.ebay_account_username)}</td>
-        <td>${asin ? link(llAmazonUrl(l, asin), asin) : dash}</td>
-        <td class="c">${val(l.views ?? l.view_count)}</td>
-        <td class="c">${val(l.watchers ?? l.watch_count)}</td>
-        <td class="c">${val(l.days_left ?? l.daysLeft)}</td>
-      </tr>
-    `;
+      <article class="lv-card ll-row ${escapeAttr(st)}" data-listing-id="${escapeAttr(l.id)}">
+        ${l.main_image ? `<img class="lv-img" data-action="view" src="${escapeAttr(l.main_image)}" alt="" loading="lazy" />` : '<div class="lv-img" data-action="view"></div>'}
+        <div class="lv-main">
+          <span class="lv-status">${escapeHtml(statusText)}</span>
+          <h3 class="lv-title" data-action="view">${escapeHtml(l.title || dash)}</h3>
+          <div class="dv-chips">
+            ${itemId ? chip(llEbayUrl(l, itemId), 'eBay ' + itemId, 'Open the live eBay listing') : ''}
+            ${asin ? chip(llAmazonUrl(l, asin), 'Amazon ' + asin, 'Open the Amazon product') : ''}
+            ${l.ebay_account_username ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_username)}</span>` : ''}
+            ${uploadedText ? `<span class="dv-chip">Listed ${escapeHtml(uploadedText)}</span>` : ''}
+          </div>
+          ${st === 'issues' ? `<div class="lv-issue"><span>!</span><span>${escapeHtml(l.error_message || 'This listing has an issue.')}</span></div>` : ''}
+        </div>
+        <div class="lv-metrics">
+          <div class="lv-m"><span>Price</span><b>${sell != null ? escapeHtml(formatPrice(sell, cur)) : dash}</b><small>cost ${buy != null ? escapeHtml(formatPrice(buy, cur)) : dash}</small></div>
+          <div class="lv-m ${profit == null ? '' : profit >= 0 ? 'good' : 'bad'}"><span>Profit</span><b>${profit != null ? escapeHtml(formatPrice(profit, cur)) : dash}</b><small>${margin != null ? margin + '% margin' : 'no cost data'}</small></div>
+          <div class="lv-m"><span>Stock</span><b>${available}</b><small>${onHold} hold \u00b7 ${oos} out</small><div class="lv-stock"><i class="a" style="width:${pct(available)}%"></i><i class="h" style="width:${pct(onHold)}%"></i><i class="o" style="width:${pct(oos)}%"></i></div></div>
+          <div class="lv-m"><span>Sold</span><b>${count(l.sold_count ?? l.sold ?? l.quantity_sold)}</b><small>units</small></div>
+          <div class="lv-m"><span>Views</span><b>${val(l.views ?? l.view_count)}</b><small>${val(l.watchers ?? l.watch_count)} watchers</small></div>
+        </div>
+        <div class="lv-actions">
+          <button type="button" class="dv-btn small" data-action="view">Edit</button>
+          <button type="button" class="dv-btn small dv-dots" data-action="menu" title="More" aria-label="More actions">&#8942;</button>
+        </div>
+      </article>`;
   }
 
   function wireListingsPage() {
@@ -7373,17 +7498,14 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#llCreateBtn')?.addEventListener('click', () => showPage('import'));
     // Tabs
     root.querySelectorAll('[data-ll-tab]').forEach((b) => b.addEventListener('click', () => { llTab = b.getAttribute('data-ll-tab'); llPage = 1; renderListings(); }));
+    root.querySelector('#llSortSelect')?.addEventListener('change', (e) => { llSort = e.target.value; llPage = 1; renderListings(); });
     // Search
     const search = root.querySelector('#llSearchInput');
     if (search) search.addEventListener('input', () => { llSearch = search.value.trim(); llPage = 1; renderListings(); const el = document.getElementById('llSearchInput'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
     // Filter / Export controls
-    root.querySelector('#llFilterBtn')?.addEventListener('click', () => showToast('Filter', 'Use the tabs and search to narrow your listings.', ''));
     root.querySelector('#llExportBtn')?.addEventListener('click', () => llExportCsv());
     // Pagination
     root.querySelectorAll('[data-ll-page]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; llPage = Number(b.getAttribute('data-ll-page')); renderListings(); }));
-    // Select all
-    const selectAll = root.querySelector('#llSelectAll');
-    if (selectAll) selectAll.addEventListener('change', (e) => root.querySelectorAll('.ll-row-check').forEach((cb) => { cb.checked = e.target.checked; }));
     // Row View (inline edit) + menu (Edit/Delete)
     wireListingRows();
   }
@@ -7491,11 +7613,11 @@ async function autoSuggestEmptyDraftCategories() {
   window.addEventListener('scroll', llCloseMenu, true);
 
   function wireListingRows() {
-    document.querySelectorAll('#listingsContent tr.ll-row').forEach((row) => {
+    document.querySelectorAll('#listingsContent .ll-row').forEach((row) => {
       const id = row.getAttribute('data-listing-id');
       const l = llAll.find((x) => String(x.id) === String(id));
       if (!l) return;
-      row.querySelector('[data-action="view"]')?.addEventListener('click', () => llEnterEditMode(row, l));
+      row.querySelectorAll('[data-action="view"]').forEach((el) => el.addEventListener('click', () => llEnterEditMode(row, l)));
       row.querySelector('[data-action="menu"]')?.addEventListener('click', (e) => {
         e.stopPropagation();
         const had = document.getElementById('llFloatingMenu');
