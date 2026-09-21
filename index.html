@@ -4107,6 +4107,7 @@
           <button class="ad-tab" data-admin-tab="ai" type="button">AI</button>
           <button class="ad-tab" data-admin-tab="costs" type="button">Credit costs</button>
           <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
+          <button class="ad-tab" data-admin-tab="mail" type="button">Mail</button>
           <button class="ad-tab" data-admin-tab="tickets" type="button">Support <span class="ad-count" id="adminTicketsCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="settings" type="button">Settings</button>
         </div>
@@ -4247,6 +4248,47 @@
         </div>
 
         <!-- Support -->
+        <div class="ad-panel" data-admin-panel="mail" style="display:none;">
+          <div class="ad-banner" id="adminMailStatus">Loading&hellip;</div>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#9993;</div>
+              <div class="st-head-txt"><h2>Send an announcement</h2><p>One mail to every user who has not unsubscribed. It is sent slowly in small batches so your mail provider's limits are never hit.</p></div>
+            </div>
+            <div class="st-field"><label>Subject</label><input class="st-input" id="annSubject" maxlength="150" placeholder="e.g. New: AI item specifics are live" /></div>
+            <div class="st-field" style="margin-top:12px;"><label>Message (plain text, blank line = new paragraph)</label><textarea class="st-input" id="annBody" rows="7" maxlength="8000" style="height:auto;padding:10px 12px;"></textarea></div>
+            <p class="st-hint" id="annHint"></p>
+            <div class="st-actions">
+              <button class="st-btn" id="annTestBtn" type="button">Send test to me</button>
+              <button class="st-btn primary" id="annSendBtn" type="button">Send to all users</button>
+              <div id="annStatus"></div>
+            </div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#128200;</div>
+              <div class="st-head-txt"><h2>Recent announcements</h2><p>Progress updates every few seconds while one is being sent.</p></div>
+            </div>
+            <div id="annList"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico green">&#9881;</div>
+              <div class="st-head-txt"><h2>Limits</h2><p>Set these below what your mail provider allows. They apply at once, no deploy needed.</p></div>
+            </div>
+            <div class="st-grid">
+              <div class="st-field"><label>Mails per minute (batch size)</label><input class="st-input" type="number" min="1" max="100" id="limMailBatch" /></div>
+              <div class="st-field"><label>Mails per day (announcements)</label><input class="st-input" type="number" min="1" max="100000" id="limMailDaily" /></div>
+              <div class="st-field"><label>Bulk product import: links at a time</label><input class="st-input" type="number" min="1" max="50" id="limBulkImport" /></div>
+            </div>
+            <p class="st-hint">Bulk import uses one Amazon (Canopy) call per link, so keep it within your Canopy plan. Maximum 50.</p>
+            <div class="st-actions">
+              <button class="st-btn primary" id="limSaveBtn" type="button">Save limits</button>
+              <div id="limStatus"></div>
+            </div>
+          </section>
+        </div>
+
         <div class="ad-panel" data-admin-panel="tickets" style="display:none;">
           <section class="st-card">
             <div class="st-head">
@@ -4718,9 +4760,11 @@
       statusEl.textContent = 'Please paste at least one Amazon link.';
       return;
     }
-    if (amazonUrls.length > 25) {
+    let bulkMax = 25;
+    try { const lr = await apiFetch('/api/fetch-product/limits'); const ld = await lr.json(); if (lr.ok && ld.bulkImportMax) bulkMax = ld.bulkImportMax; } catch (e) { /* keep default */ }
+    if (amazonUrls.length > bulkMax) {
       statusEl.className = 'error';
-      statusEl.textContent = 'Please import at most 25 links at a time.';
+      statusEl.textContent = 'Please import at most ' + bulkMax + ' links at a time.';
       return;
     }
 
@@ -10698,7 +10742,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel ----------
   async function loadAdminPage() {
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -10793,6 +10837,70 @@ async function autoSuggestEmptyDraftCategories() {
       const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save the AI settings.');
       st.className = 'success'; st.textContent = 'Saved. Active immediately.';
       loadAdminActionCosts();
+    } catch (err) { st.className = 'error'; st.textContent = err.message; }
+    finally { btn.disabled = false; }
+  });
+
+  // ---------- Admin Panel: Mail (announcements + limits) ----------
+  let annTimer = null;
+  async function loadAdminMail() {
+    const banner = document.getElementById('adminMailStatus'); if (!banner) return;
+    try {
+      const [res, lres] = await Promise.all([apiFetch('/api/admin/announcements'), apiFetch('/api/admin/settings/limits')]);
+      const d = await res.json(); const l = await lres.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not load announcements.');
+      banner.className = 'ad-banner ok';
+      banner.textContent = 'Announcements are sent from ' + (d.from || 'the SMTP address') + '. ' + d.recipients + ' user(s) will receive them. Sent today: ' + d.sentToday + ' of ' + d.limits.mailDailyCap + '.';
+      document.getElementById('annHint').textContent = 'Sends ' + d.limits.mailBatchSize + ' mail(s) per minute, at most ' + d.limits.mailDailyCap + ' per day. ' + d.recipients + ' recipient(s) take about ' + Math.max(1, Math.ceil(d.recipients / Math.min(d.limits.mailBatchSize * 60 * 24, d.limits.mailDailyCap))) + ' day(s) at most.';
+      if (lres.ok && l.success) {
+        document.getElementById('limMailBatch').value = l.limits.mailBatchSize;
+        document.getElementById('limMailDaily').value = l.limits.mailDailyCap;
+        document.getElementById('limBulkImport').value = l.limits.bulkImportMax;
+      }
+      const label = { sending: 'Sending', paused: 'Paused', done: 'Done', cancelled: 'Cancelled' };
+      const active = d.announcements.some((a) => a.status === 'sending' || a.status === 'paused');
+      document.getElementById('annList').innerHTML = d.announcements.length ? `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Subject</th><th>Status</th><th>Sent</th><th>Failed</th><th></th></tr></thead><tbody>${d.announcements.map((a) => `<tr><td>${escapeHtml(a.subject)}<br><small>${new Date(a.createdAt).toLocaleString()}</small></td><td>${label[a.status] || a.status}</td><td>${a.sent} / ${a.total}</td><td>${a.failed}</td><td>${a.status === 'sending' ? `<button class="st-btn" data-ann="pause" data-id="${a.id}">Pause</button>` : ''}${a.status === 'paused' ? `<button class="st-btn" data-ann="resume" data-id="${a.id}">Resume</button>` : ''}${(a.status === 'sending' || a.status === 'paused') ? ` <button class="st-btn" data-ann="cancel" data-id="${a.id}">Cancel</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="state-msg">Nothing sent yet.</p>';
+      document.querySelectorAll('#annList [data-ann]').forEach((b) => b.addEventListener('click', async () => {
+        b.disabled = true;
+        try { await apiFetch('/api/admin/announcements/' + b.dataset.id + '/' + b.dataset.ann, { method: 'POST' }); } finally { loadAdminMail(); }
+      }));
+      clearTimeout(annTimer);
+      if (active) annTimer = setTimeout(() => { if (document.querySelector('[data-admin-panel="mail"]')?.style.display !== 'none') loadAdminMail(); }, 8000);
+    } catch (err) { banner.className = 'ad-banner bad'; banner.textContent = err.message; }
+  }
+  function annPayload() { return { subject: document.getElementById('annSubject').value.trim(), body: document.getElementById('annBody').value.trim() }; }
+  document.getElementById('annTestBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('annTestBtn'), st = document.getElementById('annStatus');
+    btn.disabled = true; st.className = ''; st.textContent = 'Sending test\u2026';
+    try {
+      const res = await apiFetch('/api/admin/announcements/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(annPayload()) });
+      const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not send the test.');
+      st.className = 'success'; st.textContent = 'Test sent to ' + d.to + '.';
+    } catch (err) { st.className = 'error'; st.textContent = err.message; }
+    finally { btn.disabled = false; }
+  });
+  document.getElementById('annSendBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('annSendBtn'), st = document.getElementById('annStatus');
+    if (!confirm('Send this announcement to all users who have not unsubscribed? Sending a test to yourself first is a good idea.')) return;
+    btn.disabled = true; st.className = ''; st.textContent = 'Starting\u2026';
+    try {
+      const res = await apiFetch('/api/admin/announcements', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(annPayload()) });
+      const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not start.');
+      st.className = 'success'; st.textContent = 'Started. Sending to ' + d.total + ' user(s) in batches.';
+      document.getElementById('annSubject').value = ''; document.getElementById('annBody').value = '';
+      loadAdminMail();
+    } catch (err) { st.className = 'error'; st.textContent = err.message; }
+    finally { btn.disabled = false; }
+  });
+  document.getElementById('limSaveBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('limSaveBtn'), st = document.getElementById('limStatus');
+    btn.disabled = true; st.className = ''; st.textContent = 'Saving\u2026';
+    try {
+      const body = { mailBatchSize: Number(document.getElementById('limMailBatch').value), mailDailyCap: Number(document.getElementById('limMailDaily').value), bulkImportMax: Number(document.getElementById('limBulkImport').value) };
+      const res = await apiFetch('/api/admin/settings/limits', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save.');
+      st.className = 'success'; st.textContent = 'Saved. Active immediately.';
+      loadAdminMail();
     } catch (err) { st.className = 'error'; st.textContent = err.message; }
     finally { btn.disabled = false; }
   });
