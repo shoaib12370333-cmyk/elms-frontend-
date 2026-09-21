@@ -10859,10 +10859,14 @@ async function autoSuggestEmptyDraftCategories() {
       }
       const label = { sending: 'Sending', paused: 'Paused', done: 'Done', cancelled: 'Cancelled' };
       const active = d.announcements.some((a) => a.status === 'sending' || a.status === 'paused');
-      document.getElementById('annList').innerHTML = d.announcements.length ? `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Subject</th><th>Status</th><th>Sent</th><th>Failed</th><th></th></tr></thead><tbody>${d.announcements.map((a) => `<tr><td>${escapeHtml(a.subject)}<br><small>${new Date(a.createdAt).toLocaleString()}</small></td><td>${label[a.status] || a.status}</td><td>${a.sent} / ${a.total}</td><td>${a.failed}</td><td>${a.status === 'sending' ? `<button class="st-btn" data-ann="pause" data-id="${a.id}">Pause</button>` : ''}${a.status === 'paused' ? `<button class="st-btn" data-ann="resume" data-id="${a.id}">Resume</button>` : ''}${(a.status === 'sending' || a.status === 'paused') ? ` <button class="st-btn" data-ann="cancel" data-id="${a.id}">Cancel</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="state-msg">Nothing sent yet.</p>';
+      document.getElementById('annList').innerHTML = d.announcements.length ? `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Subject</th><th>Status</th><th>Sent</th><th>Failed</th><th></th></tr></thead><tbody>${d.announcements.map((a) => `<tr><td>${escapeHtml(a.subject)}<br><small>${new Date(a.createdAt).toLocaleString()}</small>${a.lastError ? `<br><small style="color:#b91c1c;">Error: ${escapeHtml(a.lastError)}</small>` : ""}</td><td>${label[a.status] || a.status}</td><td>${a.sent} / ${a.total}</td><td>${a.failed}</td><td>${a.status === 'sending' ? `<button class="st-btn" data-ann="pause" data-id="${a.id}">Pause</button>` : ''}${a.status === 'paused' ? `<button class="st-btn" data-ann="resume" data-id="${a.id}">Resume</button>` : ''}${(a.status === 'sending' || a.status === 'paused') ? ` <button class="st-btn" data-ann="cancel" data-id="${a.id}">Cancel</button>` : ''}${(a.retryable > 0 && a.status !== 'cancelled') ? ` <button class="st-btn primary" data-ann="retry-failed" data-id="${a.id}">Retry failed (${a.retryable})</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="state-msg">Nothing sent yet.</p>';
       document.querySelectorAll('#annList [data-ann]').forEach((b) => b.addEventListener('click', async () => {
         b.disabled = true;
-        try { await apiFetch('/api/admin/announcements/' + b.dataset.id + '/' + b.dataset.ann, { method: 'POST' }); } finally { loadAdminMail(); }
+        try {
+          const r = await apiFetch('/api/admin/announcements/' + b.dataset.id + '/' + b.dataset.ann, { method: 'POST' });
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok || j.success === false) alert(j.error || 'Could not do that.');
+        } finally { loadAdminMail(); }
       }));
       clearTimeout(annTimer);
       if (active) annTimer = setTimeout(() => { if (document.querySelector('[data-admin-panel="mail"]')?.style.display !== 'none') loadAdminMail(); }, 8000);
