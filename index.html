@@ -3006,6 +3006,33 @@
   .elms-asp input.ai-filled { border-color:#86B817; background:#F7FBEE; }
   .elms-asp input.missing { border-color:#E53238; }
   .elms-asp-sub { font:800 13px Inter,sans-serif; color:#101828; margin:6px 0 8px; }
+
+  /* Support */
+  .sp-layout { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:18px; align-items:start; }
+  .sp-col .st-card:last-child { margin-bottom:0; } .sp-tickets { margin-bottom:0; }
+  .sp-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .sp-chip { border:1.5px solid var(--line); background:#fff; padding:6px 13px; border-radius:99px; font:700 12.5px Inter,sans-serif; color:#475569; cursor:pointer; }
+  .sp-chip:hover { border-color:#0064D2; color:#0064D2; } .sp-chip.on { background:#0064D2; border-color:#0064D2; color:#fff; }
+  .sp-links { display:grid; gap:8px; }
+  .sp-links a { display:block; padding:11px 14px; border:1.5px solid var(--line); border-radius:12px; text-decoration:none; color:var(--ink); background:#FBFCFE; }
+  .sp-links a:hover { border-color:#0064D2; } .sp-links b { display:block; font-size:13.5px; } .sp-links span { display:block; font-size:12.5px; color:var(--grey); margin-top:2px; }
+  .sp-filter { display:inline-flex; background:#F1F5F9; border-radius:10px; padding:3px; gap:2px; }
+  .sp-filter button { border:none; background:transparent; padding:6px 12px; border-radius:8px; font:700 12.5px Inter,sans-serif; color:#64748B; cursor:pointer; }
+  .sp-filter button.on { background:#0064D2; color:#fff; }
+  .sp-list { display:grid; gap:12px; }
+  .sp-ticket { border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; background:#fff; }
+  .sp-ticket.open { border-left:4px solid #F5AF02; } .sp-ticket.resolved { border-left:4px solid #86B817; }
+  .sp-ticket-top { display:flex; gap:10px; align-items:flex-start; justify-content:space-between; }
+  .sp-ticket-top b { font-size:14.5px; line-height:1.35; }
+  .sp-pill { flex:none; font-size:11px; font-weight:800; padding:3px 10px; border-radius:99px; } .sp-pill.open { background:#FEF3D0; color:#8A5A00; } .sp-pill.resolved { background:#EDF7DC; color:#4C7A0B; }
+  .sp-date { font-size:12px; color:var(--grey); margin-top:2px; }
+  .sp-msg { margin:10px 0 0; font-size:13.5px; color:#475569; white-space:pre-wrap; word-break:break-word; }
+  .sp-reply { margin-top:12px; padding:10px 12px; border-radius:10px; background:#F2F9E5; border:1px solid #D7EBB0; font-size:13.5px; color:#2F4A08; white-space:pre-wrap; word-break:break-word; }
+  .sp-reply small { display:block; font-weight:800; font-size:11px; letter-spacing:.05em; text-transform:uppercase; margin-bottom:3px; color:#4C7A0B; }
+  .sp-wait { margin-top:12px; font-size:12.5px; color:var(--grey); }
+  .sp-empty { text-align:center; padding:34px 12px; color:var(--grey); }
+  .sp-empty b { display:block; font-size:15px; color:var(--ink); margin-bottom:4px; }
+  @media (max-width: 900px) { .sp-layout { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -3828,24 +3855,63 @@
       </div>
 
       <div id="page-support" style="display:none;">
-        <div class="import-lane">
-          <div class="kicker">Need help?</div>
-          <h2>Open a support ticket</h2>
-          <div class="publish-field" style="width:100%;">
-            <label>Subject</label>
-            <input type="text" id="ticketSubject" placeholder="e.g. Need more credits" style="width:100%;" />
+        <div class="st-top">
+          <div>
+            <h1>Support</h1>
+            <div class="sub">Ask for credits, report a problem or get help with a store. Every ticket is read by a person.</div>
           </div>
-          <div class="publish-field" style="width:100%; margin-top:12px;">
-            <label>Message</label>
-            <textarea class="editable-input editable-textarea" id="ticketMessage" rows="4" placeholder="Describe what you need..." style="width:100%;"></textarea>
-          </div>
-          <button class="primary" id="createTicketBtn" style="margin-top:14px; width:auto; padding:0 26px; height:44px;">Submit ticket</button>
-          <div id="createTicketStatus" style="margin-top:12px;"></div>
         </div>
 
-        <div class="product-card">
-          <div class="section-title" style="margin-top:0; padding-top:0; border-top:none;">Your tickets</div>
-          <div id="myTicketsContent"><p class="state-msg">Loading&hellip;</p></div>
+        <div class="sp-layout">
+          <div class="sp-col">
+            <section class="st-card">
+              <div class="st-head">
+                <div class="st-ico blue">&#9993;</div>
+                <div class="st-head-txt"><h2>New ticket</h2><p>Pick a topic or write your own subject.</p></div>
+              </div>
+              <div class="sp-chips" id="ticketTopics">
+                <button type="button" class="sp-chip" data-topic="I need more credits">Credits</button>
+                <button type="button" class="sp-chip" data-topic="eBay store connection problem">Store connection</button>
+                <button type="button" class="sp-chip" data-topic="Listing failed to publish">Publish error</button>
+                <button type="button" class="sp-chip" data-topic="Orders or messages are missing">Orders / messages</button>
+                <button type="button" class="sp-chip" data-topic="Question about billing">Billing</button>
+              </div>
+              <div class="st-field">
+                <label>Subject</label>
+                <input class="st-input" type="text" id="ticketSubject" placeholder="e.g. Need more credits" maxlength="140" />
+              </div>
+              <div class="st-field">
+                <label>Message</label>
+                <textarea class="st-input" id="ticketMessage" rows="6" placeholder="Describe what happened. Include the store, the product (ASIN or title) and the exact error message if there is one." style="height:auto;padding:10px 12px;"></textarea>
+              </div>
+              <div class="st-actions"><button class="st-btn primary" id="createTicketBtn" type="button">Submit ticket</button><div id="createTicketStatus"></div></div>
+            </section>
+
+            <section class="st-card">
+              <div class="st-head">
+                <div class="st-ico green">&#128218;</div>
+                <div class="st-head-txt"><h2>Before you write</h2><p>Most answers are already in the guide.</p></div>
+              </div>
+              <div class="sp-links">
+                <a href="./user-guide.html" target="_blank" rel="noopener"><b>User Guide</b><span>Stores, import, publishing, orders, credits and fixes for common errors.</span></a>
+                <a href="./terms.html" target="_blank" rel="noopener"><b>Terms of Service</b><span>The rules for using ELMS.</span></a>
+                <a href="./privacy.html" target="_blank" rel="noopener"><b>Privacy Policy</b><span>What we collect and how it is used.</span></a>
+              </div>
+            </section>
+          </div>
+
+          <section class="st-card sp-tickets">
+            <div class="st-head">
+              <div class="st-ico yellow">&#127915;</div>
+              <div class="st-head-txt"><h2>Your tickets</h2><p id="ticketsSummary">Loading&hellip;</p></div>
+              <div class="sp-filter" id="ticketFilter">
+                <button type="button" class="on" data-ticket-filter="all">All</button>
+                <button type="button" data-ticket-filter="open">Open</button>
+                <button type="button" data-ticket-filter="resolved">Resolved</button>
+              </div>
+            </div>
+            <div id="myTicketsContent"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
         </div>
       </div>
 
@@ -10275,42 +10341,52 @@ async function autoSuggestEmptyDraftCategories() {
     await loadMyTickets();
   }
 
+  let myTickets = [];
+  let ticketFilter = 'all';
+  function renderMyTickets() {
+    const container = document.getElementById('myTicketsContent');
+    const summary = document.getElementById('ticketsSummary');
+    const open = myTickets.filter((t) => t.status !== 'resolved').length;
+    if (summary) summary.textContent = myTickets.length ? `${myTickets.length} ticket${myTickets.length === 1 ? '' : 's'} \u00b7 ${open} open` : 'Nothing here yet';
+    const rows = myTickets.filter((t) => ticketFilter === 'all' || (ticketFilter === 'open' ? t.status !== 'resolved' : t.status === 'resolved'));
+    if (!rows.length) {
+      container.innerHTML = myTickets.length
+        ? '<div class="sp-empty"><b>No tickets in this view</b>Try another filter.</div>'
+        : '<div class="sp-empty"><b>No tickets yet</b>When you open one it shows up here with our reply.</div>';
+      return;
+    }
+    container.innerHTML = '<div class="sp-list">' + rows.map((t) => {
+      const st = t.status === 'resolved' ? 'resolved' : 'open';
+      return `<article class="sp-ticket ${st}">
+        <div class="sp-ticket-top"><div><b>${escapeHtml(t.subject)}</b><div class="sp-date">${escapeHtml(new Date(t.createdAt).toLocaleString())}</div></div><span class="sp-pill ${st}">${st === 'resolved' ? 'Resolved' : 'Open'}</span></div>
+        <p class="sp-msg">${escapeHtml(t.message)}</p>
+        ${t.adminReply ? `<div class="sp-reply"><small>Reply from ELMS</small>${escapeHtml(t.adminReply)}</div>` : (st === 'open' ? '<div class="sp-wait">Waiting for a reply. You will see it here.</div>' : '')}
+      </article>`;
+    }).join('') + '</div>';
+  }
+  document.querySelectorAll('#ticketFilter [data-ticket-filter]').forEach((b) => b.addEventListener('click', () => {
+    ticketFilter = b.dataset.ticketFilter;
+    document.querySelectorAll('#ticketFilter [data-ticket-filter]').forEach((x) => x.classList.toggle('on', x === b));
+    renderMyTickets();
+  }));
+  document.querySelectorAll('#ticketTopics .sp-chip').forEach((chip) => chip.addEventListener('click', () => {
+    document.getElementById('ticketSubject').value = chip.dataset.topic;
+    document.querySelectorAll('#ticketTopics .sp-chip').forEach((x) => x.classList.toggle('on', x === chip));
+    document.getElementById('ticketMessage').focus();
+  }));
+
   async function loadMyTickets() {
     const container = document.getElementById('myTicketsContent');
     container.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
-
     try {
       const res = await apiFetch('/api/support-tickets');
       const data = await res.json();
-
       if (!res.ok || !data.success) {
         container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load your tickets.')}</div>`;
         return;
       }
-
-      if (!data.tickets.length) {
-        container.innerHTML = '<div class="empty-state">You have not opened any support tickets yet.</div>';
-        return;
-      }
-
-      container.innerHTML = `
-        <div class="st-table-wrap"><table class="st-table">
-          <thead>
-            <tr><th>Subject</th><th>Message</th><th>Status</th><th>Admin reply</th><th>Opened</th></tr>
-          </thead>
-          <tbody>
-            ${data.tickets.map((t) => `
-              <tr>
-                <td class="row-title">${escapeHtml(t.subject)}</td>
-                <td>${escapeHtml(t.message)}</td>
-                <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span></td>
-                <td>${t.adminReply ? escapeHtml(t.adminReply) : '—'}</td>
-                <td>${escapeHtml(new Date(t.createdAt).toLocaleString())}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
+      myTickets = data.tickets || [];
+      renderMyTickets();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
