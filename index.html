@@ -2798,7 +2798,7 @@
   .msg-sync { font-size:12px; color:#94a3b8; margin:-8px 0 10px; display:flex; align-items:center; gap:6px; }
   /* Fallback only - JS (fitMessagesShell) measures the real header stack and sets an exact
      inline height the instant the page shows, which is what actually keeps this pinned. */
-  .msg-shell { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); height:calc(100dvh - 210px); min-height:520px; max-height:calc(100dvh - 24px); background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow:hidden; }
+  .msg-shell { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); height:calc(100dvh - 210px); min-height:400px; max-height:calc(100dvh - 24px); background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow:hidden; }
   .msg-list-pane { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); background:#fff; }
   .msg-search { padding:12px 14px 6px; } .msg-search input { width:100%; box-sizing:border-box; height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; font:500 13px Inter,sans-serif; background:var(--paper-raised); outline:0; } .msg-search input:focus { background:#fff; border-color:var(--blue); }
   .msg-chips, .msg-types { display:flex; gap:6px; padding:6px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -2840,7 +2840,7 @@
   .msg-compose-row { display:flex; gap:10px; align-items:flex-end; } .msg-compose-row textarea { flex:1; min-height:64px; max-height:160px; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:500 13.5px Inter,sans-serif; outline:0; } .msg-compose-row textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
   .msg-btn.send { height:44px; padding:0 22px; }
   @media (max-width:900px) {
-    .msg-shell { grid-template-columns:minmax(0,1fr); height:calc(100dvh - 230px); min-height:480px; max-height:calc(100dvh - 16px); }
+    .msg-shell { grid-template-columns:minmax(0,1fr); height:calc(100dvh - 230px); min-height:360px; max-height:calc(100dvh - 16px); }
     .msg-thread-pane { display:none; } .msg-shell.thread-open .msg-list-pane { display:none; } .msg-shell.thread-open .msg-thread-pane { display:flex; }
     .msg-back { display:block; } .msg-list-pane { border-right:0; }
     .msg-actions { width:100%; } .msg-actions .msg-select { flex:1 1 140px; min-width:0; }
@@ -10528,7 +10528,12 @@ async function autoSuggestEmptyDraftCategories() {
     const top = shell.getBoundingClientRect().top;
     const contentEl = shell.closest('.content');
     const bottomGap = contentEl ? parseFloat(getComputedStyle(contentEl).paddingBottom) || 0 : 0;
-    const height = Math.max(360, window.innerHeight - top - bottomGap);
+    // Read the CSS min-height (400px desktop / 360px mobile, via the media query) instead of
+    // hardcoding a floor here - a JS floor lower than the CSS one is silently overridden by
+    // CSS min-height, which forces the box taller than the space we just measured and makes
+    // the whole page scroll again (the exact bug this function exists to prevent).
+    const cssMinHeight = parseFloat(getComputedStyle(shell).minHeight) || 360;
+    const height = Math.max(cssMinHeight, window.innerHeight - top - bottomGap);
     shell.style.height = height + 'px';
   }
   let fitMessagesShellTimer = null;
