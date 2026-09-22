@@ -4595,10 +4595,15 @@
   function openMobileSidebar() {
     document.getElementById('appSidebar').classList.add('open');
     document.getElementById('sidebarScrim').classList.add('open');
+    // Without this, the page underneath keeps scrolling while the drawer is open (most
+    // noticeable on iOS Safari) - it looks like the background is sliding instead of the
+    // sidebar itself. Same pattern as the order detail drawer (openOrderDetail/closeOrderDrawer).
+    document.body.style.overflow = 'hidden';
   }
   function closeMobileSidebar() {
     document.getElementById('appSidebar').classList.remove('open');
     document.getElementById('sidebarScrim').classList.remove('open');
+    document.body.style.overflow = '';
   }
   document.getElementById('mobileMenuBtn').addEventListener('click', openMobileSidebar);
   document.getElementById('sidebarScrim').addEventListener('click', closeMobileSidebar);
@@ -7367,9 +7372,9 @@ async function autoSuggestEmptyDraftCategories() {
         const res = await apiFetch('/api/listings/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ids }) });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not delete the selected drafts.');
-        showToast('success', 'Drafts deleted', `${data.deletedCount || 0} draft(s) removed.`);
+        showToast('Drafts deleted', `${data.deletedCount || 0} draft(s) removed.${data.errors?.length ? ' ' + data.errors.length + ' could not be deleted.' : ''}`, 'success');
       } catch (err) {
-        showToast('error', 'Bulk delete failed', err.message);
+        showToast('Bulk delete failed', err.message, 'error');
       } finally {
         bulkDeleteBtn.disabled = false;
         bulkDeleteBtn.textContent = 'Remove';
