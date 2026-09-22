@@ -2796,7 +2796,9 @@
 
   /* ================= Messages page ================= */
   .msg-sync { font-size:12px; color:#94a3b8; margin:-8px 0 10px; display:flex; align-items:center; gap:6px; }
-  .msg-shell { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); height:calc(100vh - 210px); min-height:520px; background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow:hidden; }
+  /* Fallback only - JS (fitMessagesShell) measures the real header stack and sets an exact
+     inline height the instant the page shows, which is what actually keeps this pinned. */
+  .msg-shell { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); height:calc(100dvh - 210px); min-height:520px; max-height:calc(100dvh - 24px); background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow:hidden; }
   .msg-list-pane { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); background:#fff; }
   .msg-search { padding:12px 14px 6px; } .msg-search input { width:100%; box-sizing:border-box; height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; font:500 13px Inter,sans-serif; background:var(--paper-raised); outline:0; } .msg-search input:focus { background:#fff; border-color:var(--blue); }
   .msg-chips, .msg-types { display:flex; gap:6px; padding:6px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -2838,7 +2840,7 @@
   .msg-compose-row { display:flex; gap:10px; align-items:flex-end; } .msg-compose-row textarea { flex:1; min-height:64px; max-height:160px; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:500 13.5px Inter,sans-serif; outline:0; } .msg-compose-row textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
   .msg-btn.send { height:44px; padding:0 22px; }
   @media (max-width:900px) {
-    .msg-shell { grid-template-columns:minmax(0,1fr); height:calc(100vh - 230px); min-height:480px; }
+    .msg-shell { grid-template-columns:minmax(0,1fr); height:calc(100dvh - 230px); min-height:480px; max-height:calc(100dvh - 16px); }
     .msg-thread-pane { display:none; } .msg-shell.thread-open .msg-list-pane { display:none; } .msg-shell.thread-open .msg-thread-pane { display:flex; }
     .msg-back { display:block; } .msg-list-pane { border-right:0; }
     .msg-actions { width:100%; } .msg-actions .msg-select { flex:1 1 140px; min-width:0; }
@@ -10508,11 +10510,43 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) { msgAiMode = before; renderMsgAiBox(); showToast('AI replies', err.message, 'error'); }
   }));
 
+  /**
+   * Pins the message shell (list + thread) to exactly fill the space below it down to the
+   * bottom of the viewport, so IT scrolls internally (the list pane and the thread body each
+   * have their own overflow:auto) while the page itself never scrolls - like a native chat
+   * app, not a tall box that pushes the whole page up and down.
+   *
+   * This used to be a fixed `calc(100vh - 210px)` in CSS, which drifted out of sync with the
+   * actual stacked header height (topbar + "Messages" heading + AI bar + sync line, all of
+   * variable height) and, on mobile, with the browser chrome resizing `100vh`. Measuring the
+   * shell's real position and the real viewport height at the time it's shown sidesteps both
+   * problems entirely - no CSS unit or guessed pixel offset can go stale.
+   */
+  function fitMessagesShell() {
+    const shell = document.getElementById('msgShell');
+    if (!shell || shell.offsetParent === null) return; // not the visible page right now
+    const top = shell.getBoundingClientRect().top;
+    const contentEl = shell.closest('.content');
+    const bottomGap = contentEl ? parseFloat(getComputedStyle(contentEl).paddingBottom) || 0 : 0;
+    const height = Math.max(360, window.innerHeight - top - bottomGap);
+    shell.style.height = height + 'px';
+  }
+  let fitMessagesShellTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(fitMessagesShellTimer);
+    fitMessagesShellTimer = setTimeout(fitMessagesShell, 80);
+  });
+  window.addEventListener('orientationchange', () => setTimeout(fitMessagesShell, 120));
+
   async function loadMessagesPage() {
     loadMsgAiSettings();
     const syncStatus = document.getElementById('messageSyncStatus');
     if (syncStatus) syncStatus.innerHTML = `<span class="sync-dot"></span>Last checked ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} &nbsp;|&nbsp; Auto-sync: <strong style="color:var(--green-dark);">ON</strong>`;
+    fitMessagesShell();
     await Promise.all([loadMessageAccounts(), loadMessages(), loadMessageSnippets()]);
+    // Layout above the shell (account filter options, unread counts) can change its own
+    // height once real data is in, so measure again after everything has rendered.
+    fitMessagesShell();
     // Normal page loads are DB-first. eBay is updated by webhook + periodic
     // backup sync; the explicit Sync button remains available when needed.
   }
