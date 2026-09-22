@@ -1,5 +1,16 @@
 {
+  "redirects": [
+    {
+      "source": "/privacy.html",
+      "destination": "/policy",
+      "permanent": true
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/policy",
+      "destination": "/policy.html"
+    },
     {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
