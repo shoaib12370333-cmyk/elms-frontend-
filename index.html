@@ -7168,7 +7168,12 @@
     const sellNum = l.sell_price != null && Number.isFinite(Number(l.sell_price)) ? Number(l.sell_price) : null;
     const money = (n) => n == null ? '\u2014' : `${sym}${n.toFixed(2)}`;
     const profit = amazonNum != null && sellNum != null ? sellNum - amazonNum : null;
-    const margin = profit != null && sellNum ? Math.round((profit / sellNum) * 100) : null;
+    // The stored markup (what was actually typed at import/edit time, e.g. "10") is shown, not
+    // profit/sellPrice recomputed on the fly - that's a DIFFERENT number (margin-on-revenue,
+    // e.g. 9% for a 10% markup) and showing it next to Profit made it look like ELMS silently
+    // changed the markup the seller set.
+    const storedMarkup = l.markup_percent != null && Number.isFinite(Number(l.markup_percent)) ? Number(l.markup_percent) : null;
+    const margin = storedMarkup != null ? Math.round(storedMarkup) : (profit != null && sellNum ? Math.round((profit / sellNum) * 100) : null);
     const variants = Array.isArray(l.variants) && l.variants.length ? l.variants.length : (Number(l.variants_count) || 1);
     const when = status === 'scheduled' && l.scheduled_at && !isNaN(new Date(l.scheduled_at)) ? new Date(l.scheduled_at).toLocaleString() : '';
     return `
@@ -7721,7 +7726,10 @@ async function autoSuggestEmptyDraftCategories() {
     const num = (v) => (v != null && v !== '' && Number.isFinite(Number(v))) ? Number(v) : null;
     const buy = num(l.amazon_price), sell = num(l.sell_price);
     const profit = buy != null && sell != null ? sell - buy : null;
-    const margin = profit != null && sell ? Math.round((profit / sell) * 100) : null;
+    // Show the markup that was actually set (see draftRowHtml's identical note) rather than
+    // profit/sellPrice recomputed on the fly, which is a different, smaller-looking number.
+    const storedMarkup = num(l.markup_percent);
+    const margin = storedMarkup != null ? Math.round(storedMarkup) : (profit != null && sell ? Math.round((profit / sell) * 100) : null);
     const count = (v, fallback = 0) => { if (typeof v === 'boolean') return v ? 1 : 0; const n = num(v); return n == null ? fallback : n; };
     const available = count(l.quantity, 1);
     const onHold = count(l.on_hold ?? l.onHold);
@@ -10005,6 +10013,26 @@ async function autoSuggestEmptyDraftCategories() {
    * the Import page uses, instead of a plain number field.
    */
   function wireDraftPriceButton(listing, product) {
+    // The Markup % and Sell price fields (see the two editor templates above) are meant to
+    // drive each other live from the Amazon buy price - edit either one and the other updates
+    // immediately, matching the exact math draft creation used (price * (1 + markup/100)), so
+    // what you type as the markup is what actually gets saved and shown, not a different
+    // recomputed number.
+    const buyPrice = product?.price ?? listing._amazon_price ?? null;
+    const markupEl = document.getElementById('draftEditMarkupPercent');
+    const sellEl = document.getElementById('draftEditSellPrice');
+    if (markupEl && sellEl && Number.isFinite(Number(buyPrice)) && Number(buyPrice) > 0) {
+      const base = Number(buyPrice);
+      markupEl.addEventListener('input', () => {
+        const pct = Number(markupEl.value);
+        if (Number.isFinite(pct)) sellEl.value = (base * (1 + pct / 100)).toFixed(2);
+      });
+      sellEl.addEventListener('input', () => {
+        const sell = Number(sellEl.value);
+        if (Number.isFinite(sell)) markupEl.value = (((sell / base) - 1) * 100).toFixed(2);
+      });
+    }
+
     const btn = document.getElementById('draftEditPriceBtn');
     if (!btn) return;
 
@@ -10012,14 +10040,15 @@ async function autoSuggestEmptyDraftCategories() {
       // The "Buy price" shown in the calculator is the original Amazon
       // price - fall back to the current sell price if that's ever missing
       // (e.g. a draft whose linked import data could not be loaded).
-      const buyPrice = product?.price ?? (Number(document.getElementById('draftEditSellPrice').value) || 0);
+      const calcBuyPrice = product?.price ?? (Number(document.getElementById('draftEditSellPrice').value) || 0);
       const mainImage = listing.main_image || (product?.images && product.images[0]) || '';
 
       onPricingModalApply = (sellPriceValue) => {
-        document.getElementById('draftEditSellPrice').value = sellPriceValue.toFixed(2);
+        sellEl.value = sellPriceValue.toFixed(2);
+        sellEl.dispatchEvent(new Event('input'));
       };
 
-      openPricingModal({ price: buyPrice, title: listing.title || product?.title || '' }, mainImage);
+      openPricingModal({ price: calcBuyPrice, title: listing.title || product?.title || '' }, mainImage);
     });
   }
 
