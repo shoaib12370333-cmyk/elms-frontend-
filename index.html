@@ -3526,6 +3526,7 @@
             <div class="imp-tabs" role="tablist">
               <button type="button" class="imp-tab active" id="impTabSingle" role="tab">Single link</button>
               <button type="button" class="imp-tab" id="toggleBulkImportBtn" role="tab">Bulk import</button>
+              <button type="button" class="imp-tab" id="impTabLarge" role="tab">Large import</button>
             </div>
 
             <div class="imp-body">
@@ -3541,6 +3542,27 @@
                 <label class="imp-label" for="bulkAmazonUrls">Amazon links <em>one per line, up to 25</em></label>
                 <textarea class="imp-textarea" id="bulkAmazonUrls" rows="6" placeholder="https://www.amazon.com/dp/XXXXXXXXXX&#10;https://www.amazon.com/dp/YYYYYYYYYY"></textarea>
                 <div id="bulkImportStatus" style="margin-top:10px;"></div>
+              </div>
+
+              <div id="largeImportSection" style="display:none;">
+                <label class="imp-label" for="largeAmazonUrls">Amazon links <em>one per line, up to <span id="largeImportMax">1000</span> - runs in the background, you can close this tab</em></label>
+                <textarea class="imp-textarea" id="largeAmazonUrls" rows="8" placeholder="https://www.amazon.com/dp/XXXXXXXXXX&#10;https://www.amazon.com/dp/YYYYYYYYYY&#10;&hellip;"></textarea>
+                <div id="largeImportStatus" style="margin-top:10px;"></div>
+                <div id="largeImportProgress" style="display:none;margin-top:14px;">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;color:#4b5563;margin-bottom:6px;">
+                    <span id="largeImportSummary">Starting&hellip;</span>
+                    <span id="largeImportPercent">0%</span>
+                  </div>
+                  <div style="background:#e5e7eb;border-radius:8px;height:10px;overflow:hidden;">
+                    <div id="largeImportBar" style="background:#0064D2;height:100%;width:0%;transition:width .4s;"></div>
+                  </div>
+                  <div id="largeImportError" class="error" style="margin-top:8px;display:none;"></div>
+                  <div style="margin-top:10px;display:flex;gap:10px;">
+                    <button type="button" class="imp-cta" id="largeImportCancelBtn" style="display:none;">Cancel</button>
+                    <button type="button" class="imp-cta" id="largeImportRetryBtn" style="display:none;">Retry failed</button>
+                    <button type="button" class="imp-cta primary" id="largeImportViewDraftsBtn" style="display:none;">View drafts</button>
+                  </div>
+                </div>
               </div>
 
               <div class="imp-markup">
@@ -3562,6 +3584,7 @@
               <div class="imp-cta-row">
                 <button class="primary imp-cta" id="fetchBtn">Fetch product</button>
                 <button class="primary imp-cta" id="bulkFetchBtn" style="display:none;">Fetch all</button>
+                <button class="primary imp-cta" id="largeImportBtn" style="display:none;">Start background import</button>
               </div>
             </div>
           </div>
@@ -4710,16 +4733,25 @@
     el.addEventListener('click', () => showPage(el.getAttribute('data-page')));
   });
 
-  function setImportTab(bulk) {
-    document.getElementById('impSingle').style.display = bulk ? 'none' : 'block';
-    bulkImportSection.style.display = bulk ? 'block' : 'none';
-    document.getElementById('fetchBtn').style.display = bulk ? 'none' : '';
-    document.getElementById('bulkFetchBtn').style.display = bulk ? '' : 'none';
-    document.getElementById('impTabSingle').classList.toggle('active', !bulk);
-    toggleBulkImportBtn.classList.toggle('active', bulk);
+  function setImportTab(mode) {
+    // mode: 'single' | 'bulk' | 'large' (kept as a string now that there are three tabs;
+    // setImportTab(true)/setImportTab(false) from older code paths still work via the alias below)
+    if (mode === true) mode = 'bulk';
+    if (mode === false) mode = 'single';
+    document.getElementById('impSingle').style.display = mode === 'single' ? 'block' : 'none';
+    bulkImportSection.style.display = mode === 'bulk' ? 'block' : 'none';
+    document.getElementById('largeImportSection').style.display = mode === 'large' ? 'block' : 'none';
+    document.getElementById('fetchBtn').style.display = mode === 'single' ? '' : 'none';
+    document.getElementById('bulkFetchBtn').style.display = mode === 'bulk' ? '' : 'none';
+    document.getElementById('largeImportBtn').style.display = mode === 'large' ? '' : 'none';
+    document.getElementById('impTabSingle').classList.toggle('active', mode === 'single');
+    toggleBulkImportBtn.classList.toggle('active', mode === 'bulk');
+    document.getElementById('impTabLarge').classList.toggle('active', mode === 'large');
+    if (mode === 'large') initLargeImportTab();
   }
-  toggleBulkImportBtn.addEventListener('click', () => setImportTab(true));
-  document.getElementById('impTabSingle').addEventListener('click', () => setImportTab(false));
+  toggleBulkImportBtn.addEventListener('click', () => setImportTab('bulk'));
+  document.getElementById('impTabSingle').addEventListener('click', () => setImportTab('single'));
+  document.getElementById('impTabLarge').addEventListener('click', () => setImportTab('large'));
 
   // Markup presets + a live worked example under the field.
   (function wireMarkupControls() {
@@ -4804,6 +4836,138 @@
       bulkBtn.disabled = false;
     }
   });
+
+  // ---------- Large (background) Import ----------
+  let largeImportPollTimer = null;
+  let largeImportJobId = null;
+
+  async function initLargeImportTab() {
+    try {
+      const res = await apiFetch('/api/fetch-product/limits');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        document.getElementById('largeImportMax').textContent = data.bulkJobMax || 1000;
+        const btn = document.getElementById('largeImportBtn');
+        const statusEl = document.getElementById('largeImportStatus');
+        if (!data.easyparserConfigured) {
+          btn.disabled = true;
+          statusEl.className = 'error';
+          statusEl.textContent = 'Background import is not set up on the server yet. Ask an admin to add the EASYPARSER_API_KEY.';
+        } else {
+          btn.disabled = false;
+          if (statusEl.textContent.startsWith('Background import is not set up')) { statusEl.className = ''; statusEl.textContent = ''; }
+        }
+      }
+    } catch (e) { /* keep defaults */ }
+    resumeActiveLargeImportJob();
+  }
+
+  async function resumeActiveLargeImportJob() {
+    if (largeImportJobId) return; // already tracking one
+    try {
+      const res = await apiFetch('/api/fetch-product/bulk-job');
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      const active = data.jobs.find((j) => j.status !== 'done' && j.status !== 'cancelled');
+      if (active) startTrackingLargeImportJob(active.id);
+    } catch (e) { /* ignore */ }
+  }
+
+  function startTrackingLargeImportJob(jobId) {
+    largeImportJobId = jobId;
+    document.getElementById('largeImportProgress').style.display = 'block';
+    pollLargeImportJob();
+    clearInterval(largeImportPollTimer);
+    largeImportPollTimer = setInterval(pollLargeImportJob, 4000);
+  }
+
+  function stopTrackingLargeImportJob() {
+    clearInterval(largeImportPollTimer);
+    largeImportPollTimer = null;
+  }
+
+  async function pollLargeImportJob() {
+    if (!largeImportJobId) return;
+    try {
+      const res = await apiFetch('/api/fetch-product/bulk-job/' + largeImportJobId);
+      const data = await res.json();
+      if (!res.ok || !data.success) { stopTrackingLargeImportJob(); return; }
+      renderLargeImportJob(data.job);
+      if (data.job.status === 'done' || data.job.status === 'cancelled') stopTrackingLargeImportJob();
+    } catch (e) { /* try again next tick */ }
+  }
+
+  function renderLargeImportJob(job) {
+    const pct = job.total ? Math.round(((job.done + job.failed) / job.total) * 100) : 0;
+    document.getElementById('largeImportBar').style.width = pct + '%';
+    document.getElementById('largeImportPercent').textContent = pct + '%';
+    const label = job.status === 'queued' ? 'Starting…' : job.status === 'polling' ? 'Importing…' : job.status === 'done' ? 'Finished' : 'Cancelled';
+    document.getElementById('largeImportSummary').textContent =
+      label + ' — ' + job.done + ' of ' + job.total + ' saved' + (job.failed ? ', ' + job.failed + ' failed' : '') + (job.pending ? ', ' + job.pending + ' remaining' : '') + '.';
+    const errEl = document.getElementById('largeImportError');
+    if (job.lastError) { errEl.style.display = 'block'; errEl.textContent = job.lastError; } else { errEl.style.display = 'none'; }
+    document.getElementById('largeImportCancelBtn').style.display = (job.status === 'queued' || job.status === 'polling') ? '' : 'none';
+    document.getElementById('largeImportRetryBtn').style.display = (job.status === 'done' && job.failed > 0) ? '' : 'none';
+    document.getElementById('largeImportViewDraftsBtn').style.display = job.done > 0 ? '' : 'none';
+  }
+
+  document.getElementById('largeImportBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('largeImportBtn');
+    const statusEl = document.getElementById('largeImportStatus');
+    const markupInput = document.getElementById('markupPercent');
+    const markupPercent = markupInput?.value === '' ? 0 : Number(markupInput.value);
+
+    const amazonUrls = document.getElementById('largeAmazonUrls').value.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!amazonUrls.length) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Please paste at least one Amazon link.';
+      return;
+    }
+
+    btn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = 'Starting the background import…';
+    try {
+      const res = await apiFetch('/api/fetch-product/bulk-job', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amazonUrls, markupPercent }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = data.error || 'Could not start the background import.';
+        return;
+      }
+      statusEl.className = 'success';
+      statusEl.textContent = 'Started — importing ' + data.total + ' product(s) in the background.' + (data.skipped?.length ? ' ' + data.skipped.length + ' link(s) were skipped (not a valid Amazon URL).' : '');
+      document.getElementById('largeAmazonUrls').value = '';
+      startTrackingLargeImportJob(data.jobId);
+      refreshCreditBalanceChip();
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('largeImportCancelBtn').addEventListener('click', async () => {
+    if (!largeImportJobId || !confirm('Cancel this background import? Items already saved as drafts are kept.')) return;
+    try { await apiFetch('/api/fetch-product/bulk-job/' + largeImportJobId + '/cancel', { method: 'POST' }); } finally { pollLargeImportJob(); }
+  });
+  document.getElementById('largeImportRetryBtn').addEventListener('click', async () => {
+    if (!largeImportJobId) return;
+    const btn = document.getElementById('largeImportRetryBtn');
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/api/fetch-product/bulk-job/' + largeImportJobId + '/retry', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) { alert(data.error || 'Could not retry.'); return; }
+      startTrackingLargeImportJob(largeImportJobId);
+    } finally { btn.disabled = false; }
+  });
+  document.getElementById('largeImportViewDraftsBtn').addEventListener('click', () => showPage('drafts'));
 
   /**
    * Asks the backend to suggest an eBay category for a product title (via
