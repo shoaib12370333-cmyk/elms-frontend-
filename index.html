@@ -4303,8 +4303,9 @@
               <div class="st-field"><label>Mails per minute (batch size)</label><input class="st-input" type="number" min="1" max="100" id="limMailBatch" /></div>
               <div class="st-field"><label>Mails per day (announcements)</label><input class="st-input" type="number" min="1" max="100000" id="limMailDaily" /></div>
               <div class="st-field"><label>Bulk product import: links at a time</label><input class="st-input" type="number" min="1" max="50" id="limBulkImport" /></div>
+              <div class="st-field"><label>Product cache (days)</label><input class="st-input" type="number" min="1" max="90" id="limProductCacheDays" /></div>
             </div>
-            <p class="st-hint">Bulk import uses one Amazon (Canopy) call per link, so keep it within your Canopy plan. Maximum 50.</p>
+            <p class="st-hint">Bulk import uses one Amazon (Canopy) call per link, so keep it within your Canopy plan. Maximum 50. Product cache: importing the same ASIN again within this many days reuses the saved data instead of a new provider call - the user is still charged a credit either way.</p>
             <div class="st-actions">
               <button class="st-btn primary" id="limSaveBtn" type="button">Save limits</button>
               <div id="limStatus"></div>
@@ -11065,6 +11066,7 @@ async function autoSuggestEmptyDraftCategories() {
         document.getElementById('limMailBatch').value = l.limits.mailBatchSize;
         document.getElementById('limMailDaily').value = l.limits.mailDailyCap;
         document.getElementById('limBulkImport').value = l.limits.bulkImportMax;
+        document.getElementById('limProductCacheDays').value = l.limits.productCacheDays;
       }
       const label = { sending: 'Sending', paused: 'Paused', done: 'Done', cancelled: 'Cancelled' };
       const active = d.announcements.some((a) => a.status === 'sending' || a.status === 'paused');
@@ -11109,7 +11111,7 @@ async function autoSuggestEmptyDraftCategories() {
     const btn = document.getElementById('limSaveBtn'), st = document.getElementById('limStatus');
     btn.disabled = true; st.className = ''; st.textContent = 'Saving\u2026';
     try {
-      const body = { mailBatchSize: Number(document.getElementById('limMailBatch').value), mailDailyCap: Number(document.getElementById('limMailDaily').value), bulkImportMax: Number(document.getElementById('limBulkImport').value) };
+      const body = { mailBatchSize: Number(document.getElementById('limMailBatch').value), mailDailyCap: Number(document.getElementById('limMailDaily').value), bulkImportMax: Number(document.getElementById('limBulkImport').value), productCacheDays: Number(document.getElementById('limProductCacheDays').value) };
       const res = await apiFetch('/api/admin/settings/limits', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save.');
       st.className = 'success'; st.textContent = 'Saved. Active immediately.';
