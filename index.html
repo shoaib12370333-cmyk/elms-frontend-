@@ -4595,10 +4595,15 @@
   function openMobileSidebar() {
     document.getElementById('appSidebar').classList.add('open');
     document.getElementById('sidebarScrim').classList.add('open');
+    // Without this, the page underneath keeps scrolling while the drawer is open (most
+    // noticeable on iOS Safari) - it looks like the background is sliding instead of the
+    // sidebar itself. Same pattern as the order detail drawer (openOrderDetail/closeOrderDrawer).
+    document.body.style.overflow = 'hidden';
   }
   function closeMobileSidebar() {
     document.getElementById('appSidebar').classList.remove('open');
     document.getElementById('sidebarScrim').classList.remove('open');
+    document.body.style.overflow = '';
   }
   document.getElementById('mobileMenuBtn').addEventListener('click', openMobileSidebar);
   document.getElementById('sidebarScrim').addEventListener('click', closeMobileSidebar);
@@ -6405,7 +6410,10 @@
 
       let dvView = 'grid';
       try { dvView = localStorage.getItem('elmsDraftsView') === 'rows' ? 'rows' : 'grid'; } catch (_) {}
-      const stage = (key, icon, label, cls = '') => `<button type="button" class="dv-stage ${cls}${key === 'draft' ? ' active' : ''}" data-inner-status="${key}"><i>${icon}</i><b>${counts[key] || 0}</b><span>${label}</span></button>`;
+      // "Ready to publish" also holds failed items (see renderDraftProductList's matchesStatus),
+      // so its badge counts them too - otherwise the number shown wouldn't match the list.
+      const stageCount = (key) => (key === 'draft' ? (counts.draft || 0) + (counts.error || 0) : (counts[key] || 0));
+      const stage = (key, icon, label, cls = '') => `<button type="button" class="dv-stage ${cls}${key === 'draft' ? ' active' : ''}" data-inner-status="${key}"><i>${icon}</i><b>${stageCount(key)}</b><span>${label}</span></button>`;
       container.innerHTML = `
         <div class="dv" id="elmsDraftsLayout">
           <header class="dv-hero">
@@ -6449,7 +6457,11 @@
         const sort = document.getElementById('draftSort')?.value || 'updated';
         const filtered = allDrafts.filter((l) => {
           const haystack = `${l.title || ''} ${l.sku || ''}`.toLowerCase();
-          return (!query || haystack.includes(query)) && (status === 'all' || l.status === status);
+          // "Ready to publish" also shows failed items (not just the "Needs attention" tab) -
+          // a listing that failed to publish still needs to be published, so it stays visible
+          // where the seller is already looking, with its error badge and a Retry button.
+          const matchesStatus = status === 'all' || l.status === status || (status === 'draft' && l.status === 'error');
+          return (!query || haystack.includes(query)) && matchesStatus;
         }).sort((a,b) => {
           if (sort === 'title') return String(a.title || a.sku || '').localeCompare(String(b.title || b.sku || ''));
           if (sort === 'price') return Number(b.sell_price || 0) - Number(a.sell_price || 0);
@@ -7255,7 +7267,7 @@ async function autoSuggestEmptyDraftCategories() {
             return;
           }
 
-          showToast('success', 'Published to eBay', 'The listing was published successfully.');
+          showToast('Published to eBay', 'The listing was published successfully.', 'success');
           loadDrafts();
         } catch (err) {
           alert('Could not connect to the server: ' + err.message);
@@ -7348,7 +7360,7 @@ async function autoSuggestEmptyDraftCategories() {
           await apiFetch(`/api/listings/${id}/publish`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({accountId}) });
         } catch (_) {}
       }));
-      showToast('success', 'Publish request sent', `${ids.length} listing(s) were submitted for immediate eBay publishing.`);
+      showToast('Publish request sent', `${ids.length} listing(s) were submitted for immediate eBay publishing.`, 'success');
 
       bulkPublishBtn.disabled = false;
       bulkPublishBtn.textContent = 'Publish all';
@@ -7367,9 +7379,9 @@ async function autoSuggestEmptyDraftCategories() {
         const res = await apiFetch('/api/listings/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ids }) });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not delete the selected drafts.');
-        showToast('success', 'Drafts deleted', `${data.deletedCount || 0} draft(s) removed.`);
+        showToast('Drafts deleted', `${data.deletedCount || 0} draft(s) removed.${data.errors?.length ? ' ' + data.errors.length + ' could not be deleted.' : ''}`, 'success');
       } catch (err) {
-        showToast('error', 'Bulk delete failed', err.message);
+        showToast('Bulk delete failed', err.message, 'error');
       } finally {
         bulkDeleteBtn.disabled = false;
         bulkDeleteBtn.textContent = 'Remove';
