@@ -3145,6 +3145,19 @@
   .dv-chip { font:600 11.5px Inter,sans-serif; padding:3px 9px; border-radius:99px; background:var(--dv-soft); color:#475569; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-decoration:none; }
   a.dv-chip:hover { background:#E8F1FD; color:#0064D2; }
   .dv-error { display:flex; gap:8px; padding:8px 10px; border-radius:10px; background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; font:600 12px/1.4 Inter,sans-serif; word-break:break-word; }
+  /* VeRO words: chip on cards, filter button, banner in the editor */
+  .dv-chip.vero { background:#FEF2F2; color:#B42318; border:1px solid #FECACA; }
+  button.dv-chip.vero { cursor:pointer; font-family:inherit; } button.dv-chip.vero:hover { background:#FEE4E2; }
+  .dv-btn.vero-filter { color:#B42318; border-color:#FECACA; background:#FFF5F5; } .dv-btn.vero-filter b { margin-left:4px; }
+  .dv-btn.vero-filter.on { background:#B42318; border-color:#B42318; color:#fff; }
+  .elms-vero { display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap; padding:11px 13px; margin:0 0 12px; border-radius:12px; background:#FEF2F2; border:1px solid #FECACA; color:#7A271A; }
+  .elms-vero[hidden] { display:none; }
+  .elms-vero > div { flex:1 1 260px; min-width:0; font:500 12.5px/1.45 Inter,sans-serif; }
+  .elms-vero b { display:block; font:800 13px Inter,sans-serif; color:#B42318; }
+  .elms-vero em { font-style:normal; font-weight:700; word-break:break-word; }
+  .elms-vero small { display:block; margin-top:3px; color:#912018; opacity:.85; }
+  #draftsContent .elms-vero .elms-ed-btn.danger, #llEditModal .elms-vero .elms-ed-btn.danger { background:#B42318; border-color:#B42318; color:#fff; }
+  #draftsContent .elms-vero .elms-ed-btn.danger:hover, #llEditModal .elms-vero .elms-ed-btn.danger:hover { background:#912018; }
   .dv-when { font:600 12px Inter,sans-serif; color:#8A5A00; }
   .dv-money { display:grid; grid-template-columns:1fr 1fr 70px; gap:8px; align-items:end; padding-top:10px; border-top:1px dashed var(--dv-line); margin-top:auto; }
   .dv-money label { display:flex; flex-direction:column; gap:3px; font:700 10.5px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:var(--dv-mute); }
@@ -6698,7 +6711,8 @@
       // and should never block the first paint of the drafts list.
       const [queueRes] = await Promise.all([
         apiFetch('/api/listings/queue'),
-        populateSidebarEbayWidget().catch(() => {})
+        populateSidebarEbayWidget().catch(() => {}),
+        ensureVeroWords()
       ]);
       const data = await queueRes.json();
 
@@ -6707,8 +6721,10 @@
         return;
       }
 
-      const allDrafts = data.listings || [];
+      const allDrafts = (data.listings || []).map(veroTag);
       draftListingMap = new Map(allDrafts.map((item) => [String(item.id), item]));
+      let draftVeroOnly = false;
+      const veroCount = () => allDrafts.filter((l) => l._vero.terms.length).length;
       const counts = allDrafts.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
       if (!allDrafts.length) {
         container.innerHTML = '<div class="dv"><div class="dv-empty"><b>No drafts yet</b>Import an Amazon product and it is saved here automatically, ready to review and publish.<br><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div></div>';
@@ -6736,6 +6752,7 @@
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
             <select id="draftSort" class="dv-select"><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
             <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
+            ${veroPattern ? `<button type="button" class="dv-btn vero-filter" id="draftVeroFilter" title="Show only drafts that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="draftVeroCount">${veroCount()}</b></button>` : ''}
             <select id="draftStatusFilter" style="display:none;"><option value="all">All</option><option value="draft" selected>Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option></select>
           </div>
           <div class="dv-list ${dvView === 'rows' ? 'dv-rows' : 'dv-grid'}" id="draftProductList"></div>
@@ -6743,6 +6760,7 @@
           <div class="dv-bulk" id="draftBulkBar">
             <b id="draftSelectedCount">0 selected</b>
             <button class="dv-btn primary small" id="bulkPublishBtn" type="button">Publish all</button>
+            <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the VeRO words out of the selected drafts with AI">Remove VeRO words</button>
             <button class="dv-btn small" id="bulkDeleteBtn" type="button">Remove</button>
             <button class="dv-btn small" id="bulkClearBtn" type="button">Clear</button>
           </div>
@@ -6768,8 +6786,8 @@
           // "Ready to publish" also shows failed items (not just the "Needs attention" tab) -
           // a listing that failed to publish still needs to be published, so it stays visible
           // where the seller is already looking, with its error badge and a Retry button.
-          const matchesStatus = status === 'all' || l.status === status || (status === 'draft' && l.status === 'error');
-          return (!query || haystack.includes(query)) && matchesStatus;
+          const matchesStatus = draftVeroOnly || status === 'all' || l.status === status || (status === 'draft' && l.status === 'error');
+          return (!query || haystack.includes(query)) && matchesStatus && (!draftVeroOnly || l._vero.terms.length > 0);
         }).sort((a,b) => {
           if (sort === 'title') return String(a.title || a.sku || '').localeCompare(String(b.title || b.sku || ''));
           if (sort === 'price') return Number(b.sell_price || 0) - Number(a.sell_price || 0);
@@ -6812,8 +6830,24 @@
         draftPage = 1;
         renderDraftProductList();
       }));
+      const veroFilterBtn = document.getElementById('draftVeroFilter');
+      const setVeroOnly = (on) => {
+        draftVeroOnly = on;
+        veroFilterBtn?.classList.toggle('on', on);
+        if (on) document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.remove('active'));
+      };
+      veroFilterBtn?.addEventListener('click', () => {
+        if (draftVeroOnly) {
+          setVeroOnly(false);
+          const value = document.getElementById('draftStatusFilter')?.value || 'draft';
+          document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item.getAttribute('data-inner-status') === value));
+        } else setVeroOnly(true);
+        draftPage = 1;
+        renderDraftProductList();
+      });
       document.querySelectorAll('#draftsContent [data-inner-status]').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (draftVeroOnly) setVeroOnly(false);
           const value = btn.getAttribute('data-inner-status') || 'all';
           const filter = document.getElementById('draftStatusFilter');
           if (filter) filter.value = value;
@@ -6840,6 +6874,81 @@
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
     refreshDraftsCountBadge();
+  }
+
+  // ---------- VeRO words ----------
+  // eBay removes listings (and can suspend accounts that repeat it) for protected brand / character names and
+  // banned claims such as "replica". The server owns the word list and hands the browser ONE regex, so the
+  // browser and the server check with exactly the same rules.
+  let veroPattern = null;
+  let veroPatternPromise = null;
+  function ensureVeroWords() {
+    if (veroPatternPromise) return veroPatternPromise;
+    veroPatternPromise = apiFetch('/api/list-on-ebay/vero-words').then((r) => r.json()).then((d) => {
+      if (d && d.success && d.pattern) veroPattern = d.pattern; else veroPatternPromise = null;
+      return veroPattern;
+    }).catch(() => { veroPatternPromise = null; return null; });
+    return veroPatternPromise;
+  }
+  const veroFold = (text) => String(text == null ? '' : text).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[‘’]/g, "'");
+  function veroFind(text) {
+    if (!veroPattern || !text) return [];
+    const re = new RegExp(veroPattern.source, veroPattern.flags);
+    const folded = veroFold(text);
+    const found = [];
+    let m;
+    while ((m = re.exec(folded)) !== null) { found.push(veroFold(m[2]).toLowerCase()); if (!m[0]) re.lastIndex += 1; }
+    return found;
+  }
+  // Every VeRO word in a listing: title, description, bullet points, specification rows, item specifics, brand.
+  function veroScanValues({ title, description, bulletPoints, specifications, aspects, brand }) {
+    const fields = {};
+    const add = (field, text) => { const hits = veroFind(text); if (hits.length) fields[field] = [...new Set([...(fields[field] || []), ...hits])]; };
+    const list = (v) => (Array.isArray(v) ? v : v == null || v === '' ? [] : [v]);
+    add('title', title);
+    add('description', description);
+    list(bulletPoints).forEach((b) => add('bulletPoints', b));
+    list(specifications).forEach((s) => { add('specifications', s && s.name); add('specifications', s && s.value); });
+    const asp = aspects && typeof aspects === 'object' ? aspects : {};
+    Object.entries(asp).forEach(([name, values]) => { add('aspects', name); list(values).forEach((v) => add('aspects', v)); });
+    // The Brand item specific wins over the product's own brand when the listing is published.
+    const brandSet = Object.entries(asp).some(([name, values]) => String(name).trim().toLowerCase() === 'brand' && list(values).some((v) => String(v).trim()));
+    if (!brandSet) add('brand', brand);
+    return { terms: [...new Set(Object.values(fields).flat())], fields };
+  }
+  const veroScan = (l) => veroScanValues({ title: l.title, description: l.description, bulletPoints: l.bullet_points, specifications: l.specifications, aspects: l.ebay_aspects, brand: l.brand });
+  const veroTag = (l) => { l._vero = veroScan(l); return l; };
+  function veroChipHtml(l, withFix) {
+    const terms = (l._vero && l._vero.terms) || [];
+    if (!terms.length) return '';
+    const shown = terms.slice(0, 3).join(', ') + (terms.length > 3 ? ` +${terms.length - 3}` : '');
+    return `<span class="dv-chip vero" title="${escapeAttr('VeRO words found: ' + terms.join(', ') + '. eBay can remove a listing with these words and suspend accounts that repeat it.')}">&#9888; VeRO: ${escapeHtml(shown)}</span>${withFix ? '<button type="button" class="dv-chip vero" data-action="vero-fix" title="Remove these words with AI">Remove with AI</button>' : ''}`;
+  }
+  const veroConfirmPublish = (terms, count) => elmsConfirm(
+    `${count > 1 ? count + ' of these listings contain' : 'This listing contains'} VeRO words${terms.length ? ': ' + terms.slice(0, 8).join(', ') : ''}.\neBay can remove ${count > 1 ? 'them' : 'it'} and suspend your account if the brand owner reports it.\n\nPublish anyway?`,
+    { title: 'VeRO words found', okText: 'Publish anyway', cancelText: 'Go back', danger: true }
+  );
+
+  // Asks the server (AI) to take every VeRO word out of one listing, saves the result and refreshes the listing object.
+  async function veroCleanAndSave(l) {
+    const res = await apiFetch('/api/list-on-ebay/vero-clean', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: l.title || '', description: l.description || '', bulletPoints: l.bullet_points || [], specifications: l.specifications || [], aspects: l.ebay_aspects || {}, brand: veroScanValues({ aspects: l.ebay_aspects, brand: l.brand }).fields.brand ? l.brand : '' }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Could not remove the VeRO words.');
+    const d = data.data || {};
+    if (d.unchanged) return { changed: false, removed: [] };
+    if (!String(d.title || '').trim()) throw new Error('The title is only a protected word. Write a new title first.');
+    const save = await apiFetch(`/api/list-on-ebay/${encodeURIComponent(l.id)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: d.title, description: d.description, bulletPoints: d.bulletPoints, specifications: d.specifications, ebayAspects: d.aspects }),
+    });
+    const saved = await save.json();
+    if (!save.ok || !saved.success) throw new Error(saved.error || 'Could not save the cleaned listing.');
+    Object.assign(l, saved.listing || {});
+    veroTag(l);
+    return { changed: true, removed: d.removed || [] };
   }
 
   // ----- Listing editor (inline in Drafts, full modal in Live listings) -----
@@ -6891,6 +7000,10 @@
     const shipMethods = [['', 'Select shipping method'], ['cheapest_with_tracking', 'Cheapest with tracking'], ['standard', 'Standard'], ['express', 'Express']];
     return `
       <div class="elms-editor" data-ui-editor data-listing-id="${escapeAttr(l.id)}">
+        <div class="elms-vero" data-ui-vero hidden>
+          <div><b>&#9888; VeRO words found</b><em data-ui-vero-terms></em><small>eBay can remove a listing with these words and suspend accounts that repeat it. Remove them before publishing.</small></div>
+          <button type="button" class="elms-ed-btn danger" data-ui-action="vero-clean">Remove with AI</button>
+        </div>
         <div class="elms-editor-tabs" role="tablist">
           <button type="button" class="elms-editor-tab active" data-ui-tab="product" role="tab">Product</button>
           <button type="button" class="elms-editor-tab" data-ui-tab="description" role="tab">Description</button>
@@ -7171,6 +7284,9 @@
         q('[data-ui-specs]').insertAdjacentHTML('beforeend', `<div class="elms-ed-spec" data-ui-spec><input type="text" data-ui-spec-name placeholder="Name" /><input type="text" data-ui-spec-value placeholder="Value" /><button type="button" class="elms-ed-btn" data-ui-action="remove-spec">Remove</button></div>`);
       } else if (action === 'remove-spec') {
         btn.closest('[data-ui-spec]').remove();
+        ed._veroRefresh?.();
+      } else if (action === 'vero-clean') {
+        await editorVeroClean(ed, l, btn);
       } else if (action === 'save-editor') {
         await saveDraftEditor(ed, l, btn, opts);
       }
@@ -7179,6 +7295,80 @@
     ed._initial = collectEditorValues(ed);
     loadEditorChoices(ed, l);
     wireEditorAspects(ed, l);
+    wireEditorVero(ed, l);
+  }
+
+  // ---------- VeRO words inside the editor ----------
+  // What the editor currently holds (typed values win over the saved listing), for scanning / cleaning.
+  function editorVeroValues(ed, l) {
+    const v = collectEditorValues(ed);
+    return {
+      title: v.title, description: v.description, bulletPoints: ed._veroBullets || l.bullet_points || [],
+      specifications: v.specifications, aspects: { ...(v.ebayAspects || l.ebay_aspects || {}), ...(ed._veroExtraAspects || {}) }, brand: l.brand || '',
+    };
+  }
+
+  function wireEditorVero(ed, l) {
+    const banner = ed.querySelector('[data-ui-vero]');
+    if (!banner) return;
+    const termsEl = banner.querySelector('[data-ui-vero-terms]');
+    const refresh = () => {
+      const scan = veroScanValues(editorVeroValues(ed, l));
+      banner.hidden = !scan.terms.length;
+      const where = Object.keys(scan.fields).map((f) => ({ title: 'title', description: 'description', bulletPoints: 'bullet points', specifications: 'specifications', aspects: 'item specifics', brand: 'brand' }[f] || f));
+      termsEl.textContent = scan.terms.length ? `${scan.terms.join(', ')} — in the ${where.join(', ')}` : '';
+    };
+    ed._veroRefresh = refresh;
+    let timer = null;
+    ed.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(refresh, 250); });
+    ensureVeroWords().then(refresh);
+  }
+
+  // Takes the VeRO words out of what the editor holds and puts the cleaned text back into its fields.
+  // Nothing is saved yet: the seller reviews it and presses Save changes.
+  async function editorVeroClean(ed, l, btn) {
+    const values = editorVeroValues(ed, l);
+    const scan = veroScanValues(values);
+    if (!scan.terms.length) { showToast('VeRO words', 'No VeRO words found.', 'info'); return; }
+    if (String(values.title || '').trim().length < 3) { showToast('Title needed', 'Type a title first.', 'error'); return; }
+    if (!(await elmsConfirm(`AI will take these words out of the title, description, bullet points and item specifics:\n${scan.terms.join(', ')}\n\nIt uses 1 AI credit. The result goes into the editor so you can check it; press Save changes to keep it.`, { title: 'Remove VeRO words', okText: 'Remove with AI' }))) return;
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Removing…';
+    try {
+      const res = await apiFetch('/api/list-on-ebay/vero-clean', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...values, brand: scan.fields.brand ? values.brand : '' }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not remove the VeRO words.');
+      const d = data.data || {};
+      if (d.unchanged) { showToast('VeRO words', 'Nothing to remove.', 'info'); return; }
+      const titleInput = ed.querySelector('[data-ui-field="title"]');
+      if (titleInput && d.title) { titleInput.value = d.title; titleInput.dispatchEvent(new Event('input')); }
+      const descArea = ed.querySelector('[data-ui-field="description"]');
+      if (descArea) descArea.value = d.description || '';
+      const specsBox = ed.querySelector('[data-ui-specs]');
+      if (specsBox) {
+        const row = (s) => `<div class="elms-ed-spec" data-ui-spec><input type="text" data-ui-spec-name placeholder="Name" value="${escapeAttr(s?.name || '')}" /><input type="text" data-ui-spec-value placeholder="Value" value="${escapeAttr(s?.value || '')}" /><button type="button" class="elms-ed-btn" data-ui-action="remove-spec">Remove</button></div>`;
+        specsBox.innerHTML = (d.specifications && d.specifications.length ? d.specifications : [{}]).map(row).join('');
+      }
+      const cleanAspects = d.aspects || {};
+      const shown = new Set();
+      ed.querySelectorAll('[data-ui-aspect] input').forEach((inp) => {
+        const name = inp.dataset.name;
+        shown.add(name);
+        const vals = cleanAspects[name];
+        inp.value = vals && vals.length ? vals.join(', ') : '';
+      });
+      // Item specifics with no box in the editor (for example Brand in a category that has none) are kept for Save.
+      ed._veroExtraAspects = Object.fromEntries(Object.entries(cleanAspects).filter(([name]) => !shown.has(name)));
+      ed._veroBullets = d.bulletPoints || [];
+      ed._veroRefresh?.();
+      refreshCreditBalanceChip();
+      showToast('VeRO words removed', `${(d.removed || []).join(', ')}. Check the text, then press Save changes.`, 'success');
+    } catch (err) {
+      showToast('Could not remove VeRO words', err.message, 'error');
+    } finally { btn.disabled = false; btn.textContent = label; }
   }
 
   // Draft "Save changes": content fields are sent only when the seller changed them, so an untouched
@@ -7277,6 +7467,9 @@
     if (changed('description')) body.description = now.description;
     if (changed('specifications')) body.specifications = now.specifications;
     if (now.ebayAspects && changed('ebayAspects')) body.ebayAspects = now.ebayAspects;
+    // After "Remove VeRO words with AI": the cleaned bullet points, and item specifics that have no box in the editor.
+    if (ed._veroBullets) body.bulletPoints = ed._veroBullets;
+    if (ed._veroExtraAspects && Object.keys(ed._veroExtraAspects).length) body.ebayAspects = { ...(body.ebayAspects || now.ebayAspects || l.ebay_aspects || {}), ...ed._veroExtraAspects };
     if (changed('images')) body.images = now.images;
     const accountId = l.ebay_account_id || document.getElementById('sidebarEbaySelect')?.value;
     if (accountId && accountId !== '__ADD_EBAY_ACCOUNT__') body.accountId = accountId;
@@ -7285,7 +7478,7 @@
     btn.disabled = true; btn.textContent = 'Saving…'; if (status) status.textContent = '';
     try {
       if (now.title !== before.title && now.title.length < 3) throw new Error('The title is too short.');
-      const hasContent = ['title', 'categoryId', 'description', 'specifications', 'ebayAspects', 'images'].some((k) => k in body);
+      const hasContent = ['title', 'categoryId', 'description', 'specifications', 'ebayAspects', 'bulletPoints', 'images'].some((k) => k in body);
       const res = hasContent
         ? await apiFetch(`/api/list-on-ebay/${encodeURIComponent(l.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
         : await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/settings`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editorSettingsBody(now)) });
@@ -7293,6 +7486,9 @@
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not save changes.');
       Object.assign(l, data.listing || {});
       ed._initial = now;
+      ed._veroBullets = null; ed._veroExtraAspects = null;
+      veroTag(l);
+      ed._veroRefresh?.();
       if (status) status.textContent = 'Saved.';
       showToast('Saved', 'Listing updated.', 'success');
       opts.onSaved?.(l);
@@ -7334,6 +7530,7 @@
             <span class="dv-chip">${escapeHtml(draftSupplierLabel(l))}</span>
             ${l.ebay_account_username ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_username)}</span>` : ''}
             ${variants > 1 ? `<span class="dv-chip">${variants} variants</span>` : ''}
+            ${veroChipHtml(l, status !== 'publishing')}
           </div>
           ${status === 'error' && l.error_message ? `<div class="dv-error"><span>!</span><span>${escapeHtml(l.error_message)}</span></div>` : ''}
           ${when ? `<div class="dv-when">Goes live ${escapeHtml(when)}</div>` : ''}
@@ -7389,6 +7586,24 @@ async function autoSuggestEmptyDraftCategories() {
       const scheduleBtn = row.querySelector('[data-action="schedule"]');
       const deleteBtn = row.querySelector('[data-action="delete"]');
       const checkbox = row.querySelector('[data-action="select"]');
+      row.querySelector('[data-action="vero-fix"]')?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const btn = e.currentTarget;
+        const l = draftListingMap.get(String(id));
+        if (!l || !l._vero.terms.length) return;
+        if (!(await elmsConfirm(`AI will take these words out of the title, description, bullet points and item specifics:\n${l._vero.terms.join(', ')}\n\nIt uses 1 AI credit.`, { title: 'Remove VeRO words', okText: 'Remove with AI' }))) return;
+        const label = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Removing…';
+        try {
+          const out = await veroCleanAndSave(l);
+          showToast('VeRO words removed', out.removed.join(', ') || 'Nothing to remove.', 'success');
+          refreshCreditBalanceChip();
+          loadDrafts();
+        } catch (err) {
+          showToast('Could not remove VeRO words', err.message, 'error');
+          btn.disabled = false; btn.textContent = label;
+        }
+      });
       // Card actions: the picture / title / Edit button open the editor; price and quantity save themselves.
       const openEditorNow = () => { const l = draftListingMap.get(String(id)); if (l) openListingEditor(l, { mode: 'draft', onDone: () => loadDrafts() }); else openDraftDetailModal(id); };
       row.querySelectorAll('[data-action="toggle-row"]').forEach((el) => el.addEventListener('click', (e) => { if (e.target.closest('a,input,label')) return; openEditorNow(); }));
@@ -7553,6 +7768,9 @@ async function autoSuggestEmptyDraftCategories() {
           return;
         }
 
+        const veroListing = draftListingMap.get(String(id));
+        if (veroListing && veroListing._vero && veroListing._vero.terms.length && !(await veroConfirmPublish(veroListing._vero.terms, 1))) return;
+
         publishBtn.disabled = true;
         publishBtn.textContent = 'Publishing\u2026';
 
@@ -7647,7 +7865,12 @@ async function autoSuggestEmptyDraftCategories() {
   function wireBulkBar() {
     const bulkPublishBtn = document.getElementById('bulkPublishBtn');
     const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const bulkVeroBtn = document.getElementById('bulkVeroBtn');
     if (!bulkPublishBtn || !bulkDeleteBtn) return;
+    // wireDraftRows runs after every search / filter / page change; without this guard each run stacked one
+    // more click handler on these buttons, so "Publish all" asked (and published) several times.
+    if (bulkPublishBtn.dataset.wired) return;
+    bulkPublishBtn.dataset.wired = '1';
 
     function getSelectedIds() {
       return Array.from(document.querySelectorAll('#draftsContent .dv-check:checked')).map(
@@ -7658,7 +7881,11 @@ async function autoSuggestEmptyDraftCategories() {
     bulkPublishBtn.addEventListener('click', async () => {
       const ids = getSelectedIds();
       if (!ids.length) return;
-      if (!(await elmsConfirm(`Publish ${ids.length} selected draft(s) to eBay?`))) return;
+      const flagged = ids.map((id) => draftListingMap.get(String(id))).filter((l) => l && l._vero && l._vero.terms.length);
+      const okToGo = flagged.length
+        ? await veroConfirmPublish([...new Set(flagged.flatMap((l) => l._vero.terms))], flagged.length)
+        : await elmsConfirm(`Publish ${ids.length} selected draft(s) to eBay?`);
+      if (!okToGo) return;
 
       const accountId = await ensureSelectedEbayAccountId();
       if (!accountId) {
@@ -7667,17 +7894,49 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       bulkPublishBtn.disabled = true;
-      bulkPublishBtn.textContent = 'Publishing\u2026';
-
-      await Promise.all(ids.map(async (id) => {
-        try {
-          await apiFetch(`/api/listings/${id}/publish`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({accountId}) });
-        } catch (_) {}
-      }));
-      showToast('Publish request sent', `${ids.length} listing(s) were submitted for immediate eBay publishing.`, 'success');
+      // A few at a time (not all at once): eBay answers with generic "system error" when it is hit with many
+      // publishes together. Every result is counted, so the message says how many really went live.
+      const results = { published: 0, failed: 0, firstError: '' };
+      let next = 0;
+      const worker = async () => {
+        while (next < ids.length) {
+          const id = ids[next++];
+          bulkPublishBtn.textContent = `Publishing ${Math.min(next, ids.length)}/${ids.length}\u2026`;
+          try {
+            const res = await apiFetch(`/api/listings/${id}/publish`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({accountId}) });
+            const data = await res.json();
+            if (res.ok && data.success) results.published += 1;
+            else { results.failed += 1; results.firstError = results.firstError || data.error || ''; }
+          } catch (err) { results.failed += 1; results.firstError = results.firstError || err.message; }
+        }
+      };
+      await Promise.all([worker(), worker(), worker()]);
+      showToast(
+        results.failed ? `${results.published} published, ${results.failed} failed` : 'Published to eBay',
+        results.failed ? `The failed ones show their reason on the card (Failed). First error: ${results.firstError}` : `${results.published} listing(s) are live.`,
+        results.failed ? 'error' : 'success'
+      );
 
       bulkPublishBtn.disabled = false;
       bulkPublishBtn.textContent = 'Publish all';
+      loadDrafts();
+    });
+
+    bulkVeroBtn?.addEventListener('click', async () => {
+      const chosen = getSelectedIds().map((id) => draftListingMap.get(String(id))).filter((l) => l && l._vero && l._vero.terms.length);
+      if (!chosen.length) { showToast('VeRO words', 'None of the selected drafts contain VeRO words.', 'info'); return; }
+      if (!(await elmsConfirm(`${chosen.length} selected draft(s) contain VeRO words.\nAI will take the words out of their title, description, bullet points and item specifics.\n\nIt uses ${chosen.length} AI credit${chosen.length === 1 ? '' : 's'}.`, { title: 'Remove VeRO words', okText: 'Remove with AI' }))) return;
+      const label = bulkVeroBtn.textContent;
+      bulkVeroBtn.disabled = true;
+      let done = 0; let failed = 0; let firstError = '';
+      for (const l of chosen) {
+        bulkVeroBtn.textContent = `Cleaning ${done + failed + 1}/${chosen.length}\u2026`;
+        try { await veroCleanAndSave(l); done += 1; } catch (err) { failed += 1; firstError = firstError || err.message; }
+      }
+      refreshCreditBalanceChip();
+      showToast(failed ? `${done} cleaned, ${failed} failed` : 'VeRO words removed', failed ? firstError : `${done} draft(s) are clean now.`, failed ? 'error' : 'success');
+      bulkVeroBtn.disabled = false;
+      bulkVeroBtn.textContent = label;
       loadDrafts();
     });
 
@@ -7710,6 +7969,7 @@ async function autoSuggestEmptyDraftCategories() {
   let llSearch = '';
   let llPage = 1;
   let llSort = 'newest';
+  let llVeroOnly = false;
   const LL_PAGE_SIZE = 12;
 
   function llListingStatus(l) {
@@ -7725,13 +7985,13 @@ async function autoSuggestEmptyDraftCategories() {
     const container = document.getElementById('listingsContent');
     container.innerHTML = '<p class="state-msg">Loading listings&hellip;</p>';
     try {
-      const res = await apiFetch('/api/listings?status=published');
+      const [res] = await Promise.all([apiFetch('/api/listings?status=published'), ensureVeroWords()]);
       const data = await res.json();
       if (!res.ok || !data.success) {
         container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load listings.')}</div>`;
         return;
       }
-      llAll = data.listings || [];
+      llAll = (data.listings || []).map(veroTag);
       llPage = 1;
       renderListings();
       llAutoRefresh();
@@ -7781,6 +8041,7 @@ async function autoSuggestEmptyDraftCategories() {
   function llFiltered() {
     return llAll.filter((l) => {
       if (llTab !== 'all' && llListingStatus(l) !== llTab) return false;
+      if (llVeroOnly && !(l._vero && l._vero.terms.length)) return false;
       if (llSearch) {
         const q = llSearch.toLowerCase();
         const hay = `${l.title || ''} ${l.sku || ''} ${l.listing_id || ''}`.toLowerCase();
@@ -7835,6 +8096,7 @@ async function autoSuggestEmptyDraftCategories() {
           <select id="llSortSelect" class="dv-select">
             ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['profit', 'Profit high\u2013low'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
+          ${veroPattern ? `<button type="button" class="dv-btn vero-filter${llVeroOnly ? ' on' : ''}" id="llVeroFilter" title="Show only listings that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b>${llAll.filter((l) => l._vero && l._vero.terms.length).length}</b></button>` : ''}
           <button class="dv-btn" id="llExportBtn" type="button">Export CSV</button>
         </div>
         ${filtered.length ? `
@@ -7899,6 +8161,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${asin ? chip(llAmazonUrl(l, asin), 'Amazon ' + asin, 'Open the Amazon product') : ''}
             ${l.ebay_account_username ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_username)}</span>` : ''}
             ${uploadedText ? `<span class="dv-chip">Listed ${escapeHtml(uploadedText)}</span>` : ''}
+            ${veroChipHtml(l, false)}
           </div>
           ${st === 'issues' ? `<div class="lv-issue"><span>!</span><span>${escapeHtml(l.error_message || 'This listing has an issue.')}</span></div>` : ''}
         </div>
@@ -7942,6 +8205,7 @@ async function autoSuggestEmptyDraftCategories() {
     const search = root.querySelector('#llSearchInput');
     if (search) search.addEventListener('input', () => { llSearch = search.value.trim(); llPage = 1; renderListings(); const el = document.getElementById('llSearchInput'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
     // Filter / Export controls
+    root.querySelector('#llVeroFilter')?.addEventListener('click', () => { llVeroOnly = !llVeroOnly; llPage = 1; renderListings(); });
     root.querySelector('#llExportBtn')?.addEventListener('click', () => llExportCsv());
     // Pagination
     root.querySelectorAll('[data-ll-page]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; llPage = Number(b.getAttribute('data-ll-page')); renderListings(); }));
@@ -8007,15 +8271,22 @@ async function autoSuggestEmptyDraftCategories() {
       try {
         const isLive = !isDraftMode && llListingStatus(l) === 'active';
         const requestBody = { title, sellPrice, quantity, categoryId };
+        const editorEl = overlay.querySelector('[data-ui-editor]');
+        const before = editorEl._initial || {};
+        // Item specifics with no box in the editor (kept by "Remove VeRO words with AI", e.g. Brand -> Unbranded).
+        const extraAspects = editorEl._veroExtraAspects && Object.keys(editorEl._veroExtraAspects).length ? editorEl._veroExtraAspects : null;
+        const aspectsChanged = v.ebayAspects && JSON.stringify(v.ebayAspects) !== JSON.stringify(before.ebayAspects);
+        const mergedAspects = (aspectsChanged || extraAspects) ? { ...(v.ebayAspects || l.ebay_aspects || {}), ...(extraAspects || {}) } : null;
         if (!isLive) {
           // Untouched description / images / specs are left out so they keep falling back to the Amazon import.
-          const before = overlay.querySelector('[data-ui-editor]')._initial || {};
           ['description', 'specifications', 'images'].forEach((k) => { if (JSON.stringify(v[k]) !== JSON.stringify(before[k])) requestBody[k] = v[k]; });
+          // The item specifics used to be left out here, so what the seller filled in (or the AI filled) was never saved.
+          if (mergedAspects) requestBody.ebayAspects = mergedAspects;
+          if (editorEl._veroBullets) requestBody.bulletPoints = editorEl._veroBullets;
           if (l.ebay_account_id) requestBody.accountId = l.ebay_account_id;
         } else {
           // A live listing's item specifics / description / photos were silently ignored before.
-          const before = overlay.querySelector('[data-ui-editor]')._initial || {};
-          if (v.ebayAspects && JSON.stringify(v.ebayAspects) !== JSON.stringify(before.ebayAspects)) requestBody.aspects = v.ebayAspects;
+          if (mergedAspects) requestBody.aspects = mergedAspects;
           if (JSON.stringify(v.description) !== JSON.stringify(before.description)) requestBody.description = v.description;
           if (JSON.stringify(v.images) !== JSON.stringify(before.images) && v.images.length) requestBody.images = v.images;
         }
