@@ -4154,7 +4154,7 @@
         <div id="pricingContent"><p class="state-msg">Loading&hellip;</p></div>
 
         <div class="bc-trust">
-          <div><b>&#128274; Secure checkout</b><span>Payments are handled by Paddle. ELMS never sees your card.</span></div>
+          <div><b>&#128274; Secure checkout</b><span>Payments are handled by our payment partner. ELMS never sees your card or wallet details.</span></div>
           <div><b>&#9889; Instant credits</b><span>Credits land in your balance within a minute of payment.</span></div>
           <div><b>&#128179; Cards, PayPal &amp; more</b><span>Pay the way you prefer.</span></div>
         </div>
@@ -4370,7 +4370,7 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico green">&#128179;</div>
-              <div class="st-head-txt"><h2>Credit plans</h2><p>The packs shown on Buy credits. Get the Price ID from Paddle: Catalog &rarr; Products &rarr; the price you created.</p></div>
+              <div class="st-head-txt"><h2>Credit plans</h2><p>The packs shown on Buy credits. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Paddle is optional and off unless PAYMENT_PROVIDER=paddle.</p></div>
             </div>
             <div id="adminPlansContent"><p class="state-msg">Loading&hellip;</p></div>
             <div class="st-custom">
@@ -4379,7 +4379,8 @@
                 <div class="st-field"><label>Plan name</label><input class="st-input" type="text" id="newPlanName" placeholder="e.g. Starter" /></div>
                 <div class="st-field"><label>Price (USD)</label><input class="st-input" type="number" id="newPlanPrice" step="0.01" placeholder="10" /></div>
                 <div class="st-field"><label>Credits</label><input class="st-input" type="number" id="newPlanCredits" placeholder="300" /></div>
-                <div class="st-field"><label>Paddle Price ID</label><input class="st-input mono" type="text" id="newPlanPaddleId" placeholder="pri_01..." /></div>
+                <div class="st-field"><label>eBay accounts they can connect</label><input class="st-input" type="number" id="newPlanEbayAccounts" min="1" placeholder="1" /></div>
+                <div class="st-field"><label>Paddle Price ID (optional)</label><input class="st-input mono" type="text" id="newPlanPaddleId" placeholder="pri_01..." /></div>
               </div>
               <div class="st-actions"><button class="st-btn primary" id="addPlanBtn" type="button">Add plan</button><div id="addPlanStatus"></div></div>
             </div>
@@ -11911,7 +11912,7 @@ async function autoSuggestEmptyDraftCategories() {
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Listings</h2><p>Across every user and store.</p></div></div>
             <div class="ad-bars">${bar('Live', l.published, '#86B817')}${bar('Drafts', l.draft, '#0064D2')}${bar('Scheduled', l.scheduled, '#F5AF02')}${bar('Publishing', l.publishing, '#8B5CF6')}${bar('Errors', l.error, '#E53238')}</div></section>
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Service health</h2><p>Server settings that the app depends on.</p></div></div>
-            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (Paddle)', d.health.paddle, 'PADDLE keys missing')}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
+            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (CashTap)', d.health.cashtap, 'CASHTAP_SECRET_KEY / CASHTAP_WEBHOOK_SECRET missing')}${health('Payments (Paddle, optional)', d.health.paddle, 'PADDLE keys missing')}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
         </div>
         <div class="ad-two">
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Newest users</h2></div></div>
@@ -12721,7 +12722,7 @@ async function autoSuggestEmptyDraftCategories() {
 
         <table class="data-table">
           <thead>
-            <tr><th>Name</th><th>Price (USD)</th><th>Credits</th><th>Paddle Price ID</th><th>Active</th><th></th></tr>
+            <tr><th>Name</th><th>Price (USD)</th><th>Credits</th><th>eBay accounts</th><th>Paddle ID (optional)</th><th>Active</th><th></th></tr>
           </thead>
           <tbody>
             ${data.plans.map((p) => `
@@ -12729,7 +12730,8 @@ async function autoSuggestEmptyDraftCategories() {
                 <td><input class="editable-input" data-field="name" value="${escapeAttr(p.name)}" style="width:120px;" /></td>
                 <td><input class="editable-input" data-field="priceUsd" type="number" step="0.01" value="${p.priceUsd}" style="width:90px;" /></td>
                 <td><input class="editable-input" data-field="credits" type="number" value="${p.credits}" style="width:90px;" /></td>
-                <td><input class="editable-input" data-field="paddlePriceId" value="${escapeAttr(p.paddlePriceId)}" style="width:160px;" /></td>
+                <td><input class="editable-input" data-field="maxEbayAccounts" type="number" min="1" value="${p.maxEbayAccounts || ''}" placeholder="—" style="width:80px;" /></td>
+                <td><input class="editable-input" data-field="paddlePriceId" value="${escapeAttr(p.paddlePriceId || '')}" style="width:140px;" /></td>
                 <td>
                   <select class="editable-input" data-field="active" style="width:90px;">
                     <option value="true" ${p.active ? 'selected' : ''}>Active</option>
@@ -12765,6 +12767,7 @@ async function autoSuggestEmptyDraftCategories() {
         const priceUsd = Number(row.querySelector('[data-field="priceUsd"]').value);
         const credits = Number(row.querySelector('[data-field="credits"]').value);
         const paddlePriceId = row.querySelector('[data-field="paddlePriceId"]').value.trim();
+        const maxEbayAccounts = Number(row.querySelector('[data-field="maxEbayAccounts"]').value) || null;
         const active = row.querySelector('[data-field="active"]').value === 'true';
 
         saveBtn.disabled = true;
@@ -12774,7 +12777,7 @@ async function autoSuggestEmptyDraftCategories() {
           const res = await apiFetch(`/api/admin/plans/${planId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, active }),
+            body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts, active }),
           });
           const data = await res.json();
 
@@ -12817,10 +12820,11 @@ async function autoSuggestEmptyDraftCategories() {
     const priceUsd = Number(document.getElementById('newPlanPrice').value);
     const credits = Number(document.getElementById('newPlanCredits').value);
     const paddlePriceId = document.getElementById('newPlanPaddleId').value.trim();
+    const maxEbayAccounts = Number(document.getElementById('newPlanEbayAccounts').value) || null;
 
-    if (!name || !priceUsd || !credits || !paddlePriceId) {
+    if (!name || !priceUsd || !credits) {
       statusEl.className = 'error';
-      statusEl.textContent = 'Please fill in all fields.';
+      statusEl.textContent = 'Please fill in the name, price and credits.';
       return;
     }
 
@@ -12832,7 +12836,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/admin/plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, priceUsd, credits, paddlePriceId }),
+        body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts }),
       });
       const data = await res.json();
 
@@ -12848,6 +12852,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('newPlanPrice').value = '';
       document.getElementById('newPlanCredits').value = '';
       document.getElementById('newPlanPaddleId').value = '';
+      document.getElementById('newPlanEbayAccounts').value = '';
       loadAdminPlans();
     } catch (err) {
       statusEl.className = 'error';
@@ -12877,6 +12882,7 @@ async function autoSuggestEmptyDraftCategories() {
     ensurePaddleInitialized();
     await loadPlanCards();
     await loadPurchaseHistory();
+    confirmCashtapPayment(true); // a payment started earlier (tab closed before coming back) is picked up here
   }
 
   // Small inline SVG payment logos, so the pricing card doesn't depend on
@@ -12926,8 +12932,8 @@ async function autoSuggestEmptyDraftCategories() {
                 <div class="bc-plan-credits">${p.credits.toLocaleString()}<small>credits</small></div>
                 <div class="bc-plan-price">$${p.priceUsd.toFixed(2)}</div>
                 <div class="bc-plan-per">&#8776; ${perCredit}&cent; per credit</div>
-                <div class="bc-plan-icons">${PAYMENT_ICONS_SVG}</div>
-                <div class="bc-plan-label">Card, PayPal &amp; more</div>
+                ${p.maxEbayAccounts ? `<div class="bc-plan-label" style="font-weight:800;color:var(--ink);">+ ${p.maxEbayAccounts} eBay account${p.maxEbayAccounts === 1 ? '' : 's'}</div>` : ''}
+                ${data.provider === 'cashtap' ? '<div class="bc-plan-label">Wallet, CashApp, card &amp; more &middot; secure checkout by CashTap</div>' : `<div class="bc-plan-icons">${PAYMENT_ICONS_SVG}</div><div class="bc-plan-label">Card, PayPal &amp; more</div>`}
                 <button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${p.credits.toLocaleString()} credits</button>
               </div>
             `;
@@ -12944,11 +12950,6 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function startCheckout(planId, btn) {
-    if (!window.Paddle || !paddleInitialized) {
-      alert('Payments are not configured yet. Please contact support.');
-      return;
-    }
-
     btn.disabled = true;
     btn.textContent = 'Starting checkout\u2026';
 
@@ -12965,6 +12966,17 @@ async function autoSuggestEmptyDraftCategories() {
         return;
       }
 
+      if (data.provider === 'cashtap') {
+        // Remember the payment: when the buyer comes back the site asks the server whether it is paid.
+        try { localStorage.setItem('elmsPendingCashtap', JSON.stringify({ sessionId: data.sessionId, at: Date.now() })); } catch (_) { /* the webhook still gives the plan */ }
+        window.location.href = data.url;
+        return;
+      }
+
+      if (!window.Paddle || !paddleInitialized) {
+        alert('Payments are not configured yet. Please contact support.');
+        return;
+      }
       Paddle.Checkout.open({
         transactionId: data.transactionId,
         settings: {
@@ -13029,6 +13041,75 @@ async function autoSuggestEmptyDraftCategories() {
       alert('Payment received! Your credits will appear within a minute once Paddle confirms the payment.');
     });
     window.history.replaceState({}, document.title, window.location.pathname);
+  })();
+
+  // ---------- CashTap: back from checkout ----------
+  // The plan is given by the server the moment CashTap confirms the payment (webhook). This page asks too, so the buyer
+  // sees it at once, and keeps asking for a minute or two while CashTap is still settling.
+  function clearPendingCashtap() { try { localStorage.removeItem('elmsPendingCashtap'); } catch (_) { /* nothing stored */ } }
+  async function refreshAfterPayment() {
+    try {
+      const res = await apiFetch('/api/auth/me');
+      const data = await res.json();
+      if (res.ok && data.success && data.user) {
+        updateCreditBalanceChip(data.user.creditBalance);
+        const roleEl = document.getElementById('userRole');
+        if (roleEl && data.user.role !== 'admin') roleEl.textContent = data.user.planName || 'Free Plan';
+        const bal = document.getElementById('pricingBalance');
+        if (bal) bal.textContent = Number(data.user.creditBalance || 0).toLocaleString();
+      }
+    } catch (_) { /* the next refresh will show it */ }
+    loadPurchaseHistory().catch(() => {});
+  }
+  let cashtapConfirming = false;
+  async function confirmCashtapPayment(silent) {
+    let pending = null;
+    try { pending = JSON.parse(localStorage.getItem('elmsPendingCashtap') || 'null'); } catch (_) { /* none */ }
+    if (!pending || !pending.sessionId || Date.now() - pending.at > 6 * 60 * 60 * 1000) { clearPendingCashtap(); return; }
+    if (cashtapConfirming || !localStorage.getItem('elmsSessionToken')) return;
+    cashtapConfirming = true;
+    let waited = 0;
+    const attempt = async () => {
+      let finished = false;
+      try {
+        const res = await apiFetch('/api/payments/cashtap/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: pending.sessionId }) });
+        const data = await res.json();
+        if (res.status === 404) { finished = true; clearPendingCashtap(); }
+        else if (res.ok && data.success) {
+          if (data.granted || data.duplicate) {
+            finished = true; clearPendingCashtap();
+            await refreshAfterPayment();
+            const extra = data.granted ? ` +${Number(data.credits).toLocaleString()} credits${data.ebayAccounts ? `, ${data.ebayAccounts} eBay account${data.ebayAccounts === 1 ? '' : 's'}` : ''}${data.planName ? ` — ${data.planName} plan` : ''}` : '';
+            showToast('Payment confirmed', 'Your plan is active.' + extra, 'success');
+          } else if (data.status === 'expired' || data.status === 'failed') {
+            finished = true; clearPendingCashtap();
+            if (!silent) showToast('Payment', data.status === 'expired' ? 'The checkout expired without a payment.' : 'The payment could not be completed. Contact support if money left your account.', 'error');
+          } else if (['underpaid', 'amount_mismatch', 'no_plan', 'no_user'].includes(data.reason)) {
+            finished = true; clearPendingCashtap();
+            showToast('Payment', 'Your payment arrived but needs a quick check by our team. They have been told and will sort it out.', 'error');
+          }
+        }
+      } catch (_) { /* try again */ }
+      if (finished) { cashtapConfirming = false; return; }
+      waited += 5;
+      if (waited < 120) setTimeout(attempt, 5000);
+      else { cashtapConfirming = false; if (!silent) showToast('Payment', 'CashTap is still confirming. Your plan is added automatically as soon as it is confirmed.', 'info'); }
+    };
+    attempt();
+  }
+  (function handleCashtapRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const outcome = params.get('payment');
+    if (outcome !== 'cashtap' && outcome !== 'cancelled') return;
+    window.history.replaceState({}, document.title, window.location.pathname);
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        showPage('pricing');
+        if (outcome === 'cancelled') { clearPendingCashtap(); showToast('Payment cancelled', 'No money was taken.', 'info'); return; }
+        showToast('Checking your payment…', 'This takes a few seconds.', 'info');
+        confirmCashtapPayment(false);
+      }, 900);
+    });
   })();
 </script>
 
