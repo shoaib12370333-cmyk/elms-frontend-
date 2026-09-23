@@ -1902,8 +1902,8 @@
   .support-context-card img { width:54px; height:54px; object-fit:cover; border-radius:8px; border:1px solid var(--line); background:#f5f6f8; }
   .support-context-label { font-size:9px; color:#9aa3af; text-transform:uppercase; letter-spacing:.06em; font-weight:800; }
   .support-context-value { font-size:11px; font-weight:700; color:#334155; margin-top:2px; }
-  .message-loading { min-height:180px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:#7a8493; font-size:12px; }
-  .message-empty { min-height:260px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:30px; text-align:center; color:#7a8493; }
+  .message-loading { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:#7a8493; font-size:12px; }
+  .message-empty { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:30px; text-align:center; color:#7a8493; }
   .message-empty strong { color:#263142; font-size:14px; }
   .message-empty span { max-width:260px; font-size:11px; line-height:1.5; }
   .message-empty-icon { width:46px; height:46px; display:grid; place-items:center; border-radius:14px; background:#eef4ff; color:var(--blue); font-size:23px; margin-bottom:4px; }
@@ -2806,7 +2806,9 @@
   .msg-chip span { margin-left:3px; color:#94a3b8; } .msg-chip.active { background:#E7F0FD; border-color:#C5DBF8; color:#0064D2; } .msg-chip.active span { color:#0064D2; }
   .msg-type { border-radius:8px; background:transparent; border-color:transparent; color:#94a3b8; height:26px; } .msg-type.active { background:#f1f5f9; color:#374151; }
   .msg-conv-head { display:flex; justify-content:space-between; align-items:baseline; padding:8px 16px; border-bottom:1px solid var(--line); font-size:13px; } .msg-conv-head span { font-size:11px; color:#94a3b8; }
-  .msg-list { flex:1 1 auto; overflow-y:auto; min-height:0; }
+  .msg-list { flex:1 1 auto; overflow-y:auto; min-height:0; display:flex; flex-direction:column; }
+  .msg-group-head { padding:10px 16px 4px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; background:#fbfcfe; }
+  .msg-group-head:not(:first-child) { border-top:1px solid var(--line); margin-top:4px; }
   .msg-item { display:flex; gap:12px; padding:14px 16px; border-bottom:1px solid #f0f3f7; cursor:pointer; position:relative; }
   .msg-item:hover { background:#f6faff; } .msg-item.active { background:#eef4ff; box-shadow:inset 3px 0 0 var(--blue); }
   .msg-item.unread .msg-item-name { font-weight:800; color:#111827; } .msg-item.unread::after { content:''; position:absolute; right:14px; top:44px; width:9px; height:9px; border-radius:50%; background:var(--blue); }
@@ -5607,6 +5609,29 @@
     return res;
   }
 
+  /**
+   * Safely parses a fetch Response as JSON. A plain `res.json()` throws a raw
+   * SyntaxError ("Unexpected token '<', "<!DOCTYPE "... is not valid JSON")
+   * whenever the server actually returned an HTML error page instead of JSON -
+   * e.g. a Render cold-start/idle page, or a proxy timeout page during a slow
+   * request. That raw parser error used to leak straight into toasts/alerts,
+   * showing the literal word "DOCTYPE" to the user with no useful explanation.
+   * This gives a clear, human message instead, no matter which caller hits it.
+   */
+  async function apiJson(res) {
+    const text = await res.text();
+    if (!text) return {};
+    try {
+      return JSON.parse(text);
+    } catch (_) {
+      const err = new Error(res.ok
+        ? 'The server sent back an unexpected response. Please try again in a moment.'
+        : `The server is temporarily unavailable (${res.status}). Please try again in a moment.`);
+      err.isBadResponse = true;
+      throw err;
+    }
+  }
+
   function decodeJwt(token) {
     const payload = token.split('.')[1];
     return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
@@ -8009,7 +8034,7 @@ async function autoSuggestEmptyDraftCategories() {
       // instead of back-to-back - this is a plain local DB read either way, never
       // a live eBay call, so the only real cost here is the network round trip.
       const [accountsRes] = await Promise.all([apiFetch('/api/ebay-accounts'), fetchOrdersList()]);
-      const accountsData = await accountsRes.json();
+      const accountsData = await apiJson(accountsRes);
       ordersAccounts = (accountsRes.ok && accountsData.success) ? accountsData.accounts : [];
       renderOrders();
     } catch (err) {
@@ -8020,7 +8045,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function fetchOrdersList() {
     const query = ordersAccountFilter ? `?accountId=${encodeURIComponent(ordersAccountFilter)}` : '';
     const res = await apiFetch(`/api/orders${query}`);
-    const data = await res.json();
+    const data = await apiJson(res);
     if (!res.ok || !data.success) throw new Error(data.error || 'Could not load orders.');
     ordersAll = data.orders || [];
   }
@@ -8259,7 +8284,7 @@ async function autoSuggestEmptyDraftCategories() {
     };
     const json = async (path, options) => {
       const res = await apiFetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
-      const data = await res.json();
+      const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Request failed.');
       return data;
     };
@@ -10439,7 +10464,7 @@ async function autoSuggestEmptyDraftCategories() {
       return;
     }
     renderMessagesConvHeader(filtered.length);
-    list.innerHTML = filtered.map((r) => {
+    const itemHtml = (r) => {
       const name = r.other_party_username || r.from_username || 'eBay';
       return `
       <div class="msg-item ${r.is_read ? '' : 'unread'} ${selectedMessageId === r.id ? 'active' : ''}" data-message-id="${escapeAttr(r.id)}">
@@ -10458,7 +10483,21 @@ async function autoSuggestEmptyDraftCategories() {
           </div>
         </div>
       </div>`;
-    }).join('');
+    };
+    if (messageTypeFilter === 'all') {
+      // Group into eBay's own two sender categories (like the Buyers/eBay tabs
+      // right above this list) instead of interleaving both kinds by date in
+      // one flat timeline, which reads as out-of-order when a day-old member
+      // message sits between two same-day eBay system notices.
+      const members = filtered.filter((r) => r.conversation_type === 'FROM_MEMBERS');
+      const fromEbay = filtered.filter((r) => r.conversation_type !== 'FROM_MEMBERS');
+      list.innerHTML = [
+        members.length ? `<div class="msg-group-head">From Members (${members.length})</div>${members.map(itemHtml).join('')}` : '',
+        fromEbay.length ? `<div class="msg-group-head">From eBay (${fromEbay.length})</div>${fromEbay.map(itemHtml).join('')}` : '',
+      ].join('');
+    } else {
+      list.innerHTML = filtered.map(itemHtml).join('');
+    }
     list.querySelectorAll('[data-message-id]').forEach((el) => {
       el.addEventListener('click', () => openMessageThread(el.dataset.messageId));
     });
@@ -10572,7 +10611,7 @@ async function autoSuggestEmptyDraftCategories() {
       if (messageSearchTerm) params.set('search', messageSearchTerm);
       const qs = params.toString() ? `?${params.toString()}` : '';
       const res = await apiFetch('/api/notifications' + qs);
-      const data = await res.json();
+      const data = await apiJson(res);
       if (!res.ok || !data.success) {
         list.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load eBay messages.')}</div>`;
         return;
@@ -10595,7 +10634,7 @@ async function autoSuggestEmptyDraftCategories() {
     try {
       const qs = messageAccountFilter ? `?accountId=${encodeURIComponent(messageAccountFilter)}` : '';
       const res = await apiFetch('/api/notifications/sync' + qs, { method: 'POST' });
-      const data = await res.json();
+      const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not sync eBay messages.');
       messageRows = data.conversations || [];
       renderMessageList();
@@ -10630,7 +10669,7 @@ async function autoSuggestEmptyDraftCategories() {
     detail.innerHTML = '<div class="state-msg" style="margin:auto;">Loading conversation&hellip;</div>';
     try {
       const res = await apiFetch(`/api/notifications/${encodeURIComponent(id)}`);
-      const data = await res.json();
+      const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not load conversation.');
       renderMessageDetail(data);
       messageRows = messageRows.map((r) => r.id === id ? { ...r, is_read: true } : r);
