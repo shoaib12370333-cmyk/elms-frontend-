@@ -1223,6 +1223,14 @@
   .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
   .modal-header h2 { font-size: 20px; }
   .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--grey); line-height: 1; }
+
+  /* ELMS-branded stand-in for the browser's native confirm() dialog */
+  .elms-confirm-overlay { position:fixed; inset:0; z-index:400; background:rgba(15,27,45,.5); display:flex; align-items:center; justify-content:center; padding:16px; animation:modalOverlayIn .15s ease; }
+  .elms-confirm-box { background:#fff; width:min(400px,100%); border-radius:14px; padding:22px 22px 18px; border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; box-shadow:0 20px 50px rgba(15,23,42,.25); animation:modalBoxIn .2s cubic-bezier(.2,.8,.2,1); }
+  .elms-confirm-title { font-size:16px; font-weight:800; color:var(--ink); margin-bottom:8px; }
+  .elms-confirm-message { font-size:13.5px; line-height:1.55; color:#4b5563; white-space:pre-line; }
+  .elms-confirm-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+  .elms-confirm-danger { background:#E53238 !important; box-shadow:0 4px 12px rgba(229,50,56,.3) !important; }
   .modal-product-summary {
     display: flex;
     gap: 12px;
@@ -4676,6 +4684,47 @@
     }, 4500);
   }
 
+  /**
+   * ELMS-styled replacement for the browser's native confirm() dialog (the
+   * unstyled "elmstool.com says..." box, identical everywhere and completely
+   * off-brand). Returns a Promise<boolean> so call sites just become
+   * `if (!(await elmsConfirm('...'))) return;` in place of `if (!confirm('...'))`.
+   */
+  function elmsConfirm(message, opts = {}) {
+    const { title = 'Please confirm', okText = 'OK', cancelText = 'Cancel', danger = false } = opts;
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'elms-confirm-overlay';
+      overlay.innerHTML = `
+        <div class="elms-confirm-box" role="alertdialog" aria-modal="true" aria-label="${escapeAttr(title)}">
+          <div class="elms-confirm-title">${escapeHtml(title)}</div>
+          <div class="elms-confirm-message">${escapeHtml(message).replace(/\n/g, '<br>')}</div>
+          <div class="elms-confirm-actions">
+            <button type="button" class="ord-btn" data-act="cancel">${escapeHtml(cancelText)}</button>
+            <button type="button" class="ord-btn primary${danger ? ' elms-confirm-danger' : ''}" data-act="ok">${escapeHtml(okText)}</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const done = (result) => {
+        overlay.remove();
+        document.body.style.overflow = prevOverflow;
+        document.removeEventListener('keydown', onKey);
+        resolve(result);
+      };
+      const onKey = (e) => {
+        if (e.key === 'Escape') done(false);
+        else if (e.key === 'Enter') done(true);
+      };
+      document.addEventListener('keydown', onKey);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) done(false); });
+      overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => done(false));
+      overlay.querySelector('[data-act="ok"]').addEventListener('click', () => done(true));
+      overlay.querySelector('[data-act="ok"]').focus();
+    });
+  }
+
   btn.addEventListener('click', () => {
     const amazonUrl = document.getElementById('amazonUrl').value.trim();
     const markupInput = document.getElementById('markupPercent');
@@ -4963,7 +5012,7 @@
   });
 
   document.getElementById('largeImportCancelBtn').addEventListener('click', async () => {
-    if (!largeImportJobId || !confirm('Cancel this background import? Items already saved as drafts are kept.')) return;
+    if (!largeImportJobId || !(await elmsConfirm('Cancel this background import? Items already saved as drafts are kept.'))) return;
     try { await apiFetch('/api/fetch-product/bulk-job/' + largeImportJobId + '/cancel', { method: 'POST' }); } finally { pollLargeImportJob(); }
   });
   document.getElementById('largeImportRetryBtn').addEventListener('click', async () => {
@@ -7408,7 +7457,7 @@ async function autoSuggestEmptyDraftCategories() {
         }
 
         if (isScheduled) {
-          if (!confirm('Cancel this scheduled listing? It will go back to draft.')) return;
+          if (!(await elmsConfirm('Cancel this scheduled listing? It will go back to draft.'))) return;
           try {
             const res = await apiFetch(`/api/listings/${id}/unschedule`, { method: 'POST' });
             const data = await res.json();
@@ -7487,7 +7536,7 @@ async function autoSuggestEmptyDraftCategories() {
 
       deleteBtn.addEventListener('click', async () => {
         menu.classList.remove('open');
-        if (!confirm('Delete this draft?')) return;
+        if (!(await elmsConfirm('Delete this draft?'))) return;
 
         try {
           const res = await apiFetch(`/api/listings/${id}`, { method: 'DELETE' });
@@ -7541,7 +7590,7 @@ async function autoSuggestEmptyDraftCategories() {
     bulkPublishBtn.addEventListener('click', async () => {
       const ids = getSelectedIds();
       if (!ids.length) return;
-      if (!confirm(`Publish ${ids.length} selected draft(s) to eBay?`)) return;
+      if (!(await elmsConfirm(`Publish ${ids.length} selected draft(s) to eBay?`))) return;
 
       const accountId = await ensureSelectedEbayAccountId();
       if (!accountId) {
@@ -7567,7 +7616,7 @@ async function autoSuggestEmptyDraftCategories() {
     bulkDeleteBtn.addEventListener('click', async () => {
       const ids = getSelectedIds();
       if (!ids.length) return;
-      if (!confirm(`Delete ${ids.length} selected draft(s)?`)) return;
+      if (!(await elmsConfirm(`Delete ${ids.length} selected draft(s)?`, { danger: true }))) return;
 
       bulkDeleteBtn.disabled = true;
       bulkDeleteBtn.textContent = 'Deleting\u2026';
@@ -7919,7 +7968,7 @@ async function autoSuggestEmptyDraftCategories() {
     const confirmMsg = isLive
       ? 'This listing is currently live on eBay. Deleting it here will also end it on eBay. Continue?'
       : 'Delete this listing from ELMS?';
-    if (!confirm(confirmMsg)) return;
+    if (!(await elmsConfirm(confirmMsg, { danger: true }))) return;
     try {
       const res = await apiFetch(`/api/listings/${l.id}`, { method: 'DELETE' });
       const data = await res.json();
@@ -8968,7 +9017,7 @@ async function autoSuggestEmptyDraftCategories() {
     catch (_) { e.target.checked = !e.target.checked; }
   });
   document.getElementById('secLogoutOthersBtn')?.addEventListener('click', async (e) => {
-    if (!confirm('Log out every other device? This device stays signed in.')) return;
+    if (!(await elmsConfirm('Log out every other device? This device stays signed in.'))) return;
     const btn = e.currentTarget; btn.disabled = true;
     try {
       const r = await apiFetch('/api/security/revoke-others', { method: 'POST' }); const j = await r.json();
@@ -8978,7 +9027,7 @@ async function autoSuggestEmptyDraftCategories() {
     btn.disabled = false; loadSecurityOverview();
   });
   document.getElementById('secLogoutAllBtn')?.addEventListener('click', async (e) => {
-    if (!confirm('Log out on EVERY device, including this one? You will need to sign in again. Do this if you think someone else has your account.')) return;
+    if (!(await elmsConfirm('Log out on EVERY device, including this one? You will need to sign in again. Do this if you think someone else has your account.', { danger: true }))) return;
     const btn = e.currentTarget; btn.disabled = true;
     try {
       const r = await apiFetch('/api/security/logout-everywhere', { method: 'POST' }); const j = await r.json();
@@ -9034,7 +9083,7 @@ async function autoSuggestEmptyDraftCategories() {
   });
 
   document.getElementById('regenerateExtensionKeyBtn')?.addEventListener('click', async () => {
-    if (!confirm('Regenerate your ELMS Extension Key? The current key will stop working immediately.')) return;
+    if (!(await elmsConfirm('Regenerate your ELMS Extension Key? The current key will stop working immediately.', { danger: true }))) return;
     const btn = document.getElementById('regenerateExtensionKeyBtn');
     const status = document.getElementById('extensionKeyStatus');
     btn.disabled = true;
@@ -9227,7 +9276,7 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       row.querySelector('[data-action="remove-account"]').addEventListener('click', async () => {
-        if (!confirm('Disconnect this eBay store? All of its drafts, live listings, orders, messages and notifications will be deleted from ELMS. Listings already live on eBay are not affected. This cannot be undone.')) return;
+        if (!(await elmsConfirm('Disconnect this eBay store? All of its drafts, live listings, orders, messages and notifications will be deleted from ELMS. Listings already live on eBay are not affected. This cannot be undone.', { danger: true }))) return;
 
         try {
           const res = await apiFetch('/api/ebay-connect/disconnect', {
@@ -9819,7 +9868,7 @@ async function autoSuggestEmptyDraftCategories() {
     // --- Cancel + Delete footer buttons ---
     document.getElementById('draftDetailCancelBtn')?.addEventListener('click', () => draftDetailModal.classList.remove('open'));
     document.getElementById('draftDetailDeleteBtn')?.addEventListener('click', async () => {
-      if (!confirm('Delete this draft? This cannot be undone.')) return;
+      if (!(await elmsConfirm('Delete this draft? This cannot be undone.', { danger: true }))) return;
       try {
         const res = await apiFetch(`/api/list-on-ebay/${listing.id}`, { method: 'DELETE' });
         const data = await res.json().catch(() => ({}));
@@ -10543,7 +10592,7 @@ async function autoSuggestEmptyDraftCategories() {
   document.querySelectorAll('#msgAiBox [data-ai-mode]').forEach((b) => b.addEventListener('click', async () => {
     const mode = b.dataset.aiMode;
     if (mode === msgAiMode) return;
-    if (mode === 'auto' && !confirm('Auto-send lets AI answer buyers without you reading the reply first. AI can make mistakes. Only simple messages are answered; refunds, returns, damage and complaints stay as drafts.\n\nTurn on Auto-send?')) return;
+    if (mode === 'auto' && !(await elmsConfirm('Auto-send lets AI answer buyers without you reading the reply first. AI can make mistakes. Only simple messages are answered; refunds, returns, damage and complaints stay as drafts.', { title: 'Turn on Auto-send?', okText: 'Turn on' }))) return;
     const before = msgAiMode; msgAiMode = mode; renderMsgAiBox();
     try {
       const res = await apiFetch('/api/notifications/ai-reply/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode }) });
@@ -10908,7 +10957,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="snippet-row"><div><div class="snippet-name">${escapeHtml(sn.name)}</div><div class="snippet-content">${escapeHtml(sn.content)}</div></div><button class="secondary" data-delete-snippet="${escapeAttr(sn.id)}">Delete</button></div>
     `).join('') : '<div class="empty-state">No saved replies yet.</div>';
     el.querySelectorAll('[data-delete-snippet]').forEach((btn) => btn.onclick = async () => {
-      if (!confirm('Delete this saved reply?')) return;
+      if (!(await elmsConfirm('Delete this saved reply?', { danger: true }))) return;
       const res = await apiFetch(`/api/message-snippets/${encodeURIComponent(btn.dataset.deleteSnippet)}`, { method:'DELETE' });
       const data = await res.json();
       if (!res.ok || !data.success) return showToast('Delete failed', data.error || 'Could not delete saved reply.', 'error');
@@ -11177,7 +11226,7 @@ async function autoSuggestEmptyDraftCategories() {
   });
   document.getElementById('annSendBtn')?.addEventListener('click', async () => {
     const btn = document.getElementById('annSendBtn'), st = document.getElementById('annStatus');
-    if (!confirm('Send this announcement to all users who have not unsubscribed? Sending a test to yourself first is a good idea.')) return;
+    if (!(await elmsConfirm('Send this announcement to all users who have not unsubscribed? Sending a test to yourself first is a good idea.'))) return;
     btn.disabled = true; st.className = ''; st.textContent = 'Starting\u2026';
     try {
       const res = await apiFetch('/api/admin/announcements', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(annPayload()) });
@@ -11697,7 +11746,7 @@ async function autoSuggestEmptyDraftCategories() {
       });
 
       deleteBtn.addEventListener('click', async () => {
-        if (!confirm('Delete this plan? Users who already bought it keep their purchase history.')) return;
+        if (!(await elmsConfirm('Delete this plan? Users who already bought it keep their purchase history.', { danger: true }))) return;
 
         try {
           const res = await apiFetch(`/api/admin/plans/${planId}`, { method: 'DELETE' });
