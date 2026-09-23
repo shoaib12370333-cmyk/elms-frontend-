@@ -2867,6 +2867,21 @@
   .msg-icon-btn { position:relative; flex:0 0 auto; min-width:38px; height:38px; padding:0 10px; border-radius:19px; display:grid; place-items:center; border:0; background:transparent; color:#697386; cursor:pointer; font-size:16px; font:600 12px Inter,sans-serif; white-space:nowrap; list-style:none; }
   .msg-icon-btn:hover { background:#f1f5f9; }
   .msg-icon-btn select { position:absolute; inset:0; opacity:0; cursor:pointer; border:0; }
+  .msg-rating { margin-left:5px; font-size:12px; font-weight:600; color:#8a93a2; white-space:nowrap; } .msg-star { font-size:13px; }
+  .msg-thread-title b .msg-rating { font-size:13px; }
+  .msg-media { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .msg-media img { display:block; max-width:200px; max-height:160px; border-radius:10px; border:1px solid rgba(0,0,0,.08); object-fit:cover; }
+  .msg-media-file { display:inline-flex; align-items:center; gap:6px; padding:7px 11px; border-radius:8px; background:rgba(15,23,42,.07); color:inherit; font-size:12.5px; font-weight:600; text-decoration:none; }
+  .msg-bubble-row.self .msg-media-file { background:rgba(255,255,255,.18); }
+  .msg-ticks { margin-left:4px; letter-spacing:-2px; font-size:11px; opacity:.75; } .msg-ticks.read { color:#9BE7FF; opacity:1; font-weight:800; }
+  .msg-attach-tray { display:flex; flex-wrap:wrap; gap:6px; } .msg-attach-tray:not(:empty) { margin-bottom:8px; }
+  .msg-attach-chip { display:inline-flex; align-items:center; gap:6px; max-width:200px; padding:4px 6px 4px 6px; border:1px solid var(--line); border-radius:8px; background:#f8fafd; font-size:12px; font-weight:600; color:#374151; }
+  .msg-attach-chip img { width:28px; height:28px; border-radius:5px; object-fit:cover; } .msg-attach-chip span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .msg-attach-chip button { border:0; background:transparent; font-size:16px; line-height:1; color:#94a3b8; cursor:pointer; }
+  .msg-emoji-wrap { position:relative; }
+  .msg-emoji-pop { display:none; position:absolute; right:0; bottom:46px; z-index:30; grid-template-columns:repeat(6,1fr); gap:2px; padding:8px; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 30px rgba(15,23,42,.15); width:224px; }
+  .msg-emoji-pop.open { display:grid; }
+  .msg-emoji-pop button { border:0; background:transparent; font-size:20px; line-height:1; padding:6px; border-radius:8px; cursor:pointer; } .msg-emoji-pop button:hover { background:#f1f5f9; }
   .msg-note-toggle summary { color:#b7830a; } .msg-note-toggle summary::-webkit-details-marker { display:none; }
   .msg-note-form { position:absolute; z-index:5; display:grid; gap:6px; margin-top:6px; padding:10px; background:#fffdf7; border:1px solid #f2dfb6; border-radius:10px; width:min(320px,80vw); } .msg-note-form textarea { min-height:60px; border:1px solid #f2dfb6; border-radius:8px; padding:8px; font:500 12px Inter,sans-serif; }
   .msg-compose-row { display:flex; gap:10px; align-items:flex-end; } .msg-compose-row textarea { flex:1; min-height:44px; max-height:160px; resize:vertical; border:1px solid var(--line); border-radius:20px; padding:11px 16px; font:500 13.5px Inter,sans-serif; outline:0; background:var(--paper-raised); } .msg-compose-row textarea:focus { border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
@@ -2877,6 +2892,7 @@
     .msg-back { display:block; } .msg-list-pane { border-right:0; }
     .msg-actions { width:100%; } .msg-actions .msg-select { flex:1 1 140px; min-width:0; }
     .msg-bubble { max-width:88%; }
+    .msg-compose-row { flex-wrap:wrap; } .msg-compose-row textarea { flex:1 1 100%; }
   }
 
   /* ================= Import history: stat cards that always fit ================= */
@@ -10578,7 +10594,7 @@ async function autoSuggestEmptyDraftCategories() {
         <label class="msg-item-check" data-message-check><input type="checkbox" data-check-id="${escapeAttr(r.id)}" ${messageSelectedIds.has(r.id) ? 'checked' : ''} /></label>
         <div class="msg-avatar ${isEbay ? 'ebay' : ''}"${avatarStyle}>${escapeHtml(String(name).trim().charAt(0).toUpperCase() || '?')}</div>
         <div class="msg-item-main">
-          <div class="msg-item-top"><span class="msg-item-name">${escapeHtml(name)}</span><span class="msg-item-time">${escapeHtml(messageTime(r.last_message_date))}</span></div>
+          <div class="msg-item-top"><span class="msg-item-name">${escapeHtml(name)}${buyerRatingHtml(r.buyer_profile)}</span><span class="msg-item-time">${escapeHtml(messageTime(r.last_message_date))}</span></div>
           <div class="msg-item-subject">${escapeHtml(r.subject || (r.conversation_type === 'FROM_MEMBERS' ? 'Member message' : 'eBay notification'))}</div>
           <div class="msg-item-snippet">${escapeHtml(r.last_message_snippet || 'No preview available.')}</div>
           <div class="msg-item-tags">
@@ -10810,6 +10826,33 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
+  // eBay's feedback-star colours (FeedbackRatingStar) -> a display colour. "None" = under 10 feedback.
+  const EBAY_STAR_COLORS = { Yellow: '#F5AF02', YellowShooting: '#F5AF02', Blue: '#0064D2', Turquoise: '#14B8A6', TurquoiseShooting: '#14B8A6', Purple: '#7C3AED', PurpleShooting: '#7C3AED', Red: '#E53238', RedShooting: '#E53238', Green: '#86B817', GreenShooting: '#86B817', SilverShooting: '#94A3B8' };
+  /** "★ (412)" with the buyer's real eBay star colour, or '' when eBay gave us no profile. */
+  function buyerRatingHtml(profile) {
+    if (!profile || profile.feedback_score == null) return '';
+    const color = EBAY_STAR_COLORS[profile.star_color] || '#C4CAD3';
+    return `<span class="msg-rating"><span class="msg-star" style="color:${color};">&#9733;</span> (${Number(profile.feedback_score).toLocaleString()})</span>`;
+  }
+  function memberSinceText(profile) {
+    if (!profile) return '';
+    const year = profile.member_since ? new Date(profile.member_since).getFullYear() : null;
+    return [year ? `Member since ${year}` : '', profile.site || ''].filter(Boolean).join(' | ');
+  }
+  function messageMediaHtml(media) {
+    if (!Array.isArray(media) || !media.length) return '';
+    return `<div class="msg-media">${media.map((x) => {
+      const url = escapeAttr(x.url);
+      return String(x.type).toUpperCase() === 'IMAGE'
+        ? `<a href="${url}" target="_blank" rel="noopener noreferrer"><img src="${url}" alt="${escapeAttr(x.name || 'attachment')}" loading="lazy" /></a>`
+        : `<a class="msg-media-file" href="${url}" target="_blank" rel="noopener noreferrer">&#128206; ${escapeHtml(x.name || 'Attachment')}</a>`;
+    }).join('')}</div>`;
+  }
+  // One tick = sent, blue double tick = the buyer has read it (eBay's readStatus on our own message).
+  function readTicksHtml(m) {
+    return m.isSelf ? `<span class="msg-ticks${m.readStatus ? ' read' : ''}" title="${m.readStatus ? 'Read by buyer' : 'Sent'}">${m.readStatus ? '&#10003;&#10003;' : '&#10003;'}</span>` : '';
+  }
+
   function renderMessageDetail(data) {
     const c = data.conversation;
     const d = data.detail || {};
@@ -10826,7 +10869,8 @@ async function autoSuggestEmptyDraftCategories() {
       lastDay = day || lastDay;
       return `${sep}<div class="msg-bubble-row ${m.isSelf ? 'self' : ''}"><div class="msg-bubble">
         <div class="msg-bubble-text">${escapeHtml(m.content || '')}</div>
-        <div class="msg-bubble-meta">${escapeHtml(m.isSelf ? 'You' : (m.fromUsername || name))} &middot; ${escapeHtml(m.sentDate ? new Date(m.sentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '')}</div>
+        ${messageMediaHtml(m.media)}
+        <div class="msg-bubble-meta">${escapeHtml(m.isSelf ? 'You' : (m.fromUsername || name))} &middot; ${escapeHtml(m.sentDate ? new Date(m.sentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '')} ${readTicksHtml(m)}</div>
       </div></div>`;
     }).join('');
     const notesHtml = notes.length ? `<div class="msg-notes">${notes.slice(-3).map((n) => `<div class="msg-note"><b>${escapeHtml(n.created_at ? new Date(n.created_at).toLocaleString() : '')}</b><br>${escapeHtml(n.text)}</div>`).join('')}</div>` : '';
@@ -10835,7 +10879,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="msg-thread-head">
         <button class="msg-back" id="messageBackBtn" type="button" aria-label="Back to conversations">&lsaquo;</button>
         <div class="msg-avatar big ${c.conversation_type === 'FROM_EBAY' ? 'ebay' : ''}"${c.conversation_type === 'FROM_EBAY' ? '' : ` style="background:${avatarColorFor(name)[0]};color:${avatarColorFor(name)[1]};"`}>${escapeHtml(String(name).trim().charAt(0).toUpperCase() || '?')}</div>
-        <div class="msg-thread-title"><b>${escapeHtml(name)}</b><span>${escapeHtml(c.subject || 'Customer conversation')} &middot; ${escapeHtml(c.ebay_account_display_name || c.ebay_account_username || 'eBay store')}</span>
+        <div class="msg-thread-title"><b>${escapeHtml(name)} ${buyerRatingHtml(c.buyer_profile)}</b><span>${escapeHtml(memberSinceText(c.buyer_profile) || `${c.subject || 'Customer conversation'} · ${c.ebay_account_display_name || c.ebay_account_username || 'eBay store'}`)}</span>
           ${c.trashed_at ? `<em>Trash retention: ${Math.max(0, 30 - Math.floor((Date.now() - new Date(c.trashed_at).getTime()) / 86400000))} day(s) remaining</em>` : ''}</div>
         <div class="msg-thread-head-actions">
           <div class="msg-thread-menu-wrap">
@@ -10860,8 +10904,13 @@ async function autoSuggestEmptyDraftCategories() {
         ${notesHtml}
         ${c.ai_draft && c.ai_draft.status === 'ready' ? `<div class="msg-ai-banner" id="msgAiBanner">&#10024; AI wrote this draft. Read it, edit it, then press Send.<button type="button" id="messageAiDiscardBtn">Discard</button><small>AI can make mistakes. Check names, dates and promises before sending.</small></div>` : ''}
         ${c.ai_draft && c.ai_draft.status === 'auto_sent' ? `<div class="msg-ai-banner sent">&#10024; AI already replied to the latest message automatically: &ldquo;${escapeHtml(String(c.ai_draft.text || '').slice(0, 160))}&rdquo;<small>AI can make mistakes. Follow up here if needed.</small></div>` : ''}
+        <div class="msg-attach-tray" id="messageAttachTray"></div>
         <div class="msg-compose-row">
           <textarea id="messageReplyInput" placeholder="Write a reply to ${escapeAttr(name)}&hellip;"></textarea>
+          <button class="msg-icon-btn" id="messageAttachBtn" type="button" title="Attach a file (image or PDF)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+          <button class="msg-icon-btn" id="messageImageBtn" type="button" title="Attach a photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></button>
+          <span class="msg-emoji-wrap"><button class="msg-icon-btn" id="messageEmojiBtn" type="button" title="Emoji">&#128512;</button><div class="msg-emoji-pop" id="messageEmojiPop"></div></span>
+          <input type="file" id="messageFileInput" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden />
           <label class="msg-icon-btn" title="Saved replies">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.42 0l8.58-8.58a1 1 0 0 0 0-1.42z"/><circle cx="7" cy="7" r="1"/></svg>
             <select id="messageSnippetSelect"><option value="">Saved replies&hellip;</option>${snippets.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}</select>
@@ -10881,6 +10930,7 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('messageBackBtn').addEventListener('click', () => document.getElementById('msgShell')?.classList.remove('thread-open'));
     document.getElementById('messageOpenOrderBtn')?.addEventListener('click', () => showPage('orders'));
     document.getElementById('messageReplyBtn').addEventListener('click', () => sendMessageReply(c.id));
+    wireMessageComposeExtras();
     if (c.ai_draft && c.ai_draft.status === 'ready') {
       const box = document.getElementById('messageReplyInput');
       if (box && !box.value) box.value = c.ai_draft.text || '';
@@ -10926,17 +10976,78 @@ async function autoSuggestEmptyDraftCategories() {
       .replace(/\{\{tracking_number\}\}/gi, context?.tracking_number || '');
   }
 
+  // Files attached to the reply being written (already uploaded to ELMS storage, max 5 - eBay's limit).
+  let messageAttachments = [];
+  const MSG_EMOJIS = ['\u{1F600}','\u{1F642}','\u{1F60A}','\u{1F604}','\u{1F609}','\u{1F60D}','\u{1F64F}','\u{1F44D}','\u{1F44C}','\u{1F44B}','\u{1F389}','\u{1F4E6}','\u{1F69A}','\u{2705}','\u{2764}\u{FE0F}','\u{1F31F}','\u{1F60C}','\u{1F914}','\u{1F622}','\u{1F64C}','\u{1F4AF}','\u{2728}','\u{1F381}','\u{1F4DE}'];
+
+  function renderMessageAttachTray() {
+    const tray = document.getElementById('messageAttachTray');
+    if (!tray) return;
+    tray.innerHTML = messageAttachments.map((a, i) => `<span class="msg-attach-chip">${a.type === 'IMAGE' ? `<img src="${escapeAttr(a.url)}" alt="" />` : '&#128206;'}<span>${escapeHtml(a.name)}</span><button type="button" data-remove-attach="${i}" aria-label="Remove">&times;</button></span>`).join('');
+    tray.querySelectorAll('[data-remove-attach]').forEach((b) => b.addEventListener('click', () => { messageAttachments.splice(Number(b.dataset.removeAttach), 1); renderMessageAttachTray(); }));
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(new Error('Could not read that file.'));
+      r.readAsDataURL(file);
+    });
+  }
+
+  /** Wires the attach / photo / emoji buttons of the reply box (called each time a thread is rendered). */
+  function wireMessageComposeExtras() {
+    messageAttachments = [];
+    const fileInput = document.getElementById('messageFileInput');
+    const input = document.getElementById('messageReplyInput');
+    const pop = document.getElementById('messageEmojiPop');
+    const chooseFiles = (accept) => { fileInput.accept = accept; fileInput.click(); };
+    document.getElementById('messageAttachBtn')?.addEventListener('click', () => chooseFiles('image/jpeg,image/png,image/webp,image/gif,application/pdf'));
+    document.getElementById('messageImageBtn')?.addEventListener('click', () => chooseFiles('image/jpeg,image/png,image/webp,image/gif'));
+    fileInput?.addEventListener('change', async () => {
+      const files = Array.from(fileInput.files || []);
+      fileInput.value = '';
+      for (const file of files) {
+        if (messageAttachments.length >= 5) { showToast('Attachments', 'eBay allows up to 5 files per message.', 'error'); break; }
+        try {
+          const dataUrl = await readFileAsDataUrl(file);
+          const res = await apiFetch('/api/notifications/attachments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dataUrl, name: file.name }) });
+          const data = await apiJson(res);
+          if (!res.ok || !data.success) throw new Error(data.error || 'Could not upload this file.');
+          messageAttachments.push(data.attachment);
+          renderMessageAttachTray();
+        } catch (err) { showToast('Attachment failed', err.message, 'error'); }
+      }
+    });
+    if (pop) {
+      pop.innerHTML = MSG_EMOJIS.map((e) => `<button type="button" data-emoji="${e}">${e}</button>`).join('');
+      pop.querySelectorAll('[data-emoji]').forEach((b) => b.addEventListener('click', () => {
+        const start = input.selectionStart ?? input.value.length, end = input.selectionEnd ?? start;
+        input.value = input.value.slice(0, start) + b.dataset.emoji + input.value.slice(end);
+        input.focus(); input.selectionStart = input.selectionEnd = start + b.dataset.emoji.length;
+        pop.classList.remove('open');
+      }));
+      document.getElementById('messageEmojiBtn')?.addEventListener('click', (e) => { e.stopPropagation(); pop.classList.toggle('open'); });
+    }
+  }
+  document.addEventListener('click', (e) => {
+    const wrap = document.querySelector('.msg-emoji-wrap');
+    if (wrap && !wrap.contains(e.target)) document.getElementById('messageEmojiPop')?.classList.remove('open');
+  });
+
   async function sendMessageReply(id) {
     const input = document.getElementById('messageReplyInput');
     const content = input.value.trim();
-    if (!content) return;
+    if (!content && !messageAttachments.length) return;
     const btn = document.getElementById('messageReplyBtn');
     btn.disabled = true;
     try {
-      const res = await apiFetch(`/api/notifications/${encodeURIComponent(id)}/reply`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ content }) });
-      const data = await res.json();
+      const res = await apiFetch(`/api/notifications/${encodeURIComponent(id)}/reply`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ content, attachments: messageAttachments }) });
+      const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not send reply.');
       input.value = '';
+      messageAttachments = [];
       showToast('Reply sent', 'Your message was sent through eBay.', 'success');
       await openMessageThread(id);
     } catch (err) { showToast('Reply failed', err.message, 'error'); }
