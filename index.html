@@ -5705,6 +5705,23 @@
       }
     }
 
+    // Every caller does `await res.json()`. When the server answers with something that is not JSON (a proxy
+    // timeout page on a long publish, an empty body, a cold-start page) the browser's own error leaks into the
+    // UI - Safari's is the baffling "The string did not match the expected pattern", Chrome's mentions
+    // "<!DOCTYPE". Replace it, for every apiFetch response at once, with a message that says what to do.
+    const parseJson = res.json.bind(res);
+    res.json = async () => {
+      try {
+        return await parseJson();
+      } catch (_) {
+        const err = new Error(res.ok
+          ? 'The server sent back an unexpected response. Please try again in a moment.'
+          : `The server is busy or restarting (${res.status}). Your last action may still have gone through - refresh in a minute to check, then try again.`);
+        err.isBadResponse = true;
+        throw err;
+      }
+    };
+
     return res;
   }
 
