@@ -2809,18 +2809,23 @@
   .msg-shell { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); height:calc(100dvh - 210px); min-height:400px; max-height:calc(100dvh - 24px); background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow:hidden; }
   .msg-list-pane { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); background:#fff; }
   .msg-search { padding:12px 14px 6px; } .msg-search input { width:100%; box-sizing:border-box; height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; font:500 13px Inter,sans-serif; background:var(--paper-raised); outline:0; } .msg-search input:focus { background:#fff; border-color:var(--blue); }
-  .msg-chips, .msg-types { display:flex; gap:6px; padding:6px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .msg-chip, .msg-type { flex:0 0 auto; height:30px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:#fff; color:#566273; font:600 12px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
-  .msg-chip span { margin-left:3px; color:#94a3b8; } .msg-chip.active { background:#E7F0FD; border-color:#C5DBF8; color:#0064D2; } .msg-chip.active span { color:#0064D2; }
-  .msg-type { border-radius:8px; background:transparent; border-color:transparent; color:#94a3b8; height:26px; } .msg-type.active { background:#f1f5f9; color:#374151; }
+  /* eBay Seller Hub-style underlined text tabs, not pill buttons - "All messages (3)". */
+  .msg-chips { display:flex; gap:18px; padding:10px 16px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; border-bottom:1px solid var(--line); }
+  .msg-chip { flex:0 0 auto; padding:0 0 10px; border:0; border-bottom:2px solid transparent; background:transparent; color:#697386; font:600 13px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  .msg-chip span { margin-left:3px; color:#94a3b8; }
+  .msg-chip.active { color:var(--blue); border-bottom-color:var(--blue); font-weight:800; } .msg-chip.active span { color:var(--blue); }
+  .msg-types { display:flex; gap:6px; padding:8px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .msg-type { flex:0 0 auto; height:28px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:#fff; color:#697386; font:600 12px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  .msg-type.active { background:#E7F0FD; border-color:#C5DBF8; color:#0064D2; }
   .msg-conv-head { display:flex; justify-content:space-between; align-items:baseline; padding:8px 16px; border-bottom:1px solid var(--line); font-size:13px; } .msg-conv-head span { font-size:11px; color:#94a3b8; }
+  .msg-sort { border:1px solid var(--line); border-radius:8px; background:#fff; color:#566273; font:600 11px Inter,sans-serif; height:26px; padding:0 6px; cursor:pointer; }
   .msg-list { flex:1 1 auto; overflow-y:auto; min-height:0; display:flex; flex-direction:column; }
   .msg-group-head { padding:10px 16px 4px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; background:#fbfcfe; }
   .msg-group-head:not(:first-child) { border-top:1px solid var(--line); margin-top:4px; }
   .msg-item { display:flex; gap:12px; padding:14px 16px; border-bottom:1px solid #f0f3f7; cursor:pointer; position:relative; }
   .msg-item:hover { background:#f6faff; } .msg-item.active { background:#eef4ff; box-shadow:inset 3px 0 0 var(--blue); }
   .msg-item.unread .msg-item-name { font-weight:800; color:#111827; } .msg-item.unread::after { content:''; position:absolute; right:14px; top:44px; width:9px; height:9px; border-radius:50%; background:var(--blue); }
-  .msg-avatar { flex:0 0 40px; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:#E7F0FD; color:#0064D2; font-weight:800; font-size:16px; } .msg-avatar.ebay { background:#FEF3DA; color:#b7830a; } .msg-avatar.big { flex-basis:44px; width:44px; height:44px; }
+  .msg-avatar { flex:0 0 40px; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:#E7F0FD; color:#0064D2; font-weight:800; font-size:16px; } .msg-avatar.ebay { background:#FEF3DA; color:#b7830a; } .msg-avatar.big { flex-basis:52px; width:52px; height:52px; font-size:19px; }
   .msg-item-main { min-width:0; flex:1; }
   .msg-item-top { display:flex; justify-content:space-between; gap:8px; } .msg-item-name { font-weight:600; font-size:14px; color:#374151; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-item-time { font-size:11px; color:#94a3b8; white-space:nowrap; }
   .msg-item-subject { font-size:12.5px; font-weight:600; color:#4b5563; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2831,11 +2836,12 @@
   .msg-empty-detail { margin:auto; max-width:340px; text-align:center; color:#7d8795; padding:30px; } .msg-empty-icon { font-size:38px; margin-bottom:8px; } .msg-empty-detail h3 { margin:0 0 6px; color:#374151; }
   .msg-thread-head { display:flex; align-items:center; gap:12px; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); flex-wrap:wrap; }
   .msg-back { display:none; border:0; background:transparent; font-size:30px; line-height:1; color:#374151; cursor:pointer; width:34px; height:40px; }
-  .msg-thread-title { min-width:0; flex:1 1 200px; display:grid; } .msg-thread-title b { font-size:15px; } .msg-thread-title span { font-size:12px; color:#8a93a2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-thread-title em { font-size:11px; color:#a15c00; font-style:normal; }
+  .msg-thread-title { min-width:0; flex:1 1 200px; display:grid; gap:1px; } .msg-thread-title b { font-size:17px; font-weight:800; } .msg-thread-title span { font-size:12px; color:#8a93a2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-thread-title em { font-size:11px; color:#a15c00; font-style:normal; }
   .msg-thread-actions { display:flex; gap:6px; flex-wrap:wrap; }
-  .msg-context { display:flex; align-items:center; gap:12px; padding:10px 16px; background:#fff; border-bottom:1px solid var(--line); }
-  .msg-context img, .msg-context-ph { flex:0 0 44px; width:44px; height:44px; border-radius:8px; object-fit:cover; background:#f1f3f6; }
-  .msg-context-txt { min-width:0; flex:1; display:grid; } .msg-context-txt span { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; } .msg-context-txt b { font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-context-txt small { font-size:11px; color:#8a93a2; }
+  .msg-context { display:flex; align-items:center; gap:14px; padding:14px 16px; background:#fff; border-bottom:1px solid var(--line); }
+  .msg-context img, .msg-context-ph { flex:0 0 60px; width:60px; height:60px; border-radius:8px; object-fit:cover; background:#f1f3f6; border:1px solid var(--line); }
+  .msg-context-txt { min-width:0; flex:1; display:grid; gap:2px; } .msg-context-txt span { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; } .msg-context-txt b { font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-context-txt small { font-size:11.5px; color:#8a93a2; }
+  .msg-context-price { font-size:14px; font-weight:800; color:#111827; margin-top:2px; }
   .msg-thread-body { flex:1 1 auto; overflow-y:auto; padding:16px; min-height:0; }
   .msg-day { text-align:center; margin:10px 0; font-size:11px; color:#94a3b8; font-weight:600; }
   .msg-bubble-row { display:flex; margin-bottom:10px; } .msg-bubble-row.self { justify-content:flex-end; }
@@ -2847,8 +2853,8 @@
   .msg-compose-tools { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; } .msg-hint { margin-left:auto; font-size:11px; color:#94a3b8; }
   .msg-note-toggle summary { cursor:pointer; font-size:12px; font-weight:600; color:#b7830a; list-style:none; } .msg-note-toggle summary::-webkit-details-marker { display:none; }
   .msg-note-form { position:absolute; z-index:5; display:grid; gap:6px; margin-top:6px; padding:10px; background:#fffdf7; border:1px solid #f2dfb6; border-radius:10px; width:min(320px,80vw); } .msg-note-form textarea { min-height:60px; border:1px solid #f2dfb6; border-radius:8px; padding:8px; font:500 12px Inter,sans-serif; }
-  .msg-compose-row { display:flex; gap:10px; align-items:flex-end; } .msg-compose-row textarea { flex:1; min-height:64px; max-height:160px; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:500 13.5px Inter,sans-serif; outline:0; } .msg-compose-row textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
-  .msg-btn.send { height:44px; padding:0 22px; }
+  .msg-compose-row { display:flex; gap:10px; align-items:flex-end; } .msg-compose-row textarea { flex:1; min-height:44px; max-height:160px; resize:vertical; border:1px solid var(--line); border-radius:20px; padding:11px 16px; font:500 13.5px Inter,sans-serif; outline:0; background:var(--paper-raised); } .msg-compose-row textarea:focus { border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  .msg-btn.send { height:44px; padding:0 24px; border-radius:999px; }
   @media (max-width:900px) {
     .msg-shell { grid-template-columns:minmax(0,1fr); height:calc(100dvh - 230px); min-height:360px; max-height:calc(100dvh - 16px); }
     .msg-thread-pane { display:none; } .msg-shell.thread-open .msg-list-pane { display:none; } .msg-shell.thread-open .msg-thread-pane { display:flex; }
@@ -3665,7 +3671,7 @@
           <section class="msg-list-pane">
             <div class="msg-search"><input id="messageSearch" type="search" placeholder="Search buyer, subject or message&hellip;" /></div>
             <div class="msg-chips">
-              <button class="msg-chip active" data-message-filter="all">All <span id="msgAllCount"></span></button>
+              <button class="msg-chip active" data-message-filter="all">All messages <span id="msgAllCount"></span></button>
               <button class="msg-chip" data-message-filter="unread">Unread <span id="msgUnreadCount"></span></button>
               <button class="msg-chip" data-message-filter="awaiting">Needs reply <span id="msgAwaitingCount"></span></button>
               <button class="msg-chip" data-message-filter="archived">Archived <span id="msgArchivedCount"></span></button>
@@ -3676,7 +3682,7 @@
               <button class="msg-type" data-message-type="FROM_MEMBERS">Buyers</button>
               <button class="msg-type" data-message-type="FROM_EBAY">eBay</button>
             </div>
-            <div class="msg-conv-head"><b>Conversations</b><span id="msgConvCount">0 conversations</span></div>
+            <div class="msg-conv-head"><b>Conversations</b><span style="display:flex;align-items:center;gap:8px;"><span id="msgConvCount">0 conversations</span><select class="msg-sort" id="msgSortSelect"><option value="newest">Sort: Newest</option><option value="oldest">Sort: Oldest</option></select></span></div>
             <div class="msg-list" id="messageList"><div class="state-msg">Loading messages&hellip;</div></div>
           </section>
           <section class="msg-thread-pane" id="messageDetail">
@@ -10441,6 +10447,7 @@ async function autoSuggestEmptyDraftCategories() {
   let messageTypeFilter = 'all';
   let messageAccountFilter = '';
   let messageSearchTerm = '';
+  let messageSortOrder = 'newest';
   let messageSnippets = [];
 
   function messageTime(value) {
@@ -10481,17 +10488,21 @@ async function autoSuggestEmptyDraftCategories() {
 
   function renderMessageList() {
     const list = document.getElementById('messageList');
+    // Rows arrive newest-first from the server; only need to reverse for "Oldest".
     const filtered = messageRows.filter(messageMatches);
+    if (messageSortOrder === 'oldest') filtered.reverse();
     const counts = {
       all: messageRows.length,
       unread: messageRows.filter((r) => !r.is_read).length,
       awaiting: messageRows.filter((r) => !r.is_read && r.conversation_type === 'FROM_MEMBERS').length,
       archived: messageRows.filter((r) => r.conversation_status === 'ARCHIVE').length,
+      trash: messageRows.filter((r) => r.conversation_status === 'DELETE').length,
     };
-    document.getElementById('msgAllCount').textContent = counts.all ? counts.all : '';
-    document.getElementById('msgUnreadCount').textContent = counts.unread ? counts.unread : '';
-    document.getElementById('msgAwaitingCount').textContent = counts.awaiting ? counts.awaiting : '';
-    document.getElementById('msgArchivedCount').textContent = counts.archived ? counts.archived : '';
+    document.getElementById('msgAllCount').textContent = `(${counts.all})`;
+    document.getElementById('msgUnreadCount').textContent = `(${counts.unread})`;
+    document.getElementById('msgAwaitingCount').textContent = `(${counts.awaiting})`;
+    document.getElementById('msgArchivedCount').textContent = `(${counts.archived})`;
+    document.getElementById('msgTrashCount').textContent = `(${counts.trash})`;
 
     if (!filtered.length) {
       const isFiltered = messageRows.length > 0;
@@ -10651,13 +10662,15 @@ async function autoSuggestEmptyDraftCategories() {
     const list = document.getElementById('messageList');
     list.innerHTML = '<div class="message-loading"><div class="spinner"></div><div class="loading-title">Loading your inbox</div><div class="loading-sub">Reading the local message cache&hellip;</div></div>';
     try {
+      // Always fetch every status/type for this account - messageMatches() already
+      // re-filters the full set client-side for every tab and for search, on every
+      // click, without a refetch. Narrowing the request itself used to leave
+      // messageRows holding a partial dataset (e.g. only Trash) whenever some OTHER
+      // trigger (switching store) caused a refetch while a narrower tab was active,
+      // which made every other tab's counts and contents wrong until the next
+      // full reload.
       const params = new URLSearchParams();
       if (messageAccountFilter) params.set('accountId', messageAccountFilter);
-      if (messageFilter === 'archived') params.set('status', 'archived');
-      else if (messageFilter === 'trash') params.set('status', 'trash');
-      else if (messageFilter === 'awaiting') params.set('status', 'awaiting');
-      if (messageTypeFilter !== 'all') params.set('type', messageTypeFilter);
-      if (messageSearchTerm) params.set('search', messageSearchTerm);
       const qs = params.toString() ? `?${params.toString()}` : '';
       const res = await apiFetch('/api/notifications' + qs);
       const data = await apiJson(res);
@@ -10765,8 +10778,9 @@ async function autoSuggestEmptyDraftCategories() {
       ${context ? `<div class="msg-context">
         ${context.main_image ? `<img src="${escapeAttr(context.main_image)}" alt="" onerror="this.style.display='none'">` : '<div class="msg-context-ph"></div>'}
         <div class="msg-context-txt"><span>${escapeHtml(context.type === 'order' ? 'Related order' : 'Related listing')}</span><b>${escapeHtml(context.listing_title || 'eBay item')}</b>
-          <small>${context.ebay_order_id ? `Order ${escapeHtml(context.ebay_order_id)} &middot; ${escapeHtml(String(context.fulfillment_status || 'pending').replace(/_/g, ' '))}` : `Item ${escapeHtml(context.ebay_item_id || '')}`}</small></div>
-        ${context.ebay_order_id ? '<button class="msg-btn small" id="messageOpenOrderBtn" type="button">Open orders</button>' : ''}
+          <small>${context.ebay_order_id ? `Item no: ${escapeHtml(context.ebay_order_id)}` : context.ebay_item_id ? `Item no: ${escapeHtml(context.ebay_item_id)}` : ''}</small>
+          ${context.sale_price != null ? `<div class="msg-context-price">${escapeHtml(orders_money(context.sale_price, context.currency))}</div>` : ''}</div>
+        ${context.ebay_order_id ? '<button class="msg-btn small" id="messageOpenOrderBtn" type="button">View order details</button>' : ''}
       </div>` : ''}
       <div class="msg-thread-body" id="supportMessagesScroll">${bubbles || '<div class="state-msg">No messages were returned by eBay for this conversation.</div>'}</div>
       <div class="msg-compose">
@@ -10970,6 +10984,7 @@ async function autoSuggestEmptyDraftCategories() {
   document.getElementById('messageSnippetsBtn').addEventListener('click', openMessageSnippetsManager);
   document.getElementById('messageAccountFilter').addEventListener('change', (e) => { messageAccountFilter = e.target.value; selectedMessageId = null; loadMessages(); });
   document.getElementById('messageSearch').addEventListener('input', (e) => { messageSearchTerm = e.target.value.trim(); renderMessageList(); });
+  document.getElementById('msgSortSelect')?.addEventListener('change', (e) => { messageSortOrder = e.target.value; renderMessageList(); });
   document.querySelectorAll('[data-message-filter]').forEach((btn) => btn.addEventListener('click', () => {
     messageFilter = btn.dataset.messageFilter;
     document.querySelectorAll('[data-message-filter]').forEach((x) => x.classList.toggle('active', x === btn));
