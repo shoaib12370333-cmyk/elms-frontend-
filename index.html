@@ -8011,6 +8011,12 @@ async function autoSuggestEmptyDraftCategories() {
           const before = overlay.querySelector('[data-ui-editor]')._initial || {};
           ['description', 'specifications', 'images'].forEach((k) => { if (JSON.stringify(v[k]) !== JSON.stringify(before[k])) requestBody[k] = v[k]; });
           if (l.ebay_account_id) requestBody.accountId = l.ebay_account_id;
+        } else {
+          // A live listing's item specifics / description / photos were silently ignored before.
+          const before = overlay.querySelector('[data-ui-editor]')._initial || {};
+          if (v.ebayAspects && JSON.stringify(v.ebayAspects) !== JSON.stringify(before.ebayAspects)) requestBody.aspects = v.ebayAspects;
+          if (JSON.stringify(v.description) !== JSON.stringify(before.description)) requestBody.description = v.description;
+          if (JSON.stringify(v.images) !== JSON.stringify(before.images) && v.images.length) requestBody.images = v.images;
         }
         const res = await apiFetch(isLive ? `/api/listings/${l.id}/revise` : `/api/list-on-ebay/${l.id}`, {
           method: isLive ? 'POST' : 'PUT',
