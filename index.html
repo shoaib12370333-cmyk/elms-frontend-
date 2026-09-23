@@ -7365,7 +7365,7 @@
       ed._veroBullets = d.bulletPoints || [];
       ed._veroRefresh?.();
       refreshCreditBalanceChip();
-      showToast('VeRO words removed', `${(d.removed || []).join(', ')}. Check the text, then press Save changes.`, 'success');
+      showToast('VeRO words removed', `${(d.removed || []).join(', ') || 'None needed removing'}. Check the text, then press Save changes.${d.kept && d.kept.length ? ` Still flagged: ${d.kept.join(', ')} — used in their ordinary meaning, so they were kept. Check them yourself.` : ''}`, 'success');
     } catch (err) {
       showToast('Could not remove VeRO words', err.message, 'error');
     } finally { btn.disabled = false; btn.textContent = label; }
