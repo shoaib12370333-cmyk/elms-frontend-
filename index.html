@@ -3080,6 +3080,22 @@
   .sp-reply { margin-top:12px; padding:10px 12px; border-radius:10px; background:#F2F9E5; border:1px solid #D7EBB0; font-size:13.5px; color:#2F4A08; white-space:pre-wrap; word-break:break-word; }
   .sp-reply small { display:block; font-weight:800; font-size:11px; letter-spacing:.05em; text-transform:uppercase; margin-bottom:3px; color:#4C7A0B; }
   .sp-wait { margin-top:12px; font-size:12.5px; color:var(--grey); }
+  /* the conversation inside a ticket */
+  .sp-thread { display:grid; gap:8px; margin-top:12px; max-height:340px; overflow:auto; padding-right:2px; }
+  .sp-b { padding:9px 12px; border-radius:12px; font-size:13.5px; white-space:pre-wrap; word-break:break-word; max-width:92%; }
+  .sp-b small { display:block; font-weight:800; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; margin-bottom:2px; opacity:.7; }
+  .sp-b.customer { background:#EAF2FE; color:#123A6B; justify-self:end; }
+  .sp-b.ai { background:#F2F9E5; border:1px solid #D7EBB0; color:#2F4A08; }
+  .sp-b.admin { background:#EEF4FF; border:1px solid #D0DFFB; color:#1D2F5C; }
+  .sp-b.sp-typing { opacity:.7; font-style:italic; }
+  .sp-sys { justify-self:center; font-size:12px; color:var(--grey); padding:2px 8px; text-align:center; }
+  .sp-compose { margin-top:12px; display:grid; gap:8px; }
+  .sp-compose textarea { height:auto; padding:9px 12px; resize:vertical; }
+  .sp-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .sp-btn { border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; padding:7px 14px; font:700 12.5px Inter,sans-serif; cursor:pointer; }
+  .sp-btn:hover { background:#F7F9FB; } .sp-btn:disabled { opacity:.55; cursor:not-allowed; }
+  .sp-btn.primary { background:#0064D2; border-color:#0064D2; color:#fff; } .sp-btn.primary:hover { background:#0057B8; }
+  .sp-btn.good { border-color:#86B817; color:#4C7A0B; background:#F6FBEC; } .sp-btn.good:hover { background:#EDF7DC; }
   .sp-empty { text-align:center; padding:34px 12px; color:var(--grey); }
   .sp-empty b { display:block; font-size:15px; color:var(--ink); margin-bottom:4px; }
   @media (max-width: 900px) { .sp-layout { grid-template-columns:1fr; } }
@@ -11551,15 +11567,80 @@ async function autoSuggestEmptyDraftCategories() {
     }
     container.innerHTML = '<div class="sp-list">' + rows.map((t) => {
       const st = t.status === 'resolved' ? 'resolved' : 'open';
-      return `<article class="sp-ticket ${st}">
-        <div class="sp-ticket-top"><div><b>${escapeHtml(t.subject)}</b><div class="sp-date">${escapeHtml(new Date(t.createdAt).toLocaleString())}</div></div><span class="sp-pill ${st}">${st === 'resolved' ? 'Resolved' : 'Open'}</span></div>
-        <p class="sp-msg">${escapeHtml(t.message)}</p>
-        ${t.adminReply ? `<div class="sp-reply"><small>Reply from ELMS</small>${escapeHtml(t.adminReply)}</div>`
-          : t.aiReply ? `<div class="sp-reply"><small>${t.escalated ? 'Note from ELMS' : 'Reply from the ELMS assistant'}</small>${escapeHtml(t.aiReply)}</div>${st === 'open' ? `<div class="sp-wait">${t.escalated ? 'Our team is looking at this and will reply here.' : 'Not solved? Open a new ticket and write “talk to admin”.'}</div>` : ''}`
-          : (st === 'open' ? '<div class="sp-wait">Waiting for a reply. You will see it here.</div>' : '')}
+      const busy = ticketBusy.has(t.id);
+      // The whole conversation: the first message, then everything said since (assistant, team, notes).
+      const items = [{ from: 'customer', text: t.message, at: t.createdAt }, ...(Array.isArray(t.thread) ? t.thread : [])];
+      if (t.adminReply && !items.some((m) => m.from === 'admin')) items.push({ from: 'admin', text: t.adminReply, at: t.resolvedAt });
+      const who = { customer: 'You', ai: 'ELMS assistant', admin: 'ELMS team' };
+      const thread = items.map((m) => m.from === 'system'
+        ? `<div class="sp-sys">${escapeHtml(m.text || '')}</div>`
+        : `<div class="sp-b ${escapeAttr(m.from)}"><small>${escapeHtml(who[m.from] || 'ELMS')}${m.at && !isNaN(new Date(m.at)) ? ' · ' + escapeHtml(new Date(m.at).toLocaleString()) : ''}</small>${escapeHtml(m.text || '')}</div>`).join('');
+      const note = st === 'resolved' ? '' : t.escalated
+        ? '<div class="sp-wait">The team has been told and will reply here.</div>'
+        : '';
+      return `<article class="sp-ticket ${st}" data-ticket-id="${escapeAttr(t.id)}">
+        <div class="sp-ticket-top"><div><b>${escapeHtml(t.subject)}</b><div class="sp-date">${escapeHtml(new Date(t.createdAt).toLocaleString())}</div></div><span class="sp-pill ${st}">${st === 'resolved' ? 'Resolved' : t.escalated ? 'With the team' : 'Open'}</span></div>
+        <div class="sp-thread">${thread}${busy ? '<div class="sp-b ai sp-typing"><small>ELMS assistant</small>Typing…</div>' : ''}</div>
+        ${note}
+        <div class="sp-compose">
+          <textarea class="st-input" data-sp-input rows="2" maxlength="4000" placeholder="${st === 'resolved' ? 'Still need help? Write here to reopen this ticket.' : 'Write to the assistant…'}"${busy ? ' disabled' : ''}>${escapeHtml(ticketDrafts[t.id] || '')}</textarea>
+          <div class="sp-actions">
+            <button type="button" class="sp-btn primary" data-sp-send${busy ? ' disabled' : ''}>Send</button>
+            ${st === 'open' ? `<button type="button" class="sp-btn good" data-sp-close${busy ? ' disabled' : ''}>✓ Solved — close ticket</button>` : ''}
+            ${st === 'open' && !t.escalated ? `<button type="button" class="sp-btn" data-sp-human${busy ? ' disabled' : ''}>Talk to admin</button>` : ''}
+          </div>
+        </div>
       </article>`;
     }).join('') + '</div>';
+    container.querySelectorAll('.sp-thread').forEach((el) => { el.scrollTop = el.scrollHeight; });
   }
+
+  // ----- the conversation inside a ticket -----
+  const ticketDrafts = {};
+  const ticketBusy = new Set();
+  async function ticketAction(id, path, body, doneText) {
+    ticketBusy.add(id);
+    renderMyTickets();
+    try {
+      const res = await apiFetch(`/api/support-tickets/${encodeURIComponent(id)}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'That did not work. Please try again.');
+      const i = myTickets.findIndex((t) => t.id === id);
+      if (i >= 0 && data.ticket) myTickets[i] = data.ticket;
+      if (doneText) showToast('Support', doneText, 'success');
+      return true;
+    } catch (err) {
+      showToast('Support', err.message, 'error');
+      return false;
+    } finally {
+      ticketBusy.delete(id);
+      renderMyTickets();
+    }
+  }
+  (() => {
+    const container = document.getElementById('myTicketsContent');
+    const idOf = (el) => el.closest('[data-ticket-id]')?.getAttribute('data-ticket-id');
+    container.addEventListener('input', (e) => { if (e.target.matches('[data-sp-input]')) ticketDrafts[idOf(e.target)] = e.target.value; });
+    container.addEventListener('keydown', (e) => {
+      if (e.target.matches('[data-sp-input]') && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); e.target.closest('[data-ticket-id]').querySelector('[data-sp-send]')?.click(); }
+    });
+    container.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-sp-send], [data-sp-close], [data-sp-human]');
+      if (!btn || btn.disabled) return;
+      const id = idOf(btn);
+      if (!id) return;
+      if (btn.hasAttribute('data-sp-send')) {
+        const text = String(ticketDrafts[id] || '').trim();
+        if (!text) { showToast('Support', 'Write a message first.', 'error'); return; }
+        if (await ticketAction(id, '/messages', { text })) ticketDrafts[id] = '';
+        renderMyTickets();
+      } else if (btn.hasAttribute('data-sp-close')) {
+        await ticketAction(id, '/close', {}, 'Ticket closed. Glad it is solved! Write again any time to reopen it.');
+      } else {
+        await ticketAction(id, '/escalate', {}, 'Our team has been told and will reply here.');
+      }
+    });
+  })();
   document.querySelectorAll('#ticketFilter [data-ticket-filter]').forEach((b) => b.addEventListener('click', () => {
     ticketFilter = b.dataset.ticketFilter;
     document.querySelectorAll('#ticketFilter [data-ticket-filter]').forEach((x) => x.classList.toggle('on', x === b));
@@ -11602,7 +11683,7 @@ async function autoSuggestEmptyDraftCategories() {
 
     btn.disabled = true;
     statusEl.className = '';
-    statusEl.textContent = 'Submitting\u2026';
+    statusEl.textContent = 'The assistant is reading your message\u2026';
 
     try {
       const res = await apiFetch('/api/support-tickets', {
@@ -11619,7 +11700,7 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       statusEl.className = 'success';
-      statusEl.textContent = 'Ticket submitted!';
+      statusEl.textContent = 'Ticket opened — the answer is in your ticket below. You can keep writing there.';
       document.getElementById('ticketSubject').value = '';
       document.getElementById('ticketMessage').value = '';
       loadMyTickets();
@@ -12153,8 +12234,8 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="section-title" style="margin-top:0;">Conversation</div>
         <div style="display:grid; gap:8px; margin-bottom:16px;">
           ${ticket.thread.map((m) => `
-            <div style="padding:10px 12px; border-radius:10px; background:${m.from === 'admin' ? '#EEF4FF' : m.from === 'ai' ? '#F0FAF4' : 'var(--paper-raised)'}; border:1px solid var(--line);">
-              <div class="meta-line" style="margin-bottom:4px;"><b>${m.from === 'admin' ? 'You' : m.from === 'ai' ? 'ELMS AI assistant' : escapeHtml(ticket.userName || ticket.userEmail || 'Customer')}</b> &middot; ${escapeHtml(m.at ? new Date(m.at).toLocaleString() : '')}</div>
+            <div style="padding:10px 12px; border-radius:10px; background:${m.from === 'admin' ? '#EEF4FF' : m.from === 'ai' ? '#F0FAF4' : m.from === 'system' ? '#F5F5F5' : 'var(--paper-raised)'}; border:1px solid var(--line);">
+              <div class="meta-line" style="margin-bottom:4px;"><b>${m.from === 'admin' ? 'You' : m.from === 'ai' ? 'ELMS AI assistant' : m.from === 'system' ? 'System' : escapeHtml(ticket.userName || ticket.userEmail || 'Customer')}</b> &middot; ${escapeHtml(m.at ? new Date(m.at).toLocaleString() : '')}</div>
               <div style="white-space:pre-wrap; font-size:13.5px;">${escapeHtml(m.text || '')}</div>
             </div>`).join('')}
         </div>` : ''}
