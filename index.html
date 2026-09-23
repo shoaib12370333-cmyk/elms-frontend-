@@ -8004,10 +8004,13 @@ async function autoSuggestEmptyDraftCategories() {
     const container = document.getElementById('ordersContent');
     container.innerHTML = '<div class="draft-loading"><div class="draft-skeleton"></div><div class="draft-skeleton"></div><div class="draft-skeleton"></div></div>';
     try {
-      const accountsRes = await apiFetch('/api/ebay-accounts');
+      // These two requests don't depend on each other (fetchOrdersList only reads
+      // ordersAccountFilter, not the accounts response), so run them in parallel
+      // instead of back-to-back - this is a plain local DB read either way, never
+      // a live eBay call, so the only real cost here is the network round trip.
+      const [accountsRes] = await Promise.all([apiFetch('/api/ebay-accounts'), fetchOrdersList()]);
       const accountsData = await accountsRes.json();
       ordersAccounts = (accountsRes.ok && accountsData.success) ? accountsData.accounts : [];
-      await fetchOrdersList();
       renderOrders();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
