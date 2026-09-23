@@ -11799,7 +11799,7 @@ async function autoSuggestEmptyDraftCategories() {
           <tbody>
             ${data.tickets.map((t) => `
               <tr data-ticket-id="${t.id}" class="clickable-row">
-                <td class="row-title">${escapeHtml(t.userName || '—')}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(t.userEmail || '')}</span></td>
+                <td class="row-title">${escapeHtml(t.userName || '—')}${t.source === 'email' ? ' <span class="status-badge draft" style="font-size:10px;">Email</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(t.userEmail || '')}</span></td>
                 <td>${escapeHtml(t.subject)}</td>
                 <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span></td>
                 <td><button class="btn-small" data-action="open-ticket">View</button></td>
@@ -11850,11 +11850,21 @@ async function autoSuggestEmptyDraftCategories() {
       <label class="edit-label">Message</label>
       <p class="description-text" style="margin-bottom:16px; white-space:pre-wrap;">${escapeHtml(ticket.message)}</p>
 
+      ${Array.isArray(ticket.thread) && ticket.thread.length ? `
+        <div class="section-title" style="margin-top:0;">Conversation</div>
+        <div style="display:grid; gap:8px; margin-bottom:16px;">
+          ${ticket.thread.map((m) => `
+            <div style="padding:10px 12px; border-radius:10px; background:${m.from === 'admin' ? '#EEF4FF' : 'var(--paper-raised)'}; border:1px solid var(--line);">
+              <div class="meta-line" style="margin-bottom:4px;"><b>${m.from === 'admin' ? 'You' : escapeHtml(ticket.userName || ticket.userEmail || 'Customer')}</b> &middot; ${escapeHtml(m.at ? new Date(m.at).toLocaleString() : '')}</div>
+              <div style="white-space:pre-wrap; font-size:13.5px;">${escapeHtml(m.text || '')}</div>
+            </div>`).join('')}
+        </div>` : ''}
+
       <div class="section-title" style="margin-top:0;">Status</div>
-      <p class="meta-line"><span class="status-badge ${ticket.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(ticket.status)}</span></p>
+      <p class="meta-line"><span class="status-badge ${ticket.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(ticket.status)}</span>${ticket.source === 'email' ? ` &nbsp;Arrived by email &mdash; your reply is emailed to ${escapeHtml(ticket.userEmail || 'the sender')}.` : ''}</p>
 
       ${ticket.status === 'resolved'
-        ? `<div class="section-title">Your reply</div><p class="description-text">${escapeHtml(ticket.adminReply || '—')}</p>`
+        ? (Array.isArray(ticket.thread) && ticket.thread.length ? '' : `<div class="section-title">Your reply</div><p class="description-text">${escapeHtml(ticket.adminReply || '—')}</p>`)
         : `
           <div class="section-title">Reply &amp; resolve</div>
           <textarea class="editable-input editable-textarea" id="ticketDetailReply" rows="5" placeholder="Write your reply (optional)..."></textarea>
