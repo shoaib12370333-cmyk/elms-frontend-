@@ -7577,6 +7577,7 @@ async function autoSuggestEmptyDraftCategories() {
 
           if (!res.ok || !data.success) {
             alert(data.error || 'Could not publish this listing to eBay.');
+            loadDrafts(); // the card now shows the error eBay gave, and a failed listing is back to "Failed"
             return;
           }
 
