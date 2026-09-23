@@ -2991,6 +2991,29 @@
   .ad-tab { flex:none; border:none; background:transparent; padding:10px 16px; border-radius:10px; font:inherit; font-size:13.5px; font-weight:700; color:#64748B; cursor:pointer; white-space:nowrap; }
   .ad-tab:hover { background:#F1F5F9; color:var(--ink); }
   .ad-tab.active { background:#0064D2; color:#fff; }
+  /* account safety: blocked screen + appeal */
+  .elms-blocked { position:fixed; inset:0; z-index:100000; background:#0F1B2D; display:flex; align-items:center; justify-content:center; padding:18px; overflow:auto; }
+  .elms-blocked-box { background:#fff; border-radius:18px; max-width:540px; width:100%; padding:26px 26px 22px; box-shadow:0 30px 80px rgba(0,0,0,.4); }
+  .elms-blocked-box h2 { margin:0 0 4px; font:800 21px Inter,sans-serif; color:#B42318; }
+  .elms-blocked-box p { margin:6px 0 0; font:500 13.5px/1.5 Inter,sans-serif; color:#475467; }
+  .elms-blocked-reason { padding:12px 14px; border-radius:12px; background:#FEF2F2; border:1px solid #FECACA; color:#7A271A; font:500 14px/1.5 Inter,sans-serif; white-space:pre-wrap; word-break:break-word; margin:12px 0 16px; }
+  .elms-blocked-box label { display:block; font:700 12.5px Inter,sans-serif; color:#344054; margin:10px 0 4px; }
+  .elms-blocked-box input, .elms-blocked-box textarea { width:100%; box-sizing:border-box; border:1.5px solid #D0D5DD; border-radius:10px; padding:10px 12px; font:500 14px Inter,sans-serif; }
+  .elms-blocked-actions { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .elms-blocked-status { margin-top:10px; font:600 13px Inter,sans-serif; } .elms-blocked-status.ok { color:#15803D; } .elms-blocked-status.err { color:#B42318; }
+  /* admin: online / plan / security */
+  .ad-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#98A2B3; margin-right:6px; } .ad-dot.on { background:#16A34A; box-shadow:0 0 0 3px rgba(22,163,74,.18); }
+  .ad-chips { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px; }
+  .ad-chipbtn { border:1.5px solid var(--line); background:#fff; border-radius:99px; padding:6px 13px; font:700 12.5px Inter,sans-serif; cursor:pointer; color:var(--ink); }
+  .ad-chipbtn b { margin-left:5px; } .ad-chipbtn.on { background:#0064D2; border-color:#0064D2; color:#fff; }
+  .ad-tag { display:inline-block; font:800 10.5px Inter,sans-serif; padding:2px 8px; border-radius:99px; letter-spacing:.03em; }
+  .ad-tag.paid { background:#EDF7DC; color:#4C7A0B; } .ad-tag.free { background:#F2F4F7; color:#475467; } .ad-tag.bad { background:#FEF2F2; color:#B42318; }
+  .ad-sec-grid { display:grid; gap:14px; grid-template-columns:1fr 1fr; } @media (max-width:980px) { .ad-sec-grid { grid-template-columns:1fr; } }
+  .ad-form { display:grid; gap:8px; } .ad-form label { font:700 12.5px Inter,sans-serif; color:#344054; }
+  .ad-form select, .ad-form input, .ad-form textarea { width:100%; box-sizing:border-box; border:1.5px solid #D0D5DD; border-radius:10px; padding:9px 11px; font:500 13.5px Inter,sans-serif; background:#fff; }
+  .ad-accts { border:1.5px solid var(--line); border-radius:12px; max-height:220px; overflow:auto; }
+  .ad-acct { display:flex; gap:10px; align-items:center; padding:8px 12px; border-bottom:1px solid var(--line); font:500 13px Inter,sans-serif; } .ad-acct:last-child { border-bottom:none; }
+  .ad-acct .grow { flex:1; min-width:0; word-break:break-word; } .ad-acct small { color:var(--grey); display:block; }
   .ad-count { display:inline-block; min-width:18px; padding:0 6px; margin-left:6px; border-radius:99px; background:#E53238; color:#fff; font-size:11px; line-height:18px; text-align:center; }
   .ad-two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-bottom:0; }
   .ad-two .st-card { margin-bottom:18px; }
@@ -4223,6 +4246,7 @@
           <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
           <button class="ad-tab" data-admin-tab="mail" type="button">Mail</button>
           <button class="ad-tab" data-admin-tab="tickets" type="button">Support <span class="ad-count" id="adminTicketsCount" style="display:none;"></span></button>
+          <button class="ad-tab" data-admin-tab="security" type="button">Security</button>
           <button class="ad-tab" data-admin-tab="settings" type="button">Settings</button>
         </div>
 
@@ -4236,9 +4260,10 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico blue">&#128101;</div>
-              <div class="st-head-txt"><h2>Users</h2><p>Search, adjust credits, stock-check interval and the number of eBay stores each user can connect.</p></div>
-              <input class="st-input ad-search" id="adminUserSearch" type="search" placeholder="Search name or email&hellip;" />
+              <div class="st-head-txt"><h2>Users</h2><p>Who is online, who bought a plan, last sign-in IP. Adjust credits, stock-check interval and eBay stores; open Security to suspend or block.</p></div>
+              <input class="st-input ad-search" id="adminUserSearch" type="search" placeholder="Search name, email or IP&hellip;" />
             </div>
+            <div class="ad-chips" id="adminUserChips"></div>
             <div id="adminUsersContent"><p class="state-msg">Loading&hellip;</p></div>
           </section>
         </div>
@@ -4415,6 +4440,35 @@
         </div>
 
         <!-- Settings -->
+        <!-- Security: pop-up messages to users, blocked IPs -->
+        <div class="ad-panel" data-admin-panel="security" style="display:none;">
+          <div class="ad-sec-grid">
+            <section class="st-card">
+              <div class="st-head"><div class="st-ico blue">&#9993;</div><div class="st-head-txt"><h2>Send a message</h2><p>It pops up on the person's screen the moment they are online (or when they next open ELMS), once.</p></div></div>
+              <div class="ad-form">
+                <label for="noticeTo">To</label>
+                <input id="noticeTo" list="noticeUsers" placeholder="Everyone &mdash; or type a user's email" autocomplete="off" />
+                <datalist id="noticeUsers"></datalist>
+                <label for="noticeKind">Type</label>
+                <select id="noticeKind"><option value="message">Message</option><option value="offer">Offer (gift)</option><option value="warning">Warning</option></select>
+                <label for="noticeTitle">Title</label>
+                <input id="noticeTitle" maxlength="120" placeholder="e.g. A special offer for you" />
+                <label for="noticeBody">Message</label>
+                <textarea id="noticeBody" rows="4" maxlength="2000" placeholder="What do you want to tell them?"></textarea>
+                <label for="noticeDays">Stop showing it after</label>
+                <select id="noticeDays"><option value="0">Never (until read)</option><option value="1">1 day</option><option value="7">7 days</option><option value="30">30 days</option></select>
+                <div><button class="st-btn primary" id="noticeSendBtn" type="button">Send message</button> <span id="noticeStatus"></span></div>
+              </div>
+              <div class="section-title" style="margin-top:18px;">Sent recently</div>
+              <div id="noticeList"><p class="state-msg">Loading&hellip;</p></div>
+            </section>
+            <section class="st-card">
+              <div class="st-head"><div class="st-ico blue">&#128274;</div><div class="st-head-txt"><h2>Blocked IPs</h2><p>Open a user in Users &rarr; Security to see their sign-ins and block an IP. Regular accounts on a blocked IP stay allowed unless you suspend them.</p></div></div>
+              <div id="blockList"><p class="state-msg">Loading&hellip;</p></div>
+            </section>
+          </div>
+        </div>
+
         <div class="ad-panel" data-admin-panel="settings" style="display:none;">
           <div class="ad-two">
             <section class="st-card">
@@ -5734,6 +5788,11 @@
       }
     }
 
+    // A suspended account / blocked address is refused with 403 + { blocked: { kind, reason } }: show the blocked screen (with the appeal form).
+    if (res.status === 403) {
+      res.clone().json().then((d) => { if (d && d.blocked) showBlockedScreen(d.blocked); }).catch(() => {});
+    }
+
     // Every caller does `await res.json()`. When the server answers with something that is not JSON (a proxy
     // timeout page on a long publish, an empty body, a cold-start page) the browser's own error leaks into the
     // UI - Safari's is the baffling "The string did not match the expected pattern", Chrome's mentions
@@ -5775,6 +5834,99 @@
       err.isBadResponse = true;
       throw err;
     }
+  }
+
+  // ---------- Account safety: blocked screen, appeal, pop-up messages from the admin, presence ----------
+  // Shown when the admin suspended this account or blocked this network. The reason is the admin's; the person can appeal.
+  function showBlockedScreen(blocked) {
+    try { localStorage.removeItem('elmsSessionToken'); } catch (_) { /* nothing to clear */ }
+    document.getElementById('appShell').style.display = 'none';
+    document.getElementById('authPage').style.display = 'none';
+    document.getElementById('userChip').style.display = 'none';
+    document.getElementById('elmsBlocked')?.remove();
+    const suspended = blocked && blocked.kind === 'account';
+    const el = document.createElement('div');
+    el.id = 'elmsBlocked';
+    el.className = 'elms-blocked';
+    el.innerHTML = `<div class="elms-blocked-box" role="alertdialog" aria-modal="true">
+      <h2>${suspended ? 'Your account is suspended' : 'Access from this network is blocked'}</h2>
+      <p>${suspended ? 'You cannot use ELMS right now.' : 'ELMS cannot be used from this connection right now.'} This is the reason our team gave:</p>
+      <div class="elms-blocked-reason">${escapeHtml((blocked && blocked.reason) || 'No reason was given.')}</div>
+      <b style="font:800 14px Inter,sans-serif;">Think this is a mistake? Send an appeal</b>
+      <label for="appealEmail">Your ELMS account email</label>
+      <input id="appealEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+      <label for="appealMessage">What happened?</label>
+      <textarea id="appealMessage" rows="4" maxlength="2000" placeholder="Tell us why this should be lifted. For example: this is a shared connection and I did nothing wrong."></textarea>
+      <div class="elms-blocked-actions">
+        <button type="button" class="btn-small save" id="appealSendBtn">Send appeal</button>
+        <button type="button" class="btn-small" id="appealBackBtn" style="background:var(--grey-light);color:var(--ink);">Back to sign in</button>
+      </div>
+      <div class="elms-blocked-status" id="appealStatus"></div>
+    </div>`;
+    document.body.appendChild(el);
+    const status = el.querySelector('#appealStatus');
+    el.querySelector('#appealBackBtn').addEventListener('click', () => window.location.reload());
+    el.querySelector('#appealSendBtn').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const email = el.querySelector('#appealEmail').value.trim();
+      const message = el.querySelector('#appealMessage').value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { status.className = 'elms-blocked-status err'; status.textContent = 'Enter the email address of your ELMS account.'; return; }
+      if (message.length < 5) { status.className = 'elms-blocked-status err'; status.textContent = 'Tell us what happened.'; return; }
+      btn.disabled = true; status.className = 'elms-blocked-status'; status.textContent = 'Sending…';
+      try {
+        const res = await fetch(`${API_BASE}/api/appeals`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, message }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not send the appeal.');
+        status.className = 'elms-blocked-status ok';
+        status.textContent = 'Appeal sent. Our team will read it and reply to your email.';
+        el.querySelector('#appealMessage').value = '';
+      } catch (err) {
+        status.className = 'elms-blocked-status err';
+        status.textContent = err.message;
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // A message from the admin (offer, warning, remark) pops up once; OK marks it read.
+  function showAdminNotice(notice) {
+    return new Promise((resolve) => {
+      const icon = { offer: '🎁', warning: '⚠️' }[notice.kind] || '✉️';
+      const overlay = document.createElement('div');
+      overlay.className = 'elms-confirm-overlay';
+      overlay.style.zIndex = '99000';
+      overlay.innerHTML = `<div class="elms-confirm-box" role="alertdialog" aria-modal="true">
+        <div class="elms-confirm-title">${icon} ${escapeHtml(notice.title)}</div>
+        <div class="elms-confirm-message">${escapeHtml(notice.body).replace(/\n/g, '<br>')}</div>
+        <div class="elms-confirm-actions"><button type="button" class="ord-btn primary" data-act="ok">OK</button></div>
+      </div>`;
+      document.body.appendChild(overlay);
+      const done = () => {
+        overlay.remove();
+        apiFetch(`/api/notices/${encodeURIComponent(notice.id)}/seen`, { method: 'POST' }).catch(() => {});
+        resolve();
+      };
+      overlay.querySelector('[data-act="ok"]').addEventListener('click', done);
+      overlay.querySelector('[data-act="ok"]').focus();
+    });
+  }
+  let adminNoticeShowing = false;
+  async function checkAdminNotices() {
+    if (adminNoticeShowing || !localStorage.getItem('elmsSessionToken')) return;
+    adminNoticeShowing = true;
+    try {
+      const res = await apiFetch('/api/notices/pending');
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      for (const notice of data.notices || []) await showAdminNotice(notice);
+    } catch (_) { /* try again next minute */ } finally { adminNoticeShowing = false; }
+  }
+  // Tells the server the site is open (the admin sees who is online) and looks for new messages from the admin.
+  let presenceTick = 0;
+  function pingPresence() {
+    if (!localStorage.getItem('elmsSessionToken')) return;
+    apiFetch('/api/presence/ping', { method: 'POST' }).catch(() => {});
+    if (presenceTick++ % 2 === 0) checkAdminNotices();
   }
 
   function decodeJwt(token) {
@@ -5988,6 +6140,7 @@
       });
       const data = await res.json();
 
+      if (data.blocked) { showBlockedScreen(data.blocked); return; }
       if (!res.ok || !data.success) {
         alert(data.error || 'Could not sign in with Google.');
         return;
@@ -6164,6 +6317,7 @@
       });
       const data = await res.json();
 
+      if (data.blocked) { showBlockedScreen(data.blocked); return; }
       if (!res.ok || !data.success) {
         statusEl.className = 'auth-status error';
         statusEl.textContent = data.error || 'Could not log in.';
@@ -6218,6 +6372,7 @@
       });
       const data = await res.json();
 
+      if (data.blocked) { showBlockedScreen(data.blocked); return; }
       if (!res.ok || !data.success) {
         statusEl.className = 'auth-status error';
         statusEl.textContent = data.error || 'Could not create your account.';
@@ -6661,8 +6816,12 @@
     const refresh = () => {
       if (!localStorage.getItem('elmsSessionToken')) return;
       Promise.allSettled([refreshSystemNotificationBadge(), refreshMessageBadge(), refreshDraftsCountBadge()]);
+      pingPresence();
     };
     setInterval(refresh, 60000);
+    pingPresence(); // right away: "online" starts now, and a waiting message from the admin pops up
+    // Coming back to the tab: check for messages at once instead of waiting up to two minutes.
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkAdminNotices(); });
   }
 
   // ---------- Live Listings page ----------
@@ -11714,7 +11873,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel ----------
   async function loadAdminPage() {
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -12053,27 +12212,31 @@ async function autoSuggestEmptyDraftCategories() {
         return;
       }
 
+      adminUsersData = data.users || [];
       container.innerHTML = `
 
         <table class="data-table" id="adminUsersTable">
           <thead>
-            <tr><th>User</th><th>Role</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
+            <tr><th>User</th><th>Status</th><th>Plan</th><th>Last sign-in</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
           </thead>
           <tbody>
-            ${data.users.map((u) => `
-              <tr data-user-id="${u.id}">
-                <td class="row-title">${escapeHtml(u.name || '—')}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span></td>
-                <td>${escapeHtml(u.role)}</td>
+            ${adminUsersData.map((u) => `
+              <tr data-user-id="${u.id}" ${adminUserRowAttrs(u)}>
+                <td class="row-title">${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">SUSPENDED</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span></td>
+                <td data-cell="status" style="white-space:nowrap;">${adminUserStatusHtml(u)}</td>
+                <td data-cell="plan">${adminUserPlanHtml(u)}</td>
+                <td data-cell="login" style="font-size:12.5px;">${adminUserLoginHtml(u)}</td>
                 <td><input class="editable-input" data-field="creditBalance" type="number" value="${u.creditBalance}" style="width:100px;" /></td>
                 <td><input class="editable-input" data-field="stockCheckIntervalDays" type="number" min="1" value="${u.stockCheckIntervalDays}" style="width:80px;" /></td>
                 <td><input class="editable-input" data-field="maxEbayAccounts" type="number" min="0" value="${u.maxEbayAccounts ?? 1}" style="width:80px;" /></td>
-                <td><button class="btn-small save" data-action="save-user">Save</button></td>
+                <td style="white-space:nowrap;"><button class="btn-small save" data-action="save-user">Save</button> <button class="btn-small" data-action="user-security" style="background:var(--grey-light);color:var(--ink);">Security</button></td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       `;
 
+      renderAdminUserChips(data.summary);
       wireAdminUserRows();
       applyAdminUserSearch();
     } catch (err) {
@@ -12081,18 +12244,257 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
+  // ---------- Admin: who is online, plan, last IP ----------
+  let adminUsersData = [];
+  let adminUserFilter = 'all';
+  const adminUserAgo = (min) => (min == null ? 'never' : min < 1 ? 'just now' : min < 60 ? `${min} min ago` : min < 1440 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} d ago`);
+  const adminUserRowAttrs = (u) => `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended ? 1 : 0}"`;
+  const adminUserStatusHtml = (u) => (u.online
+    ? '<span class="ad-dot on"></span><b style="color:#15803D;">Online</b>'
+    : `<span class="ad-dot"></span>${u.minutesAgo == null ? 'Never seen' : 'Left ' + adminUserAgo(u.minutesAgo)}`);
+  const adminUserPlanHtml = (u) => (u.plan && u.plan.paid
+    ? `<span class="ad-tag paid">PAID</span><br /><small style="color:var(--grey);">$${escapeHtml(String(u.plan.totalUsd))} &middot; ${u.plan.purchases} purchase${u.plan.purchases === 1 ? '' : 's'}</small>`
+    : '<span class="ad-tag free">FREE</span>');
+  const adminUserLoginHtml = (u) => (u.lastLogin && u.lastLogin.ip
+    ? `<code>${escapeHtml(u.lastLogin.ip)}</code><br /><small style="color:var(--grey);">${escapeHtml(u.lastLogin.place || 'Unknown place')} &middot; ${escapeHtml(adminUserAgo(Math.round((Date.now() - new Date(u.lastLogin.at).getTime()) / 60000)))}</small>`
+    : '<span style="color:var(--grey);">—</span>');
+
+  function renderAdminUserChips(summary) {
+    const box = document.getElementById('adminUserChips');
+    if (!box || !summary) return;
+    const chip = (key, label, n) => `<button type="button" class="ad-chipbtn${adminUserFilter === key ? ' on' : ''}" data-user-filter="${key}">${label}<b>${n}</b></button>`;
+    box.innerHTML = chip('all', 'All', summary.total) + chip('online', '● Online now', summary.online) + chip('paid', 'Bought a plan', summary.paid) + chip('free', 'Free plan', summary.free) + chip('suspended', 'Suspended', summary.suspended);
+    box.querySelectorAll('[data-user-filter]').forEach((b) => b.addEventListener('click', () => { adminUserFilter = b.dataset.userFilter; renderAdminUserChips(summary); applyAdminUserSearch(); }));
+  }
+
+  // Quietly refreshes the status / plan / IP cells (not the inputs someone may be typing in) while the Users tab is open.
+  async function refreshAdminUserStatus() {
+    const panel = document.querySelector('[data-admin-panel="users"]');
+    if (!panel || panel.style.display === 'none' || document.getElementById('page-admin')?.style.display === 'none' || document.hidden) return;
+    try {
+      const res = await apiFetch('/api/admin/users');
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      adminUsersData = data.users || [];
+      adminUsersData.forEach((u) => {
+        const row = document.querySelector(`#adminUsersContent tr[data-user-id="${u.id}"]`);
+        if (!row) return;
+        row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended ? 1 : 0);
+        row.querySelector('[data-cell="status"]').innerHTML = adminUserStatusHtml(u);
+        row.querySelector('[data-cell="plan"]').innerHTML = adminUserPlanHtml(u);
+        row.querySelector('[data-cell="login"]').innerHTML = adminUserLoginHtml(u);
+      });
+      renderAdminUserChips(data.summary);
+      applyAdminUserSearch();
+    } catch (_) { /* next minute */ }
+  }
+  setInterval(refreshAdminUserStatus, 60000);
+
   function applyAdminUserSearch() {
     const q = (document.getElementById('adminUserSearch')?.value || '').trim().toLowerCase();
     document.querySelectorAll('#adminUsersContent tr[data-user-id]').forEach((row) => {
-      row.style.display = !q || row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      const matchesFilter = adminUserFilter === 'all'
+        || (adminUserFilter === 'online' && row.dataset.online === '1')
+        || (adminUserFilter === 'paid' && row.dataset.paid === '1')
+        || (adminUserFilter === 'free' && row.dataset.paid !== '1')
+        || (adminUserFilter === 'suspended' && row.dataset.suspended === '1');
+      row.style.display = matchesFilter && (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
     });
   }
   document.getElementById('adminUserSearch')?.addEventListener('input', applyAdminUserSearch);
+
+  // ---------- Admin: security (sign-ins, suspend, block IP, messages) ----------
+  function adminModal(html, wide) {
+    document.getElementById('adminSecModal')?.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'adminSecModal';
+    overlay.className = 'modal-overlay open';
+    overlay.innerHTML = `<div class="modal-box" style="max-width:${wide ? 900 : 580}px; width:100%; max-height:90vh; overflow:auto;">${html}</div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay || e.target.closest('[data-close]')) overlay.remove(); });
+    return overlay;
+  }
+  async function adminPost(path, body) {
+    const res = await apiFetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'That did not work.');
+    return data;
+  }
+
+  // One user: their sign-ins (IP, place, device) with a Block IP button on each, suspend / reinstate, send a message.
+  async function openUserSecurityModal(u) {
+    const m = adminModal(`
+      <div class="draft-title">${escapeHtml(u.name || u.email)}${u.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}</div>
+      <div class="meta-line">${escapeHtml(u.email)} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}</div>
+      ${u.suspended ? `<div class="elms-blocked-reason" style="margin-top:12px;">Suspended: ${escapeHtml(u.suspendedReason || '')}</div>` : ''}
+      <div class="ad-chips" style="margin-top:14px;">
+        <button class="btn-small" data-sec="message">Send a message</button>
+        ${u.role === 'admin' ? '' : (u.suspended ? '<button class="btn-small save" data-sec="unsuspend">Reinstate account</button>' : '<button class="btn-small" data-sec="suspend" style="background:#FEF2F2;color:#B42318;">Suspend account…</button>')}
+        <button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Close</button>
+      </div>
+      <div class="section-title">Recent sign-ins</div>
+      <div id="secLogins"><p class="state-msg">Loading&hellip;</p></div>`, true);
+    m.querySelector('[data-sec="message"]')?.addEventListener('click', () => { m.remove(); setAdminTab('security'); document.getElementById('noticeTo').value = u.email; document.getElementById('noticeTitle').focus(); });
+    m.querySelector('[data-sec="suspend"]')?.addEventListener('click', () => openSuspendDialog(u));
+    m.querySelector('[data-sec="unsuspend"]')?.addEventListener('click', async () => {
+      if (!(await elmsConfirm(`Reinstate ${u.email}? They can sign in again.`, { okText: 'Reinstate' }))) return;
+      try { await adminPost(`/api/admin/security/users/${u.id}/unsuspend`); showToast('Reinstated', u.email, 'success'); m.remove(); loadAdminUsers(); } catch (err) { showToast('Could not reinstate', err.message, 'error'); }
+    });
+    try {
+      const res = await apiFetch(`/api/admin/security/users/${u.id}/logins`);
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the sign-ins.');
+      const box = m.querySelector('#secLogins');
+      box.innerHTML = data.logins.length ? `<table class="data-table"><thead><tr><th>When</th><th>Result</th><th>IP</th><th>Place</th><th>Device</th><th></th></tr></thead><tbody>
+        ${data.logins.map((l) => `<tr>
+          <td style="white-space:nowrap;">${escapeHtml(new Date(l.at).toLocaleString())}</td>
+          <td>${l.success ? 'Signed in' : '<span class="ad-tag bad">Wrong password</span>'}</td>
+          <td><code>${escapeHtml(l.ip || '—')}</code></td>
+          <td>${escapeHtml(l.place || '—')}</td>
+          <td style="font-size:12.5px;">${escapeHtml(l.device || '—')}</td>
+          <td>${l.ip ? (l.ipBlocked ? '<span class="ad-tag bad">IP BLOCKED</span>' : `<button class="btn-small" data-block-ip="${escapeAttr(l.ip)}" data-device="${escapeAttr(l.deviceId || '')}" style="background:#FEF2F2;color:#B42318;">Block IP…</button>`) : ''}</td>
+        </tr>`).join('')}</tbody></table>` : '<div class="empty-state">No sign-ins recorded yet.</div>';
+      box.querySelectorAll('[data-block-ip]').forEach((b) => b.addEventListener('click', () => openBlockDialog({ ip: b.dataset.blockIp, deviceId: b.dataset.device || '', user: u })));
+    } catch (err) {
+      m.querySelector('#secLogins').innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function openSuspendDialog(u) {
+    const m = adminModal(`
+      <div class="draft-title">Suspend ${escapeHtml(u.email)}</div>
+      <p class="meta-line">They cannot sign in, open sessions end, and scheduled listings go back to drafts. They see your reason and can appeal.</p>
+      <div class="ad-form" style="margin-top:12px;">
+        <label for="susReason">Reason (shown to the person)</label>
+        <textarea id="susReason" rows="3" maxlength="500" placeholder="e.g. Fraudulent orders. Repeated chargebacks."></textarea>
+        <label for="susNote">Private note (only admins see it)</label>
+        <textarea id="susNote" rows="2" maxlength="1000"></textarea>
+        <div class="ad-chips"><button class="btn-small save" id="susGo">Suspend account</button><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Cancel</button></div>
+        <div id="susStatus"></div>
+      </div>`);
+    m.querySelector('#susGo').addEventListener('click', async (e) => {
+      const btn = e.currentTarget; const reason = m.querySelector('#susReason').value.trim();
+      if (reason.length < 3) { m.querySelector('#susStatus').textContent = 'Write the reason first.'; return; }
+      btn.disabled = true;
+      try { await adminPost(`/api/admin/security/users/${u.id}/suspend`, { reason, note: m.querySelector('#susNote').value.trim() }); showToast('Suspended', u.email, 'success'); m.remove(); loadAdminUsers(); }
+      catch (err) { m.querySelector('#susStatus').textContent = err.message; btn.disabled = false; }
+    });
+  }
+
+  // Blocking an IP: choose who is suspended; everyone else seen on that IP stays allowed (an IP is often shared).
+  async function openBlockDialog({ ip, deviceId, user }) {
+    const m = adminModal(`<div class="draft-title">Block IP <code>${escapeHtml(ip)}</code></div><div id="blkBody"><p class="state-msg">Loading who used this IP&hellip;</p></div>`, true);
+    try {
+      const res = await apiFetch(`/api/admin/security/ip/${encodeURIComponent(ip)}`);
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load this IP.');
+      m.querySelector('#blkBody').innerHTML = `
+        <p class="meta-line">An IP address is often shared (family, office, mobile network), so blocking it must not ban innocent people. <b>Tick only the accounts to suspend.</b> Accounts you leave unticked can still sign in from this IP. Everyone else on it &mdash; new accounts and the ones you suspend &mdash; is refused. Admins are never blocked.</p>
+        <div class="section-title" style="margin-top:12px;">Accounts that signed in from this IP (last 90 days)</div>
+        <div class="ad-accts">${data.accounts.length ? data.accounts.map((a) => `
+          <label class="ad-acct"><input type="checkbox" data-suspend="${escapeAttr(a.userId)}" ${a.role === 'admin' || a.suspended ? 'disabled' : ''} ${user && a.userId === user.id && a.role !== 'admin' ? 'checked' : ''} />
+            <span class="grow">${escapeHtml(a.name || a.email)}<small>${escapeHtml(a.email)} &middot; ${a.logins} sign-in${a.logins === 1 ? '' : 's'} &middot; last ${escapeHtml(new Date(a.lastAt).toLocaleDateString())} &middot; joined ${escapeHtml(new Date(a.createdAt).toLocaleDateString())} &middot; ${a.creditBalance} credits</small></span>
+            ${a.role === 'admin' ? '<span class="ad-tag free">ADMIN</span>' : a.suspended ? '<span class="ad-tag bad">SUSPENDED</span>' : '<span class="ad-tag free">stays allowed unless ticked</span>'}
+          </label>`).join('') : '<div class="ad-acct">No sign-ins from this IP in the last 90 days.</div>'}</div>
+        <div class="ad-form" style="margin-top:12px;">
+          <label for="blkReason">Reason (shown to the person who is blocked)</label>
+          <textarea id="blkReason" rows="3" maxlength="500" placeholder="e.g. Fraudulent activity was detected from this connection."></textarea>
+          <label for="blkNote">Private note (only admins see it)</label>
+          <textarea id="blkNote" rows="2" maxlength="1000"></textarea>
+          <label for="blkDays">How long</label>
+          <select id="blkDays"><option value="0">Until I lift it</option><option value="1">1 day</option><option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option></select>
+          ${deviceId ? '<label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="blkDevice" style="width:auto;" /> Also block this browser (it stays blocked if they switch to another IP)</label>' : ''}
+          <div class="ad-chips"><button class="btn-small save" id="blkGo" style="background:#B42318;">Block IP</button><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Cancel</button></div>
+          <div id="blkStatus"></div>
+        </div>`;
+      m.querySelector('#blkGo').addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        const reason = m.querySelector('#blkReason').value.trim();
+        const status = m.querySelector('#blkStatus');
+        if (reason.length < 3) { status.textContent = 'Write the reason first.'; return; }
+        const suspendUserIds = Array.from(m.querySelectorAll('[data-suspend]:checked')).map((c) => c.dataset.suspend);
+        const allowed = data.accounts.filter((a) => a.role !== 'admin' && !a.suspended && !suspendUserIds.includes(a.userId)).length;
+        if (!(await elmsConfirm(`Block ${ip}?\n\n${suspendUserIds.length} account(s) will be suspended.\n${allowed} other account(s) seen on this IP stay allowed.\nAny new account from this IP is refused.`, { title: 'Block this IP', okText: 'Block IP', danger: true }))) return;
+        btn.disabled = true; status.textContent = 'Blocking…';
+        try {
+          const out = await adminPost('/api/admin/security/blocks', {
+            ip, reason, note: m.querySelector('#blkNote').value.trim(), days: Number(m.querySelector('#blkDays').value) || 0, suspendUserIds,
+            deviceIds: m.querySelector('#blkDevice')?.checked && deviceId ? [deviceId] : [],
+          });
+          showToast('IP blocked', `${out.suspended} suspended, ${out.allowed} left allowed, ${out.signedOut} signed out.`, 'success');
+          document.getElementById('adminSecModal')?.remove();
+          loadAdminUsers(); loadAdminSecurity();
+        } catch (err) { status.textContent = err.message; btn.disabled = false; }
+      });
+    } catch (err) {
+      m.querySelector('#blkBody').innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div><div class="ad-chips"><button class="btn-small" data-close>Close</button></div>`;
+    }
+  }
+
+  // Security tab: send a pop-up message, see what was sent, see and lift blocks.
+  async function loadAdminSecurity() {
+    if (!document.getElementById('noticeList')) return;
+    if (!adminUsersData.length) {
+      try { const r = await apiFetch('/api/admin/users'); const d = await r.json(); if (r.ok && d.success) adminUsersData = d.users || []; } catch (_) { /* the list is only a convenience */ }
+    }
+    const dl = document.getElementById('noticeUsers');
+    if (dl) dl.innerHTML = adminUsersData.map((u) => `<option value="${escapeAttr(u.email)}">${escapeHtml(u.name || '')}</option>`).join('');
+    try {
+      const [nr, br] = await Promise.all([apiFetch('/api/admin/security/notices'), apiFetch('/api/admin/security/blocks')]);
+      const nd = await nr.json(); const bd = await br.json();
+      const nl = document.getElementById('noticeList');
+      nl.innerHTML = nd.success && nd.notices.length ? `<table class="data-table"><thead><tr><th>To</th><th>Message</th><th>Read</th><th></th></tr></thead><tbody>${nd.notices.map((n) => `<tr>
+        <td>${escapeHtml(n.to)}</td><td><b>${escapeHtml(n.title)}</b><br /><small style="color:var(--grey);">${escapeHtml(n.body.slice(0, 90))}${n.body.length > 90 ? '…' : ''} &middot; ${escapeHtml(new Date(n.createdAt).toLocaleString())}</small></td>
+        <td>${n.seenCount}</td><td><button class="btn-small" data-recall="${escapeAttr(n.id)}">Recall</button></td></tr>`).join('')}</tbody></table>` : '<div class="empty-state">Nothing sent yet.</div>';
+      nl.querySelectorAll('[data-recall]').forEach((b) => b.addEventListener('click', async () => {
+        if (!(await elmsConfirm('Recall this message? People who have not read it will not see it.'))) return;
+        try { const r = await apiFetch(`/api/admin/security/notices/${b.dataset.recall}`, { method: 'DELETE' }); const d = await r.json(); if (!r.ok || !d.success) throw new Error(d.error || 'Could not recall it.'); loadAdminSecurity(); } catch (err) { showToast('Recall failed', err.message, 'error'); }
+      }));
+      const bl = document.getElementById('blockList');
+      bl.innerHTML = bd.success && bd.blocks.length ? `<table class="data-table"><thead><tr><th>IP</th><th>Reason</th><th>Since</th><th>Allowed / suspended</th><th></th></tr></thead><tbody>${bd.blocks.map((b) => `<tr>
+        <td><code>${escapeHtml(b.ip)}</code>${b.deviceCount ? `<br /><small style="color:var(--grey);">+ ${b.deviceCount} browser${b.deviceCount === 1 ? '' : 's'}</small>` : ''}</td>
+        <td style="max-width:220px;">${escapeHtml(b.reason)}${b.note ? `<br /><small style="color:var(--grey);">Note: ${escapeHtml(b.note)}</small>` : ''}</td>
+        <td style="font-size:12.5px;">${escapeHtml(new Date(b.createdAt).toLocaleDateString())}${b.expiresAt ? `<br /><small style="color:var(--grey);">until ${escapeHtml(new Date(b.expiresAt).toLocaleDateString())}</small>` : '<br /><small style="color:var(--grey);">no end</small>'}</td>
+        <td>${b.allowedAccounts} / ${b.suspendedAccounts}</td>
+        <td><button class="btn-small" data-lift="${escapeAttr(b.id)}" data-suspended="${b.suspendedAccounts}">Lift</button></td></tr>`).join('')}</tbody></table>` : '<div class="empty-state">No IP is blocked.</div>';
+      bl.querySelectorAll('[data-lift]').forEach((b) => b.addEventListener('click', async () => {
+        if (!(await elmsConfirm('Lift this block? People on this IP can sign in again.', { okText: 'Lift block' }))) return;
+        let reinstate = false;
+        if (Number(b.dataset.suspended) > 0) reinstate = await elmsConfirm(`${b.dataset.suspended} account(s) were suspended with this block. Reinstate them too?`, { okText: 'Reinstate them', cancelText: 'Keep them suspended' });
+        try { await adminPost(`/api/admin/security/blocks/${b.dataset.lift}/lift`, { reinstate }); showToast('Block lifted', '', 'success'); loadAdminSecurity(); loadAdminUsers(); } catch (err) { showToast('Could not lift it', err.message, 'error'); }
+      }));
+    } catch (err) {
+      document.getElementById('noticeList').innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  document.getElementById('noticeSendBtn')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const status = document.getElementById('noticeStatus');
+    const to = document.getElementById('noticeTo').value.trim().toLowerCase();
+    const title = document.getElementById('noticeTitle').value.trim();
+    const body = document.getElementById('noticeBody').value.trim();
+    const target = to ? adminUsersData.find((u) => String(u.email).toLowerCase() === to) : null;
+    if (to && !target) { status.textContent = 'No user has that email.'; return; }
+    if (title.length < 2 || body.length < 2) { status.textContent = 'Write a title and a message.'; return; }
+    if (!target && !(await elmsConfirm('Send this to EVERYONE? It pops up for every user once.', { okText: 'Send to everyone' }))) return;
+    btn.disabled = true; status.textContent = 'Sending…';
+    try {
+      await adminPost('/api/admin/security/notices', { userId: target ? target.id : null, kind: document.getElementById('noticeKind').value, title, body, days: Number(document.getElementById('noticeDays').value) || 0 });
+      status.textContent = 'Sent. It shows when they are online.';
+      document.getElementById('noticeTitle').value = ''; document.getElementById('noticeBody').value = '';
+      loadAdminSecurity();
+    } catch (err) { status.textContent = err.message; } finally { btn.disabled = false; }
+  });
 
   function wireAdminUserRows() {
     document.querySelectorAll('#adminUsersContent tr[data-user-id]').forEach((row) => {
       const userId = row.getAttribute('data-user-id');
       const saveBtn = row.querySelector('[data-action="save-user"]');
+      row.querySelector('[data-action="user-security"]')?.addEventListener('click', () => {
+        const user = adminUsersData.find((u) => u.id === userId);
+        if (user) openUserSecurityModal(user);
+      });
 
       saveBtn.addEventListener('click', async () => {
         const creditBalance = Number(row.querySelector('[data-field="creditBalance"]').value);
@@ -12177,7 +12579,7 @@ async function autoSuggestEmptyDraftCategories() {
           <tbody>
             ${data.tickets.map((t) => `
               <tr data-ticket-id="${t.id}" class="clickable-row">
-                <td class="row-title">${escapeHtml(t.userName || '—')}${t.source === 'email' ? ' <span class="status-badge draft" style="font-size:10px;">Email</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(t.userEmail || '')}</span></td>
+                <td class="row-title">${escapeHtml(t.userName || '—')}${t.source === 'email' ? ' <span class="status-badge draft" style="font-size:10px;">Email</span>' : ''}${t.source === 'appeal' ? ' <span class="status-badge error" style="font-size:10px;">Appeal</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(t.userEmail || '')}</span></td>
                 <td>${escapeHtml(t.subject)}</td>
                 <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span>${t.status !== 'resolved' && t.escalated ? ` <span class="status-badge error" style="font-size:10px;">${t.urgent ? 'Urgent' : 'Needs you'}</span>` : t.aiStatus === 'answered' ? ' <span class="status-badge published" style="font-size:10px;">AI answered</span>' : ''}</td>
                 <td><button class="btn-small" data-action="open-ticket">View</button></td>
