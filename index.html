@@ -11554,7 +11554,9 @@ async function autoSuggestEmptyDraftCategories() {
       return `<article class="sp-ticket ${st}">
         <div class="sp-ticket-top"><div><b>${escapeHtml(t.subject)}</b><div class="sp-date">${escapeHtml(new Date(t.createdAt).toLocaleString())}</div></div><span class="sp-pill ${st}">${st === 'resolved' ? 'Resolved' : 'Open'}</span></div>
         <p class="sp-msg">${escapeHtml(t.message)}</p>
-        ${t.adminReply ? `<div class="sp-reply"><small>Reply from ELMS</small>${escapeHtml(t.adminReply)}</div>` : (st === 'open' ? '<div class="sp-wait">Waiting for a reply. You will see it here.</div>' : '')}
+        ${t.adminReply ? `<div class="sp-reply"><small>Reply from ELMS</small>${escapeHtml(t.adminReply)}</div>`
+          : t.aiReply ? `<div class="sp-reply"><small>${t.escalated ? 'Note from ELMS' : 'Reply from the ELMS assistant'}</small>${escapeHtml(t.aiReply)}</div>${st === 'open' ? `<div class="sp-wait">${t.escalated ? 'Our team is looking at this and will reply here.' : 'Not solved? Open a new ticket and write “talk to admin”.'}</div>` : ''}`
+          : (st === 'open' ? '<div class="sp-wait">Waiting for a reply. You will see it here.</div>' : '')}
       </article>`;
     }).join('') + '</div>';
   }
@@ -12096,7 +12098,7 @@ async function autoSuggestEmptyDraftCategories() {
               <tr data-ticket-id="${t.id}" class="clickable-row">
                 <td class="row-title">${escapeHtml(t.userName || '—')}${t.source === 'email' ? ' <span class="status-badge draft" style="font-size:10px;">Email</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(t.userEmail || '')}</span></td>
                 <td>${escapeHtml(t.subject)}</td>
-                <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span></td>
+                <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span>${t.status !== 'resolved' && t.escalated ? ` <span class="status-badge error" style="font-size:10px;">${t.urgent ? 'Urgent' : 'Needs you'}</span>` : t.aiStatus === 'answered' ? ' <span class="status-badge published" style="font-size:10px;">AI answered</span>' : ''}</td>
                 <td><button class="btn-small" data-action="open-ticket">View</button></td>
               </tr>
             `).join('')}
@@ -12139,6 +12141,8 @@ async function autoSuggestEmptyDraftCategories() {
         </div>
       </div>
 
+      ${ticket.status !== 'resolved' && ticket.escalated ? `<div style="padding:10px 12px; margin-bottom:14px; border-radius:10px; background:#FEF2F2; border:1px solid #FECACA; color:#7A271A; font-size:13px;"><b>${ticket.urgent ? 'Urgent — needs you' : 'Needs you'}</b><br />${escapeHtml(ticket.escalationReason || 'The AI assistant passed this to you.')}</div>` : (ticket.aiStatus === 'answered' ? '<div style="padding:8px 12px; margin-bottom:14px; border-radius:10px; background:#F0FAF4; border:1px solid #C7E8D2; color:#1F6B3A; font-size:13px;">The AI assistant answered this ticket. Reply below only if it needs more.</div>' : '')}
+
       <label class="edit-label">Subject</label>
       <p class="description-text" style="margin-bottom:16px;">${escapeHtml(ticket.subject)}</p>
 
@@ -12149,8 +12153,8 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="section-title" style="margin-top:0;">Conversation</div>
         <div style="display:grid; gap:8px; margin-bottom:16px;">
           ${ticket.thread.map((m) => `
-            <div style="padding:10px 12px; border-radius:10px; background:${m.from === 'admin' ? '#EEF4FF' : 'var(--paper-raised)'}; border:1px solid var(--line);">
-              <div class="meta-line" style="margin-bottom:4px;"><b>${m.from === 'admin' ? 'You' : escapeHtml(ticket.userName || ticket.userEmail || 'Customer')}</b> &middot; ${escapeHtml(m.at ? new Date(m.at).toLocaleString() : '')}</div>
+            <div style="padding:10px 12px; border-radius:10px; background:${m.from === 'admin' ? '#EEF4FF' : m.from === 'ai' ? '#F0FAF4' : 'var(--paper-raised)'}; border:1px solid var(--line);">
+              <div class="meta-line" style="margin-bottom:4px;"><b>${m.from === 'admin' ? 'You' : m.from === 'ai' ? 'ELMS AI assistant' : escapeHtml(ticket.userName || ticket.userEmail || 'Customer')}</b> &middot; ${escapeHtml(m.at ? new Date(m.at).toLocaleString() : '')}</div>
               <div style="white-space:pre-wrap; font-size:13.5px;">${escapeHtml(m.text || '')}</div>
             </div>`).join('')}
         </div>` : ''}
