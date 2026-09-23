@@ -2814,11 +2814,10 @@
   .msg-chip { flex:0 0 auto; padding:0 0 10px; border:0; border-bottom:2px solid transparent; background:transparent; color:#697386; font:600 13px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
   .msg-chip span { margin-left:3px; color:#94a3b8; }
   .msg-chip.active { color:var(--blue); border-bottom-color:var(--blue); font-weight:800; } .msg-chip.active span { color:var(--blue); }
-  .msg-types { display:flex; gap:6px; padding:8px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .msg-type { flex:0 0 auto; height:28px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:#fff; color:#697386; font:600 12px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
-  .msg-type.active { background:#E7F0FD; border-color:#C5DBF8; color:#0064D2; }
+  .msg-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 14px; border-bottom:1px solid var(--line); }
+  .msg-folder-select, .msg-sort { border:1px solid var(--line); border-radius:8px; background:#fff; color:#566273; font:600 11.5px Inter,sans-serif; height:28px; padding:0 8px; cursor:pointer; }
+  .msg-folder-select { font-weight:700; color:#374151; }
   .msg-conv-head { display:flex; justify-content:space-between; align-items:baseline; padding:8px 16px; border-bottom:1px solid var(--line); font-size:13px; } .msg-conv-head span { font-size:11px; color:#94a3b8; }
-  .msg-sort { border:1px solid var(--line); border-radius:8px; background:#fff; color:#566273; font:600 11px Inter,sans-serif; height:26px; padding:0 6px; cursor:pointer; }
   .msg-list { flex:1 1 auto; overflow-y:auto; min-height:0; display:flex; flex-direction:column; }
   .msg-group-head { padding:10px 16px 4px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; background:#fbfcfe; }
   .msg-group-head:not(:first-child) { border-top:1px solid var(--line); margin-top:4px; }
@@ -2837,7 +2836,14 @@
   .msg-thread-head { display:flex; align-items:center; gap:12px; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); flex-wrap:wrap; }
   .msg-back { display:none; border:0; background:transparent; font-size:30px; line-height:1; color:#374151; cursor:pointer; width:34px; height:40px; }
   .msg-thread-title { min-width:0; flex:1 1 200px; display:grid; gap:1px; } .msg-thread-title b { font-size:17px; font-weight:800; } .msg-thread-title span { font-size:12px; color:#8a93a2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-thread-title em { font-size:11px; color:#a15c00; font-style:normal; }
-  .msg-thread-actions { display:flex; gap:6px; flex-wrap:wrap; }
+  .msg-thread-menu-wrap { position:relative; }
+  .msg-thread-menu-btn { width:36px; height:36px; border:0; background:transparent; border-radius:8px; font-size:20px; line-height:1; color:#566273; cursor:pointer; }
+  .msg-thread-menu-btn:hover { background:#f1f5f9; }
+  .msg-thread-menu { display:none; position:absolute; right:0; top:42px; z-index:20; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 10px 30px rgba(15,23,42,.15); padding:6px; min-width:160px; }
+  .msg-thread-menu.open { display:block; }
+  .msg-thread-menu button { display:block; width:100%; text-align:left; padding:9px 10px; border:0; background:transparent; border-radius:6px; font:600 13px Inter,sans-serif; color:#374151; cursor:pointer; }
+  .msg-thread-menu button:hover { background:#f6faff; }
+  .msg-thread-menu button.danger { color:#E53238; }
   .msg-context { display:flex; align-items:center; gap:14px; padding:14px 16px; background:#fff; border-bottom:1px solid var(--line); }
   .msg-context img, .msg-context-ph { flex:0 0 60px; width:60px; height:60px; border-radius:8px; object-fit:cover; background:#f1f3f6; border:1px solid var(--line); }
   .msg-context-txt { min-width:0; flex:1; display:grid; gap:2px; } .msg-context-txt span { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; } .msg-context-txt b { font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .msg-context-txt small { font-size:11.5px; color:#8a93a2; }
@@ -3670,19 +3676,26 @@
         <div class="msg-shell" id="msgShell">
           <section class="msg-list-pane">
             <div class="msg-search"><input id="messageSearch" type="search" placeholder="Search buyer, subject or message&hellip;" /></div>
+            <!-- One eBay-style tab row (All messages / From buyers / From eBay / Needs reply)
+                 drives BOTH messageTypeFilter and messageFilter together, like eBay's top tabs.
+                 Unread/Archived/Trash are eBay "folders" (its own left sidebar there) - folded
+                 into a compact dropdown here since this page has no dedicated folder sidebar. -->
             <div class="msg-chips">
-              <button class="msg-chip active" data-message-filter="all">All messages <span id="msgAllCount"></span></button>
-              <button class="msg-chip" data-message-filter="unread">Unread <span id="msgUnreadCount"></span></button>
-              <button class="msg-chip" data-message-filter="awaiting">Needs reply <span id="msgAwaitingCount"></span></button>
-              <button class="msg-chip" data-message-filter="archived">Archived <span id="msgArchivedCount"></span></button>
-              <button class="msg-chip" data-message-filter="trash">Trash <span id="msgTrashCount"></span></button>
+              <button class="msg-chip active" data-msg-view="all">All messages <span id="msgAllCount"></span></button>
+              <button class="msg-chip" data-msg-view="buyers">From buyers <span id="msgBuyersCount"></span></button>
+              <button class="msg-chip" data-msg-view="ebay">From eBay <span id="msgEbayCount"></span></button>
+              <button class="msg-chip" data-msg-view="awaiting">Needs reply <span id="msgAwaitingCount"></span></button>
             </div>
-            <div class="msg-types">
-              <button class="msg-type active" data-message-type="all">All senders</button>
-              <button class="msg-type" data-message-type="FROM_MEMBERS">Buyers</button>
-              <button class="msg-type" data-message-type="FROM_EBAY">eBay</button>
+            <div class="msg-toolbar">
+              <select class="msg-folder-select" id="msgFolderSelect">
+                <option value="active">Inbox</option>
+                <option value="unread">Unread only</option>
+                <option value="archived">Archived</option>
+                <option value="trash">Trash</option>
+              </select>
+              <select class="msg-sort" id="msgSortSelect"><option value="newest">Sort: Newest</option><option value="oldest">Sort: Oldest</option></select>
             </div>
-            <div class="msg-conv-head"><b>Conversations</b><span style="display:flex;align-items:center;gap:8px;"><span id="msgConvCount">0 conversations</span><select class="msg-sort" id="msgSortSelect"><option value="newest">Sort: Newest</option><option value="oldest">Sort: Oldest</option></select></span></div>
+            <div class="msg-conv-head"><span id="msgConvCount">0 conversations</span></div>
             <div class="msg-list" id="messageList"><div class="state-msg">Loading messages&hellip;</div></div>
           </section>
           <section class="msg-thread-pane" id="messageDetail">
@@ -10491,18 +10504,20 @@ async function autoSuggestEmptyDraftCategories() {
     // Rows arrive newest-first from the server; only need to reverse for "Oldest".
     const filtered = messageRows.filter(messageMatches);
     if (messageSortOrder === 'oldest') filtered.reverse();
+    // Counts for the top tab row are Inbox-scoped (ACTIVE status only), matching
+    // eBay's "All messages / From buyers / From eBay / Needs reply" tabs, which
+    // never include archived or trashed conversations.
+    const inbox = messageRows.filter((r) => r.conversation_status === 'ACTIVE');
     const counts = {
-      all: messageRows.length,
-      unread: messageRows.filter((r) => !r.is_read).length,
-      awaiting: messageRows.filter((r) => !r.is_read && r.conversation_type === 'FROM_MEMBERS').length,
-      archived: messageRows.filter((r) => r.conversation_status === 'ARCHIVE').length,
-      trash: messageRows.filter((r) => r.conversation_status === 'DELETE').length,
+      all: inbox.length,
+      buyers: inbox.filter((r) => r.conversation_type === 'FROM_MEMBERS').length,
+      ebay: inbox.filter((r) => r.conversation_type === 'FROM_EBAY').length,
+      awaiting: inbox.filter((r) => r.conversation_type === 'FROM_MEMBERS' && !r.last_message_from_self).length,
     };
     document.getElementById('msgAllCount').textContent = `(${counts.all})`;
-    document.getElementById('msgUnreadCount').textContent = `(${counts.unread})`;
+    document.getElementById('msgBuyersCount').textContent = `(${counts.buyers})`;
+    document.getElementById('msgEbayCount').textContent = `(${counts.ebay})`;
     document.getElementById('msgAwaitingCount').textContent = `(${counts.awaiting})`;
-    document.getElementById('msgArchivedCount').textContent = `(${counts.archived})`;
-    document.getElementById('msgTrashCount').textContent = `(${counts.trash})`;
 
     if (!filtered.length) {
       const isFiltered = messageRows.length > 0;
@@ -10769,10 +10784,13 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="msg-avatar big ${c.conversation_type === 'FROM_EBAY' ? 'ebay' : ''}">${escapeHtml(String(name).trim().charAt(0).toUpperCase() || '?')}</div>
         <div class="msg-thread-title"><b>${escapeHtml(name)}</b><span>${escapeHtml(c.subject || 'Customer conversation')} &middot; ${escapeHtml(c.ebay_account_display_name || c.ebay_account_username || 'eBay store')}</span>
           ${c.trashed_at ? `<em>Trash retention: ${Math.max(0, 30 - Math.floor((Date.now() - new Date(c.trashed_at).getTime()) / 86400000))} day(s) remaining</em>` : ''}</div>
-        <div class="msg-thread-actions">
-          <button class="msg-btn small" id="messageArchiveBtn" type="button">${c.conversation_status === 'ARCHIVE' ? 'Archived' : 'Archive'}</button>
-          <button class="msg-btn small" id="messageMarkUnreadBtn" type="button">Mark unread</button>
-          <button class="msg-btn small danger" id="messageTrashBtn" type="button">${c.conversation_status === 'DELETE' ? 'Restore' : 'Trash'}</button>
+        <div class="msg-thread-menu-wrap">
+          <button class="msg-thread-menu-btn" id="messageThreadMenuBtn" type="button" aria-label="Conversation actions">&#8942;</button>
+          <div class="msg-thread-menu" id="messageThreadMenu">
+            <button type="button" id="messageArchiveBtn">${c.conversation_status === 'ARCHIVE' ? 'Unarchive' : 'Archive'}</button>
+            <button type="button" id="messageMarkUnreadBtn">Mark unread</button>
+            <button type="button" class="danger" id="messageTrashBtn">${c.conversation_status === 'DELETE' ? 'Restore' : 'Move to Trash'}</button>
+          </div>
         </div>
       </div>
       ${context ? `<div class="msg-context">
@@ -10829,6 +10847,10 @@ async function autoSuggestEmptyDraftCategories() {
       finally { btn.disabled = false; btn.textContent = label; }
     });
     document.getElementById('messageNoteBtn').addEventListener('click', () => addMessageNote(c.id));
+    document.getElementById('messageThreadMenuBtn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('messageThreadMenu')?.classList.toggle('open');
+    });
     document.getElementById('messageArchiveBtn').addEventListener('click', () => archiveMessage(c.id));
     document.getElementById('messageMarkUnreadBtn').addEventListener('click', () => markMessageUnread(c.id));
     document.getElementById('messageTrashBtn').addEventListener('click', () => c.conversation_status === 'DELETE' ? restoreMessage(c.id) : trashMessage(c.id));
@@ -10985,16 +11007,40 @@ async function autoSuggestEmptyDraftCategories() {
   document.getElementById('messageAccountFilter').addEventListener('change', (e) => { messageAccountFilter = e.target.value; selectedMessageId = null; loadMessages(); });
   document.getElementById('messageSearch').addEventListener('input', (e) => { messageSearchTerm = e.target.value.trim(); renderMessageList(); });
   document.getElementById('msgSortSelect')?.addEventListener('change', (e) => { messageSortOrder = e.target.value; renderMessageList(); });
-  document.querySelectorAll('[data-message-filter]').forEach((btn) => btn.addEventListener('click', () => {
-    messageFilter = btn.dataset.messageFilter;
-    document.querySelectorAll('[data-message-filter]').forEach((x) => x.classList.toggle('active', x === btn));
+  // The top tab row is eBay's "All messages / From buyers / From eBay / Needs
+  // reply" - each tab sets BOTH the sender-type and status filters together
+  // (and always brings the folder dropdown back to Inbox), instead of the two
+  // independent filter rows this used to be.
+  const MSG_VIEW_STATE = {
+    all: { type: 'all', filter: 'all' },
+    buyers: { type: 'FROM_MEMBERS', filter: 'all' },
+    ebay: { type: 'FROM_EBAY', filter: 'all' },
+    awaiting: { type: 'all', filter: 'awaiting' },
+  };
+  document.querySelectorAll('[data-msg-view]').forEach((btn) => btn.addEventListener('click', () => {
+    const state = MSG_VIEW_STATE[btn.dataset.msgView];
+    if (!state) return;
+    messageTypeFilter = state.type;
+    messageFilter = state.filter;
+    document.querySelectorAll('[data-msg-view]').forEach((x) => x.classList.toggle('active', x === btn));
+    const folderSelect = document.getElementById('msgFolderSelect');
+    if (folderSelect) folderSelect.value = 'active';
     renderMessageList();
   }));
-  document.querySelectorAll('[data-message-type]').forEach((btn) => btn.addEventListener('click', () => {
-    messageTypeFilter = btn.dataset.messageType;
-    document.querySelectorAll('[data-message-type]').forEach((x) => x.classList.toggle('active', x === btn));
+  document.getElementById('msgFolderSelect')?.addEventListener('change', (e) => {
+    messageFilter = e.target.value === 'active' ? 'all' : e.target.value;
+    messageTypeFilter = 'all';
+    // A folder (Unread/Archived/Trash) is its own view, like eBay's sidebar -
+    // none of the sender/priority tabs above apply while one is selected.
+    document.querySelectorAll('[data-msg-view]').forEach((x) => x.classList.toggle('active', e.target.value === 'active' && x.dataset.msgView === 'all'));
     renderMessageList();
-  }));
+  });
+  // One-time listener (the menu itself is recreated on every renderMessageDetail
+  // call, but document is not, so this must live outside that function).
+  document.addEventListener('click', (e) => {
+    const wrap = document.querySelector('.msg-thread-menu-wrap');
+    if (wrap && !wrap.contains(e.target)) document.getElementById('messageThreadMenu')?.classList.remove('open');
+  });
 
   // ---------- Support page ----------
   async function loadSupportPage() {
