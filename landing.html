@@ -23,6 +23,7 @@
 <meta property="og:image" content="https://elmstool.com/logo.png" />
 <meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="#0064D2" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ELMS","url":"https://elmstool.com/","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"ELMS imports products from Amazon, writes the listing with AI, checks it for VeRO words, publishes it to eBay and tracks orders and profit."}</script>
 <link rel="icon" type="image/svg+xml" href="/logo.svg" />
 <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
 <link rel="apple-touch-icon" href="/logo.png" />
@@ -88,7 +89,8 @@
   .win-body { padding: 20px; display: grid; gap: 14px; min-height: 372px; }
   .field { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; background: #fff; font-size: 14px; color: var(--ink2); min-height: 48px; }
   .field .az { flex: none; font-weight: 900; font-size: 12px; background: #FF9900; color: #111; border-radius: 6px; padding: 3px 7px; }
-  .field .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .field .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .hero-grid > *, .win, .win-body, .field, .card > div { min-width: 0; }
   .caret { display: inline-block; width: 2px; height: 16px; background: var(--blue); margin-left: 1px; vertical-align: -3px; animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
   .fetch { height: 5px; border-radius: 9px; background: var(--soft); overflow: hidden; }
@@ -219,15 +221,46 @@
   .foot nav { display: flex; gap: 20px; flex-wrap: wrap; } .foot nav a:hover { color: var(--blue); }
   .legal { margin-top: 14px; font-size: 12.5px; max-width: 760px; }
 
+  /* bulk tools */
+  .bulk { display: grid; grid-template-columns: 1fr 1.08fr; gap: 44px; align-items: center; }
+  .bulk ul { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 14px; }
+  .bulk li { display: flex; gap: 14px; align-items: flex-start; } .bulk li i { flex: none; width: 30px; height: 30px; border-radius: 10px; background: #E7F0FD; color: var(--blue); display: grid; place-items: center; font-style: normal; font-weight: 900; }
+  .bulk li b { display: block; } .bulk li span { color: var(--ink2); font-size: 15.5px; }
+  .bw { background: #fff; border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); overflow: hidden; }
+  .bw-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; background: #F3F6FC; border-bottom: 1px solid var(--line); }
+  .bw-count { font-weight: 800; font-size: 13.5px; color: var(--ink2); margin-right: auto; min-width: 92px; }
+  .bw-btn { font-weight: 700; font-size: 12.5px; padding: 7px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; color: var(--ink2); transition: transform .2s, background .2s, border-color .2s, color .2s; white-space: nowrap; }
+  .bw-btn.press { transform: scale(.94); background: #E7F0FD; border-color: var(--blue); color: var(--blue); }
+  .bw-btn.go { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .bw-rows { display: grid; }
+  .bw-row { display: grid; grid-template-columns: 22px 54px 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); transition: background .3s; }
+  .bw-row:first-child { border-top: 0; } .bw-row.sel { background: #F3F8FF; }
+  .bw-ck { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #C5D0E4; background: #fff; position: relative; transition: background .2s, border-color .2s; }
+  .bw-row.sel .bw-ck { background: var(--blue); border-color: var(--blue); }
+  .bw-row.sel .bw-ck::after { content: ''; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+  .bw-row img { width: 54px; height: 54px; object-fit: contain; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  .bw-t b { display: block; font-size: 13.5px; line-height: 1.3; font-weight: 800; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .bw-t small { display: block; margin-top: 3px; font-size: 12px; color: var(--mute); font-weight: 600; }
+  .bw-t small .after, .bw-price .after, .bw-pill .yes { display: none; }
+  .bw-row.priced .bw-t small .before { display: none; } .bw-row.priced .bw-t small .after { display: inline; color: #3F6208; font-weight: 800; }
+  .bw-pill { justify-self: end; font-size: 11.5px; font-weight: 800; padding: 5px 9px; border-radius: 99px; background: #FFF3D1; color: #8A6100; white-space: nowrap; transition: background .3s, color .3s; }
+  .bw-row.filled .bw-pill { background: #EFF7DC; color: #3F6208; } .bw-row.filled .bw-pill .no { display: none; } .bw-row.filled .bw-pill .yes { display: inline; }
+  .bw-foot { padding: 12px 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--mute); font-weight: 600; background: #FBFCFF; }
+  .bw-foot b { color: var(--ink); }
   @media (max-width: 980px) {
+    .bulk { grid-template-columns: 1fr; }
     .hero-grid, .calc, .safe { grid-template-columns: 1fr; }
     .win { transform: none; } .float { display: none; }
     .steps, .feats { grid-template-columns: 1fr 1fr; }
   }
+  /* the page links do not fit next to the buttons on a tablet: hide them (the buttons stay) and never wrap */
+  .links a { white-space: nowrap; }
+  @media (max-width: 900px) { .links { display: none; } }
   @media (max-width: 720px) {
     .links { display: none; } section { padding: 62px 0; } .hero { padding-top: 40px; }
     .steps, .feats { grid-template-columns: 1fr; } .calc { padding: 22px; } .money b { font-size: 16px; }
     .nav-cta .ghost { display: none; }
+    .bw-row { grid-template-columns: 22px 46px 1fr; } .bw-row img { width: 46px; height: 46px; } .bw-pill { grid-column: 3; justify-self: start; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; }
@@ -329,7 +362,7 @@
     </div>
     <div class="feats">
       <article class="feat reveal" style="--c:#E53238"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></div><h3>Import from Amazon</h3><p>Paste a link or an ASIN, or paste a whole list and let it run in the background. Import right from the Amazon page with the Chrome extension.</p><span class="tag">Single, bulk and large lists</span></article>
-      <article class="feat reveal" style="--c:#0064D2;transition-delay:.06s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg></div><h3>AI that writes the listing</h3><p>Sharper eBay titles, a clean description and item specifics filled in for the category you pick. You stay in control and can edit anything.</p><span class="tag">Title · Description · Item specifics</span></article>
+      <article class="feat reveal" style="--c:#0064D2;transition-delay:.06s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg></div><h3>AI that writes the listing</h3><p>Sharper eBay titles, a clean description and item specifics filled in for the category you pick, for one product or a whole selection. You stay in control and can edit anything.</p><span class="tag">Title · Description · Item specifics</span></article>
       <article class="feat reveal" style="--c:#F5AF02;transition-delay:.12s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><h3>Pricing you can see</h3><p>Set a markup, see your eBay price and your profit right in the draft. Change one number and everything updates.</p><span class="tag">Markup · Profit · Margin</span></article>
       <article class="feat reveal" style="--c:#86B817"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div><h3>Publish in one click</h3><p>Publish to any of your connected eBay stores, schedule listings for later, and see every live listing with its views, watchers and sales.</p><span class="tag">Multiple stores · Scheduling</span></article>
       <article class="feat reveal" style="--c:#E53238;transition-delay:.06s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>VeRO word protection</h3><p>Build your own list of risky brand words. ELMS flags them in your drafts and listings, and one click removes them before eBay ever sees them.</p><span class="tag">Your list · Warnings · One-click clean</span></article>
@@ -337,6 +370,40 @@
       <article class="feat reveal" style="--c:#F5AF02"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg></div><h3>Orders and profit</h3><p>Every eBay order lands in one list with its cost and profit. Add the tracking number and it goes straight back to eBay.</p><span class="tag">Profit per order</span></article>
       <article class="feat reveal" style="--c:#86B817;transition-delay:.06s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><h3>Buyer messages</h3><p>Answer eBay buyers from one inbox with saved replies and private notes. Turn on AI drafts if you want a head start on every reply.</p><span class="tag">Inbox · Saved replies · AI drafts</span></article>
       <article class="feat reveal" style="--c:#0064D2;transition-delay:.12s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div><h3>Research tools</h3><p>Check keyword rankings, read review breakdowns, find categories and explore bestsellers before you decide what to sell.</p><span class="tag">Keywords · Reviews · Bestsellers</span></article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BULK TOOLS ================= -->
+<section id="bulk">
+  <div class="wrap bulk">
+    <div class="reveal">
+      <div class="eyebrow">Work at scale</div>
+      <h2>Fix a hundred drafts <span class="grad">in one go</span></h2>
+      <p class="sub">Select as many drafts as you like and change them all at once. Nothing to repeat, nothing to forget.</p>
+      <ul>
+        <li><i>%</i><div><b>One profit for every draft</b><span>Type 10 and every selected draft is priced at its Amazon cost plus 10%. Each draft also has its own quick % box and an eBay fee calculator.</span></div></li>
+        <li><i>✓</i><div><b>Policies in one step</b><span>Choose the payment, shipping and return policies once and apply them to the whole selection.</span></div></li>
+        <li><i>✨</i><div><b>AI fills the item specifics</b><span>The specifics eBay asks for are filled and saved for you, checked the way eBay checks them, so publishing does not stop on a missing one.</span></div></li>
+        <li><i>🛡</i><div><b>Clean and publish together</b><span>Remove VeRO words from all of them, then publish the whole selection to your store.</span></div></li>
+      </ul>
+    </div>
+    <div class="reveal" style="transition-delay:.1s" aria-hidden="true">
+      <div class="bw">
+        <div class="bw-bar">
+          <span class="bw-count" id="bwCount">Select drafts</span>
+          <span class="bw-btn" id="bwB1">Edit selected</span>
+          <span class="bw-btn" id="bwB2">Fill specifics with AI</span>
+          <span class="bw-btn go">Publish all</span>
+        </div>
+        <div class="bw-rows">
+          <div class="bw-row"><i class="bw-ck"></i><img src="/demo/p1.jpg" alt="" loading="lazy" /><div class="bw-t"><b>Aelfric Eden Oversized Crewneck Sweatshirts for Men</b><small><span class="before">Cost $44.96</span><span class="after">$49.46 &middot; +$4.50 (10%)</span></small></div><span class="bw-pill"><span class="no">Specifics missing</span><span class="yes">✓ Specifics filled</span></span></div>
+          <div class="bw-row"><i class="bw-ck"></i><img src="/demo/p2.jpg" alt="" loading="lazy" /><div class="bw-t"><b>Marc Joseph New York Men's Charles Ave Sneakers</b><small><span class="before">Cost $62.95</span><span class="after">$69.25 &middot; +$6.30 (10%)</span></small></div><span class="bw-pill"><span class="no">Specifics missing</span><span class="yes">✓ Specifics filled</span></span></div>
+          <div class="bw-row"><i class="bw-ck"></i><img src="/demo/p3.jpg" alt="" loading="lazy" /><div class="bw-t"><b>New Balance Men's Numeric 272 Skateboarding Shoes</b><small><span class="before">Cost $59.96</span><span class="after">$65.96 &middot; +$6.00 (10%)</span></small></div><span class="bw-pill"><span class="no">Specifics missing</span><span class="yes">✓ Specifics filled</span></span></div>
+          <div class="bw-row"><i class="bw-ck"></i><img src="/demo/p4.jpg" alt="" loading="lazy" /><div class="bw-t"><b>Rain-X Screen Wash with Insect Remover &amp; Rain Repellent 5L</b><small><span class="before">Cost $15.24</span><span class="after">$16.76 &middot; +$1.52 (10%)</span></small></div><span class="bw-pill"><span class="no">Specifics missing</span><span class="yes">✓ Specifics filled</span></span></div>
+        </div>
+        <div class="bw-foot">AI item specifics use <b>credits per product</b>. Nothing is charged when the AI adds nothing new, and credits come back if it fails.</div>
+      </div>
     </div>
   </div>
 </section>
@@ -524,6 +591,33 @@
     document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else if (!running) { running = true; pi -= 1; playDemo(); } });
     running = true; playDemo();
   }
+
+  // ---------- the bulk demo: select, price, fill specifics, loop ----------
+  (function () {
+    var rows = document.querySelectorAll('.bw-row'), sec = $('bulk');
+    if (!rows.length || !sec) return;
+    var tm = [], playing = false;
+    var at = function (fn, ms) { tm.push(setTimeout(fn, ms)); };
+    var stopBulk = function () { tm.forEach(clearTimeout); tm = []; playing = false; };
+    function finish() { rows.forEach(function (r) { r.classList.add('sel', 'priced', 'filled'); }); $('bwCount').textContent = rows.length + ' selected'; }
+    if (reduce) { finish(); return; }
+    function play() {
+      playing = true;
+      rows.forEach(function (r) { r.classList.remove('sel', 'priced', 'filled'); });
+      $('bwCount').textContent = 'Select drafts'; $('bwB1').classList.remove('press'); $('bwB2').classList.remove('press');
+      rows.forEach(function (r, i) { at(function () { r.classList.add('sel'); $('bwCount').textContent = (i + 1) + ' selected'; }, 700 + i * 380); });
+      at(function () { $('bwB1').classList.add('press'); }, 2700);
+      at(function () { $('bwB1').classList.remove('press'); rows.forEach(function (r) { r.classList.add('priced'); }); }, 3050);
+      at(function () { $('bwB2').classList.add('press'); }, 4500);
+      at(function () { $('bwB2').classList.remove('press'); rows.forEach(function (r, i) { at(function () { r.classList.add('filled'); }, i * 240); }); }, 4850);
+      at(play, 10500);
+    }
+    // it plays while the block is on screen (and the tab is visible)
+    var visible = false;
+    var sync = function () { if (visible && !document.hidden) { if (!playing) play(); } else stopBulk(); };
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; sync(); }, { threshold: 0.25 }).observe(sec); else { visible = true; sync(); }
+    document.addEventListener('visibilitychange', sync);
+  })();
 
   // ---------- profit calculator ----------
   var ranges = ['rCost', 'rMark', 'rFee'].map($);

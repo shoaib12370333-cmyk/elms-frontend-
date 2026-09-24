@@ -7039,6 +7039,7 @@
             <b id="draftSelectedCount">0 selected</b>
             <button class="dv-btn primary small" id="bulkPublishBtn" type="button">Publish all</button>
             <button class="dv-btn small" id="bulkEditBtn" type="button" title="Set one profit % and the policies for all the selected drafts">Edit selected</button>
+            <button class="dv-btn small" id="bulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected drafts and saves them, so publishing does not stop on a missing one">Fill specifics with AI</button>
             <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the VeRO words out of the selected drafts with AI">Remove VeRO words</button>
             <button class="dv-btn small" id="bulkDeleteBtn" type="button">Remove</button>
             <button class="dv-btn small" id="bulkClearBtn" type="button">Clear</button>
@@ -7715,7 +7716,8 @@
         const v = collectEditorValues(ed);
         const res = await apiFetch('/api/list-on-ebay/fill-aspects', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, categoryName: catSelect.selectedOptions?.[0]?.textContent || '', description: v.description || l.description || '', bulletPoints: l.bullet_points || [], specifications: v.specifications || l.specifications || [], aspects: ed._aspectDefs, existing: collectEditorAspects(ed) }),
+          // The category and the account let the server check the answer the way publishing checks it (and use eBay's whole value list).
+          body: JSON.stringify({ title, categoryName: catSelect.selectedOptions?.[0]?.textContent || '', categoryId: catSelect.value || '', accountId: (accountId() && accountId() !== '__ADD_EBAY_ACCOUNT__') ? accountId() : '', description: v.description || l.description || '', bulletPoints: l.bullet_points || [], specifications: v.specifications || l.specifications || [], aspects: ed._aspectDefs, existing: collectEditorAspects(ed) }),
         });
         const d = await res.json();
         if (!res.ok || !d.success) throw new Error(d.error || 'Could not fill the item specifics.');
@@ -7729,8 +7731,13 @@
           const def = ed._aspectDefs.find((a) => a.name === inp.dataset.name);
           inp.classList.toggle('missing', !!(def && def.required && !inp.value.trim()));
         });
-        showToast('Item specifics', n ? `AI filled ${n} specific${n === 1 ? '' : 's'}.${missing ? ` ${missing} required still empty.` : ' Review them, then save.'}` : 'Nothing new to fill. Everything the facts allow is already set.', n ? 'success' : 'info');
+        const stillEmpty = (d.data?.missing || []).length ? ` (${d.data.missing.join(', ')})` : '';
+        // Saved right away, so the draft is ready to publish and the values do not get lost by leaving the editor.
+        const saveBtn = ed.querySelector('[data-ui-action="save-editor"]');
+        const autoSaved = !!(n && saveBtn && !saveBtn.disabled);
+        showToast('Item specifics', n ? `AI filled ${n} specific${n === 1 ? '' : 's'}${autoSaved ? ' and saved them' : ''}.${missing ? ` ${missing} required still empty${stillEmpty}: fill ${missing === 1 ? 'it' : 'them'} in, then save.` : autoSaved ? '' : ' Review them, then save.'}` : 'Nothing new to fill. Everything the facts allow is already set.', n ? 'success' : 'info');
         refreshCreditBalanceChip();
+        if (autoSaved) saveBtn.click();
       } catch (err) { showToast('AI item specifics failed', err.message, 'error'); }
       finally { btn.disabled = false; btn.textContent = label; }
     });
@@ -8242,6 +8249,76 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
+  // ---------- Bulk: AI fills the eBay item specifics of the selected drafts ----------
+  // The server fills, checks (the same checks publishing runs) and SAVES them, and charges the admin-set credits per draft
+  // that really got new specifics. A big selection goes in small requests so the progress can show and none times out.
+  async function bulkFillAspects(ids, btn) {
+    let cost = null;
+    try {
+      const r = await apiFetch('/api/listings/bulk-aspects/cost');
+      const d = await apiJson(r);
+      if (r.ok && d.success) cost = Number(d.cost);
+    } catch (_) { /* the dialog just leaves the price out */ }
+    const n = ids.length;
+    const price = cost === null ? '' : cost === 0
+      ? '\n\nThis is free.'
+      : `\n\nIt costs ${cost} credit${cost === 1 ? '' : 's'} per product: up to ${cost * n} credit${cost * n === 1 ? '' : 's'} for ${n} product${n === 1 ? '' : 's'}. A product that gets nothing new, is skipped or fails is not charged.`;
+    const ok = await elmsConfirm(`AI will fill the eBay item specifics of ${n} selected draft${n === 1 ? '' : 's'} and save them, so publishing does not stop on a missing one.\nA draft with no eBay category gets eBay's suggested one.${price}`, { title: 'Fill item specifics with AI', okText: 'Fill with AI' });
+    if (!ok) return;
+
+    const label = btn.textContent;
+    btn.disabled = true;
+    const all = [];
+    let stop = '';
+    try {
+      for (let i = 0; i < ids.length && !stop; i += 5) {
+        btn.textContent = `Filling ${Math.min(i + 5, ids.length)}/${ids.length}…`;
+        const res = await apiFetch('/api/listings/bulk-aspects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: ids.slice(i, i + 5) }) });
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
+        all.push(...data.results);
+        if (data.results.some((r) => r.status === 'no_credits')) stop = 'You ran out of credits. Buy more to continue.';
+      }
+    } catch (err) {
+      stop = err.message || 'Could not reach the server.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+    refreshCreditBalanceChip();
+    const count = (s) => all.filter((r) => r.status === s).length;
+    const spent = all.reduce((sum, r) => sum + (r.creditsUsed || 0), 0);
+    const name = (r) => String(r.title || (draftListingMap.get(String(r.id)) || {}).title || r.id).slice(0, 70);
+    const attention = [
+      ...all.filter((r) => r.status === 'filled' && r.missing && r.missing.length).map((r) => `${name(r)}: still needs ${r.missing.join(', ')}`),
+      ...all.filter((r) => r.status === 'skipped' || r.status === 'failed').map((r) => `${name(r)}: ${r.reason}`),
+    ];
+    if (stop) attention.unshift(stop);
+    const lines = [
+      `${count('filled')} filled${count('nothing') ? `, ${count('nothing')} already complete` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
+      `Credits used: ${spent}.`,
+    ];
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box bk-box" role="dialog" aria-modal="true" aria-label="Item specifics result">
+        <div class="elms-confirm-title">${count('filled') ? 'Item specifics filled' : 'Item specifics'}</div>
+        <div class="elms-confirm-message">${lines.map(escapeHtml).join('<br>')}</div>
+        ${attention.length ? `<div class="bk-sec"><b>Needs your attention</b><small style="margin-top:0;">${attention.slice(0, 25).map(escapeHtml).join('<br>')}${attention.length > 25 ? `<br>and ${attention.length - 25} more.` : ''}</small></div>` : ''}
+        <div class="elms-confirm-actions"><button type="button" class="ord-btn primary" data-act="ok">OK</button></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter') close(); };
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-act="ok"]').addEventListener('click', close);
+    overlay.querySelector('[data-act="ok"]').focus();
+    loadDrafts();
+  }
+
   function updateBulkBar() {
     const boxes = document.querySelectorAll('#draftsContent .dv-check');
     const checked = document.querySelectorAll('#draftsContent .dv-check:checked');
@@ -8318,6 +8395,12 @@ async function autoSuggestEmptyDraftCategories() {
       const ids = getSelectedIds();
       if (!ids.length) return;
       openBulkEditModal(ids);
+    });
+
+    document.getElementById('bulkAspectsBtn')?.addEventListener('click', () => {
+      const ids = getSelectedIds();
+      if (!ids.length) return;
+      bulkFillAspects(ids, document.getElementById('bulkAspectsBtn'));
     });
 
     bulkVeroBtn?.addEventListener('click', async () => {
