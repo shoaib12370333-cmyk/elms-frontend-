@@ -7693,6 +7693,21 @@
     return Array.from(elmsFieldsShown()).map((k) => `f-${k}`).join(' ');
   }
 
+  // /draft?open=<id> (the browser extension's "Open the draft in ELMS"): open that draft's editor once, then tidy the address.
+  function openDraftFromUrl() {
+    let id = null;
+    try { id = new URLSearchParams(window.location.search).get('open'); } catch (_) { /* no address to read */ }
+    if (!id || !/^[A-Za-z0-9_-]{1,64}$/.test(id)) return;
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.delete('open');
+      window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+    } catch (_) { /* the address stays */ }
+    const l = draftListingMap.get(String(id));
+    if (l) openListingEditor(l, { mode: 'draft', onDone: () => loadDrafts() });
+    else openDraftDetailModal(id);
+  }
+
   async function loadDrafts() {
     const container = document.getElementById('draftsContent');
     container.innerHTML = `<div class="draft-loading"><div class="draft-skeleton"></div><div class="draft-skeleton"></div><div class="draft-skeleton"></div></div>`;
@@ -7714,6 +7729,7 @@
 
       const allDrafts = (data.listings || []).map(veroTag);
       draftListingMap = new Map(allDrafts.map((item) => [String(item.id), item]));
+      setTimeout(openDraftFromUrl, 0);
       let draftVeroOnly = false;
       const veroCount = () => allDrafts.filter((l) => l._vero.terms.length).length;
       const counts = allDrafts.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
