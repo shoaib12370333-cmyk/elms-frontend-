@@ -1973,6 +1973,10 @@
   .dash-card .label { color:var(--grey); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
   .dash-card .value { font-size:26px; font-weight:800; margin-top:4px; line-height:1.1; }
   .dash-card .hint { color:var(--grey); font-size:11px; margin-top:3px; }
+  .dash-card { min-width:0; overflow:hidden; } .dash-card .dash-body { flex:1 1 0; }
+  .dash-card .value, .ord-card-value { overflow-wrap:anywhere; }
+  .dash-card .value.v-long, .ord-card-value.v-long { font-size:21px; } .dash-card .value.v-xlong, .ord-card-value.v-xlong { font-size:17px; }
+  @media (max-width:480px) { .dash-card .value.v-long { font-size:17px; } .dash-card .value.v-xlong { font-size:15px; } }
   /* icon color themes */
   .dash-ico.blue { background:#E7F0FD; color:var(--blue); }
   .dash-ico.green { background:#EAF7E6; color:var(--green-dark); }
@@ -2719,6 +2723,7 @@
   .ih-price.buy { background:#E7F0FD; color:#0064D2; }
   .ih-price.sell { background:#EEF6DF; color:#5b8f0e; }
   .ih-profit { color:#5b8f0e; }
+  .ord-cost { display:inline-flex; gap:6px; align-items:center; } .ord-cost input { width:92px; padding:5px 8px; border:1px solid var(--border, #d9dee7); border-radius:8px; font:inherit; }
   .ih-status { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
   .ih-status.success { background:#EEF6DF; color:#5b8f0e; }
   .ih-status.failed { background:#FDECEC; color:#E53238; }
@@ -6615,7 +6620,7 @@
         <div class="dashboard-grid">
           ${cards.map((c) => `<div class="dash-card">
             <div class="dash-ico ${c.theme}">${ICONS[c.ico]}</div>
-            <div class="dash-body"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="hint">${escapeHtml(c.hint)}</div></div>
+            <div class="dash-body"><div class="label">${c.label}</div><div class="value${valueSizeClass(c.value)}">${c.value}</div><div class="hint">${escapeHtml(c.hint)}</div></div>
           </div>`).join('')}
         </div>
         <div class="dashboard-columns">
@@ -6847,6 +6852,12 @@
   });
 
   let __elmsBackgroundRefreshStarted = false;
+  /** Big money amounts get a smaller size so they stay inside their box. */
+  function valueSizeClass(value) {
+    const n = String(value == null ? '' : value).replace(/<[^>]*>/g, '').length;
+    return n > 12 ? ' v-xlong' : n > 9 ? ' v-long' : '';
+  }
+
   function startBackgroundRefresh() {
     if (__elmsBackgroundRefreshStarted || !localStorage.getItem('elmsSessionToken')) return;
     __elmsBackgroundRefreshStarted = true;
@@ -8678,7 +8689,7 @@ async function autoSuggestEmptyDraftCategories() {
     const start = (ordersPage - 1) * ORDERS_PAGE_SIZE;
     const rows = filtered.slice(start, start + ORDERS_PAGE_SIZE);
 
-    const card = (cls, label, value, hint) => `<div class="ord-card ${cls}"><div class="ord-card-label">${label}</div><div class="ord-card-value">${value}</div><div class="ord-card-hint">${hint}</div></div>`;
+    const card = (cls, label, value, hint) => `<div class="ord-card ${cls}"><div class="ord-card-label">${label}</div><div class="ord-card-value${valueSizeClass(value)}">${value}</div><div class="ord-card-hint">${hint}</div></div>`;
     container.innerHTML = `
       <div class="ord-head">
         <div><h1>Orders</h1><div class="sub">Every eBay order, its payment, shipping address, tracking and fulfillment &mdash; like Seller Hub.</div></div>
@@ -8835,6 +8846,8 @@ async function autoSuggestEmptyDraftCategories() {
           ${o.tax != null ? kv('Tax', escapeHtml(orderMoney(o, o.tax))) : ''}
           ${kv('Total', escapeHtml(orderMoney(o, o.line_total ?? o.sale_price)))}
           ${o.buy_price != null ? kv('Amazon cost', escapeHtml(orderMoney(o, Number(o.buy_price) * (o.quantity || 1)))) : ''}
+          ${kv('Cost per item', `<span class="ord-cost"><input type="number" id="ordCostInput" min="0" step="0.01" inputmode="decimal" value="${o.buy_price != null ? escapeAttr(String(Number(o.buy_price))) : ''}" placeholder="e.g. 8.99" /><button class="ord-btn small" type="button" id="ordSaveCost">Save</button></span>`)}
+          <div class="ord-sub">${o.buy_price_manual ? 'Set by you. Empty the box and Save to go back to the listing price.' : o.buy_price != null ? 'Taken from your listing. Type another figure to use your own.' : 'No price found for this item. Enter what it cost you to see the profit.'}</div>
           ${o.profit != null ? kv('Profit', `<span class="${Number(o.profit) >= 0 ? 'good' : 'bad'}">${escapeHtml(orderMoney(o, o.profit))}</span>`) : ''}
           ${kv('Payment', escapeHtml(String(o.ebay_payment_status || '—').replace(/_/g, ' ').toLowerCase()))}
         </section>
@@ -8919,6 +8932,12 @@ async function autoSuggestEmptyDraftCategories() {
     }));
     $('ordMarkDelivered').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
       const data = await json(`/api/orders/${encodeURIComponent(o.id)}`, { method: 'PUT', body: JSON.stringify({ fulfillmentStatus: 'delivered' }) });
+      apply(data.order);
+    }));
+    $('ordSaveCost').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
+      const price = $('ordCostInput').value.trim();
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/buy-price`, { method: 'PUT', body: JSON.stringify({ price: price === '' ? null : price }) });
+      showToast('Saved', price === '' ? 'Back to the listing price.' : 'Cost saved. Profit updated.', 'success');
       apply(data.order);
     }));
     $('ordSaveNote').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
