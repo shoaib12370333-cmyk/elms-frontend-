@@ -24,6 +24,7 @@
 <meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="#0064D2" />
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ELMS","url":"https://elmstool.com/","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"ELMS imports products from Amazon, writes the listing with AI, checks it for VeRO words, publishes it to eBay and tracks orders and profit."}</script>
+<noscript><style>.reveal, .card, .chip, .live { opacity: 1 !important; transform: none !important; }</style></noscript>
 <link rel="icon" type="image/svg+xml" href="/logo.svg" />
 <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
 <link rel="apple-touch-icon" href="/logo.png" />
@@ -247,6 +248,86 @@
   .bw-row.filled .bw-pill { background: #EFF7DC; color: #3F6208; } .bw-row.filled .bw-pill .no { display: none; } .bw-row.filled .bw-pill .yes { display: inline; }
   .bw-foot { padding: 12px 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--mute); font-weight: 600; background: #FBFCFF; }
   .bw-foot b { color: var(--ink); }
+  /* skip link, sticky phone bar, active page link */
+  .skip { position: absolute; left: -9999px; top: 8px; background: #fff; color: var(--ink); padding: 10px 14px; border-radius: 10px; z-index: 100; font-weight: 700; }
+  .skip:focus { left: 12px; box-shadow: var(--shadow); }
+  .links a.active { background: var(--soft); color: var(--blue); }
+  .mbar { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; gap: 10px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); border-top: 1px solid var(--line); transform: translateY(115%); transition: transform .3s; }
+  .mbar.show { transform: none; } .mbar .btn { flex: 1; padding: 12px 10px; }
+
+  /* what is inside: three little windows that really look like the app */
+  .inside { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .tile { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 30px rgba(15,35,80,.05); overflow: hidden; display: flex; flex-direction: column; min-width: 0; transition: transform .25s, box-shadow .25s; }
+  .tile:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
+  .tile-vis { background: var(--soft); padding: 16px; height: 268px; position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+  .tile-txt { padding: 20px 22px 24px; } .tile-txt h3 { margin: 0 0 6px; font-size: 19px; letter-spacing: -.01em; } .tile-txt p { margin: 0; color: var(--ink2); font-size: 15px; }
+  .ex { position: absolute; right: 12px; top: 10px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; z-index: 3; }
+
+  /* 1) the inbox */
+  .mi { display: grid; grid-template-columns: 42% 1fr; height: 100%; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(15,35,80,.06); }
+  .mi-list { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+  .mi-row { display: flex; gap: 8px; align-items: center; padding: 9px 10px; border-bottom: 1px solid #F0F3F8; min-width: 0; }
+  .mi-row.sel { background: #EEF4FF; box-shadow: inset 3px 0 0 var(--blue); }
+  .mi-row .av { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 800 12px Inter, sans-serif; font-style: normal; background: #E7F0FD; color: var(--blue); }
+  .mi-row .av.b { background: #FCE7E7; color: var(--red); } .mi-row .av.c { background: #EAF7E5; color: #3B8F3B; }
+  .mi-row div { min-width: 0; } .mi-row b { display: block; font-size: 11.5px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mi-row small { display: block; font-size: 10.5px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mi-row .dot { margin-left: auto; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .mi-thread { display: flex; flex-direction: column; justify-content: flex-end; gap: 7px; padding: 10px; min-width: 0; background: #fff; }
+  .mi-head { margin-bottom: auto; font-size: 11.5px; font-weight: 800; display: flex; align-items: center; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid #F0F3F8; } .mi-head i { font-style: normal; color: var(--yellow); }
+  .mi-b { max-width: 88%; padding: 8px 11px; border-radius: 14px; font-size: 11.5px; line-height: 1.4; }
+  .mi-b.l { background: #F1F3F6; border-bottom-left-radius: 4px; align-self: flex-start; animation: miIn 9s infinite both; }
+  .mi-b.r { background: #1D6FEB; color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; animation: miReply 9s infinite both; }
+  .mi-t { align-self: flex-end; font-size: 10px; color: var(--mute); display: flex; gap: 4px; animation: miReply 9s infinite both; } .mi-t em { font-style: normal; letter-spacing: -3px; animation: miTick 9s infinite both; }
+  .mi-typing { align-self: flex-end; display: flex; gap: 4px; padding: 8px 11px; background: #E7F0FD; border-radius: 14px; animation: miType 9s infinite both; } .mi-typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); animation: bob 1s ease-in-out infinite; } .mi-typing i:nth-child(2) { animation-delay: .15s; } .mi-typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes miIn { 0%, 4% { opacity: 0; transform: translateY(8px); } 10%, 96% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+  @keyframes miType { 0%, 22% { opacity: 0; height: 0; padding: 0 11px; } 26%, 40% { opacity: 1; height: 24px; padding: 8px 11px; } 44%, 100% { opacity: 0; height: 0; padding: 0 11px; } }
+  @keyframes miReply { 0%, 44% { opacity: 0; transform: translateY(8px); } 50%, 96% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+  @keyframes miTick { 0%, 70% { color: var(--mute); } 76%, 100% { color: var(--blue); } }
+
+  /* 2) profit in the store's own currency */
+  .mo { background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 6px 18px rgba(15,35,80,.06); height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+  .mo-tabs { display: flex; gap: 6px; padding: 10px 10px 8px; border-bottom: 1px solid #F0F3F8; }
+  .mo-tabs button { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 5px 11px; font: 800 11.5px Inter, sans-serif; color: var(--ink2); cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+  .mo-tabs button[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .mo-h, .mo-r { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 6px; padding: 8px 12px; align-items: center; font-size: 11.5px; }
+  .mo-h { color: var(--mute); font-weight: 800; text-transform: uppercase; letter-spacing: .05em; font-size: 10px; }
+  .mo-r { border-top: 1px solid #F0F3F8; } .mo-r span:first-child { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mo-r b { font-weight: 800; } .mo-r .pf { color: #3F6208; background: #EFF7DC; border-radius: 8px; padding: 3px 7px; text-align: center; font-weight: 900; }
+  .mo-foot { margin-top: auto; padding: 9px 12px; font-size: 10.5px; color: var(--mute); background: #FBFCFF; border-top: 1px solid #F0F3F8; }
+
+  /* 3) the extension */
+  .mx { position: relative; height: 100%; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 6px 18px rgba(15,35,80,.06); padding: 12px; display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-content: start; overflow: hidden; }
+  .mx img { width: 84px; height: 84px; object-fit: contain; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  .mx-t { min-width: 0; } .mx-t b { display: block; font-size: 12px; line-height: 1.3; } .mx-t small { display: block; margin-top: 4px; color: var(--mute); font-size: 11px; }
+  .mx-price { margin-top: 5px; font-weight: 900; font-size: 15px; color: #B12704; }
+  .mx-var { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; padding-top: 4px; }
+  .mx-var span { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: 700; } .mx-var span i { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); }
+  .mx-btn { position: absolute; right: 12px; bottom: 12px; width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(145deg,#0f172a,#172554); padding: 6px; box-shadow: 0 8px 22px rgba(15,23,42,.35), 0 0 0 3px #fff; }
+  .mx-btn img { width: 100%; height: 100%; border: 0; border-radius: 9px; padding: 0; background: transparent; object-fit: contain; }
+  .mx-toast { position: absolute; right: 66px; bottom: 14px; max-width: 190px; background: #0f172a; color: #fff; border-left: 4px solid #86b817; border-radius: 12px; padding: 9px 12px; font-size: 11px; line-height: 1.4; box-shadow: 0 12px 30px rgba(15,23,42,.3); animation: mxToast 7s infinite both; }
+  @keyframes mxToast { 0%, 22% { opacity: 0; transform: translateX(10px); } 30%, 84% { opacity: 1; transform: none; } 92%, 100% { opacity: 0; transform: translateX(10px); } }
+  .mx-btn { animation: mxPress 7s infinite both; } @keyframes mxPress { 0%, 18% { transform: none; } 22% { transform: scale(.9); } 28%, 100% { transform: none; } }
+
+  /* small promises */
+  .perks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 26px; }
+  .perk { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start; }
+  .perk i { flex: none; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-style: normal; font-size: 17px; background: #EAF2FE; }
+  .perk b { display: block; font-size: 14.5px; line-height: 1.3; } .perk span { display: block; color: var(--mute); font-size: 13px; margin-top: 2px; line-height: 1.45; }
+
+  /* made for every store */
+  .stores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .store { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; position: relative; overflow: hidden; transition: transform .25s, box-shadow .25s; }
+  .store:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
+  .store::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--c, var(--blue)); }
+  .store .cc { display: inline-grid; place-items: center; min-width: 46px; height: 32px; padding: 0 10px; border-radius: 9px; background: color-mix(in srgb, var(--c, var(--blue)) 14%, #fff); color: var(--c, var(--blue)); font-weight: 900; letter-spacing: .06em; }
+  .store h3 { margin: 12px 0 14px; font-size: 21px; letter-spacing: -.01em; }
+  .store dl { margin: 0; display: grid; gap: 9px; } .store dl div { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 9px; border-bottom: 1px dashed var(--line); font-size: 14.5px; } .store dl div:last-child { border-bottom: 0; padding-bottom: 0; }
+  .store dt { color: var(--mute); font-weight: 600; } .store dd { margin: 0; font-weight: 800; text-align: right; }
+  .more-stores { text-align: center; margin: 26px auto 0; max-width: 700px; color: var(--ink2); }
+  .more-stores b { color: var(--ink); }
+  @media (max-width: 980px) { .inside, .stores { grid-template-columns: 1fr; } .perks { grid-template-columns: 1fr 1fr; } .tile-vis { height: 240px; } }
+  @media (max-width: 720px) { .mbar { display: flex; } body { padding-bottom: 76px; } .perks { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .mi-typing { display: none; } }
   @media (max-width: 980px) {
     .bulk { grid-template-columns: 1fr; }
     .hero-grid, .calc, .safe { grid-template-columns: 1fr; }
@@ -269,12 +350,13 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="nav" id="nav">
   <div class="wrap nav-in">
     <a class="logo" href="/" aria-label="ELMS home"><b>E</b><b>L</b><b>M</b><b>S</b></a>
     <nav class="links" aria-label="Sections">
-      <a href="#how">How it works</a><a href="#features">Features</a><a href="#profit">Profit calculator</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+      <a href="#how">How it works</a><a href="#features">Features</a><a href="#inside">Inside</a><a href="#stores">Stores</a><a href="#profit">Profit calculator</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
     </nav>
     <div class="nav-cta">
       <a class="btn ghost sm" href="/signin">Sign in</a>
@@ -283,7 +365,7 @@
   </div>
 </header>
 
-<main>
+<main id="main">
 <!-- ================= HERO ================= -->
 <section class="hero">
   <div class="wrap hero-grid">
@@ -364,7 +446,7 @@
       <article class="feat reveal" style="--c:#E53238"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></div><h3>Import from Amazon</h3><p>Paste a link or an ASIN, or paste a whole list and let it run in the background. Import right from the Amazon page with the Chrome extension.</p><span class="tag">Single, bulk and large lists</span></article>
       <article class="feat reveal" style="--c:#0064D2;transition-delay:.06s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg></div><h3>AI that writes the listing</h3><p>Sharper eBay titles, a clean description and item specifics filled in for the category you pick, for one product or a whole selection. You stay in control and can edit anything.</p><span class="tag">Title · Description · Item specifics</span></article>
       <article class="feat reveal" style="--c:#F5AF02;transition-delay:.12s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><h3>Pricing you can see</h3><p>Set a markup, see your eBay price and your profit right in the draft. Change one number and everything updates.</p><span class="tag">Markup · Profit · Margin</span></article>
-      <article class="feat reveal" style="--c:#86B817"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div><h3>Publish in one click</h3><p>Publish to any of your connected eBay stores, schedule listings for later, and see every live listing with its views, watchers and sales.</p><span class="tag">Multiple stores · Scheduling</span></article>
+      <article class="feat reveal" style="--c:#86B817"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div><h3>Publish in one click</h3><p>Publish to any of your connected eBay stores (it runs in the background, so you never wait), schedule listings for later, and see every live listing with its views, watchers and sales.</p><span class="tag">Multiple stores · Scheduling</span></article>
       <article class="feat reveal" style="--c:#E53238;transition-delay:.06s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>VeRO word protection</h3><p>Build your own list of risky brand words. ELMS flags them in your drafts and listings, and one click removes them before eBay ever sees them.</p><span class="tag">Your list · Warnings · One-click clean</span></article>
       <article class="feat reveal" style="--c:#0064D2;transition-delay:.12s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7M21 4v5h-5"/></svg></div><h3>Stock and price monitoring</h3><p>If the product goes out of stock on Amazon, the eBay listing can end automatically. If the Amazon price moves, your eBay price follows.</p><span class="tag">Fewer cancellations</span></article>
       <article class="feat reveal" style="--c:#F5AF02"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg></div><h3>Orders and profit</h3><p>Every eBay order lands in one list with its cost and profit. Add the tracking number and it goes straight back to eBay.</p><span class="tag">Profit per order</span></article>
@@ -405,6 +487,96 @@
         <div class="bw-foot">AI item specifics use <b>credits per product</b>. Nothing is charged when the AI adds nothing new, and credits come back if it fails.</div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ================= INSIDE THE APP ================= -->
+<section id="inside">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Inside ELMS</div>
+      <h2>Built for how sellers <span class="grad">actually work</span></h2>
+      <p class="sub">The parts you use all day, made calm and quick. These little windows are examples of what you will see.</p>
+    </div>
+    <div class="inside">
+      <article class="tile reveal">
+        <div class="tile-vis" aria-hidden="true">
+          <span class="ex">Example</span>
+          <div class="mi">
+            <div class="mi-list">
+              <div class="mi-row sel"><i class="av">S</i><div><b>sam_k</b><small>Where is my parcel?</small></div><span class="dot"></span></div>
+              <div class="mi-row"><i class="av b">A</i><div><b>alex.shop</b><small>Thanks, all good!</small></div></div>
+              <div class="mi-row"><i class="av c">L</i><div><b>lee_2024</b><small>Can you combine shipping?</small></div></div>
+              <div class="mi-row"><i class="av">M</i><div><b>mia_uk</b><small>Item received, thank you</small></div></div>
+            </div>
+            <div class="mi-thread">
+              <div class="mi-head">sam_k <i>★</i> <span style="color:var(--mute);font-weight:600">(128)</span></div>
+              <div class="mi-b l">Hi, could you tell me when it ships?</div>
+              <div class="mi-typing"><i></i><i></i><i></i></div>
+              <div class="mi-b r">It went out today and the tracking is in your order.</div>
+              <div class="mi-t">10:26 AM <em>✓✓</em></div>
+            </div>
+          </div>
+        </div>
+        <div class="tile-txt"><h3>An inbox that stays put</h3><p>A fixed, chat-style inbox: the list and the conversation scroll on their own, so the page never jumps. Saved replies, private notes, photos, AI drafts, and your buyer's feedback score next to the chat.</p></div>
+      </article>
+
+      <article class="tile reveal" style="transition-delay:.08s">
+        <div class="tile-vis" aria-hidden="true">
+          <span class="ex">Example</span>
+          <div class="mo">
+            <div class="mo-tabs" role="group" aria-label="Choose an example store"><button type="button" data-cur="US" aria-pressed="true">US store</button><button type="button" data-cur="UK" aria-pressed="false">UK store</button><button type="button" data-cur="AU" aria-pressed="false">AU store</button></div>
+            <div class="mo-h"><span>Order</span><span>Sale</span><span>Cost</span><span>Profit</span></div>
+            <div class="mo-r"><span>Blue lamp</span><b data-k="s1"></b><b data-k="c1"></b><span class="pf" data-k="p1"></span></div>
+            <div class="mo-r"><span>Phone case</span><b data-k="s2"></b><b data-k="c2"></b><span class="pf" data-k="p2"></span></div>
+            <div class="mo-r"><span>Desk mat</span><b data-k="s3"></b><b data-k="c3"></b><span class="pf" data-k="p3"></span></div>
+            <div class="mo-foot" id="moFoot"></div>
+          </div>
+        </div>
+        <div class="tile-txt"><h3>Profit in your store's currency</h3><p>Every order shows its cost and profit in the currency you sell in. A UK store reads amazon.co.uk and an Australian store reads amazon.com.au, so the numbers always match.</p></div>
+      </article>
+
+      <article class="tile reveal" style="transition-delay:.16s">
+        <div class="tile-vis" aria-hidden="true">
+          <span class="ex">Example</span>
+          <div class="mx">
+            <img src="/demo/p2.jpg" alt="" loading="lazy" />
+            <div class="mx-t"><b>Men's knit sneakers, hands free</b><small>Amazon product page</small><div class="mx-price">$62.95</div></div>
+            <div class="mx-var"><span><i style="background:#1f2a55"></i>Navy</span><span><i style="background:#111"></i>Black</span><span><i style="background:#a5673f"></i>Brown</span><span>Size 9</span><span>Size 10</span></div>
+            <div class="mx-toast">✓ Saved to ELMS Drafts<br>Pictures, specifications and every variant</div>
+            <div class="mx-btn"><img src="/logo.png" alt="" /></div>
+          </div>
+        </div>
+        <div class="tile-txt"><h3>One click from any Amazon page</h3><p>The Chrome extension reads the page for you: every picture, the specifications, and each colour or size variant with its own picture and title. Then it lands in your Drafts.</p></div>
+      </article>
+    </div>
+
+    <div class="perks reveal">
+      <div class="perk"><i>⏳</i><div><b>Nothing to wait for</b><span>Publishing, message sync and order sync run in the background. You get a message when each one is done.</span></div></div>
+      <div class="perk"><i>🎯</i><div><b>The right Amazon site</b><span>Stock and price checks ask the site your product came from, so a UK item is never judged on amazon.com.</span></div></div>
+      <div class="perk"><i>🧾</i><div><b>Specifics filled for you</b><span>AI fills eBay's item specifics for one draft or a whole selection, so publishing does not stop on them.</span></div></div>
+      <div class="perk"><i>↩️</i><div><b>Credits come back</b><span>If an import, an AI step or a publish fails, the credits it used are returned to you.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EVERY STORE ================= -->
+<section id="stores" style="background:var(--soft)">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Made for every store</div>
+      <h2>Sell on the eBay site <span class="grad">you sell on</span></h2>
+      <p class="sub">Connect one store or several. Each one uses its own Amazon site, its own currency and its own postal-code rules.</p>
+    </div>
+    <div class="stores">
+      <article class="store reveal" style="--c:#0064D2"><span class="cc">US</span><h3>United States</h3>
+        <dl><div><dt>Amazon site</dt><dd>amazon.com</dd></div><div><dt>Prices in</dt><dd>US dollars</dd></div><div><dt>Postal code</dt><dd>10001</dd></div><div><dt>eBay</dt><dd>ebay.com</dd></div></dl></article>
+      <article class="store reveal" style="--c:#E53238;transition-delay:.08s"><span class="cc">UK</span><h3>United Kingdom</h3>
+        <dl><div><dt>Amazon site</dt><dd>amazon.co.uk</dd></div><div><dt>Prices in</dt><dd>Pounds</dd></div><div><dt>Postal code</dt><dd>SW1A 1AA</dd></div><div><dt>eBay</dt><dd>ebay.co.uk</dd></div></dl></article>
+      <article class="store reveal" style="--c:#86B817;transition-delay:.16s"><span class="cc">AU</span><h3>Australia</h3>
+        <dl><div><dt>Amazon site</dt><dd>amazon.com.au</dd></div><div><dt>Prices in</dt><dd>Australian dollars</dd></div><div><dt>Postal code</dt><dd>2000</dd></div><div><dt>eBay</dt><dd>ebay.com.au</dd></div></dl></article>
+    </div>
+    <p class="more-stores reveal">Also <b>Canada, Germany, France, Italy, Spain, the Netherlands</b> and more. ELMS checks that the Amazon link matches the store you list to, so a wrong-site link is caught before it becomes a draft.</p>
   </div>
 </section>
 
@@ -480,6 +652,8 @@
       <details><summary>Does ELMS order from Amazon for me?</summary><p>No. ELMS prepares everything: it shows you the orders that need action, your cost and your profit, and sends the tracking number to eBay. You place the Amazon order yourself.</p></details>
       <details><summary>Can I import lots of products at once?</summary><p>Yes. Paste a list of Amazon links and ELMS imports them in the background, so you can close the tab. You are charged per product that is actually imported. Links that fail, and repeats of the same product, are not charged.</p></details>
       <details><summary>Which Amazon and eBay sites are supported?</summary><p>ELMS works with the main Amazon sites (US, UK, Germany, France, Italy, Spain, Canada, Australia and more) and the matching eBay marketplaces. ELMS checks that the Amazon link fits the store you are listing to, so you do not mix up countries.</p></details>
+      <details><summary>Do I have to wait while it publishes?</summary><p>No. Publishing, syncing messages and syncing orders run in the background, so you can keep working. You get a message when each one is done, and a listing that failed shows the reason on its card.</p></details>
+      <details><summary>Does it work for UK and Australian stores?</summary><p>Yes. Each store uses the matching Amazon site (amazon.co.uk for a UK store, amazon.com.au for an Australian one), prices stay in that store's currency, and postal codes are checked in that country's format. US, UK and Australian stores are the ones we look after most closely.</p></details>
       <details><summary>Is my account safe?</summary><p>Sign-in is protected, you can see and log out of every device signed in to your account, and you get an alert when a new device signs in. For eBay, ELMS never asks for your eBay password: you connect through eBay itself.</p></details>
     </div>
   </div>
@@ -507,6 +681,8 @@
     <p class="legal">© <span id="yr"></span> ELMS. ELMS is an independent tool and is not affiliated with, endorsed by or sponsored by Amazon or eBay. Amazon and eBay are trademarks of their respective owners.</p>
   </div>
 </footer>
+
+<div class="mbar" id="mbar"><a class="btn ghost" href="/signin">Sign in</a><a class="btn primary" href="/signup">Create free account</a></div>
 
 <script>
 (function () {
@@ -617,6 +793,75 @@
     var sync = function () { if (visible && !document.hidden) { if (!playing) play(); } else stopBulk(); };
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; sync(); }, { threshold: 0.25 }).observe(sec); else { visible = true; sync(); }
     document.addEventListener('visibilitychange', sync);
+  })();
+
+  // ---------- the little profit window: one example store at a time ----------
+  (function () {
+    var tabs = document.querySelectorAll('.mo-tabs button');
+    if (!tabs.length) return;
+    // Example figures per store: sale, cost (in that store's own currency and Amazon site).
+    var SETS = {
+      US: { sym: '$', site: 'amazon.com', rows: [[24.99, 15.2], [14.99, 7.4], [29.99, 18.5]] },
+      UK: { sym: '£', site: 'amazon.co.uk', rows: [[19.99, 12.1], [11.99, 5.9], [24.99, 15.3]] },
+      AU: { sym: 'A$', site: 'amazon.com.au', rows: [[34.99, 21.5], [21.99, 10.8], [44.99, 27.4]] }
+    };
+    function fmt(sym, n) { return sym + n.toFixed(2); }
+    function show(code) {
+      var set = SETS[code];
+      set.rows.forEach(function (r, i) {
+        var q = function (k) { return document.querySelector('[data-k="' + k + (i + 1) + '"]'); };
+        q('s').textContent = fmt(set.sym, r[0]); q('c').textContent = fmt(set.sym, r[1]); q('p').textContent = '+' + fmt(set.sym, r[0] - r[1]);
+      });
+      $('moFoot').textContent = 'Cost read from ' + set.site + ', so sale, cost and profit are in the same currency.';
+      tabs.forEach(function (t) { t.setAttribute('aria-pressed', t.getAttribute('data-cur') === code ? 'true' : 'false'); });
+    }
+    tabs.forEach(function (t) { t.addEventListener('click', function () { stopAuto(); show(t.getAttribute('data-cur')); }); });
+    // it flips through the stores by itself until someone clicks one
+    var order = ['US', 'UK', 'AU'], at = 0, timer = null;
+    function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+    show('US');
+    if (!reduce) timer = setInterval(function () { at = (at + 1) % order.length; show(order[at]); }, 3600);
+  })();
+
+  // ---------- the page link you are on lights up ----------
+  (function () {
+    var links = {}; document.querySelectorAll('.links a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+    if (!('IntersectionObserver' in window)) return;
+    var current = null;
+    var so = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var id = e.target.id; if (!links[id] || current === id) return;
+        if (current && links[current]) links[current].classList.remove('active');
+        links[id].classList.add('active'); current = id;
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    Object.keys(links).forEach(function (id) { var s = $(id); if (s) so.observe(s); });
+  })();
+
+  // ---------- phone bar: shows once the first screen is behind you, hides at the final call ----------
+  (function () {
+    var bar = $('mbar'), final = document.querySelector('.final');
+    if (!bar) return;
+    var upd = function () {
+      var past = window.scrollY > 560;
+      var atEnd = final && final.getBoundingClientRect().top < window.innerHeight - 40;
+      bar.classList.toggle('show', past && !atEnd);
+    };
+    window.addEventListener('scroll', upd, { passive: true }); upd();
+  })();
+
+  // ---------- the questions, told to search engines too ----------
+  (function () {
+    var qs = [];
+    document.querySelectorAll('#faq details').forEach(function (d) {
+      var s = d.querySelector('summary'), p = d.querySelector('p');
+      if (s && p) qs.push({ '@type': 'Question', name: s.textContent.trim(), acceptedAnswer: { '@type': 'Answer', text: p.textContent.trim() } });
+    });
+    if (!qs.length) return;
+    var el = document.createElement('script'); el.type = 'application/ld+json';
+    el.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: qs });
+    document.head.appendChild(el);
   })();
 
   // ---------- profit calculator ----------
