@@ -2612,6 +2612,15 @@
   #llEditModal .elms-ed-spec { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto; gap:8px; margin-bottom:8px; }
   #llEditModal .elms-ed-spec input { width:100%; box-sizing:border-box; height:36px; border:1px solid #dfe3e8; border-radius:8px; padding:0 10px; font:500 13px Inter,sans-serif; }
   #llEditModal .elms-ed-variant { display:flex; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid #edf0f3; border-radius:9px; margin-bottom:8px; font-size:13px; color:#344054; }
+  .elms-ed-variant.rich { align-items:center; gap:12px; }
+  .elms-ed-variant .v-img { flex:0 0 52px; width:52px; height:52px; object-fit:contain; border:1px solid #edf0f3; border-radius:8px; background:#fff; }
+  .elms-ed-variant .v-ph { background:#f4f6f9; }
+  .elms-ed-variant .v-txt { min-width:0; flex:1; } .elms-ed-variant .v-txt b { display:block; font-size:13px; line-height:1.35; }
+  .elms-ed-variant .v-txt small { display:block; color:#8a93a2; font-size:11.5px; }
+  .elms-ed-variant .v-dims { display:flex; flex-wrap:wrap; gap:5px; margin:4px 0 3px; }
+  .elms-ed-variant .v-chip { font-size:11px; padding:2px 8px; border-radius:99px; background:#eef4ff; color:#2557b8; }
+  .elms-ed-variant .v-chip i { font-style:normal; color:#7d8795; margin-right:4px; }
+  .elms-ed-variant .v-price { font-weight:800; font-size:13px; white-space:nowrap; }
   #llEditModal .ll-editor-body .elms-editor { margin:0; position:static; width:auto; max-width:none; }
 
   /* ---------- Dashboard: 4 stat cards + two contained scroll boxes ---------- */
@@ -3323,15 +3332,6 @@
   .sc-dot { width:10px; height:10px; border-radius:50%; background:#86B817; } .sc-dot.bad { background:#E53238; }
   .sc-row small { display:block; color:var(--grey); font-size:12px; margin-top:1px; }
   @media (max-width: 700px) { .sc-row { grid-template-columns:auto 1fr; } .sc-row > :nth-child(3), .sc-row > :nth-child(4) { grid-column:2; } }
-  .elms-ed-variant.rich { align-items:center; gap:12px; }
-  .elms-ed-variant .v-img { flex:0 0 52px; width:52px; height:52px; object-fit:contain; border:1px solid #edf0f3; border-radius:8px; background:#fff; }
-  .elms-ed-variant .v-ph { background:#f4f6f9; }
-  .elms-ed-variant .v-txt { min-width:0; flex:1; } .elms-ed-variant .v-txt b { display:block; font-size:13px; line-height:1.35; }
-  .elms-ed-variant .v-txt small { display:block; color:#8a93a2; font-size:11.5px; }
-  .elms-ed-variant .v-dims { display:flex; flex-wrap:wrap; gap:5px; margin:4px 0 3px; }
-  .elms-ed-variant .v-chip { font-size:11px; padding:2px 8px; border-radius:99px; background:#eef4ff; color:#2557b8; }
-  .elms-ed-variant .v-chip i { font-style:normal; color:#7d8795; margin-right:4px; }
-  .elms-ed-variant .v-price { font-weight:800; font-size:13px; white-space:nowrap; }
 </style>
 </head>
 <body>
