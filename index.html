@@ -3323,6 +3323,15 @@
   .sc-dot { width:10px; height:10px; border-radius:50%; background:#86B817; } .sc-dot.bad { background:#E53238; }
   .sc-row small { display:block; color:var(--grey); font-size:12px; margin-top:1px; }
   @media (max-width: 700px) { .sc-row { grid-template-columns:auto 1fr; } .sc-row > :nth-child(3), .sc-row > :nth-child(4) { grid-column:2; } }
+  .elms-ed-variant.rich { align-items:center; gap:12px; }
+  .elms-ed-variant .v-img { flex:0 0 52px; width:52px; height:52px; object-fit:contain; border:1px solid #edf0f3; border-radius:8px; background:#fff; }
+  .elms-ed-variant .v-ph { background:#f4f6f9; }
+  .elms-ed-variant .v-txt { min-width:0; flex:1; } .elms-ed-variant .v-txt b { display:block; font-size:13px; line-height:1.35; }
+  .elms-ed-variant .v-txt small { display:block; color:#8a93a2; font-size:11.5px; }
+  .elms-ed-variant .v-dims { display:flex; flex-wrap:wrap; gap:5px; margin:4px 0 3px; }
+  .elms-ed-variant .v-chip { font-size:11px; padding:2px 8px; border-radius:99px; background:#eef4ff; color:#2557b8; }
+  .elms-ed-variant .v-chip i { font-style:normal; color:#7d8795; margin-right:4px; }
+  .elms-ed-variant .v-price { font-weight:800; font-size:13px; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -7280,6 +7289,16 @@
     return `${loc.postalCode} · ${[loc.city, loc.state, loc.countryName].filter(Boolean).join(', ')}`;
   }
 
+  // One colour / size variant of the imported product: its own picture, title, what makes it different, and its price.
+  function variantRowHtml(v, l, i) {
+    const label = v.title || v.label || v.name || v.sku || `Variant ${i + 1}`;
+    const dims = (v.dimensions || []).map((d) => `<span class="v-chip"><i>${escapeHtml(d.name)}</i>${escapeHtml(d.value)}</span>`).join('');
+    const price = v.price != null && Number.isFinite(Number(v.price)) ? escapeHtml(formatPrice(v.price, l.currency)) : '';
+    const thumb = v.image ? `<img class="v-img" src="${escapeAttr(v.image)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<div class="v-img v-ph"></div>';
+    const note = [v.asin ? escapeHtml(v.asin) : '', v.isCurrentProduct ? 'the product you imported' : ''].filter(Boolean).join(' &middot; ');
+    return `<div class="elms-ed-variant rich">${thumb}<div class="v-txt"><b>${escapeHtml(label)}</b>${dims ? `<div class="v-dims">${dims}</div>` : ''}${note ? `<small>${note}</small>` : ''}</div><span class="v-price">${price}</span></div>`;
+  }
+
   function draftEditorHtml(l, opts = {}) {
     const title = l.title || l.sku || '';
     const desc = l.description || l.product_description || '';
@@ -7341,7 +7360,7 @@
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="variants">
-          ${variants.length ? variants.map((v, i) => `<div class="elms-ed-variant"><b>${escapeHtml(v.title || v.name || v.sku || `Variant ${i + 1}`)}</b><span>${v.price != null ? escapeHtml(String(v.price)) : ''}</span></div>`).join('') : '<div class="elms-ed-variant"><b>Variants: 1</b><span>Single variant</span></div>'}
+          ${variants.length ? variants.map((v, i) => variantRowHtml(v, l, i)).join('') : '<div class="elms-ed-variant"><b>Variants: 1</b><span>Single variant</span></div>'}
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="images">
