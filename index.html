@@ -4753,6 +4753,22 @@
       window.history[replace ? 'replaceState' : 'pushState']({ page }, '', path + window.location.search + window.location.hash);
     } catch (_) { /* file:// or sandboxed frames cannot change the URL */ }
   }
+  // The login page has its own address too (elmstool.com/login). Whenever it is shown - first visit, log out, an expired
+  // session - the address becomes /login; the page the person was on is remembered and reopened after they sign in.
+  let loginReturnPage = null;
+  (function watchLoginUrl() {
+    const auth = document.getElementById('authPage');
+    if (!auth || !window.MutationObserver) return;
+    new MutationObserver(() => {
+      if (auth.style.display === 'none') return;
+      try {
+        if (window.location.pathname === '/login') return;
+        const page = pageFromPath(window.location.pathname);
+        if (page && page !== 'dashboard') loginReturnPage = page;
+        window.history.replaceState({}, '', '/login' + window.location.search + window.location.hash);
+      } catch (_) { /* file:// or sandboxed frames cannot change the URL */ }
+    }).observe(auth, { attributes: true, attributeFilter: ['style'] });
+  })();
   window.addEventListener('popstate', () => {
     if (document.getElementById('appShell').style.display === 'none') return;
     const page = pageFromPath(window.location.pathname) || 'dashboard';
@@ -6010,7 +6026,8 @@
     const params = new URLSearchParams(window.location.search);
     if (!(params.get('goToAdminPanel') === 'true' && user.role === 'admin')) {
       // Open the page named in the address bar (refresh / bookmark); dashboard otherwise.
-      let startPage = pageFromPath(window.location.pathname) || 'dashboard';
+      let startPage = pageFromPath(window.location.pathname) || loginReturnPage || 'dashboard';
+      loginReturnPage = null;
       if (startPage === 'admin' && user.role !== 'admin') startPage = 'dashboard';
       showPage(startPage, { replace: true });
     }
