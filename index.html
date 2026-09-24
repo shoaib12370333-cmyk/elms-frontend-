@@ -2723,6 +2723,7 @@
   .ih-price.buy { background:#E7F0FD; color:#0064D2; }
   .ih-price.sell { background:#EEF6DF; color:#5b8f0e; }
   .ih-profit { color:#5b8f0e; }
+  .ord-import { margin:8px 0 4px; padding:10px; border:1px dashed var(--line, #d9dee7); border-radius:10px; } .ord-import .ord-cost { display:flex; margin-top:8px; } .ord-import .ord-cost input { flex:1; width:auto; min-width:0; }
   .ord-cost { display:inline-flex; gap:6px; align-items:center; } .ord-cost input { width:92px; padding:5px 8px; border:1px solid var(--border, #d9dee7); border-radius:8px; font:inherit; }
   .ih-status { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
   .ih-status.success { background:#EEF6DF; color:#5b8f0e; }
@@ -8848,6 +8849,10 @@ async function autoSuggestEmptyDraftCategories() {
           ${o.buy_price != null ? kv('Amazon cost', escapeHtml(orderMoney(o, Number(o.buy_price) * (o.quantity || 1)))) : ''}
           ${kv('Cost per item', `<span class="ord-cost"><input type="number" id="ordCostInput" min="0" step="0.01" inputmode="decimal" value="${o.buy_price != null ? escapeAttr(String(Number(o.buy_price))) : ''}" placeholder="e.g. 8.99" /><button class="ord-btn small" type="button" id="ordSaveCost">Save</button></span>`)}
           <div class="ord-sub">${o.buy_price_manual ? 'Set by you. Empty the box and Save to go back to the listing price.' : o.buy_price != null ? 'Taken from your listing. Type another figure to use your own.' : 'No price found for this item. Enter what it cost you to see the profit.'}</div>
+          ${o.buy_price == null ? `<div class="ord-import">
+            <div class="ord-sub"><b>Import this product from Amazon</b> and its price becomes the cost. Uses credits like a normal import; the product also appears in Drafts.</div>
+            <div class="ord-cost"><input type="text" id="ordImportInput" placeholder="Amazon link or ASIN" value="${/^[A-Z0-9]{10}$/i.test(o.sku || '') ? escapeAttr(o.sku) : ''}" autocomplete="off" /><button class="ord-btn small" type="button" id="ordImportBtn">Import</button></div>
+          </div>` : ''}
           ${o.profit != null ? kv('Profit', `<span class="${Number(o.profit) >= 0 ? 'good' : 'bad'}">${escapeHtml(orderMoney(o, o.profit))}</span>`) : ''}
           ${kv('Payment', escapeHtml(String(o.ebay_payment_status || '—').replace(/_/g, ' ').toLowerCase()))}
         </section>
@@ -8938,6 +8943,16 @@ async function autoSuggestEmptyDraftCategories() {
       const price = $('ordCostInput').value.trim();
       const data = await json(`/api/orders/${encodeURIComponent(o.id)}/buy-price`, { method: 'PUT', body: JSON.stringify({ price: price === '' ? null : price }) });
       showToast('Saved', price === '' ? 'Back to the listing price.' : 'Cost saved. Profit updated.', 'success');
+      apply(data.order);
+    }));
+    $('ordImportBtn')?.addEventListener('click', (e) => run(e.currentTarget, 'Importing…', async () => {
+      const amazon = $('ordImportInput').value.trim();
+      if (!amazon) throw new Error('Paste the Amazon link or the ASIN of this product.');
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/import-product`, { method: 'POST', body: JSON.stringify({ amazon }) });
+      if (data.priceFound) showToast('Imported', 'Product imported. Its price is now the cost, so profit is calculated.', 'success');
+      else showToast('Imported, but no price', 'Amazon gave no price for this product. Enter the cost by hand.', 'info');
+      refreshCreditBalanceChip();
+      refreshDraftsCountBadge();
       apply(data.order);
     }));
     $('ordSaveNote').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
