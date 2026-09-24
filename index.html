@@ -5058,6 +5058,7 @@
       statusEl.className = failed.length ? 'error' : 'success';
       statusEl.textContent = summary;
       document.getElementById('bulkAmazonUrls').value = '';
+      refreshCreditBalanceChip();
     } catch (err) {
       statusEl.className = 'error';
       statusEl.textContent = 'Could not connect to the server: ' + err.message;
@@ -5169,7 +5170,7 @@
         return;
       }
       statusEl.className = 'success';
-      statusEl.textContent = 'Started — importing ' + data.total + ' product(s) in the background.' + (data.skipped?.length ? ' ' + data.skipped.length + ' link(s) were skipped (not a valid Amazon URL).' : '');
+      statusEl.textContent = 'Started — importing ' + data.total + ' product(s) in the background. One import credit is taken per product as each one is saved.' + (data.skipped?.length ? ' ' + data.skipped.length + ' link(s) were skipped (not a valid Amazon URL).' : '');
       document.getElementById('largeAmazonUrls').value = '';
       startTrackingLargeImportJob(data.jobId);
       refreshCreditBalanceChip();
@@ -7937,7 +7938,7 @@ async function autoSuggestEmptyDraftCategories() {
           publishBtn.disabled = true;
           try {
             // Reset the error so the same draft can be retried cleanly.
-            const resetRes = await apiFetch(`/api/listings/${id}/reset-error`, { method: 'POST' });
+            const resetRes = await apiFetch(`/api/listings/${id}/retry`, { method: 'POST' });
             const resetData = await resetRes.json();
             if (!resetRes.ok || !resetData.success) {
               alert(resetData.error || 'Could not reset the failed publish.');
@@ -10572,7 +10573,7 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('draftDetailDeleteBtn')?.addEventListener('click', async () => {
       if (!(await elmsConfirm('Delete this draft? This cannot be undone.', { danger: true }))) return;
       try {
-        const res = await apiFetch(`/api/list-on-ebay/${listing.id}`, { method: 'DELETE' });
+        const res = await apiFetch(`/api/listings/${listing.id}`, { method: 'DELETE' });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || (data && data.success === false)) throw new Error((data && data.error) || 'Could not delete draft.');
         draftDetailModal.classList.remove('open');
