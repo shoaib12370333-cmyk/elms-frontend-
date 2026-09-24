@@ -5400,6 +5400,11 @@
     const statusEl = document.getElementById('largeImportStatus');
     const markupInput = document.getElementById('markupPercent');
     const markupPercent = markupInput?.value === '' ? 0 : Number(markupInput.value);
+    if (!Number.isFinite(markupPercent) || markupPercent < -99 || markupPercent > 1000) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Markup must be between -99% and 1000%.';
+      return;
+    }
 
     const amazonUrls = document.getElementById('largeAmazonUrls').value.split('\n').map((l) => l.trim()).filter(Boolean);
     if (!amazonUrls.length) {
@@ -11467,6 +11472,14 @@ async function autoSuggestEmptyDraftCategories() {
       markupInput.addEventListener('input', () => {
         const markup = Number(markupInput.value);
         if (Number.isFinite(markup)) sellPriceInput.value = (amazonPrice * (1 + markup / 100)).toFixed(2);
+      });
+      // The other way round: a price typed by hand moves the markup with it, so the markup shown (and saved) always matches the
+      // price. A price whose markup would be outside -99%..1000% leaves the field alone.
+      sellPriceInput.addEventListener('input', () => {
+        const sell = Number(sellPriceInput.value);
+        if (sellPriceInput.value === '' || !Number.isFinite(sell) || sell <= 0 || !(amazonPrice > 0)) return;
+        const markup = Number((((sell / amazonPrice) - 1) * 100).toFixed(2));
+        if (markup >= -99 && markup <= 1000) markupInput.value = markup;
       });
     }
 
