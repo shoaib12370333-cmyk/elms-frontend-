@@ -3036,9 +3036,6 @@
   .bc-ref-banner { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:16px; background:linear-gradient(135deg,#ECFDF5,#EFF6FF); border:1.5px solid #A7F3D0; margin:0 0 18px; }
   .bc-ref-banner .bc-ref-ico { width:44px; height:44px; border-radius:13px; background:#fff; display:grid; place-items:center; font-size:22px; flex:none; box-shadow:0 3px 10px rgba(16,185,129,.18); }
   .bc-ref-banner b { display:block; font-size:15px; color:#065F46; } .bc-ref-banner span { font-size:13px; color:#334155; }
-  .bc-code-card { display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; padding:16px 18px; margin:0 0 18px; border-radius:16px; border:1.5px dashed #BFD6F3; background:#F5F9FE; }
-  .bc-code-card .bc-code-txt { flex:1; min-width:200px; } .bc-code-card b { display:block; font-size:14.5px; } .bc-code-card span { font-size:12.5px; color:#475569; }
-  .bc-code-card .bc-code-in { display:flex; gap:8px; } .bc-code-card .st-input { width:190px; text-transform:uppercase; letter-spacing:.08em; font-family:ui-monospace,Consolas,monospace; }
   .bc-plan-price s { color:#94A3B8; font-size:16px; font-weight:600; margin-right:8px; }
   .bc-plan-price .bc-new { color:#15803D; }
   .bc-off { position:absolute; top:14px; left:16px; background:#DCFCE7; color:#166534; font-size:11px; font-weight:800; padding:4px 10px; border-radius:99px; letter-spacing:.03em; }
@@ -3120,6 +3117,42 @@
   .rfa-code { font-family:ui-monospace,Consolas,monospace; font-weight:800; letter-spacing:.06em; }
   .rfa-def { font-size:11px; color:#94A3B8; display:block; margin-top:2px; }
   .rfa-search { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; } .rfa-search .st-input { flex:1; min-width:220px; }
+  /* ===== Vouchers ===== */
+  .vc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:16px; }
+  .vc-card { position:relative; display:flex; background:#fff; border:1.5px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 6px 20px rgba(20,35,60,.05); transition:transform .15s, box-shadow .15s; }
+  .vc-card:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(20,35,60,.10); }
+  .vc-side { width:78px; flex:none; display:grid; place-items:center; font-size:30px; color:#fff; background:linear-gradient(160deg,#0064D2,#4F46E5); border-right:2px dashed rgba(255,255,255,.55); }
+  .vc-card.credits .vc-side { background:linear-gradient(160deg,#86B817,#15803D); }
+  .vc-card.free_plan .vc-side { background:linear-gradient(160deg,#F5AF02,#EA580C); }
+  .vc-card.ebay_accounts .vc-side { background:linear-gradient(160deg,#E53238,#BE185D); }
+  .vc-body { flex:1; min-width:0; padding:16px 18px; display:flex; flex-direction:column; gap:6px; }
+  .vc-kind { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#64748B; }
+  .vc-title { font-size:18px; font-weight:800; letter-spacing:-.02em; line-height:1.25; }
+  .vc-note { font-size:13px; color:#475569; }
+  .vc-meta { font-size:12.5px; color:var(--grey); }
+  .vc-actions { margin-top:auto; padding-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .vc-card.dim { background:#F8FAFC; } .vc-card.dim .vc-side { filter:grayscale(.85); opacity:.65; } .vc-card.dim .vc-title { color:#64748B; }
+  .vc-state { font-size:11px; font-weight:800; padding:3px 10px; border-radius:99px; background:#E2E8F0; color:#475569; }
+  .vc-state.active { background:#DCFCE7; color:#166534; } .vc-state.expired, .vc-state.revoked { background:#FEE2E2; color:#991B1B; } .vc-state.used { background:#E0E7FF; color:#3730A3; }
+  .vc-sect { font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#64748B; margin:22px 0 10px; }
+  .bc-voucher { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:14px 18px; margin:0 0 18px; border-radius:16px; border:1.5px solid #FDE68A; background:linear-gradient(135deg,#FFFBEB,#FEF3C7); }
+  .bc-voucher .bc-vico { width:44px; height:44px; border-radius:13px; background:#fff; display:grid; place-items:center; font-size:22px; flex:none; box-shadow:0 3px 10px rgba(245,175,2,.22); }
+  .bc-voucher .bc-vtxt { flex:1; min-width:200px; } .bc-voucher b { display:block; font-size:14.5px; color:#92400E; } .bc-voucher span { font-size:12.5px; color:#78350F; }
+  .bc-voucher select { height:42px; border-radius:10px; border:1.5px solid #FCD34D; background:#fff; font:inherit; font-size:13.5px; font-weight:600; padding:0 10px; min-width:230px; max-width:100%; }
+  .bc-plan-badnote { font-size:12px; color:#B45309; margin:2px 0 6px; }
+  .vca-form { display:grid; gap:14px; }
+  .vca-user { display:flex; gap:10px; flex-wrap:wrap; } .vca-user .st-input { flex:1; min-width:220px; }
+  .vca-pick { display:flex; gap:8px; flex-wrap:wrap; }
+  .vca-pick button { border:1.5px solid var(--line); background:#fff; border-radius:99px; padding:6px 14px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  .vca-pick button:hover { background:#EFF6FF; } .vca-pick button.on { border-color:#0064D2; background:#E8F1FD; color:#0B4FA0; }
+  .vca-chosen { padding:10px 14px; border-radius:12px; background:#F7FBEE; border:1.5px solid #86B817; font-size:13.5px; }
+  .vca-types { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+  .vca-type { text-align:left; padding:12px 14px; border:1.5px solid var(--line); border-radius:14px; background:#fff; font:inherit; cursor:pointer; transition:border-color .15s, background .15s; }
+  .vca-type b { display:block; font-size:14px; } .vca-type span { font-size:12px; color:var(--grey); }
+  .vca-type:hover { background:#F8FAFC; } .vca-type.on { border-color:#0064D2; background:#EFF6FF; box-shadow:0 0 0 3px rgba(0,100,210,.10); }
+  .vca-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .vca-chips button { border:1.5px solid var(--line); background:#fff; border-radius:99px; padding:5px 14px; font:inherit; font-size:12.5px; font-weight:700; cursor:pointer; }
+  .vca-chips button.on { border-color:#0064D2; background:#E8F1FD; color:#0B4FA0; }
   @media (max-width: 860px) { .st-two { grid-template-columns:1fr; } }
   @media (max-width: 600px) {
     .st-card { padding:18px 16px; } .st-top h1 { font-size:22px; }
@@ -3710,7 +3743,7 @@
         </div>
         <div class="auth-field-error-msg" id="registerConfirmPasswordError">Passwords do not match.</div>
 
-        <label class="edit-label" style="margin-top:12px;" for="registerReferral">Referral code <span class="rf-opt">(optional)</span></label>
+        <label class="edit-label" style="margin-top:12px;" for="registerReferral">Referral code <span class="rf-opt">(optional - only at sign-up)</span></label>
         <div class="auth-field-wrap">
           <input type="text" class="editable-input" id="registerReferral" placeholder="Invited by a friend? Enter their code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;" />
           <span class="auth-field-icon">&#127873;</span>
@@ -3798,6 +3831,11 @@
       <a href="#" data-page="settings">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Settings
+      </a>
+      <a href="#" data-page="vouchers">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+        Vouchers
+        <span class="nav-badge" id="vouchersCountBadge" style="display:none;">0</span>
       </a>
       <a href="#" data-page="referrals">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
@@ -4547,6 +4585,16 @@
         <div id="referralContent"><p class="state-msg">Loading&hellip;</p></div>
       </div>
 
+      <div id="page-vouchers" style="display:none;">
+        <div class="st-top">
+          <div>
+            <h1>Vouchers</h1>
+            <div class="sub">Gifts from ELMS: free credits, a plan, more eBay accounts, or money off a credit plan. A voucher works once and only for you.</div>
+          </div>
+        </div>
+        <div id="vouchersContent"><p class="state-msg">Loading&hellip;</p></div>
+      </div>
+
       <div id="page-support" style="display:none;">
         <div class="st-top">
           <div>
@@ -4624,6 +4672,7 @@
           <button class="ad-tab" data-admin-tab="costs" type="button">Credit costs</button>
           <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
           <button class="ad-tab" data-admin-tab="referrals" type="button">Referrals</button>
+          <button class="ad-tab" data-admin-tab="vouchers" type="button">Vouchers</button>
           <button class="ad-tab" data-admin-tab="mail" type="button">Mail</button>
           <button class="ad-tab" data-admin-tab="tickets" type="button">Support <span class="ad-count" id="adminTicketsCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="security" type="button">Security</button>
@@ -4813,6 +4862,61 @@
               <div class="st-head-txt"><h2>Latest sign-ups through a code</h2><p>The most recent 40.</p></div>
             </div>
             <div id="rfaRecent"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+        </div>
+
+        <!-- Vouchers -->
+        <div class="ad-panel" data-admin-panel="vouchers" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico yellow">&#127915;</div>
+              <div class="st-head-txt"><h2>Give a voucher</h2><p>Only you can create vouchers, and each one belongs to one user. Pick who gets it, what it is for, and how long it is valid. The user is told by email and sees it under Vouchers.</p></div>
+            </div>
+            <div class="vca-form">
+              <div>
+                <div class="st-field" style="margin-bottom:8px;"><label>1. Who gets it?</label></div>
+                <div class="vca-user"><input class="st-input" id="vcaUserSearch" type="search" placeholder="Search by email or name&hellip;" autocomplete="off" /><button class="st-btn" id="vcaUserBtn" type="button">Search</button></div>
+                <div class="vca-pick" id="vcaUserPick" style="margin-top:10px;"></div>
+                <div class="vca-chosen" id="vcaUserChosen" style="display:none;margin-top:10px;"></div>
+              </div>
+              <div>
+                <div class="st-field" style="margin-bottom:8px;"><label>2. What is it for?</label></div>
+                <div class="vca-types" id="vcaTypes">
+                  <button type="button" class="vca-type on" data-kind="purchase_discount"><b>Discount on a plan</b><span>Takes % or $ off a credit plan on Buy credits.</span></button>
+                  <button type="button" class="vca-type" data-kind="credits"><b>Free credits</b><span>The user presses Redeem and gets the credits.</span></button>
+                  <button type="button" class="vca-type" data-kind="free_plan"><b>A plan for free</b><span>Its credits, eBay accounts and name, without paying.</span></button>
+                  <button type="button" class="vca-type" data-kind="ebay_accounts"><b>Extra eBay accounts</b><span>Raises how many eBay accounts they may connect.</span></button>
+                </div>
+              </div>
+              <div>
+                <div class="st-field" style="margin-bottom:8px;"><label>3. Details</label></div>
+                <div class="st-grid">
+                  <div class="st-field" data-vca="discountMode"><label>Discount type</label><select class="st-input" id="vcaMode"><option value="percent">Percent off (%)</option><option value="amount">Amount off ($)</option></select></div>
+                  <div class="st-field" data-vca="discountValue"><label id="vcaValueLabel">Percent off (%)</label><input class="st-input" type="number" id="vcaValue" min="1" step="0.5" placeholder="20" /></div>
+                  <div class="st-field" data-vca="plan"><label id="vcaPlanLabel">Only for this plan</label><select class="st-input" id="vcaPlan"><option value="">Any plan</option></select></div>
+                  <div class="st-field" data-vca="credits" style="display:none;"><label>Credits</label><input class="st-input" type="number" id="vcaCredits" min="1" step="1" placeholder="500" /></div>
+                  <div class="st-field" data-vca="accounts" style="display:none;"><label>eBay accounts to add</label><input class="st-input" type="number" id="vcaAccounts" min="1" step="1" placeholder="1" /></div>
+                  <div class="st-field"><label>Valid for (days, empty = no expiry)</label><input class="st-input" type="number" id="vcaDays" min="1" step="1" placeholder="30" /></div>
+                  <div class="st-field grow"><label>Message the user sees (optional)</label><input class="st-input" id="vcaNote" maxlength="140" placeholder="e.g. Thank you for being early" /></div>
+                </div>
+              </div>
+              <div class="st-actions" style="margin-top:0;"><button class="st-btn primary" id="vcaGiveBtn" type="button">Give voucher</button><div id="vcaStatus" class="auth-status"></div></div>
+            </div>
+          </section>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128203;</div>
+              <div class="st-head-txt"><h2>Vouchers given</h2><p>The newest 200. Take back one that is still unused with Revoke.</p></div>
+              <input class="st-input ad-search" id="vcaListSearch" type="search" placeholder="Filter by user email&hellip;" />
+            </div>
+            <div class="vca-chips" id="vcaChips">
+              <button type="button" data-status="" class="on">All</button>
+              <button type="button" data-status="active">Active <span id="vcaCntActive"></span></button>
+              <button type="button" data-status="used">Used <span id="vcaCntUsed"></span></button>
+              <button type="button" data-status="revoked">Revoked <span id="vcaCntRevoked"></span></button>
+            </div>
+            <div id="vcaList"><p class="state-msg">Loading&hellip;</p></div>
           </section>
         </div>
 
@@ -5114,7 +5218,7 @@
   // page and the app share it) until an account is created, and sent with the sign-up so the server can record who brought whom.
   const REF_KEY = 'elmsRef';
   const REF_REASONS = {
-    invalid_code: 'That referral code is not valid, so no discount was added. You can add a code later on the Buy credits page.',
+    invalid_code: 'That referral code is not valid, so no discount was added. A referral code can only be used when you sign up.',
     self: 'You cannot use your own referral code.',
     already: 'A referral code is already on this account.',
     error: 'The referral code could not be added right now. You can add it later on the Buy credits page.',
@@ -5203,6 +5307,7 @@
     'research-tools': ['Research Tools', 'Keyword ranks, reviews, categories, and more - live from Amazon.'],
     calculator: ['eBay Price Calculator', 'Find the price that leaves your profit after eBay fees.'],
     referrals: ['Refer & Earn', 'Invite other sellers - they save, you earn.'],
+    vouchers: ['Vouchers', 'Gifts from ELMS: credits, plans, eBay accounts and discounts.'],
     settings: ['Settings', 'Connect your eBay account and set your business policies.'],
     pricing: ['Buy Credits', 'Purchase credits to import products and monitor stock.'],
     support: ['Support', 'Open a ticket if you need more credits or run into an issue.'],
@@ -5214,7 +5319,7 @@
   // a bookmark or a shared link opens the same page instead of the dashboard.
   const PAGE_PATHS = {
     dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders',
-    messages: '/messages', history: '/import-history', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer',
+    messages: '/messages', history: '/import-history', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer', vouchers: '/vouchers',
     settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin',
   };
   const PATH_ALIASES = { '/drafts': 'drafts', '/listings': 'listings', '/order': 'orders', '/message': 'messages', '/history': 'history', '/pricing': 'pricing', '/credits': 'pricing', '/index.html': 'dashboard', '/': 'dashboard' };
@@ -5266,7 +5371,7 @@
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history' || page === 'admin');
-    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'calculator', 'referrals', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
+    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'calculator', 'referrals', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
@@ -5285,6 +5390,7 @@
     if (page === 'research-tools') loadResearchToolsPage();
     if (page === 'calculator') loadCalculatorPage();
     if (page === 'referrals') loadReferralsPage();
+    if (page === 'vouchers') loadVouchersPage();
     if (page === 'history') loadHistory();
     if (page === 'settings') loadSettingsPage();
     if (page === 'pricing') loadPricingPage();
@@ -6635,7 +6741,7 @@
     document.getElementById('userChip').style.display = 'block';
     document.getElementById('sidebarFooter').textContent = user.googleId ? 'Signed in via Google' : 'Signed in';
     updateCreditBalanceChip(user.creditBalance);
-    Promise.allSettled([refreshDraftsCountBadge(), refreshSystemNotificationBadge(), refreshMessageBadge(), populateSidebarEbayWidget()]);
+    Promise.allSettled([refreshDraftsCountBadge(), refreshSystemNotificationBadge(), refreshMessageBadge(), populateSidebarEbayWidget(), refreshVoucherBadge()]);
     startBackgroundRefresh();
     const adminNavLink = document.getElementById('adminNavLink');
     if (adminNavLink) adminNavLink.style.display = user.role === 'admin' ? 'flex' : 'none';
@@ -13448,21 +13554,11 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="rf-stat"><div class="rf-ico" style="background:#FEF3D0;">&#11088;</div><div><b>${Number(stats.creditsEarned).toLocaleString()}</b><span>Credits you earned</span></div></div>
       </div>
 
-      ${d.canAddCode ? `
-      <section class="st-card">
-        <div class="st-head"><div class="st-ico blue">&#127915;</div><div class="st-head-txt"><h2>Were you invited by someone?</h2><p>Add their code before your first purchase to get your discount.</p></div></div>
-        <div class="rf-apply">
-          <div class="st-field"><label>Referral code</label><input class="st-input mono" id="rfApplyCode" maxlength="24" placeholder="e.g. ABCD2345" autocomplete="off" /></div>
-          <button class="st-btn primary" id="rfApplyBtn" type="button">Add code</button>
-        </div>
-        <div class="rf-check" id="rfApplyNote"></div>
-      </section>` : ''}
-
       <section class="st-card">
         <div class="st-head"><div class="st-ico green">&#128161;</div><div class="st-head-txt"><h2>How it works</h2><p>It takes a minute to share and costs you nothing.</p></div></div>
         <div class="rf-steps">
           <div class="rf-step"><div class="rf-n">1</div><b>Share your link</b><span>Send your link or your code to another eBay seller.</span></div>
-          <div class="rf-step"><div class="rf-n">2</div><b>They join ELMS</b><span>They sign up with your link, or type your code on the sign-up form.</span></div>
+          <div class="rf-step"><div class="rf-n">2</div><b>They join ELMS</b><span>They sign up with your link, or type your code on the sign-up form. A code can only be used once, at sign-up.</span></div>
           <div class="rf-step"><div class="rf-n">3</div><b>${hasOffer ? 'You both benefit' : 'You help a friend'}</b><span>${escapeHtml([o.friend && `They get ${o.friend}.`, o.you && `You get ${o.you}.`].filter(Boolean).join(' ') || 'They get started with ELMS.')}</span></div>
         </div>
       </section>
@@ -13479,29 +13575,103 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('rfCopyLink')?.addEventListener('click', (e) => copyText(link, e.currentTarget, 'Copied'));
     document.getElementById('rfLink')?.addEventListener('focus', (e) => e.target.select());
     document.getElementById('rfNativeShare')?.addEventListener('click', () => { navigator.share({ title: 'ELMS', text: shareText, url: link }).catch(() => {}); });
-    document.getElementById('rfApplyBtn')?.addEventListener('click', () => applyReferralCodeFrom('rfApplyCode', 'rfApplyNote', 'rfApplyBtn', () => loadReferralsPage()));
   }
 
-  // Adds a referral code to the signed-in account (before its first purchase); reload() refreshes the page that asked.
-  async function applyReferralCodeFrom(inputId, noteId, btnId, reload) {
-    const input = document.getElementById(inputId);
-    const note = document.getElementById(noteId);
-    const btn = document.getElementById(btnId);
-    const code = cleanRefCode(input && input.value);
-    if (!code) { if (note) { note.className = 'rf-check bad'; note.textContent = 'Enter a referral code first.'; } return; }
-    btn.disabled = true;
-    if (note) { note.className = 'rf-check wait'; note.textContent = 'Checking…'; }
+  // ---------- Vouchers (the user's own) ----------
+  const VOUCHER_KINDS = {
+    purchase_discount: { icon: '&#127991;', label: 'Discount on a plan' },
+    credits: { icon: '&#11088;', label: 'Free credits' },
+    free_plan: { icon: '&#127873;', label: 'A plan for free' },
+    ebay_accounts: { icon: '&#128722;', label: 'Extra eBay accounts' },
+  };
+  let pricingVoucherId = ''; // the voucher chosen on Buy credits ('' = none)
+
+  function voucherExpiryText(v) {
+    if (v.state === 'used') return v.usedAt ? 'Used on ' + new Date(v.usedAt).toLocaleDateString() : 'Used';
+    if (!v.expiresAt) return 'No expiry date';
+    const days = Math.ceil((new Date(v.expiresAt).getTime() - Date.now()) / 86400000);
+    if (v.state === 'expired') return 'Expired on ' + new Date(v.expiresAt).toLocaleDateString();
+    return days <= 1 ? 'Expires today' : `Expires in ${days} days (${new Date(v.expiresAt).toLocaleDateString()})`;
+  }
+
+  // The number on the sidebar item: vouchers that can still be used.
+  async function refreshVoucherBadge() {
+    const badge = document.getElementById('vouchersCountBadge');
+    if (!badge) return;
     try {
-      const res = await apiFetch('/api/referrals/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
+      const res = await apiFetch('/api/vouchers');
       const d = await res.json();
-      if (!res.ok || !d.success) { if (note) { note.className = 'rf-check bad'; note.textContent = d.error || 'That code could not be added.'; } return; }
-      showToast('Referral applied', Number(d.discountPercent) > 0 ? `${fmtPct(d.discountPercent)}% off your first purchase.` : 'Your referral code was added.', 'success');
-      reload();
+      const n = res.ok && d.success ? Number(d.activeCount) || 0 : 0;
+      badge.textContent = String(n);
+      badge.style.display = n > 0 ? 'inline-block' : 'none';
+    } catch (_) { badge.style.display = 'none'; }
+  }
+
+  async function loadVouchersPage() {
+    const el = document.getElementById('vouchersContent');
+    if (!el) return;
+    el.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
+    try {
+      const res = await apiFetch('/api/vouchers');
+      const d = await res.json();
+      if (!res.ok || !d.success) { el.innerHTML = `<div class="state-msg error">${escapeHtml(d.error || 'Could not load your vouchers.')}</div>`; return; }
+      renderVouchersPage(el, d.vouchers || []);
+      const badge = document.getElementById('vouchersCountBadge');
+      if (badge) { badge.textContent = String(d.activeCount || 0); badge.style.display = d.activeCount > 0 ? 'inline-block' : 'none'; }
     } catch (err) {
-      if (note) { note.className = 'rf-check bad'; note.textContent = 'Could not connect to the server: ' + err.message; }
-    } finally {
-      btn.disabled = false;
+      el.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
+  }
+
+  function voucherCardHtml(v) {
+    const k = VOUCHER_KINDS[v.kind] || VOUCHER_KINDS.credits;
+    const live = v.state === 'active';
+    return `
+      <div class="vc-card ${escapeAttr(v.kind)} ${live ? '' : 'dim'}">
+        <div class="vc-side">${k.icon}</div>
+        <div class="vc-body">
+          <div class="vc-kind">${escapeHtml(k.label)}</div>
+          <div class="vc-title">${escapeHtml(v.description)}</div>
+          ${v.note ? `<div class="vc-note">${escapeHtml(v.note)}</div>` : ''}
+          <div class="vc-meta">${escapeHtml(voucherExpiryText(v))}</div>
+          <div class="vc-actions">
+            <span class="vc-state ${escapeAttr(v.state)}">${v.state === 'active' ? 'Ready to use' : v.state === 'used' ? 'Used' : v.state === 'expired' ? 'Expired' : 'Cancelled'}</span>
+            ${live && v.redeemable ? `<button class="st-btn primary small" data-vc-redeem="${escapeAttr(v.id)}" type="button">Redeem</button>` : ''}
+            ${live && !v.redeemable ? `<button class="st-btn primary small" data-vc-use="${escapeAttr(v.id)}" type="button">Use on Buy credits</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderVouchersPage(el, list) {
+    const active = list.filter((v) => v.state === 'active');
+    const rest = list.filter((v) => v.state !== 'active');
+    if (!list.length) {
+      el.innerHTML = '<section class="st-card"><div class="rf-empty"><b>No vouchers yet</b>When ELMS gives you a voucher (free credits, a plan, or a discount) it appears here, and you get an email.</div></section>';
+      return;
+    }
+    el.innerHTML = `
+      ${active.length ? `<div class="vc-sect" style="margin-top:0;">Ready to use (${active.length})</div><div class="vc-grid">${active.map(voucherCardHtml).join('')}</div>` : '<div class="rf-notice"><span class="rf-ni">&#127915;</span><div><b>No unused vouchers right now.</b><br>Your used and expired ones are below.</div></div>'}
+      ${rest.length ? `<div class="vc-sect">Used and expired</div><div class="vc-grid">${rest.map(voucherCardHtml).join('')}</div>` : ''}`;
+
+    el.querySelectorAll('[data-vc-use]').forEach((b) => b.addEventListener('click', () => { pricingVoucherId = b.dataset.vcUse; showPage('pricing'); }));
+    el.querySelectorAll('[data-vc-redeem]').forEach((b) => b.addEventListener('click', async () => {
+      const v = list.find((x) => x.id === b.dataset.vcRedeem);
+      if (!(await elmsConfirm(`Redeem "${v ? v.description : 'this voucher'}" now? A voucher works once.`, { info: true }))) return;
+      b.disabled = true;
+      try {
+        const res = await apiFetch(`/api/vouchers/${encodeURIComponent(v.id)}/redeem`, { method: 'POST' });
+        const d = await res.json();
+        if (!res.ok || !d.success) { showToast('Voucher', d.error || 'Could not redeem this voucher.', 'error'); b.disabled = false; return; }
+        showToast('Voucher redeemed', d.message || 'Done.', 'success');
+        refreshCreditBalanceChip();
+        populateSidebarEbayWidget().catch(() => {});
+        loadVouchersPage();
+      } catch (err) {
+        showToast('Voucher', 'Could not connect to the server: ' + err.message, 'error');
+        b.disabled = false;
+      }
+    }));
   }
 
   // ---------- eBay price calculator ----------
@@ -13858,7 +14028,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel ----------
   async function loadAdminPage() {
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -14032,6 +14202,148 @@ async function autoSuggestEmptyDraftCategories() {
   }
   document.getElementById('rfaSearchBtn')?.addEventListener('click', rfaSearch);
   document.getElementById('rfaSearchInput')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') rfaSearch(); });
+
+  // ---------- Admin: vouchers ----------
+  const vca = { user: null, kind: 'purchase_discount', status: '', plansLoaded: false };
+
+  function vcaShowFields() {
+    const kind = vca.kind;
+    const show = (name, on) => document.querySelectorAll(`[data-vca="${name}"]`).forEach((e) => { e.style.display = on ? '' : 'none'; });
+    show('discountMode', kind === 'purchase_discount');
+    show('discountValue', kind === 'purchase_discount');
+    show('plan', kind === 'purchase_discount' || kind === 'free_plan');
+    show('credits', kind === 'credits');
+    show('accounts', kind === 'ebay_accounts');
+    document.getElementById('vcaPlanLabel').textContent = kind === 'free_plan' ? 'Which plan is given' : 'Only for this plan (or any)';
+    const anyOpt = document.querySelector('#vcaPlan option[value=""]');
+    if (anyOpt) { anyOpt.textContent = kind === 'free_plan' ? 'Choose a plan…' : 'Any plan'; }
+    const mode = document.getElementById('vcaMode').value;
+    document.getElementById('vcaValueLabel').textContent = mode === 'amount' ? 'Amount off ($)' : 'Percent off (%)';
+    document.getElementById('vcaValue').placeholder = mode === 'amount' ? '5' : '20';
+  }
+
+  async function vcaLoadPlans() {
+    if (vca.plansLoaded) return;
+    try {
+      const res = await apiFetch('/api/admin/plans');
+      const d = await res.json();
+      if (!res.ok || !d.success) return;
+      const sel = document.getElementById('vcaPlan');
+      sel.insertAdjacentHTML('beforeend', d.plans.map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.name)} - $${Number(p.priceUsd).toFixed(2)}, ${Number(p.credits).toLocaleString()} credits${p.active ? '' : ' (hidden)'}</option>`).join(''));
+      vca.plansLoaded = true;
+    } catch (_) { /* the plan box stays with its first option */ }
+  }
+
+  function vcaStateBadge(state) {
+    const cls = state === 'active' ? 'published' : state === 'used' ? 'shipped' : 'error';
+    return `<span class="status-badge ${cls}">${escapeHtml(state)}</span>`;
+  }
+
+  async function loadAdminVouchers() {
+    const list = document.getElementById('vcaList');
+    if (!list) return;
+    vcaShowFields();
+    vcaLoadPlans();
+    try {
+      const q = document.getElementById('vcaListSearch').value.trim();
+      const res = await apiFetch(`/api/admin/vouchers?status=${encodeURIComponent(vca.status)}${q ? '&q=' + encodeURIComponent(q) : ''}`);
+      const d = await res.json();
+      if (!res.ok || !d.success) { list.innerHTML = `<div class="state-msg error">${escapeHtml(d.error || 'Could not load the vouchers.')}</div>`; return; }
+      document.getElementById('vcaCntActive').textContent = `(${d.counts.active})`;
+      document.getElementById('vcaCntUsed').textContent = `(${d.counts.used})`;
+      document.getElementById('vcaCntRevoked').textContent = `(${d.counts.revoked})`;
+      if (!d.vouchers.length) { list.innerHTML = '<div class="empty-state">No vouchers here yet.</div>'; return; }
+      list.innerHTML = `<div class="st-table-wrap"><table class="data-table"><thead><tr><th>User</th><th>Voucher</th><th>Message</th><th>Status</th><th>Expires</th><th>Given</th><th></th></tr></thead><tbody>${d.vouchers.map((v) => `
+        <tr>
+          <td><b>${escapeHtml(v.user || '')}</b></td>
+          <td>${escapeHtml(v.description)}</td>
+          <td>${escapeHtml(v.note || '')}</td>
+          <td>${vcaStateBadge(v.state)}${v.state === 'used' && v.usedFor ? `<span class="rfa-def">${escapeHtml(v.usedFor === 'redeemed' ? 'redeemed' : 'on a payment')}</span>` : ''}</td>
+          <td>${v.expiresAt ? escapeHtml(new Date(v.expiresAt).toLocaleDateString()) : '&mdash;'}</td>
+          <td>${escapeHtml(new Date(v.createdAt).toLocaleDateString())}</td>
+          <td>${v.state === 'active' ? `<button class="btn-small delete" data-vca-revoke="${escapeAttr(v.id)}" type="button">Revoke</button>` : ''}</td>
+        </tr>`).join('')}</tbody></table></div>`;
+      list.querySelectorAll('[data-vca-revoke]').forEach((b) => b.addEventListener('click', async () => {
+        if (!(await elmsConfirm('Take this voucher back? The user will not be able to use it.', { danger: true }))) return;
+        try {
+          const res2 = await apiFetch(`/api/admin/vouchers/${b.dataset.vcaRevoke}/revoke`, { method: 'POST' });
+          const d2 = await res2.json();
+          if (!res2.ok || !d2.success) { alert(d2.error || 'Could not revoke it.'); return; }
+          loadAdminVouchers();
+        } catch (err) { alert('Could not connect to the server: ' + err.message); }
+      }));
+    } catch (err) {
+      list.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  async function vcaSearchUsers() {
+    const q = document.getElementById('vcaUserSearch').value.trim();
+    const pick = document.getElementById('vcaUserPick');
+    if (!q) { pick.innerHTML = ''; return; }
+    pick.innerHTML = '<span class="state-msg">Searching&hellip;</span>';
+    try {
+      const res = await apiFetch('/api/admin/vouchers/users?q=' + encodeURIComponent(q));
+      const d = await res.json();
+      if (!res.ok || !d.success) { pick.innerHTML = `<span class="state-msg error">${escapeHtml(d.error || 'Search failed.')}</span>`; return; }
+      pick.innerHTML = d.users.length ? d.users.map((u) => `<button type="button" data-vca-user="${escapeAttr(u.id)}" data-email="${escapeAttr(u.email)}">${escapeHtml(u.email)}${u.name ? ' - ' + escapeHtml(u.name) : ''}</button>`).join('') : '<span class="state-msg">No one matches that.</span>';
+      pick.querySelectorAll('[data-vca-user]').forEach((b) => b.addEventListener('click', () => {
+        vca.user = { id: b.dataset.vcaUser, email: b.dataset.email };
+        const chosen = document.getElementById('vcaUserChosen');
+        chosen.style.display = 'block';
+        chosen.innerHTML = `The voucher goes to <b>${escapeHtml(vca.user.email)}</b>.`;
+        pick.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+      }));
+    } catch (err) {
+      pick.innerHTML = `<span class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</span>`;
+    }
+  }
+
+  document.getElementById('vcaUserBtn')?.addEventListener('click', vcaSearchUsers);
+  document.getElementById('vcaUserSearch')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') vcaSearchUsers(); });
+  document.getElementById('vcaMode')?.addEventListener('change', vcaShowFields);
+  document.querySelectorAll('#vcaTypes .vca-type').forEach((b) => b.addEventListener('click', () => {
+    vca.kind = b.dataset.kind;
+    document.querySelectorAll('#vcaTypes .vca-type').forEach((x) => x.classList.toggle('on', x === b));
+    vcaShowFields();
+  }));
+  document.querySelectorAll('#vcaChips button').forEach((b) => b.addEventListener('click', () => {
+    vca.status = b.dataset.status;
+    document.querySelectorAll('#vcaChips button').forEach((x) => x.classList.toggle('on', x === b));
+    loadAdminVouchers();
+  }));
+  let vcaFilterTimer = null;
+  document.getElementById('vcaListSearch')?.addEventListener('input', () => { clearTimeout(vcaFilterTimer); vcaFilterTimer = setTimeout(loadAdminVouchers, 400); });
+
+  document.getElementById('vcaGiveBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('vcaGiveBtn');
+    const status = document.getElementById('vcaStatus');
+    const fail = (msg) => { status.className = 'auth-status error'; status.textContent = msg; };
+    if (!vca.user) return fail('Search for the user and click their email first.');
+    const body = { userId: vca.user.id, kind: vca.kind, expiresInDays: document.getElementById('vcaDays').value, note: document.getElementById('vcaNote').value.trim() };
+    if (vca.kind === 'purchase_discount') {
+      const value = document.getElementById('vcaValue').value;
+      if (document.getElementById('vcaMode').value === 'amount') body.amountUsd = value; else body.percent = value;
+      body.planId = document.getElementById('vcaPlan').value || undefined;
+    } else if (vca.kind === 'credits') body.credits = document.getElementById('vcaCredits').value;
+    else if (vca.kind === 'ebay_accounts') body.ebayAccounts = document.getElementById('vcaAccounts').value;
+    else if (vca.kind === 'free_plan') body.planId = document.getElementById('vcaPlan').value || undefined;
+    btn.disabled = true;
+    status.className = 'auth-status';
+    status.textContent = 'Giving…';
+    try {
+      const res = await apiFetch('/api/admin/vouchers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await res.json();
+      if (!res.ok || !d.success) return fail(d.error || 'Could not give the voucher.');
+      status.className = 'auth-status success';
+      status.textContent = `Given to ${vca.user.email}: ${d.voucher.description}.`;
+      loadAdminVouchers();
+    } catch (err) {
+      fail('Could not connect to the server: ' + err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   // ---------- Admin Panel: Overview ----------
   const money = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -15046,10 +15358,20 @@ async function autoSuggestEmptyDraftCategories() {
     container.innerHTML = '<p class="state-msg">Loading plans&hellip;</p>';
 
     try {
-      const res = await apiFetch('/api/payments/plans');
+      // The vouchers that take money off a plan, for the picker; the plans come back priced with the chosen one.
+      let usable = [];
+      try {
+        const vr = await apiFetch('/api/vouchers');
+        const vd = await vr.json();
+        if (vr.ok && vd.success) usable = (vd.vouchers || []).filter((v) => v.state === 'active' && !v.redeemable);
+      } catch (_) { /* no voucher picker */ }
+      if (pricingVoucherId && !usable.some((v) => v.id === pricingVoucherId)) pricingVoucherId = '';
+
+      const res = await apiFetch('/api/payments/plans' + (pricingVoucherId ? '?voucherId=' + encodeURIComponent(pricingVoucherId) : ''));
       const data = await res.json();
 
       if (!res.ok || !data.success) {
+        if (pricingVoucherId) { pricingVoucherId = ''; return loadPlanCards(); } // that voucher cannot be used any more: show the normal prices
         container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load plans.')}</div>`;
         return;
       }
@@ -15069,19 +15391,21 @@ async function autoSuggestEmptyDraftCategories() {
       // A friend who signed up with a referral code sees the discounted prices (the server works out the discount at checkout too).
       const disc = data.referralDiscount;
       let banner = '';
-      if (disc) {
+      if (data.voucher) {
+        banner = `<div class="bc-ref-banner"><div class="bc-ref-ico">&#127915;</div><div><b>Voucher: ${escapeHtml(data.voucher.description)}</b><span>The prices below already include it.${data.voucher.expiresAt ? ' Valid until ' + escapeHtml(new Date(data.voucher.expiresAt).toLocaleDateString()) + '.' : ''}</span></div></div>`;
+      } else if (disc) {
         banner = `<div class="bc-ref-banner"><div class="bc-ref-ico">&#127873;</div><div><b>${fmtPct(disc.percent)}% referral discount</b><span>Applied automatically to your next ${disc.usesLeft > 1 ? disc.usesLeft + ' purchases' : 'purchase'}${disc.expiresAt ? ' until ' + escapeHtml(new Date(disc.expiresAt).toLocaleDateString()) : ''}.</span></div></div>`;
-      } else {
-        try {
-          const rr = await apiFetch('/api/referrals/me');
-          const rd = await rr.json();
-          if (rr.ok && rd.success && rd.canAddCode) {
-            banner = `<div class="bc-code-card"><div class="bc-code-txt"><b>Invited by a friend?</b><span>Enter their referral code before your first purchase to get your discount.</span></div><div class="bc-code-in"><input class="st-input" id="bcRefCode" maxlength="24" placeholder="Referral code" autocomplete="off" /><button class="st-btn primary" id="bcRefApply" type="button">Apply</button></div><div class="rf-check" id="bcRefNote" style="flex-basis:100%;margin:0;"></div></div>`;
-          }
-        } catch (_) { /* the plans still show without the code box */ }
       }
 
+      const picker = usable.length ? `
+        <div class="bc-voucher">
+          <div class="bc-vico">&#127915;</div>
+          <div class="bc-vtxt"><b>You have ${usable.length === 1 ? 'a voucher' : usable.length + ' vouchers'}</b><span>Pick one to take it off the price. A voucher is used instead of a referral discount.</span></div>
+          <select id="bcVoucherSelect" aria-label="Voucher"><option value="">No voucher</option>${usable.map((v) => `<option value="${escapeAttr(v.id)}" ${v.id === pricingVoucherId ? 'selected' : ''}>${escapeHtml(v.description)}${v.expiresAt ? ' (until ' + escapeHtml(new Date(v.expiresAt).toLocaleDateString()) + ')' : ''}</option>`).join('')}</select>
+        </div>` : '';
+
       container.innerHTML = `
+        ${picker}
         ${banner}
         <div class="bc-plans">
           ${data.plans.map((p) => {
@@ -15090,8 +15414,9 @@ async function autoSuggestEmptyDraftCategories() {
             const payNow = hasOff ? p.discountedPriceUsd : p.priceUsd;
             const perCredit = (payNow / p.credits * 100).toFixed(2);
             return `
-              <div class="bc-plan ${isBest ? 'best' : ''} ${hasOff ? 'has-off' : ''}">
-                ${hasOff ? `<div class="bc-off">${fmtPct(disc.percent)}% off</div>` : ''}
+              <div class="bc-plan ${isBest ? 'best' : ''} ${hasOff || p.voucherNotValid ? 'has-off' : ''}">
+                ${hasOff ? `<div class="bc-off">${fmtPct((1 - payNow / p.priceUsd) * 100)}% off</div>` : ''}
+                ${p.voucherNotValid ? '<div class="bc-plan-badnote" style="position:absolute;top:12px;left:16px;right:16px;">Your voucher is not valid for this plan.</div>' : ''}
                 ${isBest ? '<div class="bc-badge">Best value</div>' : ''}
                 <div class="bc-plan-name">${escapeHtml(p.name)}</div>
                 <div class="bc-plan-credits">${p.credits.toLocaleString()}<small>credits</small></div>
@@ -15110,7 +15435,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.querySelectorAll('.pricing-buy-btn').forEach((btn) => {
         btn.addEventListener('click', () => startCheckout(btn.getAttribute('data-plan-id'), btn));
       });
-      document.getElementById('bcRefApply')?.addEventListener('click', () => applyReferralCodeFrom('bcRefCode', 'bcRefNote', 'bcRefApply', () => loadPlanCards()));
+      document.getElementById('bcVoucherSelect')?.addEventListener('change', (e) => { pricingVoucherId = e.target.value; loadPlanCards(); });
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
@@ -15124,12 +15449,13 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planId, ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
       });
       const data = await res.json();
 
       if (!res.ok || !data.success) {
         alert(data.error || 'Could not start checkout.');
+        if (pricingVoucherId && res.status >= 400 && res.status < 500) loadPlanCards(); // the voucher may be used or expired now
         return;
       }
 
