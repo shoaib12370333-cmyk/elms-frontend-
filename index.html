@@ -6854,6 +6854,7 @@
     };
     setInterval(refresh, 60000);
     pingPresence(); // right away: "online" starts now, and a waiting message from the admin pops up
+    setTimeout(warmMessages, 4000); // the inbox and the first threads, ready before Messages is opened
     // Coming back to the tab: check for messages at once instead of waiting up to two minutes.
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkAdminNotices(); });
   }
@@ -11143,6 +11144,84 @@ async function autoSuggestEmptyDraftCategories() {
   let messageSnippets = [];
   let messageSelectedIds = new Set();
 
+  // ---- Loading ahead: the inbox and the threads are fetched before they are needed ----
+  // Threads come with ?peek=1, which leaves them unread. Opening one shows the stored copy at once, then asks again
+  // (that is what marks it read) and only redraws if something changed. The caches belong to the signed-in session.
+  const msgThreadCache = new Map();   // conversation id -> the thread response
+  const msgThreadLoading = new Map(); // conversation id -> promise, so a thread is never fetched twice at once
+  const msgListCache = new Map();     // store filter -> conversations
+  let msgCacheOwner = null;
+  let msgPrefetchRun = 0;
+  const MSG_THREAD_CACHE_MAX = 40;
+
+  function msgCachesReady() {
+    const token = localStorage.getItem('elmsSessionToken');
+    if (token !== msgCacheOwner) { msgThreadCache.clear(); msgThreadLoading.clear(); msgListCache.clear(); msgCacheOwner = token; }
+    return !!token;
+  }
+  function rememberThread(id, data) {
+    msgThreadCache.delete(id);
+    msgThreadCache.set(id, data);
+    while (msgThreadCache.size > MSG_THREAD_CACHE_MAX) msgThreadCache.delete(msgThreadCache.keys().next().value);
+  }
+  /** The stored thread, unless the inbox row shows it has changed since (new message, archived, restored). */
+  function storedThread(id, row) {
+    if (!msgCachesReady()) return null;
+    const stored = msgThreadCache.get(id);
+    if (!stored) return null;
+    if (row) {
+      const same = (a, b) => String(a || '') === String(b || '');
+      if (!same(row.last_message_date, stored.conversation.last_message_date) || !same(row.conversation_status, stored.conversation.conversation_status)) return null;
+    }
+    return stored;
+  }
+  function threadSignature(d) {
+    const c = d.conversation || {};
+    const messages = (d.detail && d.detail.messages) || [];
+    return messages.map((m) => m.messageId + (m.readStatus ? 'r' : '')).join(',') + '|' + (c.internal_notes || []).length + '|'
+      + (c.ai_draft ? c.ai_draft.status + ':' + c.ai_draft.for_message_id : '') + '|' + c.conversation_status + '|'
+      + (c.buyer_profile ? c.buyer_profile.feedback_score : '') + '|' + (d.context ? d.context.listing_title : '');
+  }
+  async function requestThread(id, peek) {
+    const res = await apiFetch(`/api/notifications/${encodeURIComponent(id)}${peek ? '?peek=1' : ''}`);
+    const data = await apiJson(res);
+    if (!res.ok || !data.success) throw new Error(data.error || 'Could not load conversation.');
+    return data;
+  }
+  function prefetchThread(id) {
+    if (!msgCachesReady()) return null;
+    if (storedThread(id, messageRows.find((r) => r.id === id)) || msgThreadLoading.has(id)) return msgThreadLoading.get(id) || null;
+    const p = requestThread(id, true)
+      .then((data) => { rememberThread(id, data); })
+      .catch(() => { /* loading ahead is only a shortcut; opening the thread reports real errors */ })
+      .finally(() => { msgThreadLoading.delete(id); });
+    msgThreadLoading.set(id, p);
+    return p;
+  }
+  /** Buyers' newest threads, unread first, two at a time so it never competes with what the person is doing. */
+  function prefetchTopThreads(rows, limit) {
+    const run = ++msgPrefetchRun;
+    const buyers = (rows || []).filter((r) => r.conversation_status === 'ACTIVE' && r.conversation_type === 'FROM_MEMBERS');
+    const ids = [...buyers.filter((r) => !r.is_read), ...buyers.filter((r) => r.is_read)].slice(0, limit).map((r) => r.id);
+    let next = 0;
+    const worker = async () => {
+      while (next < ids.length && run === msgPrefetchRun && msgCachesReady()) await prefetchThread(ids[next++]);
+    };
+    setTimeout(() => { worker(); worker(); }, 400);
+  }
+  /** Called once after sign-in: the inbox and the first threads are ready before Messages is opened. */
+  async function warmMessages() {
+    if (!msgCachesReady() || msgListCache.has('')) return;
+    try {
+      const res = await apiFetch('/api/notifications');
+      const data = await apiJson(res);
+      if (!res.ok || !data.success) return;
+      msgListCache.set('', data.conversations || []);
+      prefetchTopThreads(data.conversations, 6);
+    } catch (_) { /* nothing to warm */ }
+  }
+
+
   // A fixed hash-based color per buyer name, like Gmail/Slack avatars, so the
   // list doesn't read as one flat wall of identical blue circles. eBay's own
   // messages keep the separate fixed tan "ebay" avatar style (.msg-avatar.ebay)
@@ -11272,6 +11351,11 @@ async function autoSuggestEmptyDraftCategories() {
     }
     list.querySelectorAll('[data-message-id]').forEach((el) => {
       el.addEventListener('click', () => openMessageThread(el.dataset.messageId));
+      let hoverTimer = null;
+      const startLoading = () => { clearTimeout(hoverTimer); hoverTimer = setTimeout(() => prefetchThread(el.dataset.messageId), 120); };
+      el.addEventListener('pointerenter', startLoading);
+      el.addEventListener('touchstart', startLoading, { passive: true });
+      el.addEventListener('pointerleave', () => clearTimeout(hoverTimer));
     });
     list.querySelectorAll('[data-check-id]').forEach((cb) => {
       cb.addEventListener('click', (e) => e.stopPropagation());
@@ -11392,7 +11476,11 @@ async function autoSuggestEmptyDraftCategories() {
 
   async function loadMessages() {
     const list = document.getElementById('messageList');
-    list.innerHTML = '<div class="message-loading"><div class="spinner"></div><div class="loading-title">Loading your inbox</div><div class="loading-sub">Reading the local message cache&hellip;</div></div>';
+    msgCachesReady();
+    const listKey = messageAccountFilter || '';
+    const storedList = msgListCache.get(listKey);
+    if (storedList) { messageRows = storedList; renderMessageList(); }
+    else list.innerHTML = '<div class="message-loading"><div class="spinner"></div><div class="loading-title">Loading your inbox</div><div class="loading-sub">Reading the local message cache&hellip;</div></div>';
     try {
       // Always fetch every status/type for this account - messageMatches() already
       // re-filters the full set client-side for every tab and for search, on every
@@ -11407,14 +11495,16 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/notifications' + qs);
       const data = await apiJson(res);
       if (!res.ok || !data.success) {
-        list.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load eBay messages.')}</div>`;
+        if (!storedList) list.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load eBay messages.')}</div>`;
         return;
       }
       messageRows = data.conversations || [];
+      msgListCache.set(listKey, messageRows);
       renderMessageList();
       refreshMessageBadge();
+      prefetchTopThreads(messageRows, 10);
     } catch (err) {
-      list.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+      if (!storedList) list.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
   }
 
@@ -11431,8 +11521,11 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not sync eBay messages.');
       messageRows = data.conversations || [];
+      msgThreadCache.clear();
+      msgListCache.set(messageAccountFilter || '', messageRows);
       renderMessageList();
       refreshMessageBadge();
+      prefetchTopThreads(messageRows, 10);
       showToast('Messages synced', `${data.conversations?.length || 0} conversations loaded.`, 'success');
     } catch (err) {
       if (list) list.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
@@ -11460,17 +11553,34 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('msgShell')?.classList.add('thread-open');
     renderMessageList();
     const detail = document.getElementById('messageDetail');
-    detail.innerHTML = '<div class="state-msg" style="margin:auto;">Loading conversation&hellip;</div>';
+    const row = messageRows.find((r) => r.id === id);
+    // A thread that is already on its way (loaded ahead) is waited for instead of asked for again.
+    if (!storedThread(id, row) && msgThreadLoading.has(id)) {
+      detail.innerHTML = '<div class="state-msg" style="margin:auto;">Loading conversation&hellip;</div>';
+      await msgThreadLoading.get(id);
+      if (selectedMessageId !== id) return;
+    }
+    const shown = storedThread(id, row);
+    if (shown) {
+      renderMessageDetail(shown);
+      messageRows = messageRows.map((r) => r.id === id ? { ...r, is_read: true } : r);
+      renderMessageList();
+    } else detail.innerHTML = '<div class="state-msg" style="margin:auto;">Loading conversation&hellip;</div>';
     try {
-      const res = await apiFetch(`/api/notifications/${encodeURIComponent(id)}`);
-      const data = await apiJson(res);
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load conversation.');
-      renderMessageDetail(data);
+      const data = await requestThread(id, false); // this one marks it read, here and on eBay
+      rememberThread(id, data);
+      if (selectedMessageId !== id) return; // they moved on to another conversation meanwhile
+      if (!shown || threadSignature(data) !== threadSignature(shown)) {
+        const typed = document.getElementById('messageReplyInput')?.value || '';
+        renderMessageDetail(data);
+        const box = document.getElementById('messageReplyInput');
+        if (typed && box && !box.value) box.value = typed;
+      }
       messageRows = messageRows.map((r) => r.id === id ? { ...r, is_read: true } : r);
       renderMessageList();
       refreshMessageBadge();
     } catch (err) {
-      detail.innerHTML = `<div class="state-msg error" style="margin:auto;">${escapeHtml(err.message)}</div>`;
+      if (selectedMessageId === id && !shown) detail.innerHTML = `<div class="state-msg error" style="margin:auto;">${escapeHtml(err.message)}</div>`;
     }
   }
 
@@ -11685,6 +11795,7 @@ async function autoSuggestEmptyDraftCategories() {
   });
 
   async function sendMessageReply(id) {
+    msgThreadCache.delete(id);
     const input = document.getElementById('messageReplyInput');
     const content = input.value.trim();
     if (!content && !messageAttachments.length) return;
@@ -11703,6 +11814,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function addMessageNote(id) {
+    msgThreadCache.delete(id);
     const input = document.getElementById('messageNoteInput');
     const text = input.value.trim();
     if (!text) return;
@@ -11715,6 +11827,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function archiveMessage(id) {
+    msgThreadCache.delete(id);
     try {
       const res = await apiFetch(`/api/notifications/${encodeURIComponent(id)}/archive`, { method:'POST' });
       const data = await res.json();
@@ -11725,6 +11838,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function trashMessage(id) {
+    msgThreadCache.delete(id);
     try {
       const res = await apiFetch(`/api/notifications/${encodeURIComponent(id)}/trash`, { method:'POST' });
       const data = await res.json();
@@ -11737,6 +11851,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function restoreMessage(id) {
+    msgThreadCache.delete(id);
     try {
       const res = await apiFetch(`/api/notifications/${encodeURIComponent(id)}/restore`, { method:'POST' });
       const data = await res.json();
