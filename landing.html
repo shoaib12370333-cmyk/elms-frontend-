@@ -20,14 +20,15 @@
 <meta property="og:title" content="ELMS — Turn any Amazon link into a live eBay listing" />
 <meta property="og:description" content="Import from Amazon, let AI write the listing, publish to eBay in one click, and see your profit on every order." />
 <meta property="og:url" content="https://elmstool.com/" />
-<meta property="og:image" content="https://elmstool.com/logo.png" />
+<meta property="og:image" content="https://elmstool.com/og-image.png" />
 <meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="#0064D2" />
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ELMS","url":"https://elmstool.com/","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"ELMS imports products from Amazon, writes the listing with AI, checks it for VeRO words, publishes it to eBay and tracks orders and profit."}</script>
 <noscript><style>.reveal, .card, .chip, .live { opacity: 1 !important; transform: none !important; }</style></noscript>
-<link rel="icon" type="image/svg+xml" href="/logo.svg" />
-<link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
-<link rel="apple-touch-icon" href="/logo.png" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -48,8 +49,8 @@
   .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.82); backdrop-filter: blur(14px); border-bottom: 1px solid transparent; transition: border-color .2s, box-shadow .2s; }
   .nav.stuck { border-color: var(--line); box-shadow: 0 6px 24px rgba(15,35,80,.06); }
   .nav-in { display: flex; align-items: center; gap: 22px; height: 68px; }
-  .logo { font-weight: 900; font-size: 26px; letter-spacing: .05em; display: flex; align-items: center; gap: 2px; }
-  .logo b:nth-child(1) { color: var(--red); } .logo b:nth-child(2) { color: var(--blue); } .logo b:nth-child(3) { color: var(--yellow); } .logo b:nth-child(4) { color: var(--green); }
+  .logo { display: flex; align-items: center; }
+  .logo img { display: block; height: 30px; width: auto; }
   .links { display: flex; gap: 4px; margin-left: 18px; }
   .links a { padding: 8px 14px; border-radius: 99px; font-weight: 600; font-size: 14.5px; color: var(--ink2); transition: background .15s, color .15s; }
   .links a:hover { background: var(--soft); color: var(--blue); }
@@ -314,18 +315,7 @@
   .perk i { flex: none; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-style: normal; font-size: 17px; background: #EAF2FE; }
   .perk b { display: block; font-size: 14.5px; line-height: 1.3; } .perk span { display: block; color: var(--mute); font-size: 13px; margin-top: 2px; line-height: 1.45; }
 
-  /* made for every store */
-  .stores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-  .store { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; position: relative; overflow: hidden; transition: transform .25s, box-shadow .25s; }
-  .store:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
-  .store::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--c, var(--blue)); }
-  .store .cc { display: inline-grid; place-items: center; min-width: 46px; height: 32px; padding: 0 10px; border-radius: 9px; background: color-mix(in srgb, var(--c, var(--blue)) 14%, #fff); color: var(--c, var(--blue)); font-weight: 900; letter-spacing: .06em; }
-  .store h3 { margin: 12px 0 14px; font-size: 21px; letter-spacing: -.01em; }
-  .store dl { margin: 0; display: grid; gap: 9px; } .store dl div { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 9px; border-bottom: 1px dashed var(--line); font-size: 14.5px; } .store dl div:last-child { border-bottom: 0; padding-bottom: 0; }
-  .store dt { color: var(--mute); font-weight: 600; } .store dd { margin: 0; font-weight: 800; text-align: right; }
-  .more-stores { text-align: center; margin: 26px auto 0; max-width: 700px; color: var(--ink2); }
-  .more-stores b { color: var(--ink); }
-  @media (max-width: 980px) { .inside, .stores { grid-template-columns: 1fr; } .perks { grid-template-columns: 1fr 1fr; } .tile-vis { height: 240px; } }
+  @media (max-width: 980px) { .inside { grid-template-columns: 1fr; } .perks { grid-template-columns: 1fr 1fr; } .tile-vis { height: 240px; } }
   @media (max-width: 720px) { .mbar { display: flex; } body { padding-bottom: 76px; } .perks { grid-template-columns: 1fr; } }
   @media (prefers-reduced-motion: reduce) { .mi-typing { display: none; } }
   @media (max-width: 980px) {
@@ -354,9 +344,9 @@
 
 <header class="nav" id="nav">
   <div class="wrap nav-in">
-    <a class="logo" href="/" aria-label="ELMS home"><b>E</b><b>L</b><b>M</b><b>S</b></a>
+    <a class="logo" href="/" aria-label="ELMS home"><img src="/logo-wordmark.png" alt="ELMS" width="114" height="30"></a>
     <nav class="links" aria-label="Sections">
-      <a href="#how">How it works</a><a href="#features">Features</a><a href="#inside">Inside</a><a href="#stores">Stores</a><a href="#profit">Profit calculator</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+      <a href="#how">How it works</a><a href="#features">Features</a><a href="#inside">Inside</a><a href="#profit">Profit calculator</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
     </nav>
     <div class="nav-cta">
       <a class="btn ghost sm" href="/signin">Sign in</a>
@@ -560,25 +550,6 @@
   </div>
 </section>
 
-<!-- ================= EVERY STORE ================= -->
-<section id="stores" style="background:var(--soft)">
-  <div class="wrap">
-    <div class="head reveal">
-      <div class="eyebrow">Made for every store</div>
-      <h2>Sell on the eBay site <span class="grad">you sell on</span></h2>
-      <p class="sub">Connect one store or several. Each one uses its own Amazon site, its own currency and its own postal-code rules.</p>
-    </div>
-    <div class="stores">
-      <article class="store reveal" style="--c:#0064D2"><span class="cc">US</span><h3>United States</h3>
-        <dl><div><dt>Amazon site</dt><dd>amazon.com</dd></div><div><dt>Prices in</dt><dd>US dollars</dd></div><div><dt>Postal code</dt><dd>10001</dd></div><div><dt>eBay</dt><dd>ebay.com</dd></div></dl></article>
-      <article class="store reveal" style="--c:#E53238;transition-delay:.08s"><span class="cc">UK</span><h3>United Kingdom</h3>
-        <dl><div><dt>Amazon site</dt><dd>amazon.co.uk</dd></div><div><dt>Prices in</dt><dd>Pounds</dd></div><div><dt>Postal code</dt><dd>SW1A 1AA</dd></div><div><dt>eBay</dt><dd>ebay.co.uk</dd></div></dl></article>
-      <article class="store reveal" style="--c:#86B817;transition-delay:.16s"><span class="cc">AU</span><h3>Australia</h3>
-        <dl><div><dt>Amazon site</dt><dd>amazon.com.au</dd></div><div><dt>Prices in</dt><dd>Australian dollars</dd></div><div><dt>Postal code</dt><dd>2000</dd></div><div><dt>eBay</dt><dd>ebay.com.au</dd></div></dl></article>
-    </div>
-    <p class="more-stores reveal">Also <b>Canada, Germany, France, Italy, Spain, the Netherlands</b> and more. ELMS checks that the Amazon link matches the store you list to, so a wrong-site link is caught before it becomes a draft.</p>
-  </div>
-</section>
 
 <!-- ================= PROFIT CALCULATOR ================= -->
 <section id="profit" class="calc-sec">
@@ -675,7 +646,7 @@
 <footer>
   <div class="wrap">
     <div class="foot">
-      <a class="logo" href="/" aria-label="ELMS home"><b>E</b><b>L</b><b>M</b><b>S</b></a>
+      <a class="logo" href="/" aria-label="ELMS home"><img src="/logo-wordmark.png" alt="ELMS" width="114" height="30"></a>
       <nav aria-label="Footer"><a href="/user-guide.html">User guide</a><a href="/terms.html">Terms of service</a><a href="/policy">Privacy policy</a><a href="/signin">Sign in</a><a href="/signup">Sign up</a></nav>
     </div>
     <p class="legal">© <span id="yr"></span> ELMS. ELMS is an independent tool and is not affiliated with, endorsed by or sponsored by Amazon or eBay. Amazon and eBay are trademarks of their respective owners.</p>
