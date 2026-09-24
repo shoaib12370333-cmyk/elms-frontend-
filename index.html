@@ -2991,6 +2991,18 @@
   .ad-tab { flex:none; border:none; background:transparent; padding:10px 16px; border-radius:10px; font:inherit; font-size:13.5px; font-weight:700; color:#64748B; cursor:pointer; white-space:nowrap; }
   .ad-tab:hover { background:#F1F5F9; color:var(--ink); }
   .ad-tab.active { background:#0064D2; color:#fff; }
+  /* Settings -> VeRO words */
+  .vr-inputwrap { position:relative; }
+  .vr-suggest { position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:30; background:#fff; border:1.5px solid var(--line); border-radius:12px; box-shadow:0 12px 30px rgba(15,27,45,.14); max-height:280px; overflow:auto; }
+  .vr-suggest button { display:block; width:100%; text-align:left; border:none; background:transparent; padding:9px 14px; font:600 13.5px Inter,sans-serif; color:var(--ink); cursor:pointer; }
+  .vr-suggest button:hover, .vr-suggest button.on { background:#EEF4FF; } .vr-suggest button b { color:#0064D2; }
+  .vr-hint { display:block; margin-top:6px; color:var(--grey); font-size:12.5px; }
+  .vr-listhead { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:16px 0 8px; font:800 13.5px Inter,sans-serif; }
+  .vr-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .vr-chip { display:inline-flex; align-items:center; gap:6px; background:#FEF2F2; border:1px solid #FECACA; color:#B42318; border-radius:99px; padding:5px 6px 5px 12px; font:700 13px Inter,sans-serif; word-break:break-word; }
+  .vr-chip button { border:none; background:rgba(180,35,24,.12); color:#B42318; border-radius:50%; width:20px; height:20px; line-height:18px; cursor:pointer; font-size:13px; padding:0; }
+  .vr-chip button:hover { background:rgba(180,35,24,.25); }
+  .vr-empty { color:var(--grey); font-size:13.5px; }
   /* account safety: blocked screen + appeal */
   .elms-blocked { position:fixed; inset:0; z-index:100000; background:#0F1B2D; display:flex; align-items:center; justify-content:center; padding:18px; overflow:auto; }
   .elms-blocked-box { background:#fff; border-radius:18px; max-width:540px; width:100%; padding:26px 26px 22px; box-shadow:0 30px 80px rgba(0,0,0,.4); }
@@ -4118,6 +4130,27 @@
             <div id="extensionKeyStatus" style="margin-top:10px;"></div>
           </section>
         </div>
+
+        <section class="st-card" id="veroCard">
+          <div class="st-head">
+            <div class="st-ico" style="background:#FEF2F2;color:#B42318;">&#9888;</div>
+            <div class="st-head-txt"><h2>VeRO words</h2><p>Brand or character names that get eBay listings removed. ELMS warns you about the words you save here, in your drafts and live listings, and can remove them with AI.</p></div>
+            <button class="st-btn primary" id="veroToggleBtn" type="button">VeRO words <span id="veroCountBadge"></span></button>
+          </div>
+          <div id="veroSection" style="display:none;">
+            <div class="st-field">
+              <label for="veroInput">Add a word, then press Enter</label>
+              <div class="vr-inputwrap">
+                <input class="st-input" id="veroInput" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Nike, Marvel, Apple Watch&hellip;" />
+                <div class="vr-suggest" id="veroSuggest" style="display:none;"></div>
+              </div>
+              <small class="vr-hint">Enter saves it and the box is ready for the next word. You can paste several separated by commas. Suggestions appear as you type; only the words you save are used.</small>
+            </div>
+            <div class="vr-listhead"><b>Your words <span id="veroCount"></span></b><button class="st-btn small danger" id="veroClearBtn" type="button" style="display:none;">Clear all</button></div>
+            <div class="vr-chips" id="veroChips"></div>
+            <div id="veroStatus" style="margin-top:8px;"></div>
+          </div>
+        </section>
 
         <section class="st-card" id="securityDevicesCard">
           <div class="st-head">
@@ -6928,6 +6961,7 @@
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
             <select id="draftSort" class="dv-select"><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
             <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
+            ${veroPattern ? '' : '<button type="button" class="dv-btn" id="draftVeroSetup" title="Add the brand names eBay removes listings for, and ELMS will warn you about them">&#9888; Set up VeRO words</button>'}
             ${veroPattern ? `<button type="button" class="dv-btn vero-filter" id="draftVeroFilter" title="Show only drafts that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="draftVeroCount">${veroCount()}</b></button>` : ''}
             <select id="draftStatusFilter" style="display:none;"><option value="all">All</option><option value="draft" selected>Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option></select>
           </div>
@@ -7006,6 +7040,7 @@
         draftPage = 1;
         renderDraftProductList();
       }));
+      document.getElementById('draftVeroSetup')?.addEventListener('click', openVeroSettings);
       const veroFilterBtn = document.getElementById('draftVeroFilter');
       const setVeroOnly = (on) => {
         draftVeroOnly = on;
@@ -9485,10 +9520,152 @@ async function autoSuggestEmptyDraftCategories() {
 
   async function loadSettingsPage() {
     loadSecurityOverview();
+    loadVeroSettings();
     await loadEbayAccountsList();
     await loadOrderSyncSettings();
     await loadExtensionKey();
   }
+
+  // ---------- Settings: VeRO words (each user's own list) ----------
+  // Only the words saved here are flagged / removed. The starter list from the server is used for suggestions while typing.
+  let veroMine = [];
+  let veroSuggestions = [];
+  let veroSuggestPick = -1;
+  let veroSettingsLoaded = false;
+
+  function renderVeroWords() {
+    const chips = document.getElementById('veroChips');
+    if (!chips) return;
+    chips.innerHTML = veroMine.length
+      ? veroMine.map((w) => `<span class="vr-chip">${escapeHtml(w)}<button type="button" data-vero-remove="${escapeAttr(w)}" aria-label="Remove ${escapeAttr(w)}">&times;</button></span>`).join('')
+      : '<span class="vr-empty">No words yet. Add the brands you do not want in your listings.</span>';
+    const count = document.getElementById('veroCount');
+    if (count) count.textContent = veroMine.length ? '(' + veroMine.length + ')' : '';
+    const badge = document.getElementById('veroCountBadge');
+    if (badge) badge.textContent = veroMine.length ? '· ' + veroMine.length : '';
+    const clear = document.getElementById('veroClearBtn');
+    if (clear) clear.style.display = veroMine.length ? '' : 'none';
+  }
+
+  async function loadVeroSettings() {
+    try {
+      const res = await apiFetch('/api/vero');
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load your VeRO words.');
+      veroMine = data.words || [];
+      veroSuggestions = data.suggestions || [];
+      veroSettingsLoaded = true;
+      renderVeroWords();
+    } catch (err) {
+      const status = document.getElementById('veroStatus');
+      if (status) status.textContent = err.message;
+    }
+  }
+
+  // A saved change must reach the warnings on Drafts / Live listings: forget the pattern so it is fetched again.
+  function veroListChanged() {
+    veroPattern = null;
+    veroPatternPromise = null;
+    renderVeroWords();
+  }
+
+  function renderVeroSuggest() {
+    const box = document.getElementById('veroSuggest');
+    const input = document.getElementById('veroInput');
+    if (!box || !input) return;
+    const q = input.value.trim().toLowerCase();
+    if (!q) { box.style.display = 'none'; box.innerHTML = ''; veroSuggestPick = -1; return; }
+    const have = new Set(veroMine);
+    const list = veroSuggestions.filter((w) => !have.has(w) && w.includes(q))
+      .sort((a, b) => (a.startsWith(q) ? 0 : 1) - (b.startsWith(q) ? 0 : 1) || a.length - b.length)
+      .slice(0, 8);
+    veroSuggestPick = -1;
+    if (!list.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.innerHTML = list.map((w) => {
+      const i = w.indexOf(q);
+      return `<button type="button" data-vero-suggest="${escapeAttr(w)}">${escapeHtml(w.slice(0, i))}<b>${escapeHtml(w.slice(i, i + q.length))}</b>${escapeHtml(w.slice(i + q.length))}</button>`;
+    }).join('');
+    box.style.display = 'block';
+  }
+
+  async function addVeroWord(text) {
+    const status = document.getElementById('veroStatus');
+    const input = document.getElementById('veroInput');
+    const value = String(text || '').trim();
+    if (!value) return;
+    try {
+      const res = await apiFetch('/api/vero/words', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ word: value }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save that word.');
+      veroMine = data.words || veroMine;
+      veroListChanged();
+      if (status) status.textContent = data.added.length ? 'Saved: ' + data.added.join(', ') : 'Already on your list.';
+      if (data.skipped && data.skipped.length) showToast('VeRO words', 'Not saved (too short or not a word): ' + data.skipped.join(', '), 'info');
+    } catch (err) {
+      if (status) status.textContent = err.message;
+    }
+    if (input) { input.value = ''; input.focus(); }
+    renderVeroSuggest();
+  }
+
+  function openVeroSettings() {
+    showPage('settings');
+    const section = document.getElementById('veroSection');
+    if (section && section.style.display === 'none') document.getElementById('veroToggleBtn').click();
+    setTimeout(() => { document.getElementById('veroCard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); document.getElementById('veroInput')?.focus(); }, 250);
+  }
+
+  (function wireVeroSettings() {
+    const toggle = document.getElementById('veroToggleBtn');
+    const input = document.getElementById('veroInput');
+    if (!toggle || !input) return;
+    toggle.addEventListener('click', () => {
+      const section = document.getElementById('veroSection');
+      const open = section.style.display === 'none';
+      section.style.display = open ? '' : 'none';
+      if (open) { if (!veroSettingsLoaded) loadVeroSettings(); input.focus(); }
+    });
+    input.addEventListener('input', renderVeroSuggest);
+    input.addEventListener('keydown', (e) => {
+      const buttons = Array.from(document.querySelectorAll('#veroSuggest [data-vero-suggest]'));
+      if (e.key === 'ArrowDown' && buttons.length) { e.preventDefault(); veroSuggestPick = (veroSuggestPick + 1) % buttons.length; }
+      else if (e.key === 'ArrowUp' && buttons.length) { e.preventDefault(); veroSuggestPick = (veroSuggestPick - 1 + buttons.length) % buttons.length; }
+      else if (e.key === 'Escape') { veroSuggestPick = -1; document.getElementById('veroSuggest').style.display = 'none'; return; }
+      else if (e.key === 'Enter') {
+        e.preventDefault();
+        addVeroWord(veroSuggestPick >= 0 && buttons[veroSuggestPick] ? buttons[veroSuggestPick].dataset.veroSuggest : input.value);
+        return;
+      } else return;
+      buttons.forEach((b, i) => b.classList.toggle('on', i === veroSuggestPick));
+      buttons[veroSuggestPick]?.scrollIntoView({ block: 'nearest' });
+    });
+    document.getElementById('veroSuggest').addEventListener('mousedown', (e) => {
+      const b = e.target.closest('[data-vero-suggest]');
+      if (b) { e.preventDefault(); addVeroWord(b.dataset.veroSuggest); }
+    });
+    input.addEventListener('blur', () => setTimeout(() => { const box = document.getElementById('veroSuggest'); if (box) box.style.display = 'none'; }, 150));
+    document.getElementById('veroChips').addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-vero-remove]');
+      if (!b) return;
+      try {
+        const res = await apiFetch('/api/vero/words/remove', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ word: b.dataset.veroRemove }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not remove it.');
+        veroMine = data.words || [];
+        veroListChanged();
+      } catch (err) { showToast('VeRO words', err.message, 'error'); }
+    });
+    document.getElementById('veroClearBtn').addEventListener('click', async () => {
+      if (!(await elmsConfirm('Remove all ' + veroMine.length + ' VeRO words? Nothing will be flagged until you add words again.', { title: 'Clear VeRO words', okText: 'Clear all', danger: true }))) return;
+      try {
+        const res = await apiFetch('/api/vero/words/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not clear the list.');
+        veroMine = [];
+        veroListChanged();
+      } catch (err) { showToast('VeRO words', err.message, 'error'); }
+    });
+  })();
 
   // ---------- Security: devices signed in + login activity ----------
   const SEC_ICON = { desktop: '&#128187;', mobile: '&#128241;', tablet: '&#128241;', unknown: '&#10067;' };
