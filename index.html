@@ -3323,6 +3323,83 @@
   .sc-dot { width:10px; height:10px; border-radius:50%; background:#86B817; } .sc-dot.bad { background:#E53238; }
   .sc-row small { display:block; color:var(--grey); font-size:12px; margin-top:1px; }
   @media (max-width: 700px) { .sc-row { grid-template-columns:auto 1fr; } .sc-row > :nth-child(3), .sc-row > :nth-child(4) { grid-column:2; } }
+
+  /* ================= Messages: a fixed frame, like a chat app =================
+     The page itself never scrolls here. The sidebar keeps its place and only the list of conversations and the open
+     conversation scroll, each inside its own box. (Other pages keep the normal page scroll.) */
+  .app-shell.msg-frame { height:100vh; height:100dvh; min-height:0; overflow:hidden; }
+  .app-shell.msg-frame .sidebar { height:100%; overflow-y:auto; scrollbar-width:thin; scrollbar-color:#334155 transparent; }
+  .app-shell.msg-frame .main { height:100%; min-height:0; overflow:hidden; }
+  .app-shell.msg-frame .content { display:flex; flex-direction:column; min-height:0; overflow-y:auto; padding-top:14px; padding-bottom:14px; }
+  .app-shell.msg-frame #page-messages { display:flex !important; flex-direction:column; flex:1 1 auto; min-height:0; }
+  .app-shell.msg-frame .msg-shell { flex:1 1 auto; height:auto !important; min-height:320px; max-height:none; }
+
+  .msg-head { display:flex; align-items:center; justify-content:space-between; gap:8px 16px; flex-wrap:wrap; margin:0 0 10px; }
+  .msg-head .msg-sync { margin:0; }
+  .msg-ai { margin:0 0 10px; padding:8px 14px; border-radius:14px; }
+
+  /* the list */
+  .msg-item { padding:12px 16px; }
+  .msg-item-snippet { -webkit-line-clamp:1; }
+  .msg-item-tags:empty { display:none; }
+  .msg-item-tags { margin-top:4px; }
+
+  /* the open conversation */
+  .msg-thread-head { flex-wrap:nowrap; padding:12px 18px; }
+  .msg-thread-title { flex:1 1 auto; }
+  .msg-thread-title b { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .msg-lbl-short { display:none; }
+  .msg-btn.soft { background:#EAF2FE; border-color:transparent; color:#0B57D0; box-shadow:none; }
+  .msg-btn.soft:hover:not(:disabled) { background:#DCE9FD; border-color:transparent; }
+  .msg-context { padding:10px 18px; gap:12px; }
+  .msg-context img, .msg-context-ph { flex:0 0 54px; width:54px; height:54px; object-fit:contain; background:#fff; }
+  .msg-context-txt { gap:1px; } .msg-context-txt b { font-size:14px; } .msg-context-txt small { font-size:12px; color:#7d8795; }
+  .msg-context-price { margin-top:1px; }
+  .msg-thread-body { padding:14px 22px 10px; background:#fff; }
+  .msg-day { margin:14px 0 12px; font-size:12px; color:#8a93a2; font-weight:600; }
+  .msg-bubble-row { margin-bottom:6px; }
+  .msg-bubble-col { max-width:min(72%,560px); display:flex; flex-direction:column; align-items:flex-start; }
+  .msg-bubble-row.self .msg-bubble-col { align-items:flex-end; }
+  .msg-bubble { max-width:none; padding:12px 16px; border:0; border-radius:18px 18px 18px 6px; background:#F1F3F6; color:#1f2937; }
+  .msg-bubble-row.self .msg-bubble { border-radius:18px 18px 6px 18px; background:#1D6FEB; color:#fff; }
+  .msg-bubble-text { font-size:14px; line-height:1.55; }
+  .msg-bubble-time { margin:4px 6px 12px; font-size:11.5px; color:#8a93a2; display:flex; align-items:center; gap:4px; }
+  .msg-bubble-time .msg-ticks { margin:0; opacity:1; color:#98A2B3; letter-spacing:-3px; font-size:13px; } .msg-bubble-time .msg-ticks.read { color:#1D6FEB; }
+  .msg-media img { max-width:220px; max-height:170px; }
+
+  .msg-compose { padding:10px 18px 14px; }
+  .msg-tools { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; position:relative; }
+  .msg-pill { position:relative; display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:#fff; color:#475467; font:600 12px Inter,sans-serif; cursor:pointer; white-space:nowrap; list-style:none; }
+  .msg-pill:hover { background:#F6F8FB; border-color:#D5DCE6; } .msg-pill:disabled { opacity:.55; cursor:not-allowed; }
+  .msg-pill select { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+  .msg-note-toggle { position:relative; } .msg-note-toggle summary::-webkit-details-marker { display:none; }
+  .msg-note-form { bottom:38px; margin-top:0; }
+  .msg-compose-row { align-items:center; gap:8px; }
+  .msg-compose-row textarea { min-height:48px; max-height:132px; resize:none; border-radius:14px; padding:13px 16px; line-height:1.4; background:#fff; border-color:#D5DCE6; }
+  .msg-compose-row textarea:focus { border-color:var(--blue); }
+  .msg-compose-row .msg-icon-btn { color:#475467; }
+  .msg-btn.send { height:48px; padding:0 26px; border-radius:12px; }
+  @media (max-width:900px) {
+    .app-shell.msg-frame .msg-shell { min-height:0; }
+    .msg-bubble-col { max-width:88%; }
+    .msg-compose-row { flex-wrap:nowrap; } .msg-compose-row textarea { flex:1 1 0; min-width:0; width:0; }
+    /* on a phone an open conversation gets the whole screen: the store / AI bar above belong to the list */
+    .app-shell.msg-frame .content:has(.msg-shell.thread-open) .msg-head,
+    .app-shell.msg-frame .content:has(.msg-shell.thread-open) .msg-ai { display:none; }
+  }
+  @media (max-width:560px) {
+    .msg-thread-head { flex-wrap:nowrap; gap:8px; padding:8px 10px; }
+    .msg-thread-head > .msg-avatar.big { display:none; }
+    .msg-thread-title b { display:block; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .msg-thread-title span { font-size:11.5px; }
+    .msg-pill { height:28px; padding:0 9px; font-size:11.5px; } .msg-tools { gap:6px; margin-bottom:8px; }
+    .msg-btn.soft.small { height:30px; padding:0 12px; font-size:12px; }
+    .msg-lbl-long { display:none; } .msg-lbl-short { display:inline; }
+    #messageImageBtn { display:none; } /* the paperclip already takes photos */
+    .msg-context { padding:8px 12px; } .msg-context img, .msg-context-ph { flex-basis:44px; width:44px; height:44px; }
+    .msg-thread-body { padding:12px 12px 6px; } .msg-compose { padding:8px 12px 12px; }
+    .msg-compose-row .msg-icon-btn { min-width:34px; padding:0 6px; }
+    .msg-btn.send { padding:0 18px; }
+  }
 </style>
 </head>
 <body>
@@ -3762,16 +3839,13 @@
       </div>
 
       <div id="page-messages" style="display:none;">
-        <div class="msg-top">
-          <div>
-            <h1>Messages</h1>
-            <div class="sub">Every eBay buyer conversation in one inbox &mdash; reply, add private notes and jump to the linked order.</div>
-          </div>
+        <div class="msg-head">
           <div class="msg-actions">
             <select id="messageAccountFilter" class="msg-select"><option value="">All eBay stores</option></select>
             <button class="msg-btn primary" id="messageRefreshBtn" type="button">Sync</button>
             <button class="msg-btn" id="messageSnippetsBtn" type="button">Saved replies</button>
           </div>
+          <div class="msg-sync" id="messageSyncStatus"></div>
         </div>
         <div class="msg-ai" id="msgAiBox">
           <span class="msg-ai-title">&#10024; AI replies</span>
@@ -3782,7 +3856,6 @@
           </span>
           <span class="msg-ai-note" id="msgAiNote">AI can make mistakes. Check replies before sending.</span>
         </div>
-        <div class="msg-sync" id="messageSyncStatus"></div>
 
         <div class="msg-shell" id="msgShell">
           <section class="msg-list-pane">
@@ -4800,6 +4873,7 @@
     if (!PAGE_TITLES[page]) page = 'dashboard';
     if (!opts.fromPop) syncUrlToPage(page, !!opts.replace);
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
+    document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history' || page === 'admin');
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
@@ -11565,14 +11639,27 @@ async function autoSuggestEmptyDraftCategories() {
     return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
   }
 
+  // "10:24 AM" today, "Yesterday", then "21 Jul" (with the year once it is an older year).
+  function messageDaysAgo(d) {
+    const start = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    return Math.round((start(new Date()) - start(d)) / 86400000);
+  }
   function messageTime(value) {
     if (!value) return '';
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return '';
-    const diff = Date.now() - d.getTime();
-    if (diff < 60 * 60 * 1000) return `${Math.max(1, Math.floor(diff / 60000))}m`;
-    if (diff < 24 * 60 * 60 * 1000) return `${Math.floor(diff / 3600000)}h`;
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const days = messageDaysAgo(d);
+    if (days <= 0) return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    if (days === 1) return 'Yesterday';
+    return d.toLocaleDateString(undefined, d.getFullYear() === new Date().getFullYear() ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function messageDayLabel(value) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    const days = messageDaysAgo(d);
+    if (days <= 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   function messageTypeLabel(type) {
@@ -11653,12 +11740,8 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="msg-item-subject">${escapeHtml(r.subject || (r.conversation_type === 'FROM_MEMBERS' ? 'Member message' : 'eBay notification'))}</div>
           <div class="msg-item-snippet">${escapeHtml(r.last_message_snippet || 'No preview available.')}</div>
           <div class="msg-item-tags">
-            ${r.is_read ? '' : '<span class="msg-tag new">New</span>'}
-            ${r.conversation_type === 'FROM_EBAY' ? '<span class="msg-tag">eBay</span>' : ''}
             ${r.ai_draft && r.ai_draft.status === 'ready' ? '<span class="msg-tag ai">AI draft</span>' : ''}
             ${r.ai_draft && r.ai_draft.status === 'auto_sent' ? '<span class="msg-tag ai">AI replied</span>' : ''}
-            ${r.reference_id ? '<span class="msg-tag order">Linked</span>' : ''}
-            <span class="msg-tag store">${escapeHtml(r.ebay_account_display_name || r.ebay_account_username || 'eBay store')}</span>
           </div>
         </div>
       </div>`;
@@ -11770,6 +11853,7 @@ async function autoSuggestEmptyDraftCategories() {
    */
   function fitMessagesShell() {
     const shell = document.getElementById('msgShell');
+    if (shell && document.getElementById('appShell')?.classList.contains('msg-frame')) { shell.style.height = ''; return; } // the fixed frame (CSS) sizes it
     if (!shell || shell.offsetParent === null) return; // not the visible page right now
     const top = shell.getBoundingClientRect().top;
     const contentEl = shell.closest('.content');
@@ -11951,13 +12035,12 @@ async function autoSuggestEmptyDraftCategories() {
     let lastDay = '';
     const bubbles = messages.map((m) => {
       const day = dayKey(m.sentDate);
-      const sep = day && day !== lastDay ? `<div class="msg-day">${escapeHtml(new Date(m.sentDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }))}</div>` : '';
+      const sep = day && day !== lastDay ? `<div class="msg-day">${escapeHtml(messageDayLabel(m.sentDate))}</div>` : '';
       lastDay = day || lastDay;
-      return `${sep}<div class="msg-bubble-row ${m.isSelf ? 'self' : ''}"><div class="msg-bubble">
+      return `${sep}<div class="msg-bubble-row ${m.isSelf ? 'self' : ''}"><div class="msg-bubble-col"><div class="msg-bubble">
         <div class="msg-bubble-text">${escapeHtml(m.content || '')}</div>
         ${messageMediaHtml(m.media)}
-        <div class="msg-bubble-meta">${escapeHtml(m.isSelf ? 'You' : (m.fromUsername || name))} &middot; ${escapeHtml(m.sentDate ? new Date(m.sentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '')} ${readTicksHtml(m)}</div>
-      </div></div>`;
+      </div><div class="msg-bubble-time">${escapeHtml(m.sentDate ? new Date(m.sentDate).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '')} ${readTicksHtml(m)}</div></div></div>`;
     }).join('');
     const notesHtml = notes.length ? `<div class="msg-notes">${notes.slice(-3).map((n) => `<div class="msg-note"><b>${escapeHtml(n.created_at ? new Date(n.created_at).toLocaleString() : '')}</b><br>${escapeHtml(n.text)}</div>`).join('')}</div>` : '';
 
@@ -11976,13 +12059,13 @@ async function autoSuggestEmptyDraftCategories() {
               <button type="button" class="danger" id="messageTrashBtn">${c.conversation_status === 'DELETE' ? 'Restore' : 'Move to Trash'}</button>
             </div>
           </div>
-          ${context && context.ebay_order_id ? '<button class="msg-btn primary small" id="messageOpenOrderBtn" type="button">View order details</button>' : ''}
+          ${context && context.ebay_order_id ? '<button class="msg-btn soft small" id="messageOpenOrderBtn" type="button"><span class="msg-lbl-long">View order details</span><span class="msg-lbl-short">Order</span></button>' : ''}
         </div>
       </div>
       ${context ? `<div class="msg-context">
         ${context.main_image ? `<img src="${escapeAttr(context.main_image)}" alt="" onerror="this.style.display='none'">` : '<div class="msg-context-ph"></div>'}
-        <div class="msg-context-txt"><span>${escapeHtml(context.type === 'order' ? 'Related order' : 'Related listing')}</span><b>${escapeHtml(context.listing_title || 'eBay item')}</b>
-          <small>${context.ebay_order_id ? `Item no: ${escapeHtml(context.ebay_order_id)}` : context.ebay_item_id ? `Item no: ${escapeHtml(context.ebay_item_id)}` : ''}</small>
+        <div class="msg-context-txt"><b>${escapeHtml(context.listing_title || 'eBay item')}</b>
+          <small>${[context.ebay_item_id ? `Item no: ${escapeHtml(context.ebay_item_id)}` : '', context.ebay_order_id ? `Order: ${escapeHtml(context.ebay_order_id)}` : ''].filter(Boolean).join(' &middot; ')}</small>
           ${context.sale_price != null ? `<div class="msg-context-price">${escapeHtml(orders_money(context.sale_price, context.currency))}</div>` : ''}</div>
       </div>` : ''}
       <div class="msg-thread-body" id="supportMessagesScroll">${bubbles || '<div class="state-msg">No messages were returned by eBay for this conversation.</div>'}</div>
@@ -11991,21 +12074,22 @@ async function autoSuggestEmptyDraftCategories() {
         ${c.ai_draft && c.ai_draft.status === 'ready' ? `<div class="msg-ai-banner" id="msgAiBanner">&#10024; AI wrote this draft. Read it, edit it, then press Send.<button type="button" id="messageAiDiscardBtn">Discard</button><small>AI can make mistakes. Check names, dates and promises before sending.</small></div>` : ''}
         ${c.ai_draft && c.ai_draft.status === 'auto_sent' ? `<div class="msg-ai-banner sent">&#10024; AI already replied to the latest message automatically: &ldquo;${escapeHtml(String(c.ai_draft.text || '').slice(0, 160))}&rdquo;<small>AI can make mistakes. Follow up here if needed.</small></div>` : ''}
         <div class="msg-attach-tray" id="messageAttachTray"></div>
+        <div class="msg-tools">
+          <label class="msg-pill" title="Saved replies">Saved replies &#9662;
+            <select id="messageSnippetSelect"><option value="">Saved replies&hellip;</option>${snippets.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}</select>
+          </label>
+          <details class="msg-note-toggle">
+            <summary class="msg-pill" title="Private note - only visible in ELMS">Private note</summary>
+            <div class="msg-note-form"><textarea id="messageNoteInput" placeholder="Only visible in ELMS&hellip;"></textarea><button class="msg-btn small" id="messageNoteBtn" type="button">Add note</button></div>
+          </details>
+          <button class="msg-pill" id="messageAiDraftBtn" type="button" title="Let AI write a reply for you to check">&#10024; Draft with AI</button>
+        </div>
         <div class="msg-compose-row">
-          <textarea id="messageReplyInput" placeholder="Write a reply to ${escapeAttr(name)}&hellip;"></textarea>
+          <textarea id="messageReplyInput" rows="1" placeholder="Type a message&hellip;"></textarea>
           <button class="msg-icon-btn" id="messageAttachBtn" type="button" title="Attach a file (image or PDF)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
           <button class="msg-icon-btn" id="messageImageBtn" type="button" title="Attach a photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></button>
           <span class="msg-emoji-wrap"><button class="msg-icon-btn" id="messageEmojiBtn" type="button" title="Emoji">&#128512;</button><div class="msg-emoji-pop" id="messageEmojiPop"></div></span>
           <input type="file" id="messageFileInput" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden />
-          <label class="msg-icon-btn" title="Saved replies">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.42 0l8.58-8.58a1 1 0 0 0 0-1.42z"/><circle cx="7" cy="7" r="1"/></svg>
-            <select id="messageSnippetSelect"><option value="">Saved replies&hellip;</option>${snippets.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}</select>
-          </label>
-          <details class="msg-note-toggle">
-            <summary class="msg-icon-btn" title="Private note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></summary>
-            <div class="msg-note-form"><textarea id="messageNoteInput" placeholder="Only visible in ELMS&hellip;"></textarea><button class="msg-btn small" id="messageNoteBtn" type="button">Add note</button></div>
-          </details>
-          <button class="msg-icon-btn" id="messageAiDraftBtn" type="button" title="Draft with AI">&#10024;</button>
           <button class="msg-btn primary send" id="messageReplyBtn" type="button">Send</button>
         </div>
       </div>
@@ -12016,6 +12100,9 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('messageBackBtn').addEventListener('click', () => document.getElementById('msgShell')?.classList.remove('thread-open'));
     document.getElementById('messageOpenOrderBtn')?.addEventListener('click', () => showPage('orders'));
     document.getElementById('messageReplyBtn').addEventListener('click', () => sendMessageReply(c.id));
+    const replyBox = document.getElementById('messageReplyInput');
+    const growReply = () => { replyBox.style.height = 'auto'; replyBox.style.height = Math.min(replyBox.scrollHeight, 132) + 'px'; };
+    replyBox.addEventListener('input', growReply);
     wireMessageComposeExtras();
     if (c.ai_draft && c.ai_draft.status === 'ready') {
       const box = document.getElementById('messageReplyInput');
@@ -12033,6 +12120,7 @@ async function autoSuggestEmptyDraftCategories() {
         const res = await apiFetch(`/api/notifications/${encodeURIComponent(c.id)}/ai-reply/generate`, { method: 'POST' });
         const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not write a draft.');
         document.getElementById('messageReplyInput').value = d.text;
+        document.getElementById('messageReplyInput').dispatchEvent(new Event('input'));
         showToast('AI draft ready', 'Read it, edit it, then press Send.', 'success');
         refreshCreditBalanceChip();
       } catch (err) { showToast('AI draft failed', err.message, 'error'); }
