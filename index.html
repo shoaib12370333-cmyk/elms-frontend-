@@ -9,9 +9,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ELMS — Listing Pipeline</title>
-<link rel="icon" type="image/svg+xml" href="/logo.svg">
-<link rel="icon" type="image/png" sizes="512x512" href="/logo.png">
-<link rel="apple-touch-icon" href="/logo.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -96,33 +97,17 @@
   }
   .sidebar-brand {
     display: flex;
-    align-items: center;
-    gap: 11px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
     margin-bottom: 26px;
     padding: 4px 4px;
   }
-  .sidebar-brand .brand-logo {
-    width: 42px; height: 42px;
-    border-radius: 12px;
-    background: var(--gradient-primary);
-    display: grid; place-items: center;
-    color: #fff;
-    flex-shrink: 0;
-    box-shadow: 0 6px 16px rgba(37,99,235,0.4);
-  }
-  .sidebar-brand .brand-logo svg { width: 22px; height: 22px; }
-  .sidebar-brand .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
-  .sidebar-brand .mark {
-    font-family: 'Trebuchet MS', 'Verdana', sans-serif;
-    font-weight: 900;
-    font-size: 24px;
-    letter-spacing: -0.03em;
-  }
+  .sidebar-brand .logo-img { display: block; height: 34px; width: auto; }
   .sidebar-brand .tag {
     font-size: 10px;
     color: rgba(255,255,255,0.55);
     letter-spacing: 0.01em;
-    margin-top: 2px;
   }
   .sidebar-ebay-widget {
     margin-bottom: 20px;
@@ -304,13 +289,7 @@
     justify-content: center;
     background: var(--paper-raised);
   }
-  .loading-splash .mark {
-    font-family: 'Inter', sans-serif;
-    font-weight: 800;
-    font-size: 34px;
-    letter-spacing: -0.02em;
-    animation: pulseFade 1.3s ease-in-out infinite;
-  }
+  .loading-splash .splash-logo { display: block; width: 190px; max-width: 60vw; height: auto; animation: pulseFade 1.3s ease-in-out infinite; }
   @keyframes pulseFade {
     0%, 100% { opacity: 0.4; }
     50% { opacity: 1; }
@@ -411,12 +390,7 @@
     margin-bottom: 20px;
     animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s both;
   }
-  .auth-brand .mark {
-    font-family: 'Trebuchet MS', 'Verdana', sans-serif;
-    font-weight: 900;
-    font-size: 24px;
-    letter-spacing: -0.02em;
-  }
+  .auth-brand .logo-img { display: block; height: 36px; width: auto; margin-bottom: 4px; }
   .auth-brand .tag {
     display: block;
     font-size: 11px;
@@ -3452,6 +3426,7 @@
     .msg-compose { padding:6px 14px 8px; } .msg-compose-row textarea { min-height:40px; } .msg-btn.send { height:40px; padding:0 20px; }
   }
   @media (prefers-reduced-motion: reduce) { .sk { animation:none; } }
+  .kick-logo { display: inline-block; height: 11px; width: auto; vertical-align: -1px; }
 </style>
 </head>
 <body>
@@ -3496,7 +3471,7 @@
 <!-- Auth Page (shown until the user logs in or registers) -->
 <!-- Loading Splash (shown briefly while we check for an existing session) -->
 <div class="loading-splash" id="loadingSplash">
-  <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
+  <img class="splash-logo" src="/logo-wordmark.png" alt="ELMS" width="190">
 </div>
 
 <div class="auth-page" id="authPage" style="display:none;">
@@ -3508,7 +3483,7 @@
 
     <div class="auth-form-panel">
       <div class="auth-brand">
-        <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
+        <img class="logo-img" src="/logo-wordmark.png" alt="ELMS" height="36">
         <span class="tag">listing management</span>
       </div>
 
@@ -3618,13 +3593,8 @@
 <div class="app-shell" id="appShell" style="display:none;">
   <aside class="sidebar" id="appSidebar">
     <div class="sidebar-brand">
-      <span class="brand-logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      </span>
-      <span class="brand-text">
-        <span class="mark"><span style="color:#E53238;">E</span><span style="color:#0064D2;">L</span><span style="color:#F5AF02;">M</span><span style="color:#86B817;">S</span></span>
-        <span class="tag">eBay Listing &amp; Management System</span>
-      </span>
+      <img class="logo-img" src="/logo-wordmark.png" alt="ELMS" height="34">
+      <span class="tag">eBay Listing &amp; Management System</span>
     </div>
 
     <div class="sidebar-ebay-widget" id="sidebarEbayWidget">
@@ -8957,7 +8927,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="modal-box ll-editor-box" role="dialog" aria-modal="true" aria-label="Edit listing">
         <div class="ll-editor-head">
           ${l.main_image ? `<img class="ll-editor-thumb" src="${escapeAttr(l.main_image)}" alt="" />` : '<div class="ll-editor-thumb"></div>'}
-          <div class="ll-editor-headtxt"><div class="ll-editor-kicker"><span style="color:#E53238">E</span><span style="color:#0064D2">L</span><span style="color:#F5AF02">M</span><span style="color:#86B817">S</span> &middot; ${isDraftMode ? 'Draft' : 'Live listing'}</div><div class="ll-editor-title">${escapeHtml(l.title || 'Untitled listing')}</div></div>
+          <div class="ll-editor-headtxt"><div class="ll-editor-kicker"><img class="kick-logo" src="/logo-wordmark.png" alt="ELMS"> &middot; ${isDraftMode ? 'Draft' : 'Live listing'}</div><div class="ll-editor-title">${escapeHtml(l.title || 'Untitled listing')}</div></div>
           <button type="button" class="ll-editor-close" data-ll-close aria-label="Close">&times;</button>
         </div>
         <div class="ll-editor-body">
@@ -9324,7 +9294,7 @@ async function autoSuggestEmptyDraftCategories() {
     const kv = (k, v) => `<div class="ord-kv"><span>${k}</span><b>${v}</b></div>`;
     drawer.innerHTML = `
       <div class="ord-drawer-head">
-        <div><div class="ord-drawer-kicker"><span style="color:#E53238">E</span><span style="color:#0064D2">L</span><span style="color:#F5AF02">M</span><span style="color:#86B817">S</span> &middot; Order</div>
+        <div><div class="ord-drawer-kicker"><img class="kick-logo" src="/logo-wordmark.png" alt="ELMS"> &middot; Order</div>
         <div class="ord-drawer-title">${escapeHtml(o.ebay_order_id || 'Order')}</div>
         <div class="ord-sub">${escapeHtml(orderLongDate(orderDateOf(o)))}${o.sales_record ? ' · Sales record #' + escapeHtml(o.sales_record) : ''}</div></div>
         <div class="ord-drawer-head-right">${orderStatusPill(o)}<button class="ord-x" type="button" data-ord-close aria-label="Close">&times;</button></div>
