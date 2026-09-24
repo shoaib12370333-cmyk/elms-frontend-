@@ -5085,7 +5085,7 @@
    * `if (!(await elmsConfirm('...'))) return;` in place of `if (!confirm('...'))`.
    */
   function elmsConfirm(message, opts = {}) {
-    const { title = 'Please confirm', okText = 'OK', cancelText = 'Cancel', danger = false } = opts;
+    const { title = 'Please confirm', okText = 'OK', cancelText = 'Cancel', danger = false, info = false } = opts;
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
       overlay.className = 'elms-confirm-overlay';
@@ -5094,7 +5094,7 @@
           <div class="elms-confirm-title">${escapeHtml(title)}</div>
           <div class="elms-confirm-message">${escapeHtml(message).replace(/\n/g, '<br>')}</div>
           <div class="elms-confirm-actions">
-            <button type="button" class="ord-btn" data-act="cancel">${escapeHtml(cancelText)}</button>
+            ${info ? '' : `<button type="button" class="ord-btn" data-act="cancel">${escapeHtml(cancelText)}</button>`}
             <button type="button" class="ord-btn primary${danger ? ' elms-confirm-danger' : ''}" data-act="ok">${escapeHtml(okText)}</button>
           </div>
         </div>`;
@@ -5113,7 +5113,7 @@
       };
       document.addEventListener('keydown', onKey);
       overlay.addEventListener('click', (e) => { if (e.target === overlay) done(false); });
-      overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => done(false));
+      overlay.querySelector('[data-act="cancel"]')?.addEventListener('click', () => done(false));
       overlay.querySelector('[data-act="ok"]').addEventListener('click', () => done(true));
       overlay.querySelector('[data-act="ok"]').focus();
     });
@@ -7887,7 +7887,7 @@
       box.innerHTML = defs.map((a, i) => {
         const v = values[a.name];
         let val = Array.isArray(v) ? v.join(', ') : (v || '');
-        if (!val) val = findAmazonValueForAspect(a.name, { specifications: l.specifications || [], brand: '' }) || '';
+        if (!val && !l.ebay_offer_id) val = findAmazonValueForAspect(a.name, { specifications: l.specifications || [], brand: '' }) || '';
         const tag = a.required ? '<em class="req">Required</em>' : a.usage === 'RECOMMENDED' ? '<em class="rec">Recommended</em>' : '<em>Optional</em>';
         const list = a.values && a.values.length ? `<datalist id="asp-${l.id}-${i}">${a.values.map((x) => `<option value="${escapeAttr(x)}">`).join('')}</datalist>` : '';
         return `<div class="elms-asp" data-ui-aspect><label>${escapeHtml(a.name)} ${tag}</label><input type="text" data-name="${escapeAttr(a.name)}" maxlength="${a.cardinality === 'MULTI' ? 400 : 65}" value="${escapeAttr(String(val).slice(0, a.cardinality === 'MULTI' ? 400 : 65))}" ${list ? `list="asp-${l.id}-${i}"` : ''} placeholder="${a.values && a.values.length ? 'Choose or type' : a.cardinality === 'MULTI' ? 'Separate several with commas' : 'Type a value'}" />${list}</div>`;
@@ -8914,7 +8914,37 @@ async function autoSuggestEmptyDraftCategories() {
 
   function llCloseEditor() { document.getElementById('llEditModal')?.remove(); document.body.style.overflow = ''; }
 
-  function llEnterEditMode(row, l) { openListingEditor(l, { mode: 'live' }); }
+  // A live listing's editor has to show what eBay holds - not an older ELMS copy or the Amazon import (that is why edits seemed to
+  // "go back" after a refresh). It is read from eBay first; when eBay cannot be reached the ELMS copy is shown.
+  async function llSyncFromEbay(l) {
+    if (llListingStatus(l) !== 'active') return;
+    try {
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 9000));
+      const res = await Promise.race([apiFetch(`/api/listings/${encodeURIComponent(l.id)}/live`), timeout]);
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.live) return;
+      const v = data.live;
+      const aspects = {};
+      Object.entries(v.aspects || {}).forEach(([name, vals]) => { const list = [].concat(vals).map(String).filter(Boolean); if (list.length) aspects[name] = list; });
+      Object.assign(l, {
+        title: v.title || l.title,
+        quantity: v.quantity ?? l.quantity,
+        category_id: v.categoryId || l.category_id,
+        ebay_aspects: aspects,
+        ...(v.description ? { description: v.description } : {}),
+        ...(Array.isArray(v.imageUrls) && v.imageUrls.length ? { images: v.imageUrls } : {}),
+        payment_policy_id: (v.policies && v.policies.paymentPolicyId) || l.payment_policy_id,
+        shipping_policy_id: (v.policies && v.policies.fulfillmentPolicyId) || l.shipping_policy_id,
+        return_policy_id: (v.policies && v.policies.returnPolicyId) || l.return_policy_id,
+      });
+    } catch (e) { /* the ELMS copy is shown */ }
+  }
+
+  async function llEnterEditMode(row, l) {
+    document.body.style.cursor = 'progress';
+    try { await llSyncFromEbay(l); } finally { document.body.style.cursor = ''; }
+    openListingEditor(l, { mode: 'live' });
+  }
 
   function openListingEditor(l, opts = {}) {
     const isDraftMode = opts.mode === 'draft';
@@ -8971,10 +9001,26 @@ async function autoSuggestEmptyDraftCategories() {
           if (editorEl._veroBullets) requestBody.bulletPoints = editorEl._veroBullets;
           if (l.ebay_account_id) requestBody.accountId = l.ebay_account_id;
         } else {
-          // A live listing's item specifics / description / photos were silently ignored before.
-          if (mergedAspects) requestBody.aspects = mergedAspects;
+          // Only what changed goes to eBay. Item specifics: the changed ones, and the ones the seller emptied (the rest stay as eBay has them).
+          const nowAspects = v.ebayAspects || {};
+          const wasAspects = before.ebayAspects || {};
+          const changedAspects = {};
+          Object.entries(nowAspects).forEach(([name, vals]) => { if (JSON.stringify(vals) !== JSON.stringify(wasAspects[name])) changedAspects[name] = vals; });
+          Object.entries(extraAspects || {}).forEach(([name, vals]) => { changedAspects[name] = vals; });
+          if (Object.keys(changedAspects).length) requestBody.aspects = changedAspects;
+          if (editorEl._aspectDefs && v.categoryId === (before.categoryId || l.category_id)) {
+            const emptied = Object.keys(wasAspects).filter((name) => !(name in nowAspects) && editorEl._aspectDefs.some((d) => d.name === name));
+            if (emptied.length) requestBody.clearAspects = emptied;
+          }
           if (JSON.stringify(v.description) !== JSON.stringify(before.description)) requestBody.description = v.description;
           if (JSON.stringify(v.images) !== JSON.stringify(before.images) && v.images.length) requestBody.images = v.images;
+          // The business policies and the item location are changed on the eBay listing too (blank policy = the account's default).
+          ['paymentPolicyId', 'fulfillmentPolicyId', 'returnPolicyId'].forEach((k) => { if (v[k] !== before[k]) requestBody[k] = v[k]; });
+          if (v.useDynamicPolicies) requestBody.useDynamicPolicies = true;
+          if ((v.countryLocation !== before.countryLocation || v.postalCode !== before.postalCode) && v.countryLocation && v.postalCode) {
+            requestBody.countryLocation = v.countryLocation; requestBody.postalCode = v.postalCode; requestBody.locationCity = v.locationCity;
+          }
+          if (l.marketplace_id) requestBody.marketplaceId = l.marketplace_id;
         }
         const res = await apiFetch(isLive ? `/api/listings/${l.id}/revise` : `/api/list-on-ebay/${l.id}`, {
           method: isLive ? 'POST' : 'PUT',
@@ -8983,6 +9029,44 @@ async function autoSuggestEmptyDraftCategories() {
         });
         const data = await res.json();
         if (!res.ok || !data.success) { alert(data.error || 'Could not save changes.'); saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; return; }
+        if (isLive) {
+          // ELMS keeps what eBay holds now (the server saved it), so a refresh shows the same.
+          const L = data.listing;
+          if (L) {
+            Object.assign(l, {
+              title: L.title, sell_price: L.sell_price, quantity: L.quantity, category_id: L.category_id, ebay_aspects: L.ebay_aspects,
+              margin_amount: L.margin_amount, markup_percent: L.markup_percent,
+              payment_policy_id: L.payment_policy_id, shipping_policy_id: L.shipping_policy_id, return_policy_id: L.return_policy_id,
+              country_location: L.country_location, postal_code: L.postal_code, location_city: L.location_city,
+              ...(requestBody.description ? { description: L.description } : {}),
+              ...(requestBody.images ? { images: L.images, main_image: L.main_image } : {}),
+            });
+          } else {
+            Object.assign(l, { title, sell_price: sellPrice, quantity, category_id: categoryId });
+          }
+          // Only the ELMS-side settings (tags, monitoring) are saved separately; the policies and the location went to eBay above.
+          try {
+            const sres = await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/settings`, {
+              method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tags: v.tags, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies, stockMonitoring: v.stockMonitoring, priceMonitoring: v.priceMonitoring }),
+            });
+            const sdata = await sres.json();
+            if (sres.ok && sdata.success && sdata.listing) {
+              const S = sdata.listing;
+              Object.assign(l, { tags: S.tags, shipping_method: S.shipping_method, use_dynamic_policies: S.use_dynamic_policies, stock_monitoring: S.stock_monitoring, price_monitoring: S.price_monitoring });
+            }
+          } catch (e) { /* the eBay listing itself is saved */ }
+          const notApplied = Array.isArray(data.notApplied) ? data.notApplied : [];
+          llCloseEditor();
+          if (opts.onDone) opts.onDone(); else renderListings();
+          if (notApplied.length) {
+            showToast('Saved on eBay', `eBay did not change: ${notApplied.map((n) => n.label).join(', ')}.`, 'error');
+            await elmsConfirm(notApplied.map((n) => `\u2022 ${n.label}: you set "${n.sent || '(empty)'}", eBay still has "${n.ebay || '(empty)'}".\n   ${n.reason}`).join('\n\n'), { title: 'Saved on eBay, but eBay kept some values', okText: 'OK', info: true });
+          } else {
+            showToast('Saved', data.verified === false ? 'Listing updated on eBay (it could not be read back to double-check).' : 'Listing updated on eBay.', 'success');
+          }
+          return;
+        }
         Object.assign(l, { title, sell_price: sellPrice, quantity, category_id: categoryId });
         // Per-product settings (tags, policies, location, monitoring) are stored on ELMS' side.
         const savedSettings = await saveEditorSettings(l.id, v);
