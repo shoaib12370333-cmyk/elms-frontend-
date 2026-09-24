@@ -4896,6 +4896,92 @@
     }, 4500);
   }
 
+  // ---------- Slow work runs in the background: start it, then watch it ----------
+  // Polls a status URL until the job it reports is no longer running (the sync of messages / orders). Resolves with the last
+  // job seen: { status: 'done' | 'error' | 'running', result?, error? }. 'running' means it was still going when we stopped
+  // looking (it carries on in the background; the data is on the page the next time it is opened).
+  async function waitForBackgroundJob(statusUrl, opts = {}) {
+    const { everyMs = 1500, maxMs = 4 * 60 * 1000 } = opts;
+    const started = Date.now();
+    let job = { status: 'running' };
+    while (Date.now() - started < maxMs) {
+      await new Promise((r) => setTimeout(r, everyMs));
+      try {
+        const res = await apiFetch(statusUrl);
+        const data = await apiJson(res);
+        if (res.ok && data.success) {
+          if (!data.job) return { status: 'error', error: 'The sync did not start. Please try again.' };
+          job = data.job;
+          if (job.status !== 'running') return job;
+        }
+      } catch (_) { /* a hiccup: look again */ }
+    }
+    return job;
+  }
+
+  // A publish to eBay can take a minute or more, so it runs on the server in the background. The listing is claimed at once
+  // (its card moves to "Publishing now") and this watcher asks how each one is doing until it is published or has failed.
+  const publishWatch = new Map(); // listing id -> when we started watching
+  const publishTally = { published: 0, failed: 0, firstError: '', firstTitle: '' };
+  let publishWatchTimer = null;
+
+  /** Starts a background publish. Resolves { ok: true } or { ok: false, error }. */
+  async function queuePublish(id, accountId) {
+    const res = await apiFetch(`/api/listings/${encodeURIComponent(id)}/publish`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId, background: true }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) return { ok: false, error: data.error || 'Could not publish this listing to eBay.' };
+    if (data.queued) watchPublish(id);
+    else { publishTally.published += 1; announcePublishTally(); } // a server that published before answering
+    return { ok: true };
+  }
+
+  function watchPublish(id) {
+    publishWatch.set(String(id), Date.now());
+    if (!publishWatchTimer) publishWatchTimer = setInterval(pollPublishWatch, 3000);
+  }
+
+  function announcePublishTally() {
+    const { published, failed, firstError, firstTitle } = publishTally;
+    if (published + failed === 0) return;
+    if (published + failed === 1) {
+      if (failed) showToast('Publish failed', `${firstTitle ? firstTitle.slice(0, 60) + ': ' : ''}${firstError || 'eBay did not accept it.'} The card shows the reason.`, 'error');
+      else showToast('Published to eBay', firstTitle ? `"${firstTitle.slice(0, 60)}" is live.` : 'The listing is live.', 'success');
+    } else {
+      showToast(failed ? `${published} published, ${failed} failed` : 'Published to eBay', failed ? `The failed ones show their reason on the card (Failed). First error: ${firstError}` : `${published} listings are live.`, failed ? 'error' : 'success');
+    }
+    publishTally.published = 0; publishTally.failed = 0; publishTally.firstError = ''; publishTally.firstTitle = '';
+    refreshCreditBalanceChip();
+    if (document.getElementById('page-drafts')?.style.display === 'block') loadDrafts();
+  }
+
+  async function pollPublishWatch() {
+    if (!publishWatch.size) { clearInterval(publishWatchTimer); publishWatchTimer = null; return; }
+    try {
+      const res = await apiFetch(`/api/listings/publish-status?ids=${[...publishWatch.keys()].slice(0, 100).map(encodeURIComponent).join(',')}`);
+      const data = await apiJson(res);
+      if (!res.ok || !data.success) return;
+      const seen = new Set();
+      for (const s of data.statuses) {
+        seen.add(s.id);
+        if (s.status === 'publishing' || s.status === 'scheduled') continue;
+        publishWatch.delete(s.id);
+        if (s.status === 'published') publishTally.published += 1;
+        else {
+          publishTally.failed += 1;
+          if (!publishTally.firstError) { publishTally.firstError = s.error_message || 'eBay did not accept it.'; publishTally.firstTitle = s.title || ''; }
+        }
+        if (!publishTally.firstTitle) publishTally.firstTitle = s.title || '';
+      }
+      // gone (deleted) or watched for longer than a publish can take: stop watching, the card holds the truth
+      for (const [id, since] of publishWatch) if (!seen.has(id) || Date.now() - since > 6 * 60 * 1000) publishWatch.delete(id);
+      if (!publishWatch.size) { clearInterval(publishWatchTimer); publishWatchTimer = null; announcePublishTally(); }
+    } catch (_) { /* the next look tries again */ }
+  }
+
   /**
    * ELMS-styled replacement for the browser's native confirm() dialog (the
    * unstyled "elmstool.com says..." box, identical everywhere and completely
@@ -5794,7 +5880,7 @@
     USD: '$', GBP: '\u00A3', EUR: '\u20AC', CAD: 'C$', AUD: 'A$',
     JPY: '\u00A5', INR: '\u20B9', MXN: 'MX$', BRL: 'R$', CHF: 'CHF',
     SEK: 'kr', SGD: 'S$', AED: '\u062F.\u0625', SAR: '\uFDFC', CNY: '\u00A5',
-    TRY: '\u20BA', PLN: 'z\u0142', NOK: 'kr', HKD: 'HK$', NZD: 'NZ$',
+    TRY: '\u20BA', PLN: 'z\u0142', NOK: 'kr', HKD: 'HK$', NZD: 'NZ$', MYR: 'RM', PHP: '\u20B1', TWD: 'NT$',
   };
 
   function formatPrice(amount, currency) {
@@ -8085,20 +8171,15 @@ async function autoSuggestEmptyDraftCategories() {
             return;
           }
 
-          const res = await apiFetch(`/api/listings/${id}/publish`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accountId }),
-          });
-          const data = await res.json();
-
-          if (!res.ok || !data.success) {
-            alert(data.error || 'Could not publish this listing to eBay.');
-            loadDrafts(); // the card now shows the error eBay gave, and a failed listing is back to "Failed"
+          // eBay can take a minute or more, so this runs in the background: the card moves to "Publishing now" at once, and a
+          // message says how it went when it is done. Nothing to wait for here.
+          const queued = await queuePublish(id, accountId);
+          if (!queued.ok) {
+            alert(queued.error);
+            loadDrafts();
             return;
           }
-
-          showToast('Published to eBay', 'The listing was published successfully.', 'success');
+          showToast('Publishing', 'Started. eBay is working on it in the background, you can keep working.', 'info');
           loadDrafts();
         } catch (err) {
           alert('Could not connect to the server: ' + err.message);
@@ -8377,25 +8458,26 @@ async function autoSuggestEmptyDraftCategories() {
       bulkPublishBtn.disabled = true;
       // A few at a time (not all at once): eBay answers with generic "system error" when it is hit with many
       // publishes together. Every result is counted, so the message says how many really went live.
-      const results = { published: 0, failed: 0, firstError: '' };
+      // (The server now does the slow part in the background, a few at a time, so starting them is quick: what is left to
+      // count here is how many could be started. How each one went is announced by the publish watcher when they are done.)
+      const results = { started: 0, failed: 0, firstError: '' };
       let next = 0;
       const worker = async () => {
         while (next < ids.length) {
           const id = ids[next++];
-          bulkPublishBtn.textContent = `Publishing ${Math.min(next, ids.length)}/${ids.length}\u2026`;
+          bulkPublishBtn.textContent = `Starting ${Math.min(next, ids.length)}/${ids.length}\u2026`;
           try {
-            const res = await apiFetch(`/api/listings/${id}/publish`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({accountId}) });
-            const data = await res.json();
-            if (res.ok && data.success) results.published += 1;
-            else { results.failed += 1; results.firstError = results.firstError || data.error || ''; }
+            const queued = await queuePublish(id, accountId);
+            if (queued.ok) results.started += 1;
+            else { results.failed += 1; results.firstError = results.firstError || queued.error || ''; }
           } catch (err) { results.failed += 1; results.firstError = results.firstError || err.message; }
         }
       };
       await Promise.all([worker(), worker(), worker()]);
       showToast(
-        results.failed ? `${results.published} published, ${results.failed} failed` : 'Published to eBay',
-        results.failed ? `The failed ones show their reason on the card (Failed). First error: ${results.firstError}` : `${results.published} listing(s) are live.`,
-        results.failed ? 'error' : 'success'
+        results.failed ? `${results.started} publishing, ${results.failed} could not start` : 'Publishing',
+        results.failed ? `First problem: ${results.firstError}` : `${results.started} listing${results.started === 1 ? '' : 's'} started. eBay is working on them in the background, you can keep working.`,
+        results.failed ? 'error' : 'info'
       );
 
       bulkPublishBtn.disabled = false;
@@ -9034,19 +9116,33 @@ async function autoSuggestEmptyDraftCategories() {
     document.querySelectorAll('#syncOrdersBtn, #syncOrdersFullBtn').forEach((b) => { b.disabled = true; });
     const label = btn?.textContent;
     if (btn) btn.textContent = 'Syncing…';
-    if (statusEl) { statusEl.className = 'ord-sync-status'; statusEl.textContent = full ? 'Reading every order from the last 90 days…' : 'Checking eBay for new and changed orders…'; }
+    if (statusEl) { statusEl.className = 'ord-sync-status'; statusEl.textContent = full ? 'Reading every order from the last 90 days in the background…' : 'Checking eBay for new and changed orders in the background…'; }
     try {
-      const qs = new URLSearchParams();
-      if (ordersAccountFilter) qs.set('accountId', ordersAccountFilter);
-      if (full) qs.set('full', '1');
-      const res = await apiFetch(`/api/orders/sync${qs.toString() ? '?' + qs.toString() : ''}`, { method: 'POST' });
+      // The sync runs on the server (a full read can take a minute); the orders on screen stay usable meanwhile and are
+      // loaded again when it is done.
+      const accountQs = ordersAccountFilter ? `accountId=${encodeURIComponent(ordersAccountFilter)}` : '';
+      const qs = ['background=1', accountQs, full ? 'full=1' : ''].filter(Boolean).join('&');
+      const res = await apiFetch(`/api/orders/sync?${qs}`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not sync orders.');
-      ordersAll = data.orders || ordersAll;
-      const errs = data.errors && data.errors.length ? ` Problem: ${data.errors.join('; ')}` : '';
+      let summary = data;
+      if (data.job) {
+        const job = await waitForBackgroundJob('/api/orders/sync-status' + (accountQs ? '?' + accountQs : ''), { maxMs: 5 * 60 * 1000 });
+        if (job.status === 'error') throw new Error(job.error || 'Could not sync orders.');
+        if (job.status === 'running') {
+          const s3 = document.getElementById('syncOrdersStatus');
+          if (s3) { s3.className = 'ord-sync-status'; s3.textContent = 'Still reading from eBay. It keeps going in the background: the orders appear here when you open this page again.'; }
+          return;
+        }
+        summary = job.result || {};
+        await fetchOrdersList();
+      } else {
+        ordersAll = data.orders || ordersAll; // a server that still answers with the orders itself
+      }
+      const errs = summary.errors && summary.errors.length ? ` Problem: ${summary.errors.join('; ')}` : '';
       renderOrders();
       const s2 = document.getElementById('syncOrdersStatus');
-      if (s2) { s2.className = 'ord-sync-status ' + (errs ? 'error' : 'ok'); s2.textContent = `eBay returned ${data.ordersFromEbay ?? 0} order(s); ${data.syncedCount} line item(s) saved.${errs}`; }
+      if (s2) { s2.className = 'ord-sync-status ' + (errs ? 'error' : 'ok'); s2.textContent = `eBay returned ${summary.ordersFromEbay ?? 0} order(s); ${summary.syncedCount ?? 0} line item(s) saved.${errs}`; }
     } catch (err) {
       renderOrders();
       const s2 = document.getElementById('syncOrdersStatus');
@@ -9114,7 +9210,8 @@ async function autoSuggestEmptyDraftCategories() {
           ${kv('Total', escapeHtml(orderMoney(o, o.line_total ?? o.sale_price)))}
           ${o.buy_price != null ? kv('Amazon cost', escapeHtml(orderMoney(o, Number(o.buy_price) * (o.quantity || 1)))) : ''}
           ${kv('Cost per item', `<span class="ord-cost"><input type="number" id="ordCostInput" min="0" step="0.01" inputmode="decimal" value="${o.buy_price != null ? escapeAttr(String(Number(o.buy_price))) : ''}" placeholder="e.g. 8.99" /><button class="ord-btn small" type="button" id="ordSaveCost">Save</button></span>`)}
-          <div class="ord-sub">${o.buy_price_manual ? 'Set by you. Empty the box and Save to go back to the listing price.' : o.buy_price != null ? 'Taken from your listing. Type another figure to use your own.' : 'No price found for this item. Enter what it cost you to see the profit.'}</div>
+          <div class="ord-sub">${o.buy_price_manual ? 'Set by you. Empty the box and Save to go back to the listing price.' : o.buy_price != null ? 'Taken from your listing. Type another figure to use your own.' : 'No price found for this item. Enter what it cost you to see the profit.'}${o.buy_price_original ? ` The listing price is ${escapeHtml(formatPrice(o.buy_price_original.amount, o.buy_price_original.currency))}, shown here in ${escapeHtml(o.currency || '')} at today's exchange rate.` : ''}</div>
+          ${o.profit_note ? `<div class="ord-sub bad">${escapeHtml(o.profit_note)}</div>` : ''}
           ${o.buy_price == null ? `<div class="ord-import">
             <div class="ord-sub"><b>Import this product from Amazon</b> and its price becomes the cost. Uses credits like a normal import; the product also appears in Drafts.</div>
             <div class="ord-cost"><input type="text" id="ordImportInput" placeholder="Amazon link or ASIN" value="${/^[A-Z0-9]{10}$/i.test(o.sku || '') ? escapeAttr(o.sku) : ''}" autocomplete="off" /><button class="ord-btn small" type="button" id="ordImportBtn">Import</button></div>
@@ -11344,21 +11441,17 @@ async function autoSuggestEmptyDraftCategories() {
           return;
         }
 
-        const res = await apiFetch(`/api/listings/${listing.id}/publish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accountId }),
-        });
-        const data = await res.json();
-
-        if (!res.ok || !data.success) {
+        // In the background: no need to wait here for eBay. The card shows "Publishing now" and a message says how it went.
+        const queued = await queuePublish(listing.id, accountId);
+        if (!queued.ok) {
           statusEl.className = 'error';
-          statusEl.textContent = data.error || 'Could not publish this listing to eBay.';
+          statusEl.textContent = queued.error;
           return;
         }
 
         statusEl.className = 'success';
-        statusEl.textContent = data.immediate ? 'Published to eBay successfully.' : 'Publish completed.';
+        statusEl.textContent = 'Started: eBay is publishing it in the background.';
+        showToast('Publishing', 'Started. eBay is working on it in the background, you can keep working.', 'info');
         setTimeout(() => {
           draftDetailModal.classList.remove('open');
           loadDrafts();
@@ -11841,22 +11934,34 @@ async function autoSuggestEmptyDraftCategories() {
     const list = document.getElementById('messageList');
     const syncStatus = document.getElementById('messageSyncStatus');
     if (btn) { btn.disabled = true; btn.textContent = 'Syncing…'; }
-    if (syncStatus) syncStatus.textContent = 'Syncing eBay messages…';
-    if (list) list.innerHTML = '<div class="message-loading"><div class="spinner"></div><div class="loading-title">Syncing with eBay</div><div class="loading-sub">Your inbox will stay cached after this refresh.</div></div>';
+    if (syncStatus) syncStatus.textContent = 'Syncing eBay messages in the background…';
+    // The inbox stays on screen while eBay is read (no spinner over it): the sync runs on the server, and the saved messages
+    // are loaded again when it is done.
+    if (list && !messageRows.length) list.innerHTML = '<div class="message-loading"><div class="spinner"></div><div class="loading-title">Syncing with eBay</div><div class="loading-sub">This runs in the background: you can leave this page.</div></div>';
     try {
-      const qs = messageAccountFilter ? `?accountId=${encodeURIComponent(messageAccountFilter)}` : '';
-      const res = await apiFetch('/api/notifications/sync' + qs, { method: 'POST' });
+      const accountQs = messageAccountFilter ? `accountId=${encodeURIComponent(messageAccountFilter)}` : '';
+      const res = await apiFetch('/api/notifications/sync?background=1' + (accountQs ? '&' + accountQs : ''), { method: 'POST' });
       const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not sync eBay messages.');
-      messageRows = data.conversations || [];
-      msgThreadCache.clear();
-      msgListCache.set(messageAccountFilter || '', messageRows);
-      renderMessageList();
-      refreshMessageBadge();
-      prefetchTopThreads(messageRows, 10);
-      showToast('Messages synced', `${data.conversations?.length || 0} conversations loaded.`, 'success');
+      if (data.job) {
+        const job = await waitForBackgroundJob('/api/notifications/sync-status' + (accountQs ? '?' + accountQs : ''));
+        if (job.status === 'error') throw new Error(job.error || 'Could not sync eBay messages.');
+        if (job.status === 'running') { showToast('Still syncing', 'eBay is taking a while. It keeps going in the background: your messages appear here when it is done.', 'info'); return; }
+        msgThreadCache.clear();
+        await loadMessages(); // shows the inbox it already has, then the fresh one (no spinner in between)
+        showToast('Messages synced', `${messageRows.length} conversations loaded.`, 'success');
+      } else {
+        // a server that still answers with the conversations itself
+        messageRows = data.conversations || [];
+        msgThreadCache.clear();
+        msgListCache.set(messageAccountFilter || '', messageRows);
+        renderMessageList();
+        refreshMessageBadge();
+        prefetchTopThreads(messageRows, 10);
+        showToast('Messages synced', `${data.conversations?.length || 0} conversations loaded.`, 'success');
+      }
     } catch (err) {
-      if (list) list.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
+      if (list && !messageRows.length) list.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
       showToast('Message sync failed', err.message, 'error');
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Sync'; }
