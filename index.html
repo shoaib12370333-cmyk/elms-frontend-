@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  // elmstool.com/ is the public website (landing.html) for anyone who is not signed in; signed-in people get the app.
+  // (When the host already serves landing.html at / this never runs.)
+  (function () { try { if ((location.pathname === '/' || location.pathname === '/index.html') && !localStorage.getItem('elmsSessionToken')) location.replace('/landing.html' + location.search + location.hash); } catch (e) { /* stay on the app */ } })();
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ELMS — Listing Pipeline</title>
@@ -4753,8 +4758,14 @@
       window.history[replace ? 'replaceState' : 'pushState']({ page }, '', path + window.location.search + window.location.hash);
     } catch (_) { /* file:// or sandboxed frames cannot change the URL */ }
   }
-  // The login page has its own address too (elmstool.com/login). Whenever it is shown - first visit, log out, an expired
-  // session - the address becomes /login; the page the person was on is remembered and reopened after they sign in.
+  // Signing in and signing up have their own addresses (elmstool.com/signin and /signup). Whenever the login page is shown - first
+  // visit, log out, an expired session - the address becomes /signin (an old /login link too); the page the person was on is
+  // remembered and reopened after they sign in.
+  function setAuthUrl(path) {
+    try {
+      if (window.location.pathname !== path) window.history.replaceState({}, '', path + window.location.search + window.location.hash);
+    } catch (_) { /* file:// or sandboxed frames cannot change the URL */ }
+  }
   let loginReturnPage = null;
   (function watchLoginUrl() {
     const auth = document.getElementById('authPage');
@@ -4762,10 +4773,10 @@
     new MutationObserver(() => {
       if (auth.style.display === 'none') return;
       try {
-        if (window.location.pathname === '/login') return;
+        if (window.location.pathname === '/signin' || window.location.pathname === '/signup') return;
         const page = pageFromPath(window.location.pathname);
         if (page && page !== 'dashboard') loginReturnPage = page;
-        window.history.replaceState({}, '', '/login' + window.location.search + window.location.hash);
+        window.history.replaceState({}, '', '/signin' + window.location.search + window.location.hash);
       } catch (_) { /* file:// or sandboxed frames cannot change the URL */ }
     }).observe(auth, { attributes: true, attributeFilter: ['style'] });
   })();
@@ -6225,6 +6236,7 @@
     document.getElementById('authFormForgot').style.display = 'none';
     document.getElementById('authWelcomeTitle').innerHTML = 'WELCOME<br>TO<br>ELMS';
     document.getElementById('authWelcomeSub').innerHTML = 'Log in to keep managing<br>your<br>Amazon-to-eBay listings.';
+    setAuthUrl('/signin');
   }
   function showRegisterForm() {
     document.getElementById('appShell').style.display = 'none';
@@ -6235,6 +6247,7 @@
     document.getElementById('authFormForgot').style.display = 'none';
     document.getElementById('authWelcomeTitle').innerHTML = 'JOIN<br>ELMS';
     document.getElementById('authWelcomeSub').innerHTML = 'Create your account<br>and start listing<br>in minutes.';
+    setAuthUrl('/signup');
   }
 
   document.getElementById('switchToRegister').addEventListener('click', showRegisterForm);
@@ -6490,6 +6503,8 @@
       document.getElementById('appShell').style.display = 'none';
       document.getElementById('authPage').style.display = 'flex';
     }
+
+    if (!loggedIn && window.location.pathname === '/signup') showRegisterForm();
 
     // Render Google buttons only after the auth state is settled, so they never
     // initialize over the dashboard or create a duplicate auth view.
