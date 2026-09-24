@@ -6310,12 +6310,13 @@
   }
 
   const STORE_MARKET_TAG = { EBAY_US: 'US', EBAY_GB: 'UK', EBAY_AU: 'AU', EBAY_CA: 'CA', EBAY_DE: 'DE', EBAY_FR: 'FR', EBAY_IT: 'IT', EBAY_ES: 'ES', EBAY_IE: 'IE', EBAY_NL: 'NL', EBAY_AT: 'AT', EBAY_BE: 'BE', EBAY_CH: 'CH', EBAY_PL: 'PL', EBAY_HK: 'HK', EBAY_SG: 'SG', EBAY_MY: 'MY', EBAY_PH: 'PH' };
+  // The name of a connected store: the seller's own nickname, else the eBay Store name, else the eBay username, else "Store 1" -
+  // the server decides (acc.label) and never gives an id. The eBay username is added when the name shown is another one.
   function accountDisplayLabel(acc) {
-    const nickname = String(acc?.displayName || '').trim();
-    const username = String(acc?.ebayUserId || '').trim();
+    const label = String(acc?.label || acc?.displayName || acc?.storeName || acc?.username || '').trim() || (acc?.storeNumber ? `Store ${acc.storeNumber}` : 'eBay store');
+    const username = String(acc?.username || '').trim();
     const tag = STORE_MARKET_TAG[acc?.marketplaceId] ? ` [${STORE_MARKET_TAG[acc.marketplaceId]}]` : '';
-    if (nickname && username) return `${nickname} · ${username}${tag}`;
-    return (nickname || username || 'eBay account') + tag;
+    return (username && username.toLowerCase() !== label.toLowerCase() ? `${label} · ${username}` : label) + tag;
   }
 
   async function populateSidebarEbayWidget() {
@@ -7164,7 +7165,7 @@
     { key: 'itemid', label: 'Item ID', get: (l) => l.ebay_item_id ?? l.ebayItemId ?? l.ebay_listing_id ?? l.item_id },
     { key: 'sold', label: 'Sold', get: (l) => l.sold_count ?? l.sold ?? l.quantity_sold },
     { key: 'dws', label: 'DWS', get: (l) => l.dws },
-    { key: 'store', label: 'Store', get: (l) => l.ebay_account_username },
+    { key: 'store', label: 'Store', get: (l) => l.ebay_account_label || l.ebay_account_username },
     { key: 'asin', label: 'ASIN', get: (l) => l.asin || l.sku || l.source_asin },
     { key: 'views', label: 'Views', get: (l) => l.views ?? l.view_count },
     { key: 'watchers', label: 'Watchers', get: (l) => l.watchers ?? l.watch_count },
@@ -8024,7 +8025,7 @@
           <div class="dv-chips">
             ${asin ? (l.amazon_url ? `<a class="dv-chip" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation" title="Open the Amazon product">${escapeHtml(asin)} &#8599;</a>` : `<span class="dv-chip">${escapeHtml(asin)}</span>`) : ''}
             <span class="dv-chip">${escapeHtml(draftSupplierLabel(l))}</span>
-            ${l.ebay_account_username ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_username)}</span>` : ''}
+            ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
             ${variants > 1 ? `<span class="dv-chip">${variants} variants</span>` : ''}
             ${veroChipHtml(l, status !== 'publishing')}
           </div>
@@ -8845,7 +8846,7 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="dv-chips">
             ${itemId ? chip(llEbayUrl(l, itemId), 'eBay ' + itemId, 'Open the live eBay listing') : ''}
             ${asin ? chip(llAmazonUrl(l, asin), 'Amazon ' + asin, 'Open the Amazon product') : ''}
-            ${l.ebay_account_username ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_username)}</span>` : ''}
+            ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
             ${uploadedText ? `<span class="dv-chip">Listed ${escapeHtml(uploadedText)}</span>` : ''}
             ${veroChipHtml(l, false)}
           </div>
@@ -9282,7 +9283,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td data-label="Order"><div class="ord-id">${escapeHtml(o.ebay_order_id || '—')}</div><div class="ord-sub">${escapeHtml(orderShortDate(orderDateOf(o)))}</div></td>
         <td data-label="Item"><div class="ord-item">
           ${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
-          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${o.ebay_account_username ? ' · ' + escapeHtml(o.ebay_account_username) : ''}</div></div>
+          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${(o.ebay_account_label || o.ebay_account_username) ? ' · ' + escapeHtml(o.ebay_account_label || o.ebay_account_username) : ''}</div></div>
         </div></td>
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
         <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}</td>
@@ -10490,10 +10491,10 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="st-acct ${acc.isActive ? 'active' : ''}" data-account-id="${acc.id}">
             <div class="st-acct-flag">${escapeHtml(STORE_MARKET_TAG[acc.marketplaceId] || 'eB')}</div>
             <div class="st-acct-main">
-              <div class="st-acct-name">${escapeHtml(acc.displayName || acc.ebayUserId || 'eBay account')} ${acc.isActive ? '<span class="st-pill">Selected</span>' : ''}</div>
-              <div class="st-acct-meta">eBay ID: ${escapeHtml(acc.ebayUserId)} &middot; ${escapeHtml(acc.marketplaceId || 'EBAY_US')}</div>
+              <div class="st-acct-name">${escapeHtml(acc.label || acc.displayName || acc.username || 'eBay store')} ${acc.isActive ? '<span class="st-pill">Selected</span>' : ''}</div>
+              <div class="st-acct-meta">${acc.storeName ? `eBay Store: ${escapeHtml(acc.storeName)} &middot; ` : (acc.storeName === '' ? 'No eBay Store &middot; ' : '')}${acc.username ? `eBay username: ${escapeHtml(acc.username)} &middot; ` : ''}${escapeHtml(acc.marketplaceId || 'EBAY_US')} <a href="#" data-action="refresh-name" title="Ask eBay for the store name again" style="margin-left:6px;">Refresh from eBay</a></div>
               <div class="st-acct-name-edit">
-                <input class="st-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="e.g. USA Store / UK Store" />
+                <input class="st-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="${escapeAttr(acc.storeName || acc.username || 'e.g. USA Store / UK Store')}" />
                 <button class="st-btn small" data-action="save-name" type="button">Save name</button>
               </div>
             </div>
@@ -10537,6 +10538,24 @@ async function autoSuggestEmptyDraftCategories() {
           } catch (err) {
             alert('Could not connect to the server: ' + err.message);
             activateBtn.disabled = false;
+          }
+        });
+      }
+
+      const refreshNameLink = row.querySelector('[data-action="refresh-name"]');
+      if (refreshNameLink) {
+        refreshNameLink.addEventListener('click', async (e) => {
+          e.preventDefault();
+          refreshNameLink.textContent = 'Asking eBay…';
+          try {
+            const res = await apiFetch(`/api/ebay-accounts/${accountId}/refresh-name`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok || !data.success) { alert(data.error || 'Could not refresh the store name.'); refreshNameLink.textContent = 'Refresh from eBay'; return; }
+            await loadEbayAccountsList();
+            await populateSidebarEbayWidget();
+          } catch (err) {
+            alert('Could not connect to the server: ' + err.message);
+            refreshNameLink.textContent = 'Refresh from eBay';
           }
         });
       }
@@ -11900,7 +11919,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (messageFilter === 'awaiting' && (row.conversation_type !== 'FROM_MEMBERS' || row.last_message_from_self)) return false;
     if (messageAccountFilter && String(row.ebay_account_id || '') !== String(messageAccountFilter)) return false;
     if (messageSearchTerm) {
-      const hay = [row.from_username, row.other_party_username, row.subject, row.last_message_snippet, row.ebay_account_display_name, row.ebay_account_username].filter(Boolean).join(' ').toLowerCase();
+      const hay = [row.from_username, row.other_party_username, row.subject, row.last_message_snippet, row.ebay_account_display_name, row.ebay_account_label, row.ebay_account_username].filter(Boolean).join(' ').toLowerCase();
       if (!hay.includes(messageSearchTerm.toLowerCase())) return false;
     }
     return true;
@@ -12334,7 +12353,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="msg-thread-head">
         <button class="msg-back" id="messageBackBtn" type="button" aria-label="Back to conversations">&lsaquo;</button>
         <div class="msg-avatar big ${c.conversation_type === 'FROM_EBAY' ? 'ebay' : ''}"${c.conversation_type === 'FROM_EBAY' ? '' : ` style="background:${avatarColorFor(name)[0]};color:${avatarColorFor(name)[1]};"`}>${escapeHtml(String(name).trim().charAt(0).toUpperCase() || '?')}</div>
-        <div class="msg-thread-title"><b>${escapeHtml(name)} ${buyerRatingHtml(c.buyer_profile)}</b><span>${escapeHtml(memberSinceText(c.buyer_profile) || `${c.subject || 'Customer conversation'} · ${c.ebay_account_display_name || c.ebay_account_username || 'eBay store'}`)}</span>
+        <div class="msg-thread-title"><b>${escapeHtml(name)} ${buyerRatingHtml(c.buyer_profile)}</b><span>${escapeHtml(memberSinceText(c.buyer_profile) || `${c.subject || 'Customer conversation'} · ${c.ebay_account_display_name || c.ebay_account_label || c.ebay_account_username || 'eBay store'}`)}</span>
           ${c.trashed_at ? `<em>Trash retention: ${Math.max(0, 30 - Math.floor((Date.now() - new Date(c.trashed_at).getTime()) / 86400000))} day(s) remaining</em>` : ''}</div>
         <div class="msg-thread-head-actions">
           <div class="msg-thread-menu-wrap">
