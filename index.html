@@ -6494,6 +6494,7 @@
     // the Auth Page again.
     const existingToken = localStorage.getItem('elmsSessionToken');
     let loggedIn = false;
+    let staleSession = false;
 
     if (existingToken) {
       try {
@@ -6502,10 +6503,21 @@
         if (meRes.ok && meData.success) {
           showApp(meData.user);
           loggedIn = true;
+        } else if (meRes.status === 401) {
+          staleSession = true; // the stored token is no longer valid (signed out elsewhere, expired)
         }
       } catch (err) {
         // Could not verify - fall through to showing the Auth Page.
       }
+    }
+
+    // A token the server refuses is dead: drop it, so the next visit to elmstool.com shows the website instead of a sign-in
+    // page. Someone who came in through the website's front door (or typed the bare address) goes back to the website.
+    let cameFromHome = false;
+    try { cameFromHome = sessionStorage.getItem('elmsFromHome') === '1'; sessionStorage.removeItem('elmsFromHome'); } catch (_) { /* no session storage */ }
+    if (staleSession && localStorage.getItem('elmsSessionToken') === existingToken) {
+      try { localStorage.removeItem('elmsSessionToken'); } catch (_) { /* nothing to clear */ }
+      if (cameFromHome || window.location.pathname === '/') { window.location.replace('/landing.html'); return; }
     }
 
     // Now that we know the login state for certain, swap the splash out for

@@ -5,7 +5,7 @@
   // Signed-in people go straight to the app; this page is for visitors.
   (function () {
     try {
-      if (localStorage.getItem('elmsSessionToken')) { document.documentElement.style.visibility = 'hidden'; location.replace('/dashboard'); return; }
+      if (localStorage.getItem('elmsSessionToken')) { try { sessionStorage.setItem('elmsFromHome', '1'); } catch (e) { /* fine */ } document.documentElement.style.visibility = 'hidden'; location.replace('/dashboard'); return; }
       // Served from /landing.html when the host has no rule for /: show the clean address.
       if (location.pathname === '/landing.html') history.replaceState(null, '', '/' + location.search + location.hash);
     } catch (e) { /* show the page */ }
