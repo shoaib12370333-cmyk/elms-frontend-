@@ -11393,7 +11393,9 @@ async function autoSuggestEmptyDraftCategories() {
           </div>
           <div class="publish-field">
             <label>Amazon actual price</label>
-            <input type="text" value="${listing._amazon_price != null ? escapeHtml((CURRENCY_SYMBOLS[listing.currency] || '$') + Number(listing._amazon_price).toFixed(2)) : '—'}" readonly style="width:120px;background:#f7f8fa;" />
+            ${listing._amazon_price != null
+              ? `<input type="text" value="${escapeHtml((CURRENCY_SYMBOLS[listing.currency] || '$') + Number(listing._amazon_price).toFixed(2))}" readonly style="width:120px;background:#f7f8fa;" />`
+              : `<input type="number" id="draftEditAmazonPrice" min="0" step="0.01" inputmode="decimal" placeholder="What it costs you" title="No Amazon price is saved for this product. Enter what it costs you and the margin shows under the selling price." style="width:120px;border-color:#F5AF02;" />`}
           </div>
           <div class="publish-field">
             <label>Markup %</label>
@@ -11515,7 +11517,9 @@ async function autoSuggestEmptyDraftCategories() {
               </div>
               <div class="ed-field">
                 <label>Amazon price (${escapeHtml(listing.currency || 'USD')})</label>
-                <input type="text" value="${listing._amazon_price != null ? escapeHtml((CURRENCY_SYMBOLS[listing.currency] || '$') + Number(listing._amazon_price).toFixed(2)) : '—'}" readonly style="background:#f7f8fa;" />
+                ${listing._amazon_price != null
+              ? `<input type="text" value="${escapeHtml((CURRENCY_SYMBOLS[listing.currency] || '$') + Number(listing._amazon_price).toFixed(2))}" readonly style="background:#f7f8fa;" />`
+              : `<input type="number" id="draftEditAmazonPrice" min="0" step="0.01" inputmode="decimal" placeholder="What it costs you" title="No Amazon price is saved for this product. Enter what it costs you and the margin shows under the selling price." style="border-color:#F5AF02;" />`}
               </div>
               <div class="ed-field">
                 <label>Markup %</label>
@@ -11850,7 +11854,8 @@ async function autoSuggestEmptyDraftCategories() {
       // The "Buy price" shown in the calculator is the original Amazon
       // price - fall back to the current sell price if that's ever missing
       // (e.g. a draft whose linked import data could not be loaded).
-      const calcBuyPrice = product?.price ?? listing._amazon_price ?? listing.amazon_price ?? (Number(document.getElementById('draftEditSellPrice').value) || 0);
+      const typedCost = Number(document.getElementById('draftEditAmazonPrice')?.value);
+      const calcBuyPrice = typedCost > 0 ? typedCost : (product?.price ?? listing._amazon_price ?? listing.amazon_price ?? (Number(document.getElementById('draftEditSellPrice').value) || 0));
       const mainImage = listing.main_image || (product?.images && product.images[0]) || '';
 
       onPricingModalApply = (sellPriceValue) => {
@@ -11932,11 +11937,13 @@ async function autoSuggestEmptyDraftCategories() {
 
     const markupInput = document.getElementById('draftEditMarkupPercent');
     const sellPriceInput = document.getElementById('draftEditSellPrice');
-    const amazonPrice = Number(listing._amazon_price ?? product?.price);
+    // A draft with no saved Amazon price has a box to type its cost in (#draftEditAmazonPrice); the margin follows what is typed.
+    const costInput = document.getElementById('draftEditAmazonPrice');
+    const getCost = () => (costInput ? Number(costInput.value) : Number(listing._amazon_price ?? product?.price));
     // What is left of the price after eBay's fees, under the price box - a markup is not a profit: at 10% on the cost the fees (about
     // 13% of the price + a fixed fee) leave a loss. The fee numbers are the calculator's, so both always agree.
     let paintKeep = () => {};
-    if (sellPriceInput && Number.isFinite(amazonPrice) && amazonPrice > 0) {
+    if (sellPriceInput && (costInput || (Number.isFinite(getCost()) && getCost() > 0))) {
       const sign = (CURRENCY_SYMBOLS[listing.currency] || (listing.currency ? listing.currency + ' ' : '$')).trim();
       let hint = document.getElementById('draftEditKeepHint');
       if (!hint) {
@@ -11948,7 +11955,9 @@ async function autoSuggestEmptyDraftCategories() {
       }
       paintKeep = () => {
         const sell = Number(sellPriceInput.value);
+        const amazonPrice = getCost();
         if (sellPriceInput.value === '' || !Number.isFinite(sell) || sell <= 0) { hint.textContent = ''; return; }
+        if (!(amazonPrice > 0)) { hint.textContent = 'Enter the Amazon price above to see your margin.'; return; }
         const pct = Number(document.getElementById('pFeesPercent')?.value);
         const fixed = Number(document.getElementById('pFeesFixed')?.value);
         const feePct = Number.isFinite(pct) ? pct : 13;
@@ -11959,20 +11968,34 @@ async function autoSuggestEmptyDraftCategories() {
       paintKeep();
       sellPriceInput.addEventListener('input', paintKeep);
     }
-    if (markupInput && sellPriceInput && Number.isFinite(amazonPrice) && amazonPrice >= 0) {
+    if (markupInput && sellPriceInput && (costInput || (Number.isFinite(getCost()) && getCost() >= 0))) {
       markupInput.addEventListener('input', () => {
         const markup = Number(markupInput.value);
-        if (Number.isFinite(markup)) sellPriceInput.value = (amazonPrice * (1 + markup / 100)).toFixed(2);
+        const amazonPrice = getCost();
+        if (Number.isFinite(markup) && amazonPrice > 0) sellPriceInput.value = (amazonPrice * (1 + markup / 100)).toFixed(2);
         paintKeep();
       });
       // The other way round: a price typed by hand moves the markup with it, so the markup shown (and saved) always matches the
       // price. A price whose markup would be outside -99%..1000% leaves the field alone.
       sellPriceInput.addEventListener('input', () => {
         const sell = Number(sellPriceInput.value);
+        const amazonPrice = getCost();
         if (sellPriceInput.value === '' || !Number.isFinite(sell) || sell <= 0 || !(amazonPrice > 0)) return;
         const markup = Number((((sell / amazonPrice) - 1) * 100).toFixed(2));
         if (markup >= -99 && markup <= 1000) markupInput.value = markup;
       });
+      // Typing the cost of a draft that had none: the markup and the margin under the price follow it.
+      if (costInput) {
+        costInput.addEventListener('input', () => {
+          const sell = Number(sellPriceInput.value);
+          const amazonPrice = getCost();
+          if (sellPriceInput.value !== '' && Number.isFinite(sell) && sell > 0 && amazonPrice > 0) {
+            const markup = Number((((sell / amazonPrice) - 1) * 100).toFixed(2));
+            if (markup >= -99 && markup <= 1000) markupInput.value = markup;
+          }
+          paintKeep();
+        });
+      }
     }
 
     async function saveDraftChanges() {
@@ -11995,6 +12018,7 @@ async function autoSuggestEmptyDraftCategories() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title, sellPrice, markupPercent, quantity,
+          ...(costInput && getCost() > 0 ? { amazonPrice: getCost() } : {}),
           categoryId: categoryEl?.value?.trim() || '',
           images: (editedProduct?.images || []).filter((src) => !String(src).startsWith('data:image/')).slice(0, 24),
           mainImage: (editedProduct?.images || []).find((src) => !String(src).startsWith('data:image/')) || null,
@@ -12073,7 +12097,7 @@ async function autoSuggestEmptyDraftCategories() {
         const saveRes = await apiFetch(`/api/list-on-ebay/${listing.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, sellPrice, markupPercent: Number(document.getElementById('draftEditMarkupPercent')?.value || 0), quantity, categoryId, images: editedProduct?.images || [], mainImage: editedProduct?.images?.[0] || null, accountId, draftProduct: editedProduct, ebayAspects }),
+          body: JSON.stringify({ title, sellPrice, markupPercent: Number(document.getElementById('draftEditMarkupPercent')?.value || 0), quantity, categoryId, ...(costInput && getCost() > 0 ? { amazonPrice: getCost() } : {}), images: editedProduct?.images || [], mainImage: editedProduct?.images?.[0] || null, accountId, draftProduct: editedProduct, ebayAspects }),
         });
         const saveData = await saveRes.json();
         if (!saveRes.ok || !saveData.success) {
