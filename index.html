@@ -3409,6 +3409,49 @@
     .msg-compose-row .msg-icon-btn { min-width:34px; padding:0 6px; }
     .msg-btn.send { padding:0 18px; }
   }
+
+  /* ---- Messages: an empty inbox keeps the same design (grey placeholder shapes, no made-up messages) ---- */
+  .sk { display:block; background:linear-gradient(90deg,#EDF0F5 0%,#F7F9FC 50%,#EDF0F5 100%); background-size:200% 100%; animation:skShimmer 2s ease-in-out infinite; border-radius:8px; }
+  @keyframes skShimmer { 0% { background-position:100% 0; } 100% { background-position:-100% 0; } }
+  .sk-av { width:40px; height:40px; border-radius:50%; flex:0 0 40px; } .sk-av.big { width:52px; height:52px; flex-basis:52px; }
+  .sk-line { height:10px; border-radius:6px; margin:4px 0; } .sk-time { width:34px; height:9px; margin-top:4px; }
+  .sk-pill { width:118px; height:34px; border-radius:10px; flex:0 0 auto; } .sk-sq { flex:0 0 54px; width:54px; height:54px; border-radius:8px; }
+  .sk-ic { width:34px; height:34px; border-radius:50%; flex:0 0 34px; }
+  .sk-brow { display:flex; } .sk-brow.r { justify-content:flex-end; }
+  .sk-b { height:52px; border-radius:18px 18px 18px 6px; } .sk-b.r { border-radius:18px 18px 6px 18px; background:linear-gradient(90deg,#DCE8FB 0%,#EAF1FD 50%,#DCE8FB 100%); background-size:200% 100%; }
+  .msg-skel-day { width:64px; height:10px; align-self:center; margin:2px 0 4px; }
+  .msg-item.skel { cursor:default; pointer-events:none; } .msg-item.skel .msg-item-main { display:grid; gap:1px; min-width:0; }
+  .msg-thread-head.skel .msg-thread-title, .msg-context.skel .msg-context-txt { display:grid; gap:1px; }
+  .msg-thread-body.skel { display:flex; flex-direction:column; gap:14px; overflow:hidden; }
+  .msg-compose.skel .msg-compose-row textarea:disabled { background:#F6F8FB; cursor:default; } .msg-compose.skel .msg-btn:disabled { opacity:.45; }
+  .msg-notice { margin:14px 14px 4px; padding:16px 14px; border:1px dashed #C9D6EE; border-radius:14px; background:#F8FBFF; text-align:center; display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .msg-notice .message-empty-icon { margin-bottom:2px; } .msg-notice b { font-size:14px; color:#263142; } .msg-notice span { max-width:290px; font-size:12px; line-height:1.5; color:#7a8493; }
+  .msg-notice .message-empty-actions { flex-direction:row; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:8px; }
+  .msg-notice .message-empty-actions .primary, .msg-notice .message-empty-actions .btn-outline { height:38px; padding:0 14px; font-size:13px; }
+  .msg-skel-rows { -webkit-mask-image:linear-gradient(#000 40%, transparent 100%); mask-image:linear-gradient(#000 40%, transparent 100%); }
+  #messageDetail { position:relative; }
+  .msg-skel-caption { position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); width:min(340px,84%); text-align:center; background:rgba(255,255,255,.96); border:1px solid var(--line); border-radius:16px; padding:16px 20px 14px; box-shadow:0 14px 36px rgba(15,35,80,.12); z-index:2; }
+  .msg-skel-caption .msg-empty-icon { margin:0 auto 4px; font-size:30px; } .msg-skel-caption h3 { margin:0 0 4px; font-size:16px; color:#263142; } .msg-skel-caption p { margin:0; font-size:12.5px; line-height:1.5; color:#7d8795; }
+  /* the plain "nothing matches" note (a filter with no result) starts at the top instead of being centred, so a short list never cuts it off */
+  .message-empty { justify-content:flex-start; padding-top:34px; overflow-y:auto; }
+  /* on a short screen only the list of conversations gives way: the search box, the tabs and the sort row keep their height */
+  .msg-list-pane > :not(.msg-list) { flex-shrink:0; }
+  .msg-compose.skel .msg-compose-row textarea { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  /* a short screen (a laptop at 125-150% zoom is only about 600px tall): the parts around the conversation get slimmer so the
+     messages themselves keep room (without this the open conversation was all header and reply box, with no messages between) */
+  @media (max-height:720px) and (min-width:901px) {
+    .app-shell.msg-frame .topbar { padding-top:8px; padding-bottom:8px; } .app-shell.msg-frame .topbar .subline { display:none; }
+    .app-shell.msg-frame .content { padding-top:8px; padding-bottom:8px; }
+    .msg-head { margin-bottom:6px; } .msg-ai { margin-bottom:6px; padding:5px 12px; } .msg-ai-note:not(.warn) { display:none; }
+    .msg-thread-head { padding:8px 14px; } .msg-thread-head > .msg-avatar.big, .sk-av.big { width:38px; height:38px; flex-basis:38px; font-size:16px; }
+    .msg-thread-title b { font-size:15px; }
+    .msg-context { padding:6px 14px; } .msg-context img, .msg-context-ph, .sk-sq { width:38px; height:38px; flex-basis:38px; }
+    .msg-context-price, .msg-context-txt small { display:none; }
+    .msg-thread-body { padding:10px 18px 6px; }
+    .msg-tools { flex-wrap:nowrap; overflow-x:auto; margin-bottom:6px; } .msg-pill { height:26px; flex:0 0 auto; }
+    .msg-compose { padding:6px 14px 8px; } .msg-compose-row textarea { min-height:40px; } .msg-btn.send { height:40px; padding:0 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .sk { animation:none; } }
 </style>
 </head>
 <body>
@@ -11653,6 +11696,7 @@ async function autoSuggestEmptyDraftCategories() {
   let messageFilter = 'all';
   let messageTypeFilter = 'FROM_MEMBERS';
   let messageAccountFilter = '';
+  let msgHasStore; // undefined = not known yet, false = no eBay store is connected, true = one is
   let messageSearchTerm = '';
   let messageSortOrder = 'newest';
   let messageSnippets = [];
@@ -11800,6 +11844,60 @@ async function autoSuggestEmptyDraftCategories() {
     if (el) el.textContent = `${count} conversation${count === 1 ? '' : 's'}`;
   }
 
+  // ---------- An inbox with nothing in it keeps the same design ----------
+  // The list and the conversation are drawn with grey placeholder shapes (never made-up messages), so the page looks the way it
+  // will look once a store is connected and messages arrive.
+  const skRow = (a, b, c) => `<div class="msg-item skel" aria-hidden="true"><span class="sk sk-av"></span><div class="msg-item-main"><span class="sk sk-line" style="width:${a}%"></span><span class="sk sk-line" style="width:${b}%"></span><span class="sk sk-line" style="width:${c}%"></span></div><span class="sk sk-time"></span></div>`;
+  const MSG_SYNC_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>';
+  const MSG_GEAR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+
+  /** The list side when there is nothing to list. isFiltered: there are conversations, but the tab / search shows none. */
+  function messageEmptyListHtml(isFiltered) {
+    if (isFiltered) {
+      return `<div class="message-empty"><div class="message-empty-icon">&#9993;</div><strong>No conversations match these filters</strong><span>Try another filter or search term.</span></div>`;
+    }
+    const noStore = msgHasStore === false;
+    const title = noStore ? 'Connect your eBay store' : 'No conversations yet';
+    const text = noStore ? 'Your buyers’ messages will appear in this inbox once a store is connected.' : 'New eBay member messages will appear here automatically when you sync your store.';
+    const buttons = noStore
+      ? `<button class="primary" id="emptyManageStoresBtn">${MSG_GEAR_ICON}Manage eBay Stores</button>`
+      : `<button class="primary" id="emptyMessageRefreshBtn">${MSG_SYNC_ICON}Sync Messages</button><button class="btn-outline" id="emptyManageStoresBtn">${MSG_GEAR_ICON}Manage eBay Stores</button>`;
+    return `<div class="msg-notice"><div class="message-empty-icon">&#9993;</div><b>${title}</b><span>${text}</span><div class="message-empty-actions">${buttons}</div></div>
+      <div class="msg-skel-rows">${[[46, 78, 58], [38, 70, 50], [52, 82, 44], [42, 74, 60], [48, 66, 40], [36, 80, 54]].map((r) => skRow(r[0], r[1], r[2])).join('')}</div>`;
+  }
+
+  /** The conversation side when none is open: the same header / item card / bubbles / reply box, as placeholders. */
+  function emptyDetailHtml() {
+    const none = messageRows.length === 0;
+    const noStore = msgHasStore === false;
+    const title = !none ? 'Select a conversation' : noStore ? 'Connect your eBay store' : 'No conversations yet';
+    const text = !none ? 'Pick a buyer from the list to read the thread, reply, add a private note or open the linked order.'
+      : noStore ? 'Your buyers’ messages open here like a chat. Connect a store in Settings to start.'
+      : 'New buyer messages open here after a sync.';
+    return `
+      <div class="msg-thread-head skel" aria-hidden="true"><span class="sk sk-av big"></span><div class="msg-thread-title"><span class="sk sk-line" style="width:38%"></span><span class="sk sk-line" style="width:56%"></span></div><span class="sk sk-pill"></span></div>
+      <div class="msg-context skel" aria-hidden="true"><span class="sk sk-sq"></span><div class="msg-context-txt"><span class="sk sk-line" style="width:64%"></span><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span></div></div>
+      <div class="msg-thread-body skel" aria-hidden="true">
+        <span class="sk msg-skel-day"></span>
+        <div class="sk-brow"><span class="sk sk-b" style="width:52%"></span></div>
+        <div class="sk-brow r"><span class="sk sk-b r" style="width:44%;height:68px"></span></div>
+        <div class="sk-brow"><span class="sk sk-b" style="width:60%;height:68px"></span></div>
+        <div class="sk-brow r"><span class="sk sk-b r" style="width:36%"></span></div>
+      </div>
+      <div class="msg-compose skel" aria-hidden="true"><div class="msg-compose-row"><textarea rows="1" disabled placeholder="Type a message&hellip;"></textarea><span class="sk sk-ic"></span><span class="sk sk-ic"></span><span class="sk sk-ic"></span><button class="msg-btn primary send" type="button" disabled>Send</button></div></div>
+      <div class="msg-skel-caption"><div class="msg-empty-icon">&#128172;</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></div>`;
+  }
+
+  /** Puts that placeholder conversation in the right-hand pane whenever no conversation is open (only when it would change). */
+  function syncEmptyDetail() {
+    const pane = document.getElementById('messageDetail');
+    if (!pane || selectedMessageId) return; // a conversation is open (or loading): leave it alone
+    const key = `${messageRows.length === 0}|${msgHasStore}`;
+    if (pane.dataset.emptyKey === key && pane.querySelector('.msg-skel-caption')) return;
+    pane.dataset.emptyKey = key;
+    pane.innerHTML = emptyDetailHtml();
+  }
+
   function renderMessageList() {
     const list = document.getElementById('messageList');
     // Rows arrive newest-first from the server; only need to reverse for "Oldest".
@@ -11820,24 +11918,17 @@ async function autoSuggestEmptyDraftCategories() {
 
     if (!filtered.length) {
       const isFiltered = messageRows.length > 0;
-      list.innerHTML = `<div class="message-empty">
-        <div class="message-empty-icon">&#9993;</div>
-        <strong>${isFiltered ? 'No conversations match these filters' : 'No conversations yet'}</strong>
-        <span>${isFiltered ? 'Try another filter or search term.' : 'New eBay member messages will appear here automatically when you sync your store.'}</span>
-        ${isFiltered ? '' : `<div class="message-empty-actions">
-          <button class="primary" id="emptyMessageRefreshBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync Messages</button>
-          <div class="message-empty-or">or</div>
-          <button class="btn-outline" id="emptyManageStoresBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Manage eBay Stores</button>
-        </div>`}
-      </div>`;
+      list.innerHTML = messageEmptyListHtml(isFiltered);
       const emptyRefresh = document.getElementById('emptyMessageRefreshBtn');
       if (emptyRefresh) emptyRefresh.onclick = refreshMessagesFromEbay;
       const emptyStores = document.getElementById('emptyManageStoresBtn');
       if (emptyStores) emptyStores.onclick = () => showPage('settings');
       renderMessagesConvHeader(0);
+      syncEmptyDetail();
       return;
     }
     renderMessagesConvHeader(filtered.length);
+    syncEmptyDetail();
     const itemHtml = (r) => {
       const name = r.other_party_username || r.from_username || 'eBay';
       const isEbay = r.conversation_type === 'FROM_EBAY';
@@ -11910,6 +12001,9 @@ async function autoSuggestEmptyDraftCategories() {
       if (!res.ok || !data.success) return;
       const active = (data.accounts || []).find((a) => a.isActive) || (data.accounts || [])[0];
       select.innerHTML = active ? `<option value="${escapeAttr(active.id)}">${escapeHtml(accountDisplayLabel(active))}</option>` : '<option value="">No eBay store</option>';
+      const hadStore = msgHasStore;
+      msgHasStore = !!active;
+      if (hadStore !== msgHasStore && !messageRows.length) renderMessageList(); // the empty inbox words itself by whether a store is connected
       select.disabled = true;
       select.title = 'Switch store from the sidebar';
     } catch (_) {}
@@ -11990,6 +12084,7 @@ async function autoSuggestEmptyDraftCategories() {
     const syncStatus = document.getElementById('messageSyncStatus');
     if (syncStatus) syncStatus.innerHTML = `<span class="sync-dot"></span>Last checked ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} &nbsp;|&nbsp; Auto-sync: <strong style="color:var(--green-dark);">ON</strong>`;
     fitMessagesShell();
+    syncEmptyDetail();
     await Promise.all([loadMessageAccounts(), loadMessages(), loadMessageSnippets()]);
     // Layout above the shell (account filter options, unread counts) can change its own
     // height once real data is in, so measure again after everything has rendered.
