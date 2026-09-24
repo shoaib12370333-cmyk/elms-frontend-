@@ -255,6 +255,11 @@
   .skip { position: absolute; left: -9999px; top: 8px; background: #fff; color: var(--ink); padding: 10px 14px; border-radius: 10px; z-index: 100; font-weight: 700; }
   .skip:focus { left: 12px; box-shadow: var(--shadow); }
   .links a.active { background: var(--soft); color: var(--blue); }
+  /* ---- invitation bar (a friend's referral link) ---- */
+  .inv { display: none; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 10px 18px; background: linear-gradient(90deg, #0A1530, #1E3A8A 55%, #4F46E5); color: #fff; font-size: 14px; font-weight: 600; text-align: center; }
+  .inv.show { display: flex; }
+  .inv b { color: #FCD34D; }
+  .inv a { background: #fff; color: #0A1530; padding: 6px 16px; border-radius: 99px; font-weight: 800; font-size: 13px; }
   .mbar { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; gap: 10px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); border-top: 1px solid var(--line); transform: translateY(115%); transition: transform .3s; }
   .mbar.show { transform: none; } .mbar .btn { flex: 1; padding: 12px 10px; }
 
@@ -343,6 +348,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+<div class="inv" id="inviteBar" role="status"><span>&#127873; A friend invited you to ELMS<span id="invOffer"></span></span><a href="/signup">Claim my invitation</a></div>
 
 <header class="nav" id="nav">
   <div class="wrap nav-in">
@@ -881,6 +887,24 @@
     .catch(function () {
       $('plans').innerHTML = ''; $('plansNote').innerHTML = 'Plans could not be loaded right now. <a class="grad" href="/signup" style="font-weight:800">Create your account</a> and you will see them inside ELMS.';
     });
+})();
+</script>
+<script>
+// A friend's link (elmstool.com/?ref=CODE): remember the code so the sign-up form has it, and show what it gives.
+(function () {
+  var code = '';
+  try { code = String(new URLSearchParams(location.search).get('ref') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24); } catch (e) { /* no query */ }
+  try { if (code) localStorage.setItem('elmsRef', code); else code = String(localStorage.getItem('elmsRef') || '').slice(0, 24); } catch (e) { /* no storage */ }
+  if (!code) return;
+  fetch('https://elms-backend-1-tr5h.onrender.com/api/referrals/check?code=' + encodeURIComponent(code))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.valid) return;
+      var pct = Number(d.discountPercent) || 0;
+      if (pct > 0) document.getElementById('invOffer').innerHTML = ' - sign up and get <b>' + String(Number(pct.toFixed(2))) + '% off</b> your first purchase';
+      document.getElementById('inviteBar').className = 'inv show';
+    })
+    .catch(function () { /* the bar simply stays hidden */ });
 })();
 </script>
 </body>

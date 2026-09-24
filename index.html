@@ -2983,6 +2983,119 @@
   .bc-trust { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-top:20px; }
   .bc-trust div { display:flex; flex-direction:column; gap:3px; padding:14px 16px; background:#fff; border:1px solid var(--line); border-radius:14px; }
   .bc-trust b { font-size:13.5px; } .bc-trust span { font-size:12.5px; color:var(--grey); }
+  /* ===== Refer & earn ===== */
+  .rf-hero { position:relative; overflow:hidden; border-radius:20px; padding:30px 32px; color:#fff; background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 55%,#4F46E5 100%); display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:28px; align-items:center; box-shadow:0 18px 44px rgba(30,58,138,.28); margin-bottom:18px; }
+  .rf-hero::before { content:''; position:absolute; right:-80px; top:-90px; width:300px; height:300px; border-radius:50%; background:radial-gradient(circle,rgba(96,165,250,.38),transparent 68%); pointer-events:none; }
+  .rf-hero::after { content:''; position:absolute; left:-60px; bottom:-110px; width:260px; height:260px; border-radius:50%; background:radial-gradient(circle,rgba(245,175,2,.22),transparent 70%); pointer-events:none; }
+  .rf-hero > * { position:relative; z-index:1; min-width:0; }
+  .rf-eyebrow { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:#BFDBFE; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); padding:5px 12px; border-radius:99px; }
+  .rf-hero h2 { color:#fff; font-size:30px; line-height:1.14; letter-spacing:-.028em; margin:14px 0 10px; }
+  .rf-hero h2 em { font-style:normal; color:#FCD34D; }
+  .rf-hero p { margin:0; color:rgba(255,255,255,.8); font-size:14.5px; line-height:1.6; max-width:470px; }
+  .rf-hero .rf-fine { margin-top:12px; font-size:12.5px; color:rgba(255,255,255,.6); }
+  .rf-code-card { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); border-radius:18px; padding:20px 20px 18px; backdrop-filter:blur(8px); }
+  .rf-label { font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:rgba(255,255,255,.62); margin-bottom:7px; }
+  .rf-code-row { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .rf-code { flex:1; min-width:0; font-family:ui-monospace,'SF Mono',Consolas,monospace; font-size:clamp(20px,2.1vw,28px); font-weight:800; letter-spacing:.12em; line-height:1; padding:14px 12px; border-radius:12px; background:rgba(15,23,42,.45); border:1px dashed rgba(255,255,255,.35); text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rf-copy { flex:none; height:46px; padding:0 16px; border:none; border-radius:12px; background:#fff; color:#0F172A; font:inherit; font-weight:800; font-size:13.5px; cursor:pointer; transition:transform .08s, background .15s; }
+  .rf-copy:hover { background:#EFF6FF; } .rf-copy:active { transform:translateY(1px); } .rf-copy.done { background:#86EFAC; }
+  .rf-link-row { display:flex; gap:8px; margin-bottom:16px; }
+  .rf-link-row input { flex:1; min-width:0; height:42px; padding:0 12px; border-radius:10px; border:1px solid rgba(255,255,255,.22); background:rgba(15,23,42,.35); color:#fff; font:inherit; font-size:13px; }
+  .rf-link-row input:focus { outline:2px solid rgba(147,197,253,.8); outline-offset:0; }
+  .rf-link-row .rf-copy { height:42px; }
+  .rf-share { display:flex; gap:8px; flex-wrap:wrap; }
+  .rf-share a, .rf-share button { display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 14px; border-radius:10px; border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.08); color:#fff; font:inherit; font-size:13px; font-weight:700; text-decoration:none; cursor:pointer; transition:background .15s; }
+  .rf-share a:hover, .rf-share button:hover { background:rgba(255,255,255,.2); }
+  .rf-share svg { width:16px; height:16px; flex:none; }
+  .rf-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:18px; }
+  .rf-stat { display:flex; align-items:center; gap:14px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px 18px; box-shadow:0 6px 20px rgba(20,35,60,.04); }
+  .rf-stat .rf-ico { width:44px; height:44px; border-radius:13px; display:grid; place-items:center; font-size:21px; flex:none; }
+  .rf-stat b { display:block; font-size:26px; letter-spacing:-.03em; line-height:1.05; }
+  .rf-stat span { font-size:12.5px; color:var(--grey); }
+  .rf-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+  .rf-step { position:relative; padding:18px 18px 16px 18px; border-radius:14px; background:#F8FAFC; border:1px solid var(--line); }
+  .rf-step .rf-n { width:30px; height:30px; border-radius:50%; background:#0064D2; color:#fff; font-weight:800; font-size:14px; display:grid; place-items:center; margin-bottom:10px; }
+  .rf-step:nth-child(2) .rf-n { background:#86B817; } .rf-step:nth-child(3) .rf-n { background:#F5AF02; color:#111; }
+  .rf-step b { display:block; font-size:14.5px; margin-bottom:3px; }
+  .rf-step span { font-size:13px; color:#475569; line-height:1.5; }
+  .rf-notice { display:flex; gap:12px; align-items:flex-start; padding:14px 18px; border-radius:14px; border:1.5px solid #BFDBFE; background:#EFF6FF; color:#1E3A8A; font-size:13.5px; line-height:1.5; margin-bottom:18px; }
+  .rf-notice.good { border-color:#A7F3D0; background:#ECFDF5; color:#065F46; }
+  .rf-notice.warn { border-color:#FDE68A; background:#FFFBEB; color:#92400E; }
+  .rf-notice .rf-ni { font-size:20px; line-height:1.2; flex:none; }
+  .rf-apply { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .rf-apply .st-field { flex:1; min-width:200px; margin-bottom:0; }
+  .rf-opt { font-weight:600; text-transform:none; letter-spacing:0; color:#94A3B8; }
+  .rf-check { min-height:18px; margin:5px 2px 0; font-size:12.5px; font-weight:600; }
+  .rf-check.good { color:#15803D; } .rf-check.bad { color:#B91C1C; } .rf-check.wait { color:var(--grey); }
+  .rf-empty { text-align:center; padding:26px 12px; color:var(--grey); font-size:13.5px; }
+  .rf-empty b { display:block; font-size:15px; color:var(--ink); margin-bottom:4px; }
+  @media (max-width: 1100px) { .rf-hero { grid-template-columns:1fr; } }
+  @media (max-width: 860px) { .rf-hero { padding:24px 20px; } .rf-hero h2 { font-size:25px; } .rf-code { font-size:24px; } }
+
+  /* Buy credits: referral discount */
+  .bc-ref-banner { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:16px; background:linear-gradient(135deg,#ECFDF5,#EFF6FF); border:1.5px solid #A7F3D0; margin:0 0 18px; }
+  .bc-ref-banner .bc-ref-ico { width:44px; height:44px; border-radius:13px; background:#fff; display:grid; place-items:center; font-size:22px; flex:none; box-shadow:0 3px 10px rgba(16,185,129,.18); }
+  .bc-ref-banner b { display:block; font-size:15px; color:#065F46; } .bc-ref-banner span { font-size:13px; color:#334155; }
+  .bc-code-card { display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; padding:16px 18px; margin:0 0 18px; border-radius:16px; border:1.5px dashed #BFD6F3; background:#F5F9FE; }
+  .bc-code-card .bc-code-txt { flex:1; min-width:200px; } .bc-code-card b { display:block; font-size:14.5px; } .bc-code-card span { font-size:12.5px; color:#475569; }
+  .bc-code-card .bc-code-in { display:flex; gap:8px; } .bc-code-card .st-input { width:190px; text-transform:uppercase; letter-spacing:.08em; font-family:ui-monospace,Consolas,monospace; }
+  .bc-plan-price s { color:#94A3B8; font-size:16px; font-weight:600; margin-right:8px; }
+  .bc-plan-price .bc-new { color:#15803D; }
+  .bc-off { position:absolute; top:14px; left:16px; background:#DCFCE7; color:#166534; font-size:11px; font-weight:800; padding:4px 10px; border-radius:99px; letter-spacing:.03em; }
+  .bc-plan.has-off .bc-plan-name { margin-top:24px; }
+  .bc-save { font-size:12.5px; font-weight:700; color:#15803D; }
+  .ph-was { color:#94A3B8; font-size:12px; margin-left:6px; text-decoration:line-through; }
+  .ph-off { display:inline-block; margin-left:6px; font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; background:#DCFCE7; color:#166534; }
+
+  /* ===== eBay price calculator ===== */
+  .pc-layout { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:18px; align-items:start; }
+  .pc-layout .st-card { margin-bottom:18px; }
+  .pc-col-right { position:sticky; top:14px; }
+  .pc-sect { font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:#0B4FA0; margin:4px 0 10px; display:flex; align-items:center; gap:8px; }
+  .pc-sect::after { content:''; flex:1; height:1px; background:var(--line); }
+  .pc-money { position:relative; }
+  .pc-money .pc-sign { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#64748B; font-weight:700; font-size:14px; pointer-events:none; }
+  .pc-money .st-input { padding-left:30px; }
+  .pc-money.pct .st-input { padding-left:12px; padding-right:30px; }
+  .pc-money.pct .pc-sign { left:auto; right:12px; }
+  .pc-goal { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:4px; background:#F1F5F9; border-radius:12px; margin-bottom:12px; }
+  .pc-goal button { height:38px; border:none; border-radius:9px; background:transparent; font:inherit; font-size:12.5px; font-weight:700; color:#475569; cursor:pointer; transition:background .15s, color .15s, box-shadow .15s; }
+  .pc-goal button.on { background:#fff; color:#0064D2; box-shadow:0 2px 8px rgba(15,23,42,.1); }
+  .pc-result { position:relative; overflow:hidden; border-radius:20px; padding:24px 24px 20px; color:#fff; background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 60%,#4F46E5 100%); box-shadow:0 16px 40px rgba(30,58,138,.26); margin-bottom:18px; }
+  .pc-result::after { content:''; position:absolute; right:-70px; top:-80px; width:240px; height:240px; border-radius:50%; background:radial-gradient(circle,rgba(96,165,250,.34),transparent 68%); pointer-events:none; }
+  .pc-result > * { position:relative; z-index:1; }
+  .pc-result .pc-lbl { font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:rgba(255,255,255,.62); }
+  .pc-price { font-size:46px; font-weight:800; letter-spacing:-.035em; line-height:1.05; margin:6px 0 2px; }
+  .pc-sub { font-size:13px; color:rgba(255,255,255,.72); }
+  .pc-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px; }
+  .pc-kpi { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.14); border-radius:13px; padding:11px 12px; min-width:0; }
+  .pc-kpi b { display:block; font-size:19px; letter-spacing:-.02em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .pc-kpi span { font-size:11px; color:rgba(255,255,255,.62); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+  .pc-kpi.good b { color:#86EFAC; } .pc-kpi.bad b { color:#FCA5A5; }
+  .pc-bar { display:flex; height:14px; border-radius:99px; overflow:hidden; background:#E2E8F0; margin:6px 0 14px; }
+  .pc-bar i { display:block; height:100%; min-width:0; }
+  .pc-legend { display:grid; gap:9px; }
+  .pc-legend div { display:flex; align-items:center; gap:10px; font-size:13.5px; }
+  .pc-legend div i { width:11px; height:11px; border-radius:4px; flex:none; }
+  .pc-legend div span { flex:1; color:#334155; } .pc-legend div b { font-variant-numeric:tabular-nums; }
+  .pc-legend div em { font-style:normal; width:52px; text-align:right; color:#94A3B8; font-size:12px; font-variant-numeric:tabular-nums; }
+  .pc-warn { padding:12px 14px; border-radius:12px; background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; font-size:13px; font-weight:600; margin-bottom:14px; }
+  .pc-note { font-size:12.5px; color:#475569; line-height:1.55; margin-top:10px; }
+  .pc-ladder tbody tr { cursor:pointer; } .pc-ladder tbody tr:hover { background:#EFF6FF; }
+  .pc-ladder tr.cur { background:#E8F1FD; }
+  .pc-ladder td.neg { color:#B91C1C; font-weight:700; } .pc-ladder td.pos { color:#15803D; font-weight:700; }
+  @media (max-width: 980px) { .pc-layout { grid-template-columns:1fr; } .pc-col-right { position:static; } }
+  @media (max-width: 520px) { .pc-price { font-size:38px; } .pc-kpis { grid-template-columns:1fr 1fr; } }
+
+  /* ===== Admin: referrals ===== */
+  .rfa-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:18px; }
+  .rfa-stat { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; box-shadow:0 4px 14px rgba(20,35,60,.04); }
+  .rfa-stat b { display:block; font-size:24px; letter-spacing:-.03em; } .rfa-stat span { font-size:12px; color:var(--grey); font-weight:600; }
+  .rfa-preview { margin-top:14px; padding:12px 14px; border-radius:12px; background:#F5F9FE; border:1px solid #D6E6FA; color:#1E3A8A; font-size:13px; line-height:1.55; }
+  .rfa-preview.off { background:#FFF7ED; border-color:#FED7AA; color:#9A3412; }
+  .rfa-table input.editable-input { height:34px; }
+  .rfa-code { font-family:ui-monospace,Consolas,monospace; font-weight:800; letter-spacing:.06em; }
+  .rfa-def { font-size:11px; color:#94A3B8; display:block; margin-top:2px; }
+  .rfa-search { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; } .rfa-search .st-input { flex:1; min-width:220px; }
   @media (max-width: 860px) { .st-two { grid-template-columns:1fr; } }
   @media (max-width: 600px) {
     .st-card { padding:18px 16px; } .st-top h1 { font-size:22px; }
@@ -3573,6 +3686,13 @@
         </div>
         <div class="auth-field-error-msg" id="registerConfirmPasswordError">Passwords do not match.</div>
 
+        <label class="edit-label" style="margin-top:12px;" for="registerReferral">Referral code <span class="rf-opt">(optional)</span></label>
+        <div class="auth-field-wrap">
+          <input type="text" class="editable-input" id="registerReferral" placeholder="Invited by a friend? Enter their code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;" />
+          <span class="auth-field-icon">&#127873;</span>
+        </div>
+        <div class="rf-check" id="registerReferralNote" aria-live="polite"></div>
+
         <label class="auth-terms-checkbox">
           <input type="checkbox" id="registerTermsCheckbox" />
           <span>I agree to the <a href="./terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="/policy" target="_blank" rel="noopener">Privacy Policy</a>.</span>
@@ -3645,11 +3765,19 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         Research Tools
       </a>
+      <a href="#" data-page="calculator">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8.01" y2="11"/><line x1="12" y1="11" x2="12.01" y2="11"/><line x1="16" y1="11" x2="16.01" y2="11"/><line x1="8" y1="15" x2="8.01" y2="15"/><line x1="12" y1="15" x2="12.01" y2="15"/><line x1="16" y1="15" x2="16.01" y2="15"/><line x1="8" y1="19" x2="12" y2="19"/></svg>
+        Price Calculator
+      </a>
 
       <div class="sidebar-nav-label">Account</div>
       <a href="#" data-page="settings">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Settings
+      </a>
+      <a href="#" data-page="referrals">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+        Refer &amp; Earn
       </a>
       <a href="#" data-page="pricing">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -4318,6 +4446,75 @@
         </section>
       </div>
 
+      <div id="page-calculator" style="display:none;">
+        <div class="st-top">
+          <div>
+            <h1>eBay price calculator</h1>
+            <div class="sub">Find the price that leaves the profit you want after eBay's fees - or check what a price you already have really earns you.</div>
+          </div>
+          <button class="st-btn" id="pcReset" type="button">Clear</button>
+        </div>
+
+        <div class="pc-layout">
+          <div>
+            <section class="st-card">
+              <div class="st-head"><div class="st-ico blue">&#128184;</div><div class="st-head-txt"><h2>What it costs you</h2><p>Everything you pay for one sale.</p></div></div>
+              <div class="st-grid">
+                <div class="st-field"><label for="pcCurrency">Currency</label>
+                  <select class="st-input" id="pcCurrency">
+                    <option value="USD">USD ($)</option><option value="GBP">GBP (&pound;)</option><option value="EUR">EUR (&euro;)</option><option value="CAD">CAD (C$)</option><option value="AUD">AUD (A$)</option>
+                  </select>
+                </div>
+                <div class="st-field"><label for="pcCost">Item cost (Amazon price)</label><div class="pc-money"><span class="pc-sign" data-pc-sign>$</span><input class="st-input" id="pcCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" /></div></div>
+                <div class="st-field"><label for="pcShipIn">Delivery you pay</label><div class="pc-money"><span class="pc-sign" data-pc-sign>$</span><input class="st-input" id="pcShipIn" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" /></div></div>
+                <div class="st-field"><label for="pcOther">Other costs (packaging...)</label><div class="pc-money"><span class="pc-sign" data-pc-sign>$</span><input class="st-input" id="pcOther" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" /></div></div>
+              </div>
+            </section>
+
+            <section class="st-card">
+              <div class="st-head"><div class="st-ico yellow">&#129534;</div><div class="st-head-txt"><h2>eBay fees</h2><p>Change these to match your own rates (Seller Hub &rarr; Fees). Your values are remembered.</p></div></div>
+              <div class="st-grid">
+                <div class="st-field"><label for="pcFeePct">Final value fee</label><div class="pc-money pct"><span class="pc-sign">%</span><input class="st-input" id="pcFeePct" type="number" min="0" max="60" step="0.05" inputmode="decimal" value="13" /></div></div>
+                <div class="st-field"><label for="pcFixed">Fixed fee per order</label><div class="pc-money"><span class="pc-sign" data-pc-sign>$</span><input class="st-input" id="pcFixed" type="number" min="0" step="0.01" inputmode="decimal" value="0.30" /></div></div>
+                <div class="st-field"><label for="pcAdPct">Promoted listing rate</label><div class="pc-money pct"><span class="pc-sign">%</span><input class="st-input" id="pcAdPct" type="number" min="0" max="40" step="0.1" inputmode="decimal" value="0" /></div></div>
+                <div class="st-field"><label for="pcShipOut">Delivery you charge the buyer</label><div class="pc-money"><span class="pc-sign" data-pc-sign>$</span><input class="st-input" id="pcShipOut" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" /></div></div>
+              </div>
+              <div class="st-hint">eBay charges its percentage on the buyer's whole payment (item + delivery), not on what the item cost you, so a 10% markup on the cost is usually a loss. Typical rates are about 13% plus 0.30 per order; they differ by category and store subscription.</div>
+            </section>
+
+            <section class="st-card">
+              <div class="st-head"><div class="st-ico green">&#127919;</div><div class="st-head-txt"><h2>What you want</h2><p>Pick how you think about profit.</p></div></div>
+              <div class="pc-goal" id="pcGoalTabs" role="tablist">
+                <button type="button" data-goal="profitPct" class="on">% of cost</button>
+                <button type="button" data-goal="margin">% of price</button>
+                <button type="button" data-goal="fixed">Amount</button>
+              </div>
+              <div class="st-grid">
+                <div class="st-field"><label for="pcGoalValue" id="pcGoalLabel">Profit % of what it costs you</label><div class="pc-money pct" id="pcGoalWrap"><span class="pc-sign" id="pcGoalSign">%</span><input class="st-input" id="pcGoalValue" type="number" min="0" step="1" inputmode="decimal" value="30" /></div></div>
+                <div class="st-field"><label for="pcTest">Or test a price you have</label><div class="pc-money"><span class="pc-sign" data-pc-sign>$</span><input class="st-input" id="pcTest" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Type a selling price" /></div></div>
+              </div>
+              <label class="auth-terms-checkbox" style="margin-top:14px;"><input type="checkbox" id="pcRound" /><span>Round the price up to end in .99</span></label>
+            </section>
+          </div>
+
+          <div class="pc-col-right">
+            <div class="pc-result" id="pcResult"></div>
+            <section class="st-card" id="pcBreakdown"></section>
+            <section class="st-card" id="pcLadder"></section>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-referrals" style="display:none;">
+        <div class="st-top">
+          <div>
+            <h1>Refer &amp; earn</h1>
+            <div class="sub">Invite other sellers. They get a discount on their first purchase, and you are rewarded when they buy.</div>
+          </div>
+        </div>
+        <div id="referralContent"><p class="state-msg">Loading&hellip;</p></div>
+      </div>
+
       <div id="page-support" style="display:none;">
         <div class="st-top">
           <div>
@@ -4394,6 +4591,7 @@
           <button class="ad-tab" data-admin-tab="ai" type="button">AI</button>
           <button class="ad-tab" data-admin-tab="costs" type="button">Credit costs</button>
           <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
+          <button class="ad-tab" data-admin-tab="referrals" type="button">Referrals</button>
           <button class="ad-tab" data-admin-tab="mail" type="button">Mail</button>
           <button class="ad-tab" data-admin-tab="tickets" type="button">Support <span class="ad-count" id="adminTicketsCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="security" type="button">Security</button>
@@ -4534,6 +4732,55 @@
               </div>
               <div class="st-actions"><button class="st-btn primary" id="addPlanBtn" type="button">Add plan</button><div id="addPlanStatus"></div></div>
             </div>
+          </section>
+        </div>
+
+        <!-- Referrals -->
+        <div class="ad-panel" data-admin-panel="referrals" style="display:none;">
+          <div class="rfa-stats" id="rfaStats"><p class="state-msg">Loading&hellip;</p></div>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico green">&#127873;</div>
+              <div class="st-head-txt"><h2>Referral offer</h2><p>What a friend gets when they sign up with someone's code, and what that person earns. Applies to every checkout from the moment you save.</p></div>
+              <label class="toggle-switch"><input type="checkbox" id="rfaEnabled" checked /><span class="toggle-slider"></span></label>
+            </div>
+            <div class="st-grid">
+              <div class="st-field"><label>Friend's discount (%)</label><input class="st-input" type="number" id="rfaDiscountPercent" min="0" max="90" step="0.5" value="10" /></div>
+              <div class="st-field"><label>Discounted purchases per friend</label><input class="st-input" type="number" id="rfaDiscountUses" min="1" max="100" step="1" value="1" /></div>
+              <div class="st-field"><label>Valid for (days after joining, 0 = no limit)</label><input class="st-input" type="number" id="rfaDiscountDays" min="0" max="3650" step="1" value="0" /></div>
+              <div class="st-field"><label>Reward for the inviter (credits)</label><input class="st-input" type="number" id="rfaRewardCredits" min="0" step="1" value="0" /></div>
+            </div>
+            <div class="rfa-preview" id="rfaPreview"></div>
+            <div class="st-actions"><button class="st-btn primary" id="rfaSaveBtn" type="button">Save offer</button><div id="rfaSaveStatus" class="auth-status"></div></div>
+          </section>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#127919;</div>
+              <div class="st-head-txt"><h2>A different offer for one person</h2><p>Search by email, name or code. Set what THEIR friends get off, what they earn, a custom code (for example BILAL20), or switch their code off. Leave a box empty to use the offer above.</p></div>
+            </div>
+            <div class="rfa-search">
+              <input class="st-input" id="rfaSearchInput" type="search" placeholder="Email, name or referral code&hellip;" />
+              <button class="st-btn primary" id="rfaSearchBtn" type="button">Search</button>
+            </div>
+            <div id="rfaSearchResults"></div>
+          </section>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico yellow">&#127942;</div>
+              <div class="st-head-txt"><h2>Top referrers</h2><p>The people who brought the most friends. You can edit their offer right here.</p></div>
+            </div>
+            <div id="rfaReferrers"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#128337;</div>
+              <div class="st-head-txt"><h2>Latest sign-ups through a code</h2><p>The most recent 40.</p></div>
+            </div>
+            <div id="rfaRecent"><p class="state-msg">Loading&hellip;</p></div>
           </section>
         </div>
 
@@ -4830,6 +5077,68 @@
     }
   }
 
+  // ---------- Referral code on sign-up ----------
+  // A link like elmstool.com/signup?ref=ABC12345 carries a friend's referral code. It is remembered in this browser (the website
+  // page and the app share it) until an account is created, and sent with the sign-up so the server can record who brought whom.
+  const REF_KEY = 'elmsRef';
+  const REF_REASONS = {
+    invalid_code: 'That referral code is not valid, so no discount was added. You can add a code later on the Buy credits page.',
+    self: 'You cannot use your own referral code.',
+    already: 'A referral code is already on this account.',
+    error: 'The referral code could not be added right now. You can add it later on the Buy credits page.',
+  };
+  function cleanRefCode(v) { return String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24); }
+  function storedRefCode() { try { return cleanRefCode(localStorage.getItem(REF_KEY)); } catch (_) { return ''; } }
+  function fmtPct(n) { return String(Number(Number(n).toFixed(2))); }
+  (function captureRefFromLink() {
+    try { const c = cleanRefCode(new URLSearchParams(location.search).get('ref')); if (c) localStorage.setItem(REF_KEY, c); } catch (_) { /* no storage: the code can still be typed */ }
+  })();
+  // The code to send with a sign-up: what is typed on the form, else what the link brought.
+  function signupReferralCode() {
+    return cleanRefCode(document.getElementById('registerReferral')?.value) || storedRefCode() || undefined;
+  }
+  // After a sign-up: forget the stored code and tell the person what happened to it.
+  function afterSignupReferral(referral) {
+    try { localStorage.removeItem(REF_KEY); } catch (_) { /* nothing stored */ }
+    if (!referral) return;
+    if (referral.applied) {
+      showToast('Referral applied', Number(referral.discountPercent) > 0 ? `${fmtPct(referral.discountPercent)}% off your first purchase - it is applied at checkout.` : 'Your referral code was added.', 'success');
+    } else if (referral.reason !== 'disabled') {
+      showToast('Referral code not used', REF_REASONS[referral.reason] || 'The code could not be used.', 'error');
+    }
+  }
+  (function wireRegisterReferral() {
+    const input = document.getElementById('registerReferral');
+    const note = document.getElementById('registerReferralNote');
+    if (!input || !note) return;
+    let timer = null;
+    let seq = 0;
+    const check = async () => {
+      const code = cleanRefCode(input.value);
+      const mine = ++seq;
+      if (!code) { note.className = 'rf-check'; note.textContent = ''; return; }
+      note.className = 'rf-check wait';
+      note.textContent = 'Checking…';
+      try {
+        const res = await fetch(`${API_BASE}/api/referrals/check?code=${encodeURIComponent(code)}`);
+        const d = await res.json();
+        if (mine !== seq) return;
+        if (d && d.valid) {
+          note.className = 'rf-check good';
+          note.textContent = Number(d.discountPercent) > 0 ? `✓ Code accepted - ${fmtPct(d.discountPercent)}% off your first purchase.` : '✓ Code accepted.';
+        } else {
+          note.className = 'rf-check bad';
+          note.textContent = (d && d.message) || 'That referral code is not valid.';
+        }
+      } catch (_) {
+        if (mine === seq) { note.className = 'rf-check'; note.textContent = ''; }
+      }
+    };
+    input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(check, 450); });
+    const stored = storedRefCode();
+    if (stored && !input.value) { input.value = stored; check(); }
+  })();
+
   // A random id kept in this browser. The server uses it to tell "a device I already know" from a new one
   // (new-device sign-in alerts) and to label the devices on the Security page.
   const ELMS_DEVICE_ID = (() => {
@@ -4860,6 +5169,8 @@
     messages: ['Messages', 'Manage eBay conversations, replies, notes, and saved replies.'],
     history: ['Import history', 'Every Amazon product fetched so far.'],
     'research-tools': ['Research Tools', 'Keyword ranks, reviews, categories, and more - live from Amazon.'],
+    calculator: ['eBay Price Calculator', 'Find the price that leaves your profit after eBay fees.'],
+    referrals: ['Refer & Earn', 'Invite other sellers - they save, you earn.'],
     settings: ['Settings', 'Connect your eBay account and set your business policies.'],
     pricing: ['Buy Credits', 'Purchase credits to import products and monitor stock.'],
     support: ['Support', 'Open a ticket if you need more credits or run into an issue.'],
@@ -4871,7 +5182,7 @@
   // a bookmark or a shared link opens the same page instead of the dashboard.
   const PAGE_PATHS = {
     dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders',
-    messages: '/messages', history: '/import-history', 'research-tools': '/research-tools',
+    messages: '/messages', history: '/import-history', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer',
     settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin',
   };
   const PATH_ALIASES = { '/drafts': 'drafts', '/listings': 'listings', '/order': 'orders', '/message': 'messages', '/history': 'history', '/pricing': 'pricing', '/credits': 'pricing', '/index.html': 'dashboard', '/': 'dashboard' };
@@ -4923,7 +5234,7 @@
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history' || page === 'admin');
-    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
+    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'calculator', 'referrals', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
@@ -4940,6 +5251,8 @@
     if (page === 'orders') loadOrders();
     if (page === 'messages') loadMessagesPage();
     if (page === 'research-tools') loadResearchToolsPage();
+    if (page === 'calculator') loadCalculatorPage();
+    if (page === 'referrals') loadReferralsPage();
     if (page === 'history') loadHistory();
     if (page === 'settings') loadSettingsPage();
     if (page === 'pricing') loadPricingPage();
@@ -6471,7 +6784,7 @@
       const res = await fetchWaitingForServer(`${API_BASE}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: response.credential }),
+        body: JSON.stringify({ credential: response.credential, referralCode: signupReferralCode() }),
       });
       const data = await res.json();
 
@@ -6483,6 +6796,7 @@
 
       localStorage.setItem('elmsSessionToken', data.sessionToken);
       showApp(data.user);
+      afterSignupReferral(data.referral);
     } catch (err) {
       alert(isServerDown(err) ? 'Still cannot reach the server. Check your internet connection and try again in a minute.' : 'Could not connect to the server: ' + err.message);
     }
@@ -6707,7 +7021,7 @@
       const res = await fetchWaitingForServer(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, email, password, referralCode: signupReferralCode() }),
       }, () => { statusEl.className = 'auth-status'; statusEl.textContent = SERVER_WAKE_MESSAGE; });
       const data = await res.json();
 
@@ -6720,6 +7034,7 @@
 
       localStorage.setItem('elmsSessionToken', data.sessionToken);
       showApp(data.user);
+      afterSignupReferral(data.referral);
     } catch (err) {
       statusEl.className = 'auth-status error';
       statusEl.textContent = isServerDown(err)
@@ -12957,9 +13272,373 @@ async function autoSuggestEmptyDraftCategories() {
     }
   });
 
+  // ---------- Refer & earn ----------
+  async function copyText(text, btn, doneLabel) {
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (_) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+      } catch (_) { ok = false; }
+    }
+    if (!ok) { showToast('Copy failed', 'Select the text and copy it by hand.', 'error'); return; }
+    if (btn) {
+      const was = btn.textContent;
+      btn.textContent = doneLabel || 'Copied';
+      btn.classList.add('done');
+      setTimeout(() => { btn.textContent = was; btn.classList.remove('done'); }, 1400);
+    }
+  }
+
+  async function loadReferralsPage() {
+    const el = document.getElementById('referralContent');
+    if (!el) return;
+    el.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
+    try {
+      const res = await apiFetch('/api/referrals/me');
+      const d = await res.json();
+      if (!res.ok || !d.success) { el.innerHTML = `<div class="state-msg error">${escapeHtml(d.error || 'Could not load your referral page.')}</div>`; return; }
+      renderReferralsPage(el, d);
+    } catch (err) {
+      el.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  // What the offer says, in words - only what is really on offer right now.
+  function referralOfferText(offer) {
+    const pct = Number(offer.friendDiscountPercent) || 0;
+    const uses = Number(offer.discountUses) || 1;
+    const credits = Number(offer.rewardCredits) || 0;
+    const days = Number(offer.discountDays) || 0;
+    const friend = pct > 0 ? `${fmtPct(pct)}% off ${uses > 1 ? `their first ${uses} purchases` : 'their first purchase'}${days > 0 ? ` (for ${days} days after they join)` : ''}` : '';
+    const you = credits > 0 ? `${credits.toLocaleString()} credit${credits === 1 ? '' : 's'} when they make their first purchase` : '';
+    return { pct, credits, friend, you };
+  }
+
+  const SHARE_ICONS = {
+    whatsapp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>',
+    telegram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
+    email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+    share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
+  };
+
+  function renderReferralsPage(el, d) {
+    const o = referralOfferText(d.offer || {});
+    const stats = d.stats || { signups: 0, buyers: 0, creditsEarned: 0 };
+    const hasOffer = o.pct > 0 || o.credits > 0;
+    const headline = o.pct > 0 && o.credits > 0
+      ? `Give <em>${fmtPct(o.pct)}% off</em>.<br>Get <em>${o.credits.toLocaleString()} credits</em>.`
+      : o.pct > 0 ? `Give your friends <em>${fmtPct(o.pct)}% off</em>.`
+      : o.credits > 0 ? `Earn <em>${o.credits.toLocaleString()} credits</em> for every friend who buys.`
+      : 'Invite a friend to ELMS.';
+    const lead = hasOffer
+      ? `${o.friend ? `A friend who signs up with your link gets ${o.friend}.` : ''}${o.you ? ` You get ${o.you}.` : ''}`
+      : 'Share ELMS with other sellers. There is no reward attached to referrals right now.';
+    const shareText = `I use ELMS to list Amazon products on eBay in a few clicks.${o.pct > 0 ? ` Sign up with my link and get ${fmtPct(o.pct)}% off your first purchase:` : ' Have a look:'}`;
+    const link = d.link || '';
+    const enc = encodeURIComponent;
+    const canNativeShare = typeof navigator.share === 'function';
+
+    const notices = [];
+    if (!d.enabled) notices.push('<div class="rf-notice warn"><span class="rf-ni">&#9208;</span><div><b>The referral programme is paused.</b><br>Your link still opens ELMS, but no discounts or rewards are given until it is switched back on.</div></div>');
+    if (d.blocked) notices.push('<div class="rf-notice warn"><span class="rf-ni">&#9888;</span><div><b>Your referral code is switched off.</b><br>Please contact support if you think this is a mistake.</div></div>');
+    if (d.referredBy) {
+      const disc = d.referredBy.discount;
+      notices.push(`<div class="rf-notice good"><span class="rf-ni">&#127873;</span><div><b>You joined with the code ${escapeHtml(d.referredBy.code)}.</b><br>${disc
+        ? `You get <b>${fmtPct(disc.percent)}% off</b> your next ${disc.usesLeft > 1 ? disc.usesLeft + ' purchases' : 'purchase'} on Buy credits${disc.expiresAt ? ` (until ${escapeHtml(new Date(disc.expiresAt).toLocaleDateString())})` : ''} - it is applied automatically.`
+        : 'Your referral discount has been used or has ended.'}</div></div>`);
+    }
+
+    const friendsRows = (d.referrals || []).map((r) => `
+      <tr>
+        <td><b>${escapeHtml(r.who)}</b></td>
+        <td>${escapeHtml(new Date(r.joinedAt).toLocaleDateString())}</td>
+        <td><span class="status-badge ${r.status === 'purchased' ? 'published' : 'draft'}">${r.status === 'purchased' ? 'Bought credits' : 'Signed up'}</span></td>
+        <td>${r.rewardCredits > 0 ? '+' + Number(r.rewardCredits).toLocaleString() : '&mdash;'}</td>
+      </tr>`).join('');
+
+    el.innerHTML = `
+      ${notices.join('')}
+      <div class="rf-hero">
+        <div>
+          <span class="rf-eyebrow">&#127873; Refer &amp; earn</span>
+          <h2>${headline}</h2>
+          <p>${escapeHtml(lead)}</p>
+        </div>
+        <div class="rf-code-card">
+          <div class="rf-label">Your referral code</div>
+          <div class="rf-code-row">
+            <div class="rf-code" id="rfCode">${escapeHtml(d.code || '')}</div>
+            <button class="rf-copy" id="rfCopyCode" type="button">Copy</button>
+          </div>
+          <div class="rf-label">Your link</div>
+          <div class="rf-link-row">
+            <input id="rfLink" type="text" readonly value="${escapeAttr(link)}" aria-label="Your referral link" />
+            <button class="rf-copy" id="rfCopyLink" type="button">Copy link</button>
+          </div>
+          <div class="rf-share">
+            <a href="https://wa.me/?text=${enc(shareText + ' ' + link)}" target="_blank" rel="noopener">${SHARE_ICONS.whatsapp}WhatsApp</a>
+            <a href="https://t.me/share/url?url=${enc(link)}&text=${enc(shareText)}" target="_blank" rel="noopener">${SHARE_ICONS.telegram}Telegram</a>
+            <a href="mailto:?subject=${enc('Try ELMS')}&body=${enc(shareText + '\n\n' + link)}">${SHARE_ICONS.email}Email</a>
+            ${canNativeShare ? `<button type="button" id="rfNativeShare">${SHARE_ICONS.share}More</button>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <div class="rf-stats">
+        <div class="rf-stat"><div class="rf-ico" style="background:#E8F1FD;">&#128101;</div><div><b>${Number(stats.signups).toLocaleString()}</b><span>Friends joined</span></div></div>
+        <div class="rf-stat"><div class="rf-ico" style="background:#EDF7DC;">&#128179;</div><div><b>${Number(stats.buyers).toLocaleString()}</b><span>Friends who bought</span></div></div>
+        <div class="rf-stat"><div class="rf-ico" style="background:#FEF3D0;">&#11088;</div><div><b>${Number(stats.creditsEarned).toLocaleString()}</b><span>Credits you earned</span></div></div>
+      </div>
+
+      ${d.canAddCode ? `
+      <section class="st-card">
+        <div class="st-head"><div class="st-ico blue">&#127915;</div><div class="st-head-txt"><h2>Were you invited by someone?</h2><p>Add their code before your first purchase to get your discount.</p></div></div>
+        <div class="rf-apply">
+          <div class="st-field"><label>Referral code</label><input class="st-input mono" id="rfApplyCode" maxlength="24" placeholder="e.g. ABCD2345" autocomplete="off" /></div>
+          <button class="st-btn primary" id="rfApplyBtn" type="button">Add code</button>
+        </div>
+        <div class="rf-check" id="rfApplyNote"></div>
+      </section>` : ''}
+
+      <section class="st-card">
+        <div class="st-head"><div class="st-ico green">&#128161;</div><div class="st-head-txt"><h2>How it works</h2><p>It takes a minute to share and costs you nothing.</p></div></div>
+        <div class="rf-steps">
+          <div class="rf-step"><div class="rf-n">1</div><b>Share your link</b><span>Send your link or your code to another eBay seller.</span></div>
+          <div class="rf-step"><div class="rf-n">2</div><b>They join ELMS</b><span>They sign up with your link, or type your code on the sign-up form.</span></div>
+          <div class="rf-step"><div class="rf-n">3</div><b>${hasOffer ? 'You both benefit' : 'You help a friend'}</b><span>${escapeHtml([o.friend && `They get ${o.friend}.`, o.you && `You get ${o.you}.`].filter(Boolean).join(' ') || 'They get started with ELMS.')}</span></div>
+        </div>
+      </section>
+
+      <section class="st-card">
+        <div class="st-head"><div class="st-ico yellow">&#129309;</div><div class="st-head-txt"><h2>Your friends</h2><p>People who signed up with your code. Their email addresses are partly hidden.</p></div></div>
+        ${friendsRows
+          ? `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Friend</th><th>Joined</th><th>Status</th><th>Credits you earned</th></tr></thead><tbody>${friendsRows}</tbody></table></div>`
+          : '<div class="rf-empty"><b>No friends yet</b>Share your link above - they will show up here as soon as they sign up.</div>'}
+      </section>
+    `;
+
+    document.getElementById('rfCopyCode')?.addEventListener('click', (e) => copyText(d.code, e.currentTarget, 'Copied'));
+    document.getElementById('rfCopyLink')?.addEventListener('click', (e) => copyText(link, e.currentTarget, 'Copied'));
+    document.getElementById('rfLink')?.addEventListener('focus', (e) => e.target.select());
+    document.getElementById('rfNativeShare')?.addEventListener('click', () => { navigator.share({ title: 'ELMS', text: shareText, url: link }).catch(() => {}); });
+    document.getElementById('rfApplyBtn')?.addEventListener('click', () => applyReferralCodeFrom('rfApplyCode', 'rfApplyNote', 'rfApplyBtn', () => loadReferralsPage()));
+  }
+
+  // Adds a referral code to the signed-in account (before its first purchase); reload() refreshes the page that asked.
+  async function applyReferralCodeFrom(inputId, noteId, btnId, reload) {
+    const input = document.getElementById(inputId);
+    const note = document.getElementById(noteId);
+    const btn = document.getElementById(btnId);
+    const code = cleanRefCode(input && input.value);
+    if (!code) { if (note) { note.className = 'rf-check bad'; note.textContent = 'Enter a referral code first.'; } return; }
+    btn.disabled = true;
+    if (note) { note.className = 'rf-check wait'; note.textContent = 'Checking…'; }
+    try {
+      const res = await apiFetch('/api/referrals/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
+      const d = await res.json();
+      if (!res.ok || !d.success) { if (note) { note.className = 'rf-check bad'; note.textContent = d.error || 'That code could not be added.'; } return; }
+      showToast('Referral applied', Number(d.discountPercent) > 0 ? `${fmtPct(d.discountPercent)}% off your first purchase.` : 'Your referral code was added.', 'success');
+      reload();
+    } catch (err) {
+      if (note) { note.className = 'rf-check bad'; note.textContent = 'Could not connect to the server: ' + err.message; }
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ---------- eBay price calculator ----------
+  // PC-MATH-START (pure functions, no page access)
+  // eBay takes its fees from what the buyer pays in total (the item price plus any delivery you charge), not from what the item cost:
+  //   profit = T - cost - T x (fee% + ad%) - fixed fee          where T = item price + delivery charged to the buyer
+  // so the total that leaves a wanted profit is  T = (cost + fixed fee + profit) / (1 - fee% - ad%).
+  function pcNum(v) { const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return Number.isFinite(n) && n > 0 ? n : 0; }
+  function pcCostOf(i) { return i.cost + i.shipIn + i.other; }
+  function pcEvaluate(i, itemPrice) {
+    const cost = pcCostOf(i);
+    const total = itemPrice + i.shipOut;
+    const fvf = total * i.feePct / 100;
+    const ad = total * i.adPct / 100;
+    const fees = fvf + ad + i.fixed;
+    const profit = total - cost - fees;
+    return { itemPrice, total, cost, fvf, ad, fixed: i.fixed, fees, profit, margin: total > 0 ? profit / total * 100 : 0, roi: cost > 0 ? profit / cost * 100 : 0 };
+  }
+  // goal: 'profitPct' (percent of what it costs you) | 'margin' (percent of what the buyer pays) | 'fixed' (an amount). null = impossible.
+  function pcSolve(i, goal, value) {
+    const r = (i.feePct + i.adPct) / 100;
+    const cost = pcCostOf(i);
+    let total;
+    if (goal === 'margin') {
+      const denom = 1 - r - value / 100;
+      if (denom <= 0) return null;
+      total = (cost + i.fixed) / denom;
+    } else {
+      if (1 - r <= 0) return null;
+      total = (cost + i.fixed + (goal === 'fixed' ? value : cost * value / 100)) / (1 - r);
+    }
+    return Math.max(0, total - i.shipOut);
+  }
+  function pcBreakEven(i) {
+    const r = (i.feePct + i.adPct) / 100;
+    return 1 - r <= 0 ? null : Math.max(0, (pcCostOf(i) + i.fixed) / (1 - r) - i.shipOut);
+  }
+  function pcRound99(x) { return x < 1 ? x : Math.ceil(x - 0.99) + 0.99; }
+  // PC-MATH-END
+
+  const PC_STORE = 'elmsPriceCalc';
+  const PC_SIGNS = { USD: '$', GBP: '£', EUR: '€', CAD: 'C$', AUD: 'A$' };
+  const PC_GOALS = {
+    profitPct: { label: 'Profit % of what it costs you', unit: '%', def: '30', step: '1' },
+    margin: { label: 'Margin % of the selling price', unit: '%', def: '20', step: '1' },
+    fixed: { label: 'Profit per sale', unit: '$', def: '3', step: '0.10' },
+  };
+  let pcGoal = 'profitPct';
+  let pcReady = false;
+  const pcEl = (id) => document.getElementById(id);
+  const pcSign = () => PC_SIGNS[pcEl('pcCurrency').value] || '$';
+  const pcMoney = (n) => (n < 0 ? '-' : '') + pcSign() + Math.abs(n).toFixed(2);
+
+  function pcRead() {
+    return {
+      cost: pcNum(pcEl('pcCost').value), shipIn: pcNum(pcEl('pcShipIn').value), other: pcNum(pcEl('pcOther').value),
+      feePct: Math.min(60, pcNum(pcEl('pcFeePct').value)), fixed: pcNum(pcEl('pcFixed').value), adPct: Math.min(40, pcNum(pcEl('pcAdPct').value)),
+      shipOut: pcNum(pcEl('pcShipOut').value),
+    };
+  }
+
+  function pcSave() {
+    try {
+      localStorage.setItem(PC_STORE, JSON.stringify({ currency: pcEl('pcCurrency').value, feePct: pcEl('pcFeePct').value, fixed: pcEl('pcFixed').value, adPct: pcEl('pcAdPct').value, goal: pcGoal, goalValue: pcEl('pcGoalValue').value, round: pcEl('pcRound').checked }));
+    } catch (_) { /* the calculator works without saving */ }
+  }
+
+  function pcSyncSigns() {
+    const sign = pcSign();
+    document.querySelectorAll('#page-calculator [data-pc-sign]').forEach((el) => { el.textContent = sign; });
+    if (PC_GOALS[pcGoal].unit === '$') pcEl('pcGoalSign').textContent = sign;
+  }
+
+  function pcSetGoal(goal, keepValue) {
+    pcGoal = goal;
+    const g = PC_GOALS[goal];
+    document.querySelectorAll('#pcGoalTabs button').forEach((b) => b.classList.toggle('on', b.dataset.goal === goal));
+    pcEl('pcGoalLabel').textContent = g.label;
+    pcEl('pcGoalSign').textContent = g.unit === '$' ? pcSign() : '%';
+    pcEl('pcGoalWrap').classList.toggle('pct', g.unit === '%');
+    pcEl('pcGoalValue').step = g.step;
+    if (!keepValue) pcEl('pcGoalValue').value = g.def;
+  }
+
+  function pcRender() {
+    const i = pcRead();
+    const out = pcEl('pcResult');
+    const detail = pcEl('pcBreakdown');
+    const ladder = pcEl('pcLadder');
+    const test = pcNum(pcEl('pcTest').value);
+    pcSyncSigns();
+
+    if (i.cost <= 0) {
+      out.innerHTML = '<div class="pc-lbl">Selling price</div><div class="pc-price">&mdash;</div><div class="pc-sub">Enter what the item costs you to see the price to list it at.</div>';
+      detail.innerHTML = '';
+      ladder.innerHTML = '';
+      return;
+    }
+
+    const goalValue = pcNum(pcEl('pcGoalValue').value);
+    let price;
+    let mode = 'target';
+    if (test > 0) { price = test; mode = 'test'; }
+    else {
+      price = pcSolve(i, pcGoal, goalValue);
+      if (price != null && pcEl('pcRound').checked) price = pcRound99(price);
+    }
+
+    const be = pcBreakEven(i);
+    if (price == null) {
+      out.innerHTML = '<div class="pc-lbl">Selling price</div><div class="pc-price">&mdash;</div><div class="pc-sub">eBay fees and this profit add up to 100% or more of the price, so no price can reach it. Lower the margin or the fees.</div>';
+      detail.innerHTML = '';
+    } else {
+      const e = pcEvaluate(i, price);
+      const loss = e.profit < 0;
+      out.innerHTML = `
+        <div class="pc-lbl">${mode === 'test' ? 'The price you are testing' : 'List it at'}</div>
+        <div class="pc-price">${escapeHtml(pcMoney(e.itemPrice))}</div>
+        <div class="pc-sub">${i.shipOut > 0 ? `The buyer pays ${escapeHtml(pcMoney(e.total))} with delivery. ` : ''}${mode === 'test' ? 'This is what that price earns you.' : 'This leaves the profit you asked for after eBay\'s fees.'}</div>
+        <div class="pc-kpis">
+          <div class="pc-kpi ${loss ? 'bad' : 'good'}"><b>${escapeHtml(pcMoney(e.profit))}</b><span>You keep</span></div>
+          <div class="pc-kpi ${loss ? 'bad' : ''}"><b>${e.margin.toFixed(1)}%</b><span>Margin</span></div>
+          <div class="pc-kpi ${loss ? 'bad' : ''}"><b>${e.roi.toFixed(0)}%</b><span>Return on cost</span></div>
+        </div>`;
+
+      const rows = [
+        ['#0F172A', 'What it costs you', e.cost],
+        ['#0064D2', 'eBay final value fee', e.fvf],
+        ['#F5AF02', 'Promoted listing fee', e.ad],
+        ['#E53238', 'Fixed fee per order', e.fixed],
+        [loss ? '#B91C1C' : '#86B817', loss ? 'Loss' : 'You keep', Math.abs(e.profit)],
+      ].filter((r) => r[2] > 0.0001);
+      const basis = loss ? e.cost + e.fees : e.total;
+      const bar = rows.filter((r) => r[1] !== 'Loss').map((r) => `<i style="width:${Math.max(0, r[2] / basis * 100).toFixed(2)}%;background:${r[0]}" title="${escapeAttr(r[1])}"></i>`).join('');
+      detail.innerHTML = `
+        <div class="st-head"><div class="st-ico green">&#129534;</div><div class="st-head-txt"><h2>Where the money goes</h2><p>For one sale at ${escapeHtml(pcMoney(e.total))}${i.shipOut > 0 ? ' (with delivery)' : ''}.</p></div></div>
+        ${loss ? `<div class="pc-warn">At this price you lose ${escapeHtml(pcMoney(-e.profit))} on every sale.${be != null ? ` You break even at ${escapeHtml(pcMoney(be))}.` : ''}</div>` : ''}
+        <div class="pc-bar">${bar}</div>
+        <div class="pc-legend">${rows.map((r) => `<div><i style="background:${r[0]}"></i><span>${escapeHtml(r[1])}</span><b>${escapeHtml(pcMoney(r[2]))}</b><em>${basis > 0 ? (r[2] / basis * 100).toFixed(1) : '0.0'}%</em></div>`).join('')}</div>
+        ${be != null ? `<div class="pc-note">Break-even price: <b>${escapeHtml(pcMoney(be))}</b> - below this you lose money on each sale.</div>` : ''}`;
+    }
+
+    // Price ladder: what different profit levels look like - click a row to use it.
+    const steps = [10, 20, 30, 40, 50, 75, 100];
+    ladder.innerHTML = `
+      <div class="st-head"><div class="st-ico yellow">&#128200;</div><div class="st-head-txt"><h2>Price ladder</h2><p>The price for each profit level on this cost. Click a row to use it.</p></div></div>
+      <div class="st-table-wrap"><table class="st-table pc-ladder"><thead><tr><th>Profit on cost</th><th>List at</th><th>You keep</th><th>Margin</th></tr></thead><tbody>
+        ${steps.map((s) => {
+          const p = pcSolve(i, 'profitPct', s);
+          if (p == null) return '';
+          const e = pcEvaluate(i, p);
+          return `<tr data-step="${s}" class="${pcGoal === 'profitPct' && mode === 'target' && Number(pcEl('pcGoalValue').value) === s ? 'cur' : ''}"><td><b>${s}%</b></td><td>${escapeHtml(pcMoney(p))}</td><td class="${e.profit < 0 ? 'neg' : 'pos'}">${escapeHtml(pcMoney(e.profit))}</td><td>${e.margin.toFixed(1)}%</td></tr>`;
+        }).join('')}
+      </tbody></table></div>`;
+    ladder.querySelectorAll('tr[data-step]').forEach((tr) => tr.addEventListener('click', () => {
+      pcEl('pcTest').value = '';
+      pcSetGoal('profitPct', true);
+      pcEl('pcGoalValue').value = tr.dataset.step;
+      pcSave();
+      pcRender();
+    }));
+  }
+
+  function loadCalculatorPage() {
+    if (!pcReady) {
+      pcReady = true;
+      let saved = {};
+      try { saved = JSON.parse(localStorage.getItem(PC_STORE) || '{}') || {}; } catch (_) { saved = {}; }
+      if (PC_SIGNS[saved.currency]) pcEl('pcCurrency').value = saved.currency;
+      if (saved.feePct !== undefined && saved.feePct !== '') pcEl('pcFeePct').value = saved.feePct;
+      if (saved.fixed !== undefined && saved.fixed !== '') pcEl('pcFixed').value = saved.fixed;
+      if (saved.adPct !== undefined && saved.adPct !== '') pcEl('pcAdPct').value = saved.adPct;
+      pcEl('pcRound').checked = !!saved.round;
+      pcSetGoal(PC_GOALS[saved.goal] ? saved.goal : 'profitPct', false);
+      if (saved.goalValue) pcEl('pcGoalValue').value = saved.goalValue;
+
+      document.querySelectorAll('#page-calculator input, #page-calculator select').forEach((el) => {
+        el.addEventListener('input', () => { pcSave(); pcRender(); });
+        el.addEventListener('change', () => { pcSave(); pcRender(); });
+      });
+      document.querySelectorAll('#pcGoalTabs button').forEach((b) => b.addEventListener('click', () => { pcEl('pcTest').value = ''; pcSetGoal(b.dataset.goal, false); pcSave(); pcRender(); }));
+      pcEl('pcReset').addEventListener('click', () => {
+        ['pcCost', 'pcShipIn', 'pcOther', 'pcShipOut', 'pcTest'].forEach((id) => { pcEl(id).value = ''; });
+        pcSetGoal('profitPct', false);
+        pcRender();
+      });
+    }
+    pcRender();
+  }
+
   // ---------- Admin Panel ----------
   async function loadAdminPage() {
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -12971,6 +13650,168 @@ async function autoSuggestEmptyDraftCategories() {
   document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.addEventListener('click', () => setAdminTab(t.dataset.adminTab)));
   document.getElementById('adminRefreshBtn')?.addEventListener('click', () => loadAdminPage());
   try { const saved = sessionStorage.getItem('elmsAdminTab'); if (saved) setAdminTab(saved); } catch (_) {}
+
+  // ---------- Admin: referrals ----------
+  const rfaMoney = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  let rfaSettings = { enabled: true, discountPercent: 10, discountUses: 1, discountDays: 0, rewardCredits: 0 };
+
+  function rfaFormSettings() {
+    return {
+      enabled: document.getElementById('rfaEnabled').checked,
+      discountPercent: Number(document.getElementById('rfaDiscountPercent').value),
+      discountUses: Number(document.getElementById('rfaDiscountUses').value),
+      discountDays: Number(document.getElementById('rfaDiscountDays').value),
+      rewardCredits: Number(document.getElementById('rfaRewardCredits').value),
+    };
+  }
+
+  function rfaPaintPreview() {
+    const s = rfaFormSettings();
+    const el = document.getElementById('rfaPreview');
+    if (!el) return;
+    el.classList.toggle('off', !s.enabled);
+    if (!s.enabled) { el.textContent = 'The programme is switched off: no code gives a discount or a reward. Links and codes keep working for sign-up.'; return; }
+    const days = s.discountDays > 0 ? ` for ${s.discountDays} days after they join` : '';
+    const friend = s.discountPercent > 0
+      ? `A friend who signs up with someone's code gets ${fmtPct(s.discountPercent)}% off their first ${s.discountUses > 1 ? s.discountUses + ' purchases' : 'purchase'}${days}.`
+      : 'A friend who signs up with a code gets no discount.';
+    const you = s.rewardCredits > 0
+      ? ` The person who invited them earns ${s.rewardCredits.toLocaleString()} credits when that friend makes their first purchase.`
+      : ' The person who invited them earns no credits.';
+    el.textContent = friend + you + ' You can give one person a different offer below.';
+  }
+
+  function rfaRowHtml(u) {
+    const s = rfaSettings;
+    return `
+      <tr data-rfa-user="${escapeAttr(u.id)}" data-code="${escapeAttr(u.code || '')}">
+        <td><b>${escapeHtml(u.email || '')}</b>${u.name ? `<span class="rfa-def">${escapeHtml(u.name)}</span>` : ''}</td>
+        <td><input class="editable-input rfa-code" data-f="code" maxlength="20" value="${escapeAttr(u.code || '')}" style="width:128px;" aria-label="Referral code" /></td>
+        <td><input class="editable-input" data-f="discountPercent" type="number" min="0" max="90" step="0.5" value="${u.discountPercent == null ? '' : u.discountPercent}" placeholder="${fmtPct(s.discountPercent)}" style="width:82px;" aria-label="Friend discount percent" /><span class="rfa-def">empty = ${fmtPct(s.discountPercent)}%</span></td>
+        <td><input class="editable-input" data-f="rewardCredits" type="number" min="0" step="1" value="${u.rewardCredits == null ? '' : u.rewardCredits}" placeholder="${s.rewardCredits}" style="width:82px;" aria-label="Reward credits" /><span class="rfa-def">empty = ${s.rewardCredits}</span></td>
+        <td>${Number(u.signups || 0)} <span class="rfa-def">${Number(u.buyers || 0)} bought</span></td>
+        <td>${rfaMoney(u.revenueUsd)}</td>
+        <td><select class="editable-input" data-f="blocked" style="width:92px;" aria-label="Code status"><option value="false">Active</option><option value="true" ${u.blocked ? 'selected' : ''}>Blocked</option></select></td>
+        <td><div class="row-actions"><button class="btn-small save" data-a="save" type="button">Save</button></div></td>
+      </tr>`;
+  }
+
+  function rfaTableHtml(list) {
+    if (!list.length) return '<div class="empty-state">Nobody here yet.</div>';
+    return `<div class="st-table-wrap"><table class="data-table rfa-table"><thead><tr><th>Person</th><th>Code</th><th>Friends get (%)</th><th>They earn (credits)</th><th>Friends</th><th>Their spend</th><th>Status</th><th></th></tr></thead><tbody>${list.map(rfaRowHtml).join('')}</tbody></table></div>`;
+  }
+
+  function rfaWireRows(container) {
+    container.querySelectorAll('tr[data-rfa-user]').forEach((row) => {
+      const btn = row.querySelector('[data-a="save"]');
+      btn.addEventListener('click', async () => {
+        const val = (f) => row.querySelector(`[data-f="${f}"]`).value;
+        const num = (f) => (val(f).trim() === '' ? null : Number(val(f)));
+        const body = { discountPercent: num('discountPercent'), rewardCredits: num('rewardCredits'), blocked: val('blocked') === 'true' };
+        const code = val('code').trim();
+        if (code && code.toUpperCase().replace(/[^A-Z0-9]/g, '') !== row.dataset.code) body.code = code;
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+        try {
+          const res = await apiFetch(`/api/admin/referrals/users/${row.dataset.rfaUser}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          const d = await res.json();
+          if (!res.ok || !d.success) { alert(d.error || 'Could not save this person.'); btn.textContent = 'Save'; return; }
+          row.dataset.code = d.user.code || '';
+          row.querySelector('[data-f="code"]').value = d.user.code || '';
+          btn.textContent = 'Saved';
+          setTimeout(() => { btn.textContent = 'Save'; }, 1200);
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+          btn.textContent = 'Save';
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  async function loadAdminReferrals() {
+    const stats = document.getElementById('rfaStats');
+    if (!stats) return;
+    try {
+      const res = await apiFetch('/api/admin/referrals');
+      const d = await res.json();
+      if (!res.ok || !d.success) { stats.innerHTML = `<div class="state-msg error">${escapeHtml(d.error || 'Could not load referrals.')}</div>`; return; }
+      rfaSettings = d.settings;
+      document.getElementById('rfaEnabled').checked = !!d.settings.enabled;
+      document.getElementById('rfaDiscountPercent').value = d.settings.discountPercent;
+      document.getElementById('rfaDiscountUses').value = d.settings.discountUses;
+      document.getElementById('rfaDiscountDays').value = d.settings.discountDays;
+      document.getElementById('rfaRewardCredits').value = d.settings.rewardCredits;
+      rfaPaintPreview();
+
+      const t = d.totals || {};
+      stats.innerHTML = [
+        ['Sign-ups through a code', Number(t.signups || 0).toLocaleString()],
+        ['Friends who bought', Number(t.buyers || 0).toLocaleString()],
+        ['Their spend', rfaMoney(t.revenueUsd)],
+        ['Discounts given', rfaMoney(t.discountUsd)],
+        ['Reward credits paid', Number(t.creditsGiven || 0).toLocaleString()],
+      ].map(([label, value]) => `<div class="rfa-stat"><b>${escapeHtml(value)}</b><span>${escapeHtml(label)}</span></div>`).join('');
+
+      const top = document.getElementById('rfaReferrers');
+      top.innerHTML = rfaTableHtml(d.referrers || []);
+      rfaWireRows(top);
+
+      const recent = document.getElementById('rfaRecent');
+      recent.innerHTML = (d.recent || []).length
+        ? `<div class="st-table-wrap"><table class="data-table"><thead><tr><th>When</th><th>Friend</th><th>Invited by</th><th>Code used</th><th>Purchases</th><th>Spent</th><th>Status</th></tr></thead><tbody>${d.recent.map((r) => `
+            <tr><td>${escapeHtml(new Date(r.at).toLocaleString())}</td><td>${escapeHtml(r.friend || '')}</td><td>${escapeHtml(r.referrer || '')}</td><td class="rfa-code">${escapeHtml(r.code)}</td><td>${Number(r.purchases || 0)}</td><td>${rfaMoney(r.spentUsd)}</td><td><span class="status-badge ${r.status === 'purchased' ? 'published' : 'draft'}">${r.status === 'purchased' ? 'Bought' : 'Signed up'}</span></td></tr>`).join('')}</tbody></table></div>`
+        : '<div class="empty-state">No one has signed up with a referral code yet.</div>';
+    } catch (err) {
+      stats.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  ['rfaEnabled', 'rfaDiscountPercent', 'rfaDiscountUses', 'rfaDiscountDays', 'rfaRewardCredits'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', rfaPaintPreview);
+    document.getElementById(id)?.addEventListener('change', rfaPaintPreview);
+  });
+
+  document.getElementById('rfaSaveBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('rfaSaveBtn');
+    const status = document.getElementById('rfaSaveStatus');
+    btn.disabled = true;
+    status.className = 'auth-status';
+    status.textContent = 'Saving…';
+    try {
+      const res = await apiFetch('/api/admin/referrals/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rfaFormSettings()) });
+      const d = await res.json();
+      if (!res.ok || !d.success) { status.className = 'auth-status error'; status.textContent = d.error || 'Could not save the offer.'; return; }
+      rfaSettings = d.settings;
+      status.className = 'auth-status success';
+      status.textContent = 'Saved. The new offer applies to every checkout from now on.';
+      loadAdminReferrals();
+    } catch (err) {
+      status.className = 'auth-status error';
+      status.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  async function rfaSearch() {
+    const q = document.getElementById('rfaSearchInput').value.trim();
+    const out = document.getElementById('rfaSearchResults');
+    if (!q) { out.innerHTML = ''; return; }
+    out.innerHTML = '<p class="state-msg">Searching&hellip;</p>';
+    try {
+      const res = await apiFetch('/api/admin/referrals/lookup?q=' + encodeURIComponent(q));
+      const d = await res.json();
+      if (!res.ok || !d.success) { out.innerHTML = `<div class="state-msg error">${escapeHtml(d.error || 'Search failed.')}</div>`; return; }
+      out.innerHTML = d.users.length ? rfaTableHtml(d.users) : '<div class="empty-state">No one matches that.</div>';
+      rfaWireRows(out);
+    } catch (err) {
+      out.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+  document.getElementById('rfaSearchBtn')?.addEventListener('click', rfaSearch);
+  document.getElementById('rfaSearchInput')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') rfaSearch(); });
 
   // ---------- Admin Panel: Overview ----------
   const money = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -14005,17 +14846,37 @@ async function autoSuggestEmptyDraftCategories() {
         return perCredit < bestPerCredit ? p : best;
       }, null)?.id;
 
+      // A friend who signed up with a referral code sees the discounted prices (the server works out the discount at checkout too).
+      const disc = data.referralDiscount;
+      let banner = '';
+      if (disc) {
+        banner = `<div class="bc-ref-banner"><div class="bc-ref-ico">&#127873;</div><div><b>${fmtPct(disc.percent)}% referral discount</b><span>Applied automatically to your next ${disc.usesLeft > 1 ? disc.usesLeft + ' purchases' : 'purchase'}${disc.expiresAt ? ' until ' + escapeHtml(new Date(disc.expiresAt).toLocaleDateString()) : ''}.</span></div></div>`;
+      } else {
+        try {
+          const rr = await apiFetch('/api/referrals/me');
+          const rd = await rr.json();
+          if (rr.ok && rd.success && rd.canAddCode) {
+            banner = `<div class="bc-code-card"><div class="bc-code-txt"><b>Invited by a friend?</b><span>Enter their referral code before your first purchase to get your discount.</span></div><div class="bc-code-in"><input class="st-input" id="bcRefCode" maxlength="24" placeholder="Referral code" autocomplete="off" /><button class="st-btn primary" id="bcRefApply" type="button">Apply</button></div><div class="rf-check" id="bcRefNote" style="flex-basis:100%;margin:0;"></div></div>`;
+          }
+        } catch (_) { /* the plans still show without the code box */ }
+      }
+
       container.innerHTML = `
+        ${banner}
         <div class="bc-plans">
           ${data.plans.map((p) => {
             const isBest = p.id === bestValuePlanId && data.plans.length > 1;
-            const perCredit = (p.priceUsd / p.credits * 100).toFixed(2);
+            const hasOff = p.discountedPriceUsd != null && p.discountedPriceUsd < p.priceUsd;
+            const payNow = hasOff ? p.discountedPriceUsd : p.priceUsd;
+            const perCredit = (payNow / p.credits * 100).toFixed(2);
             return `
-              <div class="bc-plan ${isBest ? 'best' : ''}">
+              <div class="bc-plan ${isBest ? 'best' : ''} ${hasOff ? 'has-off' : ''}">
+                ${hasOff ? `<div class="bc-off">${fmtPct(disc.percent)}% off</div>` : ''}
                 ${isBest ? '<div class="bc-badge">Best value</div>' : ''}
                 <div class="bc-plan-name">${escapeHtml(p.name)}</div>
                 <div class="bc-plan-credits">${p.credits.toLocaleString()}<small>credits</small></div>
-                <div class="bc-plan-price">$${p.priceUsd.toFixed(2)}</div>
+                <div class="bc-plan-price">${hasOff ? `<s>$${p.priceUsd.toFixed(2)}</s><span class="bc-new">$${payNow.toFixed(2)}</span>` : '$' + p.priceUsd.toFixed(2)}</div>
+                ${hasOff ? `<div class="bc-save">You save $${(p.priceUsd - payNow).toFixed(2)}</div>` : ''}
                 <div class="bc-plan-per">&#8776; ${perCredit}&cent; per credit</div>
                 ${p.maxEbayAccounts ? `<div class="bc-plan-label" style="font-weight:800;color:var(--ink);">+ ${p.maxEbayAccounts} eBay account${p.maxEbayAccounts === 1 ? '' : 's'}</div>` : ''}
                 ${data.provider === 'cashtap' ? '<div class="bc-plan-label">Wallet, CashApp, card &amp; more &middot; secure checkout by CashTap</div>' : `<div class="bc-plan-icons">${PAYMENT_ICONS_SVG}</div><div class="bc-plan-label">Card, PayPal &amp; more</div>`}
@@ -14029,6 +14890,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.querySelectorAll('.pricing-buy-btn').forEach((btn) => {
         btn.addEventListener('click', () => startCheckout(btn.getAttribute('data-plan-id'), btn));
       });
+      document.getElementById('bcRefApply')?.addEventListener('click', () => applyReferralCodeFrom('bcRefCode', 'bcRefNote', 'bcRefApply', () => loadPlanCards()));
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
@@ -14102,7 +14964,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${data.purchases.map((p) => `
               <tr>
                 <td>${escapeHtml(new Date(p.createdAt).toLocaleString())}</td>
-                <td>$${p.priceUsd.toFixed(2)}</td>
+                <td>$${p.priceUsd.toFixed(2)}${p.discountPercent > 0 ? `<span class="ph-was">$${Number(p.listPriceUsd).toFixed(2)}</span><span class="ph-off">-${fmtPct(p.discountPercent)}%</span>` : ''}</td>
                 <td>${p.creditsGranted.toLocaleString()}</td>
                 <td><span class="status-badge ${p.status === 'completed' ? 'published' : 'draft'}">${escapeHtml(p.status)}</span></td>
               </tr>
