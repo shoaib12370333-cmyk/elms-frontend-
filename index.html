@@ -13321,17 +13321,17 @@ async function autoSuggestEmptyDraftCategories() {
         : `<div class="sp-b ${escapeAttr(m.from)}"><small>${escapeHtml(who[m.from] || 'ELMS')}${m.at && !isNaN(new Date(m.at)) ? ' · ' + escapeHtml(new Date(m.at).toLocaleString()) : ''}</small>${escapeHtml(m.text || '')}</div>`).join('');
       const note = st === 'resolved' ? '' : t.escalated
         ? '<div class="sp-wait">The team has been told and will reply here.</div>'
-        : '';
+        : t.adminEngaged ? '<div class="sp-wait">Our team answered above. Write here to reply to them.</div>' : '';
       return `<article class="sp-ticket ${st}" data-ticket-id="${escapeAttr(t.id)}">
-        <div class="sp-ticket-top"><div><b>${escapeHtml(t.subject)}</b><div class="sp-date">${escapeHtml(new Date(t.createdAt).toLocaleString())}</div></div><span class="sp-pill ${st}">${st === 'resolved' ? 'Resolved' : t.escalated ? 'With the team' : 'Open'}</span></div>
+        <div class="sp-ticket-top"><div><b>${escapeHtml(t.subject)}</b><div class="sp-date">${escapeHtml(new Date(t.createdAt).toLocaleString())}</div></div><span class="sp-pill ${st}">${st === 'resolved' ? 'Resolved' : t.escalated ? 'With the team' : t.adminEngaged ? 'Team replied' : 'Open'}</span></div>
         <div class="sp-thread">${thread}${busy ? '<div class="sp-b ai sp-typing"><small>ELMS assistant</small>Typing…</div>' : ''}</div>
         ${note}
         <div class="sp-compose">
-          <textarea class="st-input" data-sp-input rows="2" maxlength="4000" placeholder="${st === 'resolved' ? 'Still need help? Write here to reopen this ticket.' : 'Write to the assistant…'}"${busy ? ' disabled' : ''}>${escapeHtml(ticketDrafts[t.id] || '')}</textarea>
+          <textarea class="st-input" data-sp-input rows="2" maxlength="4000" placeholder="${st === 'resolved' ? 'Still need help? Write here to reopen this ticket.' : t.adminEngaged ? 'Write to the team…' : 'Write to the assistant…'}"${busy ? ' disabled' : ''}>${escapeHtml(ticketDrafts[t.id] || '')}</textarea>
           <div class="sp-actions">
             <button type="button" class="sp-btn primary" data-sp-send${busy ? ' disabled' : ''}>Send</button>
             ${st === 'open' ? `<button type="button" class="sp-btn good" data-sp-close${busy ? ' disabled' : ''}>✓ Solved — close ticket</button>` : ''}
-            ${st === 'open' && !t.escalated ? `<button type="button" class="sp-btn" data-sp-human${busy ? ' disabled' : ''}>Talk to admin</button>` : ''}
+            ${st === 'open' && !t.escalated && !t.adminEngaged ? `<button type="button" class="sp-btn" data-sp-human${busy ? ' disabled' : ''}>Talk to admin</button>` : ''}
           </div>
         </div>
       </article>`;
@@ -15062,7 +15062,7 @@ async function autoSuggestEmptyDraftCategories() {
               <tr data-ticket-id="${t.id}" class="clickable-row">
                 <td class="row-title">${escapeHtml(t.userName || '—')}${t.source === 'email' ? ' <span class="status-badge draft" style="font-size:10px;">Email</span>' : ''}${t.source === 'appeal' ? ' <span class="status-badge error" style="font-size:10px;">Appeal</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(t.userEmail || '')}</span></td>
                 <td>${escapeHtml(t.subject)}</td>
-                <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span>${t.status !== 'resolved' && t.escalated ? ` <span class="status-badge error" style="font-size:10px;">${t.urgent ? 'Urgent' : 'Needs you'}</span>` : t.aiStatus === 'answered' ? ' <span class="status-badge published" style="font-size:10px;">AI answered</span>' : ''}</td>
+                <td><span class="status-badge ${t.status === 'resolved' ? 'published' : 'draft'}">${escapeHtml(t.status)}</span>${t.status !== 'resolved' && t.escalated ? ` <span class="status-badge error" style="font-size:10px;">${t.urgent ? 'Urgent' : 'Needs you'}</span>` : t.status !== 'resolved' && t.adminEngaged ? ' <span class="status-badge published" style="font-size:10px;">Waiting for customer</span>' : t.aiStatus === 'answered' ? ' <span class="status-badge published" style="font-size:10px;">AI answered</span>' : ''}</td>
                 <td><button class="btn-small" data-action="open-ticket">View</button></td>
               </tr>
             `).join('')}
@@ -15105,7 +15105,7 @@ async function autoSuggestEmptyDraftCategories() {
         </div>
       </div>
 
-      ${ticket.status !== 'resolved' && ticket.escalated ? `<div style="padding:10px 12px; margin-bottom:14px; border-radius:10px; background:#FEF2F2; border:1px solid #FECACA; color:#7A271A; font-size:13px;"><b>${ticket.urgent ? 'Urgent — needs you' : 'Needs you'}</b><br />${escapeHtml(ticket.escalationReason || 'The AI assistant passed this to you.')}</div>` : (ticket.aiStatus === 'answered' ? '<div style="padding:8px 12px; margin-bottom:14px; border-radius:10px; background:#F0FAF4; border:1px solid #C7E8D2; color:#1F6B3A; font-size:13px;">The AI assistant answered this ticket. Reply below only if it needs more.</div>' : '')}
+      ${ticket.status !== 'resolved' && ticket.escalated ? `<div style="padding:10px 12px; margin-bottom:14px; border-radius:10px; background:#FEF2F2; border:1px solid #FECACA; color:#7A271A; font-size:13px;"><b>${ticket.urgent ? 'Urgent — needs you' : 'Needs you'}</b><br />${escapeHtml(ticket.escalationReason || 'The AI assistant passed this to you.')}</div>` : (ticket.status !== 'resolved' && ticket.adminEngaged ? '<div style="padding:8px 12px; margin-bottom:14px; border-radius:10px; background:#EEF4FF; border:1px solid #C7D7FE; color:#1D3A8A; font-size:13px;">You answered. Nothing is pending until the customer writes back (the AI assistant stays out of this conversation).</div>' : ticket.aiStatus === 'answered' ? '<div style="padding:8px 12px; margin-bottom:14px; border-radius:10px; background:#F0FAF4; border:1px solid #C7E8D2; color:#1F6B3A; font-size:13px;">The AI assistant answered this ticket. Reply below only if it needs more.</div>' : '')}
 
       <label class="edit-label">Subject</label>
       <p class="description-text" style="margin-bottom:16px;">${escapeHtml(ticket.subject)}</p>
@@ -15129,9 +15129,13 @@ async function autoSuggestEmptyDraftCategories() {
       ${ticket.status === 'resolved'
         ? (Array.isArray(ticket.thread) && ticket.thread.length ? '' : `<div class="section-title">Your reply</div><p class="description-text">${escapeHtml(ticket.adminReply || '—')}</p>`)
         : `
-          <div class="section-title">Reply &amp; resolve</div>
-          <textarea class="editable-input editable-textarea" id="ticketDetailReply" rows="5" placeholder="Write your reply (optional)..."></textarea>
-          <button class="btn-publish" id="ticketDetailResolveBtn" style="margin-top:14px;">Resolve ticket</button>
+          <div class="section-title">Reply</div>
+          <textarea class="editable-input editable-textarea" id="ticketDetailReply" rows="5" placeholder="Write your reply..."></textarea>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+            <button class="btn-publish" id="ticketDetailSendBtn">Send reply (keep open)</button>
+            <button class="btn-publish" id="ticketDetailResolveBtn" style="background:#fff; color:var(--ink); border:1.5px solid var(--line);">Reply &amp; resolve</button>
+          </div>
+          <div class="meta-line" style="margin-top:8px;">Send reply clears the pending request and keeps talking. Resolve closes the ticket.</div>
           <div id="ticketDetailStatus" style="margin-top:10px;"></div>
         `
       }
@@ -15140,6 +15144,32 @@ async function autoSuggestEmptyDraftCategories() {
     ticketDetailModal.classList.add('open');
 
     if (ticket.status !== 'resolved') {
+      document.getElementById('ticketDetailSendBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('ticketDetailSendBtn');
+        const statusEl = document.getElementById('ticketDetailStatus');
+        const reply = document.getElementById('ticketDetailReply').value.trim();
+        if (!reply) { statusEl.className = 'error'; statusEl.textContent = 'Write your reply first.'; return; }
+        btn.disabled = true;
+        statusEl.className = '';
+        statusEl.textContent = 'Sending\u2026';
+        try {
+          const res = await apiFetch(`/api/admin/tickets/${ticket.id}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reply }) });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            statusEl.className = 'error';
+            statusEl.textContent = data.error || 'Could not send the reply.';
+            btn.disabled = false;
+            return;
+          }
+          // Show the conversation again with the answer in it; the list behind it no longer says "Needs you".
+          openTicketDetailModal({ ...ticket, ...data.ticket, userName: ticket.userName, userEmail: ticket.userEmail, escalationReason: null });
+          loadAdminTickets();
+        } catch (err) {
+          statusEl.className = 'error';
+          statusEl.textContent = 'Could not connect to the server: ' + err.message;
+          btn.disabled = false;
+        }
+      });
       document.getElementById('ticketDetailResolveBtn').addEventListener('click', async () => {
         const btn = document.getElementById('ticketDetailResolveBtn');
         const statusEl = document.getElementById('ticketDetailStatus');
