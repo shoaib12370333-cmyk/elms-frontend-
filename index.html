@@ -68,7 +68,13 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 15px;
     line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
+  :root { --topbar-h: 76px; }
+  /* taps on buttons and links never wait for a double-tap zoom */
+  a, button { touch-action: manipulation; }
+  html { scroll-padding-top: calc(var(--topbar-h) + 12px); }
 
   h1, h2, h3, .display {
     font-family: 'Inter', sans-serif;
@@ -605,17 +611,41 @@
     .app-shell { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
     .sidebar { height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
     .sidebar > * { flex-shrink: 0; }
-    .main { height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .main { height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; scrollbar-gutter: stable; scroll-padding-top: calc(var(--topbar-h) + 12px); }
+  }
+
+  /* Short screens (small laptops, a phone on its side): a slimmer menu and header leave more room for the page. */
+  @media (min-width: 721px) and (max-height: 860px) {
+    .sidebar { padding-top: 20px; padding-bottom: 20px; }
+    .sidebar-brand { margin-bottom: 16px; }
+    .sidebar-ebay-widget { margin-bottom: 12px; }
+    .sidebar-nav a { padding-top: 8px; padding-bottom: 8px; }
+    .sidebar-nav-label { margin-top: 12px; margin-bottom: 4px; }
+    .sidebar-upgrade { margin-top: 12px; }
+    .sidebar-footer { padding-top: 14px; }
+    .topbar { padding-top: 10px; padding-bottom: 10px; }
+    .topbar h1 { font-size: 20px; }
+  }
+  @media (min-width: 721px) and (max-height: 520px) {
+    .sidebar { width: 196px; padding-left: 12px; padding-right: 12px; }
+    .topbar { padding: 8px 20px; }
+    .topbar .subline { display: none; }
   }
 
   .topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 40px;
+    padding: 14px 32px;
     border-bottom: 1px solid var(--line);
     background: var(--paper-raised);
+    /* stays in view while the page scrolls under it (on a phone that keeps the menu button within reach) */
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    transition: box-shadow 0.2s ease;
   }
+  .topbar.is-stuck { box-shadow: 0 10px 22px -16px rgba(15,23,42,0.5); }
   .topbar h1 { font-size: 22px; }
   .topbar .subline {
     font-size: 13px;
@@ -1025,6 +1055,9 @@
   .ed-field label { display:block; font-size:12px; font-weight:600; color:var(--grey); margin-bottom:5px; line-height:1.35; }
   .ed-fields-grid.four .ed-field label { min-height:32px; }
   .ed-field input, .ed-field select { width:100%; box-sizing:border-box; }
+  .ed-field input:not(.editable-input):not([type=checkbox]):not([type=radio]), .qp-row input { padding:6px 8px; border:1.5px solid var(--grey-light); border-radius:6px; font:inherit; font-size:13px; color:var(--ink); background:#fff; }
+  .ed-field input:not(.editable-input):focus, .qp-row input:focus { outline:none; border-color:var(--blue); }
+  .ed-field input[readonly] { background:#f7f8fa; }
   .ed-field .req { color:var(--red); }
   .ed-info-bar { display:flex; gap:10px; align-items:center; margin-top:14px; padding:12px 14px; background:#EEF4FF; border:1px solid #DBE7FF; border-radius:10px; font-size:12.5px; color:#475467; }
   .ed-info-bar svg { width:17px; height:17px; color:var(--blue); flex-shrink:0; }
@@ -2140,10 +2173,11 @@
       top: 0;
       left: 0;
       bottom: 0;
+      width: min(292px, 86vw);
       z-index: 200;
       transform: translateX(-100%);
-      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+      box-shadow: none;
       padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
       /* more menu items than fit a short screen: the fixed menu scrolls by itself (phones only) */
       overflow-y: auto;
@@ -2151,7 +2185,32 @@
       -webkit-overflow-scrolling: touch;
     }
     .sidebar > * { flex-shrink: 0; }
-    .sidebar.open { transform: translateX(0); }
+    .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.15); }
+    .sidebar-nav a { padding: 12px 14px; font-size: 15px; }
+  }
+  .sidebar-close {
+    display: none;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    cursor: pointer;
+  }
+  .sidebar-close svg { width: 20px; height: 20px; }
+  .sidebar-close:hover { background: rgba(255,255,255,0.16); }
+  @media (max-width: 720px) { .sidebar-close { display: flex; } }
+  .sidebar-nav a:focus-visible, .sidebar-close:focus-visible, .mobile-menu-btn:focus-visible, .sidebar-upgrade .su-btn:focus-visible, .sidebar-ebay-connect-btn:focus-visible { outline: 2px solid #93C5FD; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar { transition: none !important; }
+    .sidebar-nav a, .sidebar-nav a:hover { transition: none; transform: none; }
+    .content > div { animation: none; }
   }
 
   /* ===== DRAFTS BALANCED SCREEN-FIT =====
@@ -2194,7 +2253,7 @@
   }
   .elms-drafts-inner-sidebar {
     position: sticky;
-    top: 14px;
+    top: calc(var(--topbar-h) + 14px);
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 12px;
@@ -2286,8 +2345,8 @@
   /* Separate "Show fields" sidebar: stays inside the page, scrolls on its own */
   .elms-fields-sidebar {
     position: sticky;
-    top: 14px;
-    max-height: calc(100vh - 40px);
+    top: calc(var(--topbar-h) + 14px);
+    max-height: calc(100vh - var(--topbar-h) - 40px);
     display: flex;
     flex-direction: column;
     background: #fff;
@@ -2631,7 +2690,12 @@
 
   /* ---------- Mobile fit (whole app) ---------- */
   @media (max-width:720px) {
-    html, body { overflow-x:hidden; }
+    html { overflow-x:hidden; }
+    /* "clip" hides a sideways overflow like "hidden" but does not turn the body into a scroller, which would stop the header from sticking */
+    body { overflow-x:hidden; overflow-x:clip; }
+    html.menu-open { overflow:hidden; }
+    /* iPhones zoom the page into any field with a text size under 16px and leave it zoomed (the screen looks cut off) */
+    input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not([type=hidden]):not([type=button]):not([type=submit]), select, textarea { font-size:16px !important; }
     .main { min-width:0; }
     .topbar { padding:10px 14px; gap:8px; }
     .topbar > div:not(.auth-area) { min-width:0; flex:1 1 auto; }
@@ -2709,6 +2773,10 @@
   .imp-tip small { display:block; margin-top:3px; font-size:12.5px; color:#475467; line-height:1.5; }
   @media (max-width:900px) { .imp-layout { grid-template-columns:minmax(0,1fr); } }
   @media (max-width:520px) { .imp-body { padding:16px; } .imp-head h1 { font-size:24px; } .imp-urlbox { height:50px; } .imp-tab { padding:10px 14px; } }
+  /* very narrow phones: the three tabs share the width instead of the last one being cut off */
+  @media (max-width:420px) { .imp-tabs { gap:2px; padding:8px 6px 0; } .imp-tab { flex:1 1 0; min-width:0; padding:10px 4px; font-size:13px; text-align:center; white-space:nowrap; } }
+  @media (max-width:400px) { .credit-balance-chip .cb-word { display:none; } .credit-balance-chip { padding:6px 9px; } }
+  @media (max-width:360px) { .topbar { padding:8px 10px; gap:6px; } .topbar h1 { font-size:16px; } .auth-area { gap:6px; } .notification-bell { width:34px; height:34px; } }
 
   /* ---------- Import history ---------- */
   .ih-head { margin-bottom:18px; }
@@ -2777,6 +2845,7 @@
   .ord-table td { padding:14px; border-bottom:1px solid #edf0f3; vertical-align:middle; }
   .ord-row { cursor:pointer; } .ord-row:hover td { background:#f6faff; }
   .ord-id { font-weight:700; color:#374151; word-break:break-all; }
+  @media (min-width:721px) { .ord-id { white-space:nowrap; word-break:normal; } }
   .ord-strong { font-weight:600; color:#374151; } .ord-sub { font-size:12px; color:#8a93a2; margin-top:2px; } .ord-sub.good, .good { color:#5b8f0e; } .ord-sub.bad, .bad { color:#E53238; }
   .ord-late { font-weight:700; color:#E53238; } .ord-soon { font-weight:700; color:#b7830a; }
   .ord-item { display:flex; align-items:center; gap:12px; min-width:0; } .ord-item.big { align-items:flex-start; }
@@ -2814,6 +2883,7 @@
     .ord-table, .ord-table tbody, .ord-table tr, .ord-table td { display:block; width:100%; box-sizing:border-box; }
     .ord-table tr { padding:12px 14px; border-bottom:8px solid var(--paper-raised); }
     .ord-table td { border:0; padding:6px 0; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; text-align:right; }
+    .ord-table td > div { min-width:0; overflow-wrap:anywhere; }
     .ord-table td::before { content:attr(data-label); flex:0 0 72px; text-align:left; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; }
     .ord-table td[data-label="Item"] { display:block; text-align:left; } .ord-table td[data-label="Item"]::before { display:none; }
     .ord-table td.ord-actions { display:block; text-align:left; } .ord-table td.ord-actions::before { display:none; } .ord-actions .ord-btn { width:100%; }
@@ -3061,7 +3131,7 @@
   /* ===== eBay price calculator ===== */
   .pc-layout { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:18px; align-items:start; }
   .pc-layout .st-card { margin-bottom:18px; }
-  .pc-col-right { position:sticky; top:14px; }
+  .pc-col-right { position:sticky; top:calc(var(--topbar-h) + 14px); }
   .pc-sect { font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:#0B4FA0; margin:4px 0 10px; display:flex; align-items:center; gap:8px; }
   .pc-sect::after { content:''; flex:1; height:1px; background:var(--line); }
   .pc-money { position:relative; }
@@ -3341,7 +3411,7 @@
   .dv-hero .dv-btn:not(.primary) { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.25); color:#fff; } .dv-hero .dv-btn:not(.primary):hover { background:rgba(255,255,255,.18); }
 
   /* stage strip / KPI strip */
-  .dv-stages, .lv-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(170px, 100%),1fr)); gap:12px; margin-bottom:16px; }
+  .dv-stages, .lv-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(150px, 100%),1fr)); gap:12px; margin-bottom:16px; }
   .dv-stage { position:relative; text-align:left; display:grid; grid-template-columns:auto 1fr; gap:2px 12px; align-items:center; padding:14px 16px; background:var(--dv-card); border:1.5px solid var(--dv-line); border-radius:16px; cursor:pointer; font-family:inherit; transition:border-color .15s, box-shadow .15s, transform .15s; }
   .dv-stage:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(15,23,42,.06); }
   .dv-stage i { grid-row:1 / span 2; width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-style:normal; font-size:18px; background:#E8F1FD; }
@@ -3499,7 +3569,7 @@
      conversation scroll, each inside its own box. (Other pages keep the normal page scroll.) */
   .app-shell.msg-frame { height:100vh; height:100dvh; min-height:0; overflow:hidden; }
   .app-shell.msg-frame .sidebar { height:100%; overflow-y:auto; scrollbar-width:thin; scrollbar-color:#334155 transparent; }
-  .app-shell.msg-frame .main { height:100%; min-height:0; overflow:hidden; }
+  .app-shell.msg-frame .main { height:100%; min-height:0; overflow:hidden; scrollbar-gutter:auto; }
   .app-shell.msg-frame .content { display:flex; flex-direction:column; min-height:0; overflow-y:auto; padding-top:14px; padding-bottom:14px; }
   .app-shell.msg-frame #page-messages { display:flex !important; flex-direction:column; flex:1 1 auto; min-height:0; }
   .app-shell.msg-frame .msg-shell { flex:1 1 auto; height:auto !important; min-height:320px; max-height:none; }
@@ -3786,6 +3856,9 @@
 
 <div class="app-shell" id="appShell" style="display:none;">
   <aside class="sidebar" id="appSidebar">
+    <button type="button" class="sidebar-close" id="sidebarCloseBtn" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+    </button>
     <div class="sidebar-brand">
       <img class="logo-img" src="/logo-wordmark.png" alt="ELMS" height="34">
       <span class="tag">eBay Listing &amp; Management System</span>
@@ -3914,7 +3987,7 @@
         </div>
         <a href="#" class="credit-balance-chip" id="creditBalanceChip" data-page="pricing" style="display:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4"/><path d="M9 15a3 3 0 0 0 6 0"/></svg>
-          <span id="creditBalanceAmount">0</span> credits
+          <span id="creditBalanceAmount">0</span><span class="cb-word">credits</span>
         </a>
         <div class="user-chip" id="userChip">
           <button class="user-chip-trigger" id="userChipTrigger" type="button" aria-haspopup="true" aria-expanded="false">
@@ -5386,6 +5459,16 @@
     try { window.scrollTo(opts); document.querySelector('.main')?.scrollTo(opts); } catch (_) { /* older browsers keep the position */ }
   }
 
+  function revealActiveNav() {
+    const sb = document.getElementById('appSidebar');
+    const a = sb && sb.querySelector('.sidebar-nav a.active');
+    if (!a || sb.scrollHeight <= sb.clientHeight) return;
+    const s = sb.getBoundingClientRect();
+    const r = a.getBoundingClientRect();
+    if (r.top < s.top + 8) sb.scrollTop -= (s.top + 8 - r.top);
+    else if (r.bottom > s.bottom - 8) sb.scrollTop += (r.bottom - (s.bottom - 8));
+  }
+
   function showPage(page, opts = {}) {
     if (!PAGE_TITLES[page]) page = 'dashboard';
     if (document.querySelector('.sidebar-nav a.active')?.getAttribute('data-page') !== page) scrollPageTop(false);
@@ -5399,6 +5482,7 @@
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
       a.classList.toggle('active', a.getAttribute('data-page') === page);
     });
+    revealActiveNav();
     const [title, subline] = PAGE_TITLES[page];
     document.getElementById('pageTitle').textContent = title;
     document.getElementById('pageSubline').textContent = subline;
@@ -5438,6 +5522,8 @@
   function openMobileSidebar() {
     document.getElementById('appSidebar').classList.add('open');
     document.getElementById('sidebarScrim').classList.add('open');
+    document.getElementById('mobileMenuBtn').setAttribute('aria-expanded', 'true');
+    document.documentElement.classList.add('menu-open');
     // Without this, the page underneath keeps scrolling while the drawer is open (most
     // noticeable on iOS Safari) - it looks like the background is sliding instead of the
     // sidebar itself. Same pattern as the order detail drawer (openOrderDetail/closeOrderDrawer).
@@ -5446,10 +5532,48 @@
   function closeMobileSidebar() {
     document.getElementById('appSidebar').classList.remove('open');
     document.getElementById('sidebarScrim').classList.remove('open');
+    document.getElementById('mobileMenuBtn').setAttribute('aria-expanded', 'false');
+    document.documentElement.classList.remove('menu-open');
     document.body.style.overflow = '';
   }
   document.getElementById('mobileMenuBtn').addEventListener('click', openMobileSidebar);
   document.getElementById('sidebarScrim').addEventListener('click', closeMobileSidebar);
+  document.getElementById('sidebarCloseBtn')?.addEventListener('click', closeMobileSidebar);
+  const menuIsOpen = () => document.getElementById('appSidebar').classList.contains('open');
+  // Escape puts the menu away; so does turning a phone to a wide screen (the menu is a permanent column there and the page must scroll again).
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menuIsOpen()) closeMobileSidebar(); });
+  (function closeMenuOnWideScreen() {
+    const mq = window.matchMedia('(min-width: 721px)');
+    const onChange = (e) => { if (e.matches && menuIsOpen()) closeMobileSidebar(); };
+    if (mq.addEventListener) mq.addEventListener('change', onChange); else if (mq.addListener) mq.addListener(onChange);
+  })();
+  // Swiping the open menu to the left puts it away.
+  (function swipeMenuAway() {
+    const sb = document.getElementById('appSidebar');
+    let x0 = null, y0 = null;
+    sb.addEventListener('touchstart', (e) => { const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; }, { passive: true });
+    sb.addEventListener('touchend', (e) => {
+      if (x0 == null) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - x0, dy = t.clientY - y0;
+      x0 = y0 = null;
+      if (dx < -60 && Math.abs(dx) > Math.abs(dy) * 1.5) closeMobileSidebar();
+    }, { passive: true });
+  })();
+
+  // The header stays in view: tell the CSS how tall it is (things that stick sit below it) and give it a soft shadow once the page has scrolled under it.
+  (function watchTopbar() {
+    const bar = document.querySelector('.topbar');
+    const main = document.querySelector('.main');
+    if (!bar || !main) return;
+    const size = () => document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px');
+    const shade = () => bar.classList.toggle('is-stuck', main.scrollTop > 2 || (window.pageYOffset || 0) > 2);
+    if (window.ResizeObserver) new ResizeObserver(size).observe(bar); else window.addEventListener('resize', size);
+    main.addEventListener('scroll', shade, { passive: true });
+    window.addEventListener('scroll', shade, { passive: true });
+    size();
+    shade();
+  })();
 
   const btn = document.getElementById('fetchBtn');
   const resultDiv = document.getElementById('result');
