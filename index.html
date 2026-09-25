@@ -5067,10 +5067,24 @@
           <div class="ad-banner" id="adminMailStatus">Loading&hellip;</div>
           <section class="st-card">
             <div class="st-head">
+              <div class="st-ico green">&#9993;</div>
+              <div class="st-head-txt"><h2>Send a mail</h2><p>One mail to any email address, from the sender you choose. It goes out in the ELMS look with a reply address. Only senders that are set up on the server are listed.</p></div>
+            </div>
+            <div class="st-grid">
+              <div class="st-field"><label>From</label><select class="st-input" id="mailFrom"><option value="">Loading&hellip;</option></select></div>
+              <div class="st-field"><label>To (one email address)</label><input class="st-input" id="mailTo" type="email" placeholder="name@example.com" autocomplete="off" /></div>
+            </div>
+            <div class="st-field" style="margin-top:12px;"><label>Subject</label><input class="st-input" id="mailSubject" maxlength="150" /></div>
+            <div class="st-field" style="margin-top:12px;"><label>Message (plain text, blank line = new paragraph)</label><textarea class="st-input" id="mailBody" rows="6" maxlength="8000" style="height:auto;padding:10px 12px;"></textarea></div>
+            <div class="st-actions"><button class="st-btn primary" id="mailSendBtn" type="button">Send mail</button><div id="mailSendStatus"></div></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
               <div class="st-ico blue">&#9993;</div>
               <div class="st-head-txt"><h2>Send an announcement</h2><p>One mail to every user who has not unsubscribed. It is sent slowly in small batches so your mail provider's limits are never hit.</p></div>
             </div>
-            <div class="st-field"><label>Subject</label><input class="st-input" id="annSubject" maxlength="150" placeholder="e.g. New: AI item specifics are live" /></div>
+            <div class="st-field"><label>Send from</label><select class="st-input" id="annFrom"></select></div>
+            <div class="st-field" style="margin-top:12px;"><label>Subject</label><input class="st-input" id="annSubject" maxlength="150" placeholder="e.g. New: AI item specifics are live" /></div>
             <div class="st-field" style="margin-top:12px;"><label>Message (plain text, blank line = new paragraph)</label><textarea class="st-input" id="annBody" rows="7" maxlength="8000" style="height:auto;padding:10px 12px;"></textarea></div>
             <p class="st-hint" id="annHint"></p>
             <div class="st-actions">
@@ -14944,8 +14958,18 @@ async function autoSuggestEmptyDraftCategories() {
       const [res, lres] = await Promise.all([apiFetch('/api/admin/announcements'), apiFetch('/api/admin/settings/limits')]);
       const d = await res.json(); const l = await lres.json();
       if (!res.ok || !d.success) throw new Error(d.error || 'Could not load announcements.');
+      const senders = Array.isArray(d.senders) ? d.senders : [];
+      const optionsHtml = senders.length ? senders.map((s) => '<option value="' + escapeAttr(s.id) + '">' + escapeHtml(s.label + ' \u00b7 ' + s.address) + '</option>').join('') : '<option value="">No sender is set up on the server</option>';
+      ['mailFrom', 'annFrom'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const keep = el.value;
+        el.innerHTML = optionsHtml;
+        if (keep && senders.some((s) => s.id === keep)) el.value = keep;
+        else if (senders.some((s) => s.id === 'support')) el.value = 'support';
+      });
       banner.className = 'ad-banner ok';
-      banner.textContent = 'Announcements are sent from ' + (d.from || 'the SMTP address') + '. ' + d.recipients + ' user(s) will receive them. Sent today: ' + d.sentToday + ' of ' + d.limits.mailDailyCap + '.';
+      banner.textContent = 'Announcements are sent from ' + (d.from || 'the SMTP address') + ' unless you choose another sender. ' + d.recipients + ' user(s) will receive them. Sent today: ' + d.sentToday + ' of ' + d.limits.mailDailyCap + '.';
       document.getElementById('annHint').textContent = 'Sends ' + d.limits.mailBatchSize + ' mail(s) per minute, at most ' + d.limits.mailDailyCap + ' per day. ' + d.recipients + ' recipient(s) take about ' + Math.max(1, Math.ceil(d.recipients / Math.min(d.limits.mailBatchSize * 60 * 24, d.limits.mailDailyCap))) + ' day(s) at most.';
       if (lres.ok && l.success) {
         document.getElementById('limMailBatch').value = l.limits.mailBatchSize;
@@ -14968,7 +14992,21 @@ async function autoSuggestEmptyDraftCategories() {
       if (active) annTimer = setTimeout(() => { if (document.querySelector('[data-admin-panel="mail"]')?.style.display !== 'none') loadAdminMail(); }, 8000);
     } catch (err) { banner.className = 'ad-banner bad'; banner.textContent = err.message; }
   }
-  function annPayload() { return { subject: document.getElementById('annSubject').value.trim(), body: document.getElementById('annBody').value.trim() }; }
+  function annPayload() { return { subject: document.getElementById('annSubject').value.trim(), body: document.getElementById('annBody').value.trim(), sender: document.getElementById('annFrom').value || undefined }; }
+  document.getElementById('mailSendBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('mailSendBtn'), st = document.getElementById('mailSendStatus');
+    const from = document.getElementById('mailFrom').value, to = document.getElementById('mailTo').value.trim();
+    if (!from) { st.className = 'error'; st.textContent = 'No sender is set up on the server.'; return; }
+    if (!(await elmsConfirm('Send this mail to ' + to + ' from ' + document.getElementById('mailFrom').selectedOptions[0].textContent + '?', { title: 'Send mail', okText: 'Send' }))) return;
+    btn.disabled = true; st.className = ''; st.textContent = 'Sending\u2026';
+    try {
+      const res = await apiFetch('/api/admin/mail/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to, subject: document.getElementById('mailSubject').value.trim(), body: document.getElementById('mailBody').value.trim() }) });
+      const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not send the mail.');
+      st.className = 'success'; st.textContent = 'Sent to ' + d.to + '.';
+      document.getElementById('mailSubject').value = ''; document.getElementById('mailBody').value = '';
+    } catch (err) { st.className = 'error'; st.textContent = err.message; }
+    finally { btn.disabled = false; }
+  });
   document.getElementById('annTestBtn')?.addEventListener('click', async () => {
     const btn = document.getElementById('annTestBtn'), st = document.getElementById('annStatus');
     btn.disabled = true; st.className = ''; st.textContent = 'Sending test\u2026';
