@@ -8288,6 +8288,8 @@
 
       const allDrafts = (data.listings || []).map(veroTag);
       draftListingMap = new Map(allDrafts.map((item) => [String(item.id), item]));
+      draftSelected = new Set();
+      draftFilteredIds = [];
       setTimeout(openDraftFromUrl, 0);
       let draftVeroOnly = false;
       const veroCount = () => allDrafts.filter((l) => l._vero.terms.length).length;
@@ -8342,7 +8344,7 @@
         const list = document.getElementById('draftProductList');
         list.classList.toggle('dv-rows', dvView === 'rows'); list.classList.toggle('dv-grid', dvView === 'grid');
       }));
-      document.getElementById('bulkClearBtn')?.addEventListener('click', () => { document.querySelectorAll('#draftsContent .dv-check').forEach((cb) => { cb.checked = false; }); updateBulkBar(); });
+      document.getElementById('bulkClearBtn')?.addEventListener('click', () => { draftSelected.clear(); syncDraftChecks(); updateBulkBar(); });
 
       const DRAFTS_PAGE_SIZE = 20;
       let draftPage = 1;
@@ -8363,6 +8365,10 @@
           if (sort === 'profit') return (Number(b.sell_price || 0) - Number(b.amazon_price || 0)) - (Number(a.sell_price || 0) - Number(a.amazon_price || 0));
           return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
         });
+        draftFilteredIds = filtered.map((l) => String(l.id));
+        // A draft the current search / stage hides is no longer selected, so a bulk action never touches something that is not on screen.
+        const shown = new Set(draftFilteredIds);
+        draftSelected.forEach((id) => { if (!shown.has(id)) draftSelected.delete(id); });
         const pages = Math.max(1, Math.ceil(filtered.length / DRAFTS_PAGE_SIZE));
         if (draftPage > pages) draftPage = pages;
         const startIdx = (draftPage - 1) * DRAFTS_PAGE_SIZE;
@@ -8387,9 +8393,8 @@
             footer.querySelectorAll('[data-draft-page]').forEach((btn) => btn.addEventListener('click', () => { if (btn.disabled) return; draftPage = Number(btn.getAttribute('data-draft-page')); renderDraftProductList(); scrollPageTop(true); }));
           }
         }
-        const selectAll = document.getElementById('draftSelectAll');
-        if (selectAll) selectAll.checked = false;
         wireDraftRows();
+        updateBulkBar();
       };
       ['draftProductSearch','draftStatusFilter','draftSort'].forEach((id) => document.getElementById(id)?.addEventListener(id === 'draftSort' ? 'change' : 'input', () => {
         if (id === 'draftStatusFilter') {
@@ -8431,7 +8436,9 @@
         setTimeout(() => document.getElementById('amazonUrl')?.focus(), 50);
       });
       document.getElementById('draftSelectAll')?.addEventListener('change', (e) => {
-        document.querySelectorAll('#draftsContent .dv-check').forEach((cb) => { cb.checked = e.target.checked; });
+        if (e.target.checked) draftFilteredIds.forEach((id) => draftSelected.add(id));
+        else draftFilteredIds.forEach((id) => draftSelected.delete(id));
+        syncDraftChecks();
         updateBulkBar();
       });
       document.getElementById('draftAddProductBtn')?.addEventListener('click', () => {
@@ -8526,6 +8533,10 @@
   // per-product settings with PATCH /api/listings/:id/settings. Field names (data-ui-field)
   // are snake_case; request bodies use the camelCase names the API already uses.
   let draftListingMap = new Map();
+  // The drafts ticked in the Drafts page. Kept here (not read from the checkboxes) because the list shows 20 at a time:
+  // a tick on page 1 must still count on page 2, and "Select all" must mean every draft the current view shows.
+  let draftSelected = new Set();
+  let draftFilteredIds = []; // ids the current search / stage / VeRO filter shows, across all pages
 
   function draftSupplierLabel(l) {
     const raw = String(l.supplier_country || l.supplierCountry || '').trim();
@@ -9219,7 +9230,11 @@ async function autoSuggestEmptyDraftCategories() {
         el.addEventListener('click', (e) => e.stopPropagation());
       });
 
-      checkbox.addEventListener('change', updateBulkBar);
+      checkbox.checked = draftSelected.has(String(id));
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) draftSelected.add(String(id)); else draftSelected.delete(String(id));
+        updateBulkBar();
+      });
 
       // Expandable details panel (separate <tr class="elms-expand-row"> right after this row).
       // Its inputs mirror the row's hidden data-field inputs, and "Save changes" simply
@@ -9416,6 +9431,8 @@ async function autoSuggestEmptyDraftCategories() {
 
           if (expandRow) expandRow.remove();
           row.remove();
+          draftSelected.delete(String(id));
+          draftFilteredIds = draftFilteredIds.filter((x) => x !== String(id));
           updateBulkBar();
         } catch (err) {
           alert('Could not connect to the server: ' + err.message);
@@ -9613,16 +9630,27 @@ async function autoSuggestEmptyDraftCategories() {
     loadDrafts();
   }
 
+  // Ticks the visible cards from the selection (after "Select all" / "Clear").
+  function syncDraftChecks() {
+    document.querySelectorAll('#draftsContent .dv-card').forEach((card) => {
+      const cb = card.querySelector('.dv-check');
+      if (cb) cb.checked = draftSelected.has(String(card.getAttribute('data-listing-id')));
+    });
+  }
+
   function updateBulkBar() {
-    const boxes = document.querySelectorAll('#draftsContent .dv-check');
-    const checked = document.querySelectorAll('#draftsContent .dv-check:checked');
     const bar = document.getElementById('draftBulkBar');
     const countLabel = document.getElementById('draftSelectedCount');
     const selectAll = document.getElementById('draftSelectAll');
-    if (selectAll) selectAll.checked = boxes.length > 0 && checked.length === boxes.length;
+    const total = draftSelected.size;
+    const inView = draftFilteredIds.filter((id) => draftSelected.has(id)).length;
+    if (selectAll) {
+      selectAll.checked = draftFilteredIds.length > 0 && inView === draftFilteredIds.length;
+      selectAll.indeterminate = inView > 0 && inView < draftFilteredIds.length;
+    }
     if (!bar) return;
-    bar.classList.toggle('has-selection', checked.length > 0);
-    if (countLabel) countLabel.textContent = `${checked.length} selected`;
+    bar.classList.toggle('has-selection', total > 0);
+    if (countLabel) countLabel.textContent = `${total} selected`;
   }
 
   function wireBulkBar() {
@@ -9635,10 +9663,9 @@ async function autoSuggestEmptyDraftCategories() {
     if (bulkPublishBtn.dataset.wired) return;
     bulkPublishBtn.dataset.wired = '1';
 
+    // Every selected draft, on every page (not only the ones drawn on the page being looked at).
     function getSelectedIds() {
-      return Array.from(document.querySelectorAll('#draftsContent .dv-check:checked')).map(
-        (cb) => cb.closest('.dv-card').getAttribute('data-listing-id')
-      );
+      return Array.from(draftSelected).filter((id) => draftListingMap.has(id));
     }
 
     bulkPublishBtn.addEventListener('click', async () => {
