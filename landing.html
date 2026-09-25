@@ -890,6 +890,13 @@
 })();
 </script>
 <script>
+// An affiliate's link (elmstool.com/?aff=CODE): remember it for 60 days; the sign-up sends it, so the affiliate earns on this person's payments.
+(function () {
+  try {
+    var c = String(new URLSearchParams(location.search).get('aff') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
+    if (c) localStorage.setItem('elmsAff', JSON.stringify({ code: c, at: Date.now() }));
+  } catch (e) { /* no storage: the link still works for the referral */ }
+})();
 // A friend's link (elmstool.com/?ref=CODE): remember the code so the sign-up form has it, and show what it gives.
 (function () {
   var code = '';

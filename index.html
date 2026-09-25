@@ -3260,6 +3260,10 @@
   }
 
   /* ===== Admin panel ===== */
+  .af-facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr)); gap:12px; margin:0 0 16px; } .af-facts div { background:#F8FAFC; border:1px solid var(--line); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:2px; } .af-facts b { font-size:18px; } .af-facts span { font-size:12.5px; color:var(--grey); }
+  .af-link { display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 8px; } .af-link input { flex:1 1 260px; min-width:0; }
+  .af-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr)); gap:12px; margin:0 0 16px; } .af-stat { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:4px; } .af-stat span { font-size:12.5px; color:var(--grey); font-weight:600; } .af-stat b { font-size:22px; letter-spacing:-.02em; } .af-stat.good { background:#F0FAF4; border-color:#BFE3CB; }
+  .af-addr { word-break:break-all; font-size:12px; }
   .ad-addadmin { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; } .ad-addadmin .st-input { flex:1 1 240px; min-width:0; }
   .st-status { min-height:18px; margin:0 0 8px; font-size:13px; font-weight:600; } .st-status.error { color:#B42318; } .st-status.success { color:#3F6208; }
   .ad-adminrow { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px 0; border-top:1px solid var(--line); } .ad-adminrow .rfa-def { display:block; }
@@ -3945,6 +3949,10 @@
       <a href="#" data-page="referrals">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
         Refer &amp; Earn
+      </a>
+      <a href="#" data-page="affiliate">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9.5a3 3 0 0 0-3-1.5c-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2a3.2 3.2 0 0 1-3.2-1.5"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+        Affiliate
       </a>
       <a href="#" data-page="pricing">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -4680,6 +4688,16 @@
         </div>
       </div>
 
+      <div id="page-affiliate" style="display:none;">
+        <div class="st-top">
+          <div>
+            <h1>Affiliate</h1>
+            <div class="sub">Promote ELMS and earn a commission on every payment of the people who sign up through your link.</div>
+          </div>
+        </div>
+        <div id="affiliateContent"><p class="state-msg">Loading&hellip;</p></div>
+      </div>
+
       <div id="page-referrals" style="display:none;">
         <div class="st-top">
           <div>
@@ -4778,6 +4796,7 @@
           <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
           <button class="ad-tab" data-admin-tab="referrals" type="button">Referrals</button>
           <button class="ad-tab" data-admin-tab="vouchers" type="button">Vouchers</button>
+          <button class="ad-tab" data-admin-tab="affiliates" type="button">Affiliates <span class="ad-count" id="adminAffCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="mail" type="button">Mail</button>
           <button class="ad-tab" data-admin-tab="tickets" type="button">Support <span class="ad-count" id="adminTicketsCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="security" type="button">Security</button>
@@ -5126,6 +5145,31 @@
           </div>
         </div>
 
+        <!-- Affiliates -->
+        <div class="ad-panel" data-admin-panel="affiliates" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico green">&#128184;</div>
+              <div class="st-head-txt"><h2>Affiliate programme</h2><p>Users apply, you approve. An approved affiliate earns a percentage of every payment of the people who sign up through their link. Commissions wait in a hold, then the affiliate asks for a payout in USDT or USDC and you send it within 24 to 48 hours.</p></div>
+            </div>
+            <div class="st-grid">
+              <div class="st-field"><label>Programme</label><select class="st-input" id="afEnabled"><option value="true">Open</option><option value="false">Closed</option></select></div>
+              <div class="st-field"><label>Default commission (%)</label><input class="st-input" type="number" id="afPercent" min="0" max="90" step="0.5" /></div>
+              <div class="st-field"><label>Hold before a commission can be paid (days)</label><input class="st-input" type="number" id="afHold" min="0" max="90" step="1" /></div>
+              <div class="st-field"><label>Minimum payout (USD)</label><input class="st-input" type="number" id="afMin" min="1" step="1" /></div>
+            </div>
+            <div class="st-actions"><button class="st-btn primary" id="afSaveSettings" type="button">Save</button><div id="afSettingsStatus"></div></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head"><div class="st-ico yellow">&#128179;</div><div class="st-head-txt"><h2>Payout requests</h2><p>Send the amount to the address below (check the network), then paste the transaction hash and mark it paid.</p></div></div>
+            <div id="afPayouts"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head"><div class="st-ico blue">&#129309;</div><div class="st-head-txt"><h2>Affiliates and applications</h2><p>Leave the commission empty to use the default.</p></div></div>
+            <div id="afList"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
+        </div>
+
         <!-- Admins (super admin only) -->
         <div class="ad-panel" data-admin-panel="admins" style="display:none;">
           <section class="st-card">
@@ -5365,6 +5409,14 @@
   function cleanRefCode(v) { return String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24); }
   function storedRefCode() { try { return cleanRefCode(localStorage.getItem(REF_KEY)); } catch (_) { return ''; } }
   function fmtPct(n) { return String(Number(Number(n).toFixed(2))); }
+  // An affiliate's link (elmstool.com/?aff=CODE): remembered for 60 days and sent with the sign-up; whoever signs up belongs to that affiliate.
+  const AFF_KEY = 'elmsAff';
+  function storedAffCode() {
+    try { const v = JSON.parse(localStorage.getItem(AFF_KEY) || 'null'); return v && v.code && Date.now() - v.at < 60 * 86400000 ? String(v.code).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24) : ''; } catch (_) { return ''; }
+  }
+  (function captureAffFromLink() {
+    try { const c = new URLSearchParams(location.search).get('aff'); const code = String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24); if (code) localStorage.setItem(AFF_KEY, JSON.stringify({ code, at: Date.now() })); } catch (_) { /* no storage: the referral still works without it */ }
+  })();
   (function captureRefFromLink() {
     try { const c = cleanRefCode(new URLSearchParams(location.search).get('ref')); if (c) localStorage.setItem(REF_KEY, c); } catch (_) { /* no storage: the code can still be typed */ }
   })();
@@ -5374,7 +5426,7 @@
   }
   // After a sign-up: forget the stored code and tell the person what happened to it.
   function afterSignupReferral(referral) {
-    try { localStorage.removeItem(REF_KEY); } catch (_) { /* nothing stored */ }
+    try { localStorage.removeItem(REF_KEY); localStorage.removeItem(AFF_KEY); } catch (_) { /* nothing stored */ }
     if (!referral) return;
     if (referral.applied) {
       showToast('Referral applied', Number(referral.discountPercent) > 0 ? `${fmtPct(referral.discountPercent)}% off your first purchase - it is applied at checkout.` : 'Your referral code was added.', 'success');
@@ -5446,6 +5498,7 @@
     'research-tools': ['Research Tools', 'Keyword ranks, reviews, categories, and more - live from Amazon.'],
     calculator: ['eBay Price Calculator', 'Find the price that leaves your profit after eBay fees.'],
     referrals: ['Refer & Earn', 'Invite other sellers - they save, you earn.'],
+    affiliate: ['Affiliate', 'Earn a commission on every payment of the people you bring.'],
     vouchers: ['Vouchers', 'Gifts from ELMS: credits, plans, eBay accounts and discounts.'],
     settings: ['Settings', 'Connect your eBay account and set your business policies.'],
     pricing: ['Buy Credits', 'Purchase credits to import products and monitor stock.'],
@@ -5458,7 +5511,7 @@
   // a bookmark or a shared link opens the same page instead of the dashboard.
   const PAGE_PATHS = {
     dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders',
-    messages: '/messages', history: '/import-history', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer', vouchers: '/vouchers',
+    messages: '/messages', history: '/import-history', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer', affiliate: '/affiliate', vouchers: '/vouchers',
     settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin',
   };
   const PATH_ALIASES = { '/drafts': 'drafts', '/listings': 'listings', '/order': 'orders', '/message': 'messages', '/history': 'history', '/pricing': 'pricing', '/credits': 'pricing', '/index.html': 'dashboard', '/': 'dashboard' };
@@ -5526,7 +5579,7 @@
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history' || page === 'admin');
-    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'calculator', 'referrals', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
+    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'calculator', 'referrals', 'affiliate', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
@@ -5546,6 +5599,7 @@
     if (page === 'research-tools') loadResearchToolsPage();
     if (page === 'calculator') loadCalculatorPage();
     if (page === 'referrals') loadReferralsPage();
+    if (page === 'affiliate') loadAffiliatePage();
     if (page === 'vouchers') loadVouchersPage();
     if (page === 'history') loadHistory();
     if (page === 'settings') loadSettingsPage();
@@ -7118,7 +7172,7 @@
       const res = await fetchWaitingForServer(`${API_BASE}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: response.credential, referralCode: signupReferralCode() }),
+        body: JSON.stringify({ credential: response.credential, referralCode: signupReferralCode(), affiliateCode: storedAffCode() || undefined }),
       });
       const data = await res.json();
 
@@ -7355,7 +7409,7 @@
       const res = await fetchWaitingForServer(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password, referralCode: signupReferralCode() }),
+        body: JSON.stringify({ username, email, password, referralCode: signupReferralCode(), affiliateCode: storedAffCode() || undefined }),
       }, () => { statusEl.className = 'auth-status'; statusEl.textContent = SERVER_WAKE_MESSAGE; });
       const data = await res.json();
 
@@ -13665,6 +13719,194 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
+  // ---------- Affiliate (the user's page) ----------
+  const afUsd = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  async function afCopy(text, what) {
+    try { await navigator.clipboard.writeText(text); showToast('Copied', what + ' copied.', 'success'); } catch (_) { window.prompt('Copy this:', text); }
+  }
+  async function afCall(path, method, body) {
+    const res = await apiFetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'That did not work.');
+    return data;
+  }
+  function afNetworkOptions(networks, selected) {
+    return networks.map((n) => `<option value="${escapeAttr(n.id)}"${n.id === selected ? ' selected' : ''}>${escapeHtml(n.label)}</option>`).join('');
+  }
+  function afStateBadge(state) {
+    const map = { hold: ['draft', 'In hold'], available: ['published', 'Ready'], requested: ['draft', 'Payout requested'], paid: ['published', 'Paid'], void: ['draft', 'Cancelled'] };
+    const [cls, label] = map[state] || ['draft', state];
+    return `<span class="status-badge ${cls}">${label}</span>`;
+  }
+
+  async function loadAffiliatePage() {
+    const box = document.getElementById('affiliateContent');
+    box.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
+    try {
+      const data = await afCall('/api/affiliate/me', 'GET');
+      renderAffiliate(box, data.affiliate);
+    } catch (err) {
+      box.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function renderAffiliate(box, a) {
+    const applyForm = (title, intro) => `
+      <section class="st-card">
+        <div class="st-head"><div class="st-ico green">&#128184;</div><div class="st-head-txt"><h2>${title}</h2><p>${intro}</p></div></div>
+        <div class="af-facts">
+          <div><b>${a.defaultPercent}%</b><span>of every payment, for as long as your people keep paying</span></div>
+          <div><b>USDT or USDC</b><span>paid to your wallet within 24 to 48 hours of your request</span></div>
+          <div><b>${afUsd(a.minPayoutUsd)}</b><span>minimum payout, after a ${a.holdDays}-day hold on each commission</span></div>
+        </div>
+        <div class="st-grid">
+          <div class="st-field"><label>Where should we pay you?</label><select class="st-input" id="afNetwork">${afNetworkOptions(a.networks, a.network)}</select></div>
+          <div class="st-field"><label>Wallet address</label><input class="st-input mono" id="afAddress" type="text" placeholder="Paste the address for that network" value="${escapeAttr(a.address || '')}" autocomplete="off" /></div>
+        </div>
+        <div class="st-field"><label>How will you promote ELMS? (optional)</label><textarea class="st-input" id="afPromo" rows="3" maxlength="600" placeholder="YouTube channel, Facebook group, your own store customers..."></textarea></div>
+        <p class="meta-line">Send funds only to an address you control, on the network you chose: a wrong network cannot be recovered. Self-referrals, fake sign-ups and spam cancel your commissions.</p>
+        <div class="st-actions"><button class="st-btn primary" id="afApply" type="button">Apply to be an affiliate</button><div id="afApplyStatus"></div></div>
+      </section>`;
+    if (!a.enabled && a.status === 'none') { box.innerHTML = '<div class="empty-state">The affiliate programme is not open right now.</div>'; return; }
+    if (a.status === 'none' || a.status === 'rejected') {
+      box.innerHTML = (a.status === 'rejected' ? `<div class="ad-banner" style="background:#FEF3F2;border-color:#FECDCA;color:#B42318;">Your last application was not approved.${a.note ? ' ' + escapeHtml(a.note) : ''} You can apply again.</div>` : '') + applyForm('Become an affiliate', 'Apply, and once we approve you, you get your own link.');
+      document.getElementById('afApply').addEventListener('click', async () => {
+        const btn = document.getElementById('afApply'); const st = document.getElementById('afApplyStatus');
+        btn.disabled = true; st.className = ''; st.textContent = 'Sending\u2026';
+        try {
+          const d = await afCall('/api/affiliate/apply', 'POST', { network: document.getElementById('afNetwork').value, address: document.getElementById('afAddress').value.trim(), promo: document.getElementById('afPromo').value.trim() });
+          renderAffiliate(box, d.affiliate);
+        } catch (err) { st.className = 'error'; st.textContent = err.message; btn.disabled = false; }
+      });
+      return;
+    }
+    if (a.status === 'pending') {
+      box.innerHTML = `<section class="st-card"><div class="st-head"><div class="st-ico yellow">&#9203;</div><div class="st-head-txt"><h2>Your application is being reviewed</h2><p>We will email you as soon as it is approved. Your payout address on file: ${escapeHtml(a.address || '')}</p></div></div></section>`;
+      return;
+    }
+    const t = a.totals || {};
+    const label = (id) => (a.networks.find((n) => n.id === id) || {}).label || id || '';
+    box.innerHTML = `
+      ${a.status === 'suspended' ? '<div class="ad-banner" style="background:#FEF3F2;border-color:#FECDCA;color:#B42318;">Your affiliate account is paused. You cannot earn or ask for payouts until it is active again.</div>' : ''}
+      <section class="st-card">
+        <div class="st-head"><div class="st-ico green">&#128279;</div><div class="st-head-txt"><h2>Your link</h2><p>Anyone who signs up through it is yours for life: you earn ${a.percent}% of every payment they make.</p></div></div>
+        <div class="af-link"><input class="st-input mono" id="afLink" readonly value="${escapeAttr(a.link)}" /><button class="st-btn primary" id="afCopyLink" type="button">Copy link</button></div>
+        <div class="meta-line">Your code: <b>${escapeHtml(a.code)}</b></div>
+      </section>
+      <div class="af-stats">
+        <div class="af-stat"><span>Sign-ups</span><b>${Number(t.signups || 0)}</b></div>
+        <div class="af-stat"><span>Paying customers</span><b>${Number(t.customers || 0)}</b></div>
+        <div class="af-stat"><span>Earned in total</span><b>${afUsd(t.earned)}</b></div>
+        <div class="af-stat"><span>In hold (${a.holdDays} days)</span><b>${afUsd(t.hold)}</b></div>
+        <div class="af-stat good"><span>Ready to pay out</span><b>${afUsd(t.available)}</b></div>
+        <div class="af-stat"><span>Paid to you</span><b>${afUsd(t.paid)}</b></div>
+      </div>
+      <section class="st-card">
+        <div class="st-head"><div class="st-ico yellow">&#128179;</div><div class="st-head-txt"><h2>Payout</h2><p>Minimum ${afUsd(a.minPayoutUsd)}. Payouts are sent in USDT or USDC within 24 to 48 hours of your request.</p></div></div>
+        ${a.openPayout ? `<div class="ad-banner" style="background:#EEF4FF;border-color:#C7D7FE;color:#1D3A8A;">Payout requested: ${afUsd(a.openPayout.amountUsd)} to ${escapeHtml(label(a.openPayout.network))}. We are sending it now.</div>` : ''}
+        <div class="st-grid">
+          <div class="st-field"><label>Network</label><select class="st-input" id="afNetwork">${afNetworkOptions(a.networks, a.network)}</select></div>
+          <div class="st-field"><label>Wallet address</label><input class="st-input mono" id="afAddress" type="text" value="${escapeAttr(a.address || '')}" autocomplete="off" /></div>
+        </div>
+        <div class="st-actions">
+          <button class="st-btn" id="afSaveAddress" type="button"${a.openPayout ? ' disabled' : ''}>Save address</button>
+          <button class="st-btn primary" id="afRequest" type="button"${a.canRequest ? '' : ' disabled'}>Request payout ${a.canRequest ? '(' + afUsd(t.available) + ')' : ''}</button>
+          <div id="afPayStatus"></div>
+        </div>
+      </section>
+      <section class="st-card">
+        <div class="st-head"><div class="st-ico blue">&#128200;</div><div class="st-head-txt"><h2>Commissions</h2><p>Each payment of the people you brought. Customers are shown partly hidden.</p></div></div>
+        ${a.commissions.length ? `<div class="st-table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Customer</th><th>They paid</th><th>You earn</th><th>Status</th></tr></thead><tbody>${a.commissions.map((c) => `<tr><td>${escapeHtml(new Date(c.createdAt).toLocaleDateString())}</td><td>${escapeHtml(c.customer)}</td><td>${afUsd(c.paidUsd)}</td><td><b>${afUsd(c.commissionUsd)}</b> <span class="rfa-def">${c.percent}%</span></td><td>${afStateBadge(c.state)}${c.state === 'hold' ? `<span class="rfa-def">ready ${escapeHtml(new Date(c.availableAt).toLocaleDateString())}</span>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">No commissions yet. Share your link to get started.</div>'}
+      </section>
+      ${a.payouts.length ? `<section class="st-card"><div class="st-head"><div class="st-ico green">&#9989;</div><div class="st-head-txt"><h2>Payout history</h2></div></div><div class="st-table-wrap"><table class="data-table"><thead><tr><th>Requested</th><th>Amount</th><th>Network</th><th>Status</th></tr></thead><tbody>${a.payouts.map((p) => `<tr><td>${escapeHtml(new Date(p.createdAt).toLocaleDateString())}</td><td>${afUsd(p.amountUsd)}</td><td>${escapeHtml(label(p.network))}</td><td><span class="status-badge ${p.status === 'paid' ? 'published' : 'draft'}">${p.status === 'requested' ? 'Sending' : p.status === 'paid' ? 'Paid' : 'Rejected'}</span>${p.txHash ? `<span class="rfa-def mono">${escapeHtml(p.txHash)}</span>` : ''}${p.status === 'rejected' && p.adminNote ? `<span class="rfa-def">${escapeHtml(p.adminNote)}</span>` : ''}</td></tr>`).join('')}</tbody></table></div></section>` : ''}
+    `;
+    document.getElementById('afCopyLink').addEventListener('click', () => afCopy(a.link, 'Your link'));
+    document.getElementById('afSaveAddress').addEventListener('click', async () => {
+      const st = document.getElementById('afPayStatus'); st.className = ''; st.textContent = 'Saving\u2026';
+      try { const d = await afCall('/api/affiliate/payout-details', 'PUT', { network: document.getElementById('afNetwork').value, address: document.getElementById('afAddress').value.trim() }); renderAffiliate(box, d.affiliate); showToast('Affiliate', 'Payout address saved.', 'success'); }
+      catch (err) { st.className = 'error'; st.textContent = err.message; }
+    });
+    document.getElementById('afRequest').addEventListener('click', async () => {
+      if (!(await elmsConfirm(`Ask for ${afUsd(t.available)} in ${label(document.getElementById('afNetwork').value)}? It goes to this address: ${document.getElementById('afAddress').value.trim()}`, { title: 'Request payout', okText: 'Request payout' }))) return;
+      const st = document.getElementById('afPayStatus'); st.className = ''; st.textContent = 'Sending\u2026';
+      try { const d = await afCall('/api/affiliate/payout', 'POST'); renderAffiliate(box, d.affiliate); showToast('Affiliate', 'Payout requested. It is sent within 24 to 48 hours.', 'success'); }
+      catch (err) { st.className = 'error'; st.textContent = err.message; }
+    });
+  }
+
+  // ---------- Affiliate (admin) ----------
+  async function loadAdminAffiliates() {
+    const list = document.getElementById('afList'); const pay = document.getElementById('afPayouts');
+    if (!list || !pay) return;
+    try {
+      const d = await afCall('/api/admin/affiliates', 'GET');
+      document.getElementById('afEnabled').value = d.settings.enabled ? 'true' : 'false';
+      document.getElementById('afPercent').value = d.settings.defaultPercent;
+      document.getElementById('afHold').value = d.settings.holdDays;
+      document.getElementById('afMin').value = d.settings.minPayoutUsd;
+      const waiting = d.affiliates.filter((a) => a.status === 'pending').length + d.payouts.filter((p) => p.status === 'requested').length;
+      const badge = document.getElementById('adminAffCount');
+      if (badge) { badge.textContent = waiting; badge.style.display = waiting ? '' : 'none'; }
+
+      const open = d.payouts.filter((p) => p.status === 'requested');
+      pay.innerHTML = open.length ? `<div class="st-table-wrap"><table class="data-table"><thead><tr><th>Requested</th><th>Affiliate</th><th>Amount</th><th>Network</th><th>Address</th><th>Pay</th></tr></thead><tbody>${open.map((p) => `<tr data-payout="${escapeAttr(p.id)}"><td>${escapeHtml(new Date(p.createdAt).toLocaleString())}</td><td>${escapeHtml(p.email || '')}</td><td><b>${afUsd(p.amountUsd)}</b></td><td>${escapeHtml(p.networkLabel)}</td><td><span class="mono af-addr">${escapeHtml(p.address)}</span> <button class="btn-small save" data-copy="${escapeAttr(p.address)}" type="button">Copy</button></td><td><input class="editable-input" data-f="tx" placeholder="Transaction hash" style="width:170px;" /> <button class="btn-small save" data-a="paid" type="button">Mark paid</button> <button class="btn-small delete" data-a="reject" type="button">Reject</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">No payout requests waiting.</div>';
+      pay.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', () => afCopy(b.dataset.copy, 'Address')));
+      pay.querySelectorAll('tr[data-payout]').forEach((row) => {
+        const id = row.dataset.payout;
+        row.querySelector('[data-a="paid"]').addEventListener('click', async () => {
+          try { await afCall(`/api/admin/affiliates/payouts/${encodeURIComponent(id)}/paid`, 'POST', { txHash: row.querySelector('[data-f="tx"]').value.trim() }); showToast('Affiliates', 'Marked as paid. The affiliate is told.', 'success'); loadAdminAffiliates(); }
+          catch (err) { showToast('Affiliates', err.message, 'error'); }
+        });
+        row.querySelector('[data-a="reject"]').addEventListener('click', async () => {
+          if (!(await elmsConfirm('Reject this payout request? The commissions become ready again.', { danger: true, okText: 'Reject' }))) return;
+          try { await afCall(`/api/admin/affiliates/payouts/${encodeURIComponent(id)}/reject`, 'POST', {}); loadAdminAffiliates(); }
+          catch (err) { showToast('Affiliates', err.message, 'error'); }
+        });
+      });
+
+      list.innerHTML = d.affiliates.length ? `<div class="st-table-wrap"><table class="data-table"><thead><tr><th>Person</th><th>Status</th><th>Commission %</th><th>Payout</th><th>Sign-ups</th><th>Earned</th><th>Ready</th><th></th></tr></thead><tbody>${d.affiliates.map((a) => `
+        <tr data-aff="${escapeAttr(a.id)}">
+          <td><b>${escapeHtml(a.email || '')}</b><span class="rfa-def">${escapeHtml(a.name || '')} &middot; code ${escapeHtml(a.code)}</span>${a.promo ? `<span class="rfa-def">&ldquo;${escapeHtml(a.promo)}&rdquo;</span>` : ''}</td>
+          <td><span class="status-badge ${a.status === 'approved' ? 'published' : 'draft'}">${escapeHtml(a.status)}</span></td>
+          <td><input class="editable-input" data-f="percent" type="number" min="0" max="90" step="0.5" value="${a.commissionPercent == null ? '' : a.commissionPercent}" placeholder="${d.settings.defaultPercent} (default)" style="width:110px;" /></td>
+          <td>${escapeHtml(a.networkLabel || '')}<span class="rfa-def mono af-addr">${escapeHtml(a.payoutAddress || '')}</span></td>
+          <td>${a.totals ? Number(a.totals.signups) + ' / ' + Number(a.totals.customers) + ' paying' : '-'}</td>
+          <td>${a.totals ? afUsd(a.totals.earned) : '-'}</td>
+          <td>${a.totals ? afUsd(a.totals.available) : '-'}</td>
+          <td><div class="row-actions">
+            ${a.status === 'pending' || a.status === 'rejected' ? '<button class="btn-small save" data-a="approve" type="button">Approve</button>' : ''}
+            ${a.status === 'pending' ? '<button class="btn-small delete" data-a="reject" type="button">Reject</button>' : ''}
+            ${a.status === 'approved' ? '<button class="btn-small save" data-a="save" type="button">Save %</button><button class="btn-small delete" data-a="suspend" type="button">Pause</button>' : ''}
+            ${a.status === 'suspended' ? '<button class="btn-small save" data-a="reactivate" type="button">Resume</button>' : ''}
+          </div></td>
+        </tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">Nobody has applied yet.</div>';
+      list.querySelectorAll('tr[data-aff]').forEach((row) => {
+        const id = row.dataset.aff;
+        row.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', async () => {
+          const action = b.dataset.a;
+          let note = '';
+          if (action === 'reject' || action === 'suspend') {
+            note = window.prompt(action === 'reject' ? 'Tell the applicant why (optional):' : 'Note for your records (optional):', '') || '';
+          }
+          try {
+            await afCall(`/api/admin/affiliates/${encodeURIComponent(id)}/${action}`, 'POST', { percent: row.querySelector('[data-f="percent"]').value === '' ? null : Number(row.querySelector('[data-f="percent"]').value), note });
+            showToast('Affiliates', 'Done.', 'success');
+            loadAdminAffiliates();
+          } catch (err) { showToast('Affiliates', err.message, 'error'); }
+        }));
+      });
+    } catch (err) {
+      list.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+  document.getElementById('afSaveSettings')?.addEventListener('click', async () => {
+    const st = document.getElementById('afSettingsStatus'); st.className = ''; st.textContent = 'Saving\u2026';
+    try {
+      await afCall('/api/admin/affiliates/settings', 'PUT', { enabled: document.getElementById('afEnabled').value === 'true', defaultPercent: Number(document.getElementById('afPercent').value), holdDays: Number(document.getElementById('afHold').value), minPayoutUsd: Number(document.getElementById('afMin').value) });
+      st.className = 'success'; st.textContent = 'Saved.';
+    } catch (err) { st.className = 'error'; st.textContent = err.message; }
+  });
+
   async function loadReferralsPage() {
     const el = document.getElementById('referralContent');
     if (!el) return;
@@ -14243,6 +14485,7 @@ async function autoSuggestEmptyDraftCategories() {
   // ---------- Admin Panel ----------
   async function loadAdminPage() {
     loadAdminAdmins();
+    loadAdminAffiliates();
     await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
   }
 
