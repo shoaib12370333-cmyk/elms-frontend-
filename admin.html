@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style id="antiClickjack">html{display:none !important}</style>
+<script>
+  // Clickjacking guard: this page must not be shown inside another site's frame (someone could then trick a signed-in person into
+  // clicking "buy", "delete" or "approve" on it). It stays hidden until it knows it is the top window; inside a frame it tries to
+  // break out and otherwise stays hidden. (The proper protection is the X-Frame-Options / frame-ancestors response header on the
+  // static site; this covers the case where the host does not send it.)
+  (function () {
+    if (window.top === window.self) { var s = document.getElementById('antiClickjack'); if (s && s.parentNode) s.parentNode.removeChild(s); }
+    else { try { window.top.location = window.self.location.href; } catch (e) { /* a sandboxed frame cannot move the top window: the page stays hidden */ } }
+  })();
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ELMS Admin</title>
