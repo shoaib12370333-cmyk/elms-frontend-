@@ -529,6 +529,11 @@
   }
   .auth-status.error { color: var(--red); }
   .auth-status.success { color: var(--green-dark); }
+  #confirmCode { text-align: center; font-size: 26px; font-weight: 800; letter-spacing: 10px; }
+  .confirm-links { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; }
+  .confirm-links a { cursor: pointer; color: var(--blue); font-weight: 600; }
+  .confirm-links a.disabled { color: #98a2b3; pointer-events: none; cursor: default; }
+  .confirm-note { text-align: center; margin-top: 14px; font-size: 12.5px; color: var(--grey); line-height: 1.5; }
   .auth-switch-line {
     margin-top: 16px;
     font-size: 13px;
@@ -3897,6 +3902,18 @@
         <div class="auth-divider"><span>or</span></div>
         <div id="googleSignInDivRegister" class="auth-google-btn"></div>
         <div class="auth-google-legal-note">By continuing with Google, you agree to our <a href="./terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/policy" target="_blank" rel="noopener">Privacy Policy</a>.</div>
+      </div>
+
+      <!-- Sign-up step 2: the confirmation code that was mailed to the address -->
+      <div id="authFormConfirm" class="auth-form" style="display:none;">
+        <div class="auth-heading">Confirm your email</div>
+        <p class="meta-line" style="margin-bottom:16px;">We sent a 6-digit code to <b id="confirmEmail"></b>. Enter it to finish creating your account.</p>
+        <label class="edit-label" for="confirmCode">Confirmation code</label>
+        <input type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" class="editable-input" id="confirmCode" placeholder="123456" />
+        <button type="button" class="primary auth-submit-btn" id="confirmSubmitBtn">Confirm and create my account</button>
+        <div id="confirmStatus" class="auth-status" role="status" aria-live="polite"></div>
+        <div class="confirm-links"><a id="confirmResend">Resend code</a><a id="confirmBack">Use another email</a></div>
+        <div class="confirm-note">The code is valid for 15 minutes. If it does not arrive, look in your spam or junk folder.</div>
       </div>
     </div>
   </div>
@@ -7290,6 +7307,7 @@
     document.getElementById('authFormLogin').style.display = 'block';
     document.getElementById('authFormRegister').style.display = 'none';
     document.getElementById('authFormForgot').style.display = 'none';
+    document.getElementById('authFormConfirm').style.display = 'none';
     document.getElementById('authWelcomeTitle').innerHTML = 'WELCOME<br>TO<br>ELMS';
     document.getElementById('authWelcomeSub').innerHTML = 'Log in to keep managing<br>your<br>Amazon-to-eBay listings.';
     setAuthUrl('/signin');
@@ -7301,6 +7319,7 @@
     document.getElementById('authFormRegister').style.display = 'block';
     document.getElementById('authFormLogin').style.display = 'none';
     document.getElementById('authFormForgot').style.display = 'none';
+    document.getElementById('authFormConfirm').style.display = 'none';
     document.getElementById('authWelcomeTitle').innerHTML = 'JOIN<br>ELMS';
     document.getElementById('authWelcomeSub').innerHTML = 'Create your account<br>and start listing<br>in minutes.';
     setAuthUrl('/signup');
@@ -7358,6 +7377,7 @@
     document.getElementById('authCard').classList.remove('show-register');
     document.getElementById('authFormLogin').style.display = 'none';
     document.getElementById('authFormRegister').style.display = 'none';
+    document.getElementById('authFormConfirm').style.display = 'none';
     document.getElementById('authFormForgot').style.display = 'block';
     document.getElementById('forgotStepRequest').style.display = 'block';
     document.getElementById('forgotStepReset').style.display = 'none';
@@ -7494,7 +7514,7 @@
 
     btn.disabled = true;
     statusEl.className = 'auth-status';
-    statusEl.textContent = 'Creating your account\u2026';
+    statusEl.textContent = 'Sending your confirmation code\u2026';
 
     try {
       const res = await fetchWaitingForServer(`${API_BASE}/api/auth/register`, {
@@ -7511,6 +7531,13 @@
         return;
       }
 
+      // The account is made when the code that was mailed to the address is entered (step 2).
+      if (data.needsConfirmation) {
+        statusEl.textContent = '';
+        showConfirmStep(data);
+        return;
+      }
+
       localStorage.setItem('elmsSessionToken', data.sessionToken);
       showApp(data.user);
       afterSignupReferral(data.referral);
@@ -7523,6 +7550,149 @@
       btn.disabled = false;
     }
   });
+
+  // ---------- Auth Page: sign-up step 2 - the confirmation code mailed to the address ----------
+  const PENDING_SIGNUP_KEY = 'elmsPendingSignup';
+  let pendingSignup = null; // { pendingToken, email, resendAt }: the token only this browser holds, so only this browser can finish the sign-up
+  let confirmTimer = null;
+  let confirming = false;
+  function readPendingSignup() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(PENDING_SIGNUP_KEY) || 'null');
+      return saved && saved.pendingToken && saved.email ? saved : null;
+    } catch (_) { return null; }
+  }
+  function savePendingSignup() {
+    try { sessionStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify(pendingSignup)); } catch (_) { /* private mode: the step works until a reload */ }
+  }
+  function clearPendingSignup() {
+    pendingSignup = null;
+    clearInterval(confirmTimer);
+    try { sessionStorage.removeItem(PENDING_SIGNUP_KEY); } catch (_) { /* nothing stored */ }
+  }
+  function tickResend() {
+    const link = document.getElementById('confirmResend');
+    const wait = pendingSignup ? Math.ceil((pendingSignup.resendAt - Date.now()) / 1000) : 0;
+    if (wait > 0) { link.classList.add('disabled'); link.textContent = 'Resend code in ' + wait + 's'; }
+    else { link.classList.remove('disabled'); link.textContent = 'Resend code'; clearInterval(confirmTimer); }
+  }
+  function startResendTimer() {
+    clearInterval(confirmTimer);
+    confirmTimer = setInterval(tickResend, 1000);
+    tickResend();
+  }
+  function showConfirmStep(info, opts = {}) {
+    pendingSignup = { pendingToken: info.pendingToken, email: info.email, resendAt: info.resendAt || (Date.now() + (info.resendAfterSeconds || 60) * 1000) };
+    savePendingSignup();
+    document.getElementById('appShell').style.display = 'none';
+    document.getElementById('authPage').style.display = 'flex';
+    document.getElementById('authCard').classList.add('show-register');
+    document.getElementById('authFormRegister').style.display = 'none';
+    document.getElementById('authFormLogin').style.display = 'none';
+    document.getElementById('authFormForgot').style.display = 'none';
+    document.getElementById('authFormConfirm').style.display = 'block';
+    document.getElementById('authWelcomeTitle').innerHTML = 'ALMOST<br>THERE';
+    document.getElementById('authWelcomeSub').innerHTML = 'Confirm your email<br>to finish creating<br>your account.';
+    setAuthUrl('/signup');
+    document.getElementById('confirmEmail').textContent = pendingSignup.email;
+    const codeInput = document.getElementById('confirmCode');
+    codeInput.value = '';
+    const status = document.getElementById('confirmStatus');
+    status.className = 'auth-status';
+    status.textContent = opts.restored ? '' : 'We sent you the code. It can take a minute to arrive.';
+    startResendTimer();
+    codeInput.focus();
+  }
+  // The sign-up is gone (expired, used up, or the address got an account meanwhile): back to the form with the reason.
+  function restartSignup(message) {
+    clearPendingSignup();
+    showRegisterForm();
+    const registerStatus = document.getElementById('registerStatus');
+    registerStatus.className = 'auth-status error';
+    registerStatus.textContent = message || 'Please start the sign-up again.';
+  }
+  async function submitConfirmCode() {
+    if (!pendingSignup || confirming) return;
+    const status = document.getElementById('confirmStatus');
+    const code = document.getElementById('confirmCode').value.replace(/\D/g, '');
+    if (!/^\d{6}$/.test(code)) { status.className = 'auth-status error'; status.textContent = 'Enter the 6-digit code from the email.'; return; }
+    const btn = document.getElementById('confirmSubmitBtn');
+    confirming = true;
+    btn.disabled = true;
+    status.className = 'auth-status';
+    status.textContent = 'Checking the code\u2026';
+    try {
+      const res = await fetchWaitingForServer(API_BASE + '/api/auth/register/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pendingToken: pendingSignup.pendingToken, code }),
+      }, () => { status.className = 'auth-status'; status.textContent = SERVER_WAKE_MESSAGE; });
+      const data = await res.json().catch(() => ({}));
+      if (data.blocked) { clearPendingSignup(); showBlockedScreen(data.blocked); return; }
+      if (!res.ok || !data.success) {
+        if (data.restart) { restartSignup(data.error); return; }
+        status.className = 'auth-status error';
+        status.textContent = data.error || 'Could not confirm the code.';
+        if (!data.expired) document.getElementById('confirmCode').select();
+        return;
+      }
+      clearPendingSignup();
+      localStorage.setItem('elmsSessionToken', data.sessionToken);
+      showApp(data.user);
+      afterSignupReferral(data.referral);
+    } catch (err) {
+      status.className = 'auth-status error';
+      status.textContent = isServerDown(err)
+        ? 'Still cannot reach the server. Check your internet connection, then try again in a minute.'
+        : 'Could not connect to the server: ' + err.message;
+    } finally {
+      confirming = false;
+      btn.disabled = false;
+    }
+  }
+  async function resendConfirmCode() {
+    const link = document.getElementById('confirmResend');
+    if (!pendingSignup || link.classList.contains('disabled')) return;
+    const status = document.getElementById('confirmStatus');
+    status.className = 'auth-status';
+    status.textContent = 'Sending a new code\u2026';
+    try {
+      const res = await fetchWaitingForServer(API_BASE + '/api/auth/register/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pendingToken: pendingSignup.pendingToken }),
+      }, () => { status.className = 'auth-status'; status.textContent = SERVER_WAKE_MESSAGE; });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        if (data.restart) { restartSignup(data.error); return; }
+        if (data.retryAfterSeconds) { pendingSignup.resendAt = Date.now() + data.retryAfterSeconds * 1000; savePendingSignup(); startResendTimer(); }
+        status.className = 'auth-status error';
+        status.textContent = data.error || 'Could not send a new code.';
+        return;
+      }
+      pendingSignup.resendAt = Date.now() + (data.resendAfterSeconds || 60) * 1000;
+      savePendingSignup();
+      startResendTimer();
+      const codeInput = document.getElementById('confirmCode');
+      codeInput.value = '';
+      codeInput.focus();
+      status.className = 'auth-status success';
+      status.textContent = 'A new code was sent. The old one no longer works.';
+    } catch (err) {
+      status.className = 'auth-status error';
+      status.textContent = isServerDown(err)
+        ? 'Still cannot reach the server. Check your internet connection, then try again in a minute.'
+        : 'Could not connect to the server: ' + err.message;
+    }
+  }
+  document.getElementById('confirmSubmitBtn').addEventListener('click', submitConfirmCode);
+  document.getElementById('confirmResend').addEventListener('click', resendConfirmCode);
+  document.getElementById('confirmBack').addEventListener('click', () => { clearPendingSignup(); showRegisterForm(); });
+  document.getElementById('confirmCode').addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); // a pasted "123 456" works too
+    if (e.target.value.length === 6) submitConfirmCode();
+  });
+  document.getElementById('confirmCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitConfirmCode(); });
 
   window.addEventListener('load', async () => {
     // Start in a deterministic logged-out visual state. This prevents a stale
@@ -7578,7 +7748,11 @@
       document.getElementById('authPage').style.display = 'flex';
     }
 
-    if (!loggedIn && window.location.pathname === '/signup') showRegisterForm();
+    if (!loggedIn && window.location.pathname === '/signup') {
+      // a sign-up that is waiting for its code (the page was reloaded): go back to the code step, the mailed code is still good
+      const waiting = readPendingSignup();
+      if (waiting) showConfirmStep(waiting, { restored: true }); else showRegisterForm();
+    }
 
     // Render Google buttons only after the auth state is settled, so they never
     // initialize over the dashboard or create a duplicate auth view.
