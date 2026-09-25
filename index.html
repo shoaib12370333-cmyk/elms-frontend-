@@ -3247,6 +3247,9 @@
   }
 
   /* ===== Admin panel ===== */
+  .ad-addadmin { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; } .ad-addadmin .st-input { flex:1 1 240px; min-width:0; }
+  .st-status { min-height:18px; margin:0 0 8px; font-size:13px; font-weight:600; } .st-status.error { color:#B42318; } .st-status.success { color:#3F6208; }
+  .ad-adminrow { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px 0; border-top:1px solid var(--line); } .ad-adminrow .rfa-def { display:block; }
   .ad-tabs { display:flex; gap:6px; overflow-x:auto; padding:5px; margin-bottom:18px; background:#fff; border:1px solid var(--line); border-radius:14px; scrollbar-width:none; }
   .ad-tabs::-webkit-scrollbar { display:none; }
   .ad-tab { flex:none; border:none; background:transparent; padding:10px 16px; border-radius:10px; font:inherit; font-size:13.5px; font-weight:700; color:#64748B; cursor:pointer; white-space:nowrap; }
@@ -4766,6 +4769,7 @@
           <button class="ad-tab" data-admin-tab="tickets" type="button">Support <span class="ad-count" id="adminTicketsCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="security" type="button">Security</button>
           <button class="ad-tab" data-admin-tab="settings" type="button">Settings</button>
+          <button class="ad-tab" data-admin-tab="admins" id="adminAdminsTab" type="button" style="display:none;">Admins</button>
         </div>
 
         <!-- Overview -->
@@ -5090,6 +5094,22 @@
               <div id="blockList"><p class="state-msg">Loading&hellip;</p></div>
             </section>
           </div>
+        </div>
+
+        <!-- Admins (super admin only) -->
+        <div class="ad-panel" data-admin-panel="admins" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128273;</div>
+              <div class="st-head-txt"><h2>Admins</h2><p>People who can use this admin panel. An admin can do everything you can here, except add or remove admins. The super admin can never be removed.</p></div>
+            </div>
+            <div class="ad-addadmin">
+              <input class="st-input" id="adminAddEmail" type="email" placeholder="Email of an ELMS user" autocomplete="off" />
+              <button class="st-btn primary" id="adminAddBtn" type="button">Give admin access</button>
+            </div>
+            <div class="st-status" id="adminAdminsStatus"></div>
+            <div id="adminAdminsList"><p class="state-msg">Loading&hellip;</p></div>
+          </section>
         </div>
 
         <div class="ad-panel" data-admin-panel="settings" style="display:none;">
@@ -14190,11 +14210,13 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel ----------
   async function loadAdminPage() {
+    loadAdminAdmins();
     await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
   }
 
   // ---------- Admin Panel: tabs ----------
   function setAdminTab(name) {
+    if (name === 'admins' && !(window.currentUser && window.currentUser.isSuperAdmin)) name = 'overview';
     document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.classList.toggle('active', t.dataset.adminTab === name));
     document.querySelectorAll('[data-admin-panel]').forEach((p) => { p.style.display = p.dataset.adminPanel === name ? 'block' : 'none'; });
     try { sessionStorage.setItem('elmsAdminTab', name); } catch (_) {}
@@ -14202,6 +14224,52 @@ async function autoSuggestEmptyDraftCategories() {
   document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.addEventListener('click', () => setAdminTab(t.dataset.adminTab)));
   document.getElementById('adminRefreshBtn')?.addEventListener('click', () => loadAdminPage());
   try { const saved = sessionStorage.getItem('elmsAdminTab'); if (saved) setAdminTab(saved); } catch (_) {}
+
+  // ---------- Admin: who has the admin panel (super admin only) ----------
+  async function loadAdminAdmins() {
+    const isSuper = !!(window.currentUser && window.currentUser.isSuperAdmin);
+    const tab = document.getElementById('adminAdminsTab');
+    if (tab) tab.style.display = isSuper ? '' : 'none';
+    if (!isSuper) return;
+    const list = document.getElementById('adminAdminsList');
+    try {
+      const res = await apiFetch('/api/admin/admins');
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the admins.');
+      list.innerHTML = data.admins.map((a) => `<div class="ad-adminrow"><div><b>${escapeHtml(a.email || '')}</b>${a.name ? `<span class="rfa-def">${escapeHtml(a.name)}</span>` : ''}</div>${a.isSuperAdmin ? '<span class="status-badge published">Super admin</span>' : `<button class="btn-small delete" data-remove-admin="${escapeAttr(a.id)}" data-email="${escapeAttr(a.email || '')}" type="button">Remove access</button>`}</div>`).join('') || '<div class="empty-state">No admins.</div>';
+      list.querySelectorAll('[data-remove-admin]').forEach((b) => b.addEventListener('click', async () => {
+        if (!(await elmsConfirm(`Take the admin panel away from ${b.dataset.email}? They stay an ordinary ELMS user.`, { title: 'Remove admin access', okText: 'Remove', danger: true }))) return;
+        const r = await apiFetch(`/api/admin/admins/${encodeURIComponent(b.dataset.removeAdmin)}`, { method: 'DELETE' });
+        const d = await r.json();
+        showToast('Admins', r.ok && d.success ? 'Admin access removed.' : (d.error || 'Could not remove access.'), r.ok && d.success ? 'success' : 'error');
+        loadAdminAdmins();
+      }));
+    } catch (err) {
+      list.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+  document.getElementById('adminAddBtn')?.addEventListener('click', async () => {
+    const input = document.getElementById('adminAddEmail');
+    const status = document.getElementById('adminAdminsStatus');
+    const email = input.value.trim();
+    if (!email) { status.textContent = 'Type the email of an ELMS user.'; status.className = 'st-status error'; return; }
+    const btn = document.getElementById('adminAddBtn');
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/api/admin/admins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not give admin access.');
+      status.textContent = `${data.admin.email} is now an admin.`;
+      status.className = 'st-status success';
+      input.value = '';
+      loadAdminAdmins();
+    } catch (err) {
+      status.textContent = err.message;
+      status.className = 'st-status error';
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   // ---------- Admin: referrals ----------
   const rfaMoney = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
