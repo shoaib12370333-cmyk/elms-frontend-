@@ -94,12 +94,7 @@
     flex-direction: column;
     padding: 28px 20px;
     border-right: 1px solid var(--line);
-    /* more menu items than fit a short screen: the menu scrolls by itself */
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
   }
-  .sidebar > * { flex-shrink: 0; }
   .sidebar-brand {
     display: flex;
     flex-direction: column;
@@ -2142,7 +2137,12 @@
       transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
       box-shadow: 4px 0 24px rgba(0,0,0,0.15);
       padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+      /* more menu items than fit a short screen: the fixed menu scrolls by itself (phones only) */
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
+    .sidebar > * { flex-shrink: 0; }
     .sidebar.open { transform: translateX(0); }
   }
 
