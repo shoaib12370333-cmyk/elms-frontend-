@@ -1280,6 +1280,40 @@
   .qp-row { display:flex; align-items:center; gap:8px; } .qp-row input { width:110px; } .qp-box small { display:block; margin-top:6px; color:#64748B; font-size:12px; } .qp-box small.error { color:#B42318; } .qp-box small.success { color:#3F6208; }
   .bk-box { width:min(520px,100%); max-height:90vh; overflow:auto; } .bk-sec { margin:14px 0 4px; padding:12px; border:1px solid var(--line); border-radius:12px; } .bk-sec > b { display:block; margin-bottom:8px; }
   .bk-row { display:flex; align-items:center; gap:8px; } .bk-row input { width:110px; } .bk-sec small { display:block; margin-top:8px; color:#64748B; font-size:12.5px; line-height:1.5; }
+  .bk-box.be-box { width:min(860px,100%); }
+  .be-count { font-weight:600; font-size:13px; color:#64748B; margin-left:8px; }
+  .be-layout { display:grid; grid-template-columns:230px minmax(0,1fr); gap:16px; margin-top:12px; }
+  @media (max-width: 700px) { .be-layout { grid-template-columns:minmax(0,1fr); } }
+  .be-pick { border:1px solid var(--line); border-radius:12px; padding:10px; align-self:start; }
+  .be-pick-h { font-size:11.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#64748B; margin:2px 4px 8px; }
+  .be-pick-i { display:flex; gap:10px; align-items:flex-start; padding:8px 6px; border-radius:8px; cursor:pointer; }
+  .be-pick-i:hover { background:#F1F5FB; }
+  .be-pick-i input { margin-top:3px; width:16px; height:16px; accent-color:#0064D2; }
+  .be-pick-i b { display:block; font-size:13.5px; }
+  .be-pick-i small { display:block; font-size:12px; color:#64748B; line-height:1.35; }
+  .be-edit { min-width:0; display:grid; gap:12px; align-content:start; }
+  .be-empty { padding:22px; border:1.5px dashed var(--line); border-radius:12px; color:#64748B; font-size:13.5px; line-height:1.5; }
+  .be-sec { border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .be-sec[hidden] { display:none; }
+  .be-sec h4 { margin:0 0 10px; font-size:14px; }
+  .be-sec small { display:block; margin-top:8px; color:#64748B; font-size:12.5px; line-height:1.5; }
+  .be-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:8px; }
+  .be-f { display:grid; gap:4px; font-size:12px; font-weight:700; color:#475569; margin-top:8px; }
+  .be-grid .be-f { margin-top:0; }
+  .be-f input, .be-f select { width:100%; min-width:0; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font:inherit; font-size:14px; font-weight:400; color:var(--ink); background:#fff; }
+  .be-inline { display:block; margin:2px 0 0; color:#64748B; font-size:12.5px; font-weight:400; }
+  .be-result { margin-top:12px; }
+  .be-sum { font-size:14px; }
+  .be-warn { color:#8A5A00; font-weight:700; }
+  .be-rows { margin-top:8px; border:1px solid var(--line); border-radius:10px; }
+  .be-row { padding:9px 12px; border-top:1px solid var(--line); font-size:13px; }
+  .be-row:first-child { border-top:0; }
+  .be-row div { margin-top:3px; color:#475569; }
+  .be-row div span { display:inline-block; min-width:96px; color:#64748B; font-weight:700; font-size:12px; }
+  .be-more { padding:8px 12px; border-top:1px solid var(--line); font-size:12.5px; color:#64748B; }
+  .be-skips { margin-top:8px; padding:10px 12px; border:1px solid #F5DDA0; background:#FFFBF0; border-radius:10px; font-size:12.5px; color:#5B4300; }
+  .be-skips b { display:block; margin-bottom:4px; }
+  .be-err { padding:10px 12px; border-radius:10px; background:#FDECEC; color:#B91C1C; font-size:13px; }
   .bk-radio { display:flex; gap:8px; align-items:center; padding:5px 0; font-size:13.5px; } .bk-pols { display:grid; gap:10px; margin-top:8px; } .bk-pols label { display:grid; gap:4px; font-size:12.5px; font-weight:700; color:#475569; } .bk-pols select { padding:8px; border:1px solid var(--line); border-radius:8px; font:inherit; }
   .elms-confirm-danger { background:#E53238 !important; box-shadow:0 4px 12px rgba(229,50,56,.3) !important; }
   /* Welcome popup: shown once after sign-up, with the credits the account was really given */
@@ -8442,7 +8476,7 @@
           <div class="dv-bulk" id="draftBulkBar">
             <b id="draftSelectedCount">0 selected</b>
             <button class="dv-btn primary small" id="bulkPublishBtn" type="button">Publish all</button>
-            <button class="dv-btn small" id="bulkEditBtn" type="button" title="Set one profit % and the policies for all the selected drafts">Edit selected</button>
+            <button class="dv-btn small" id="bulkEditBtn" type="button" title="Change the price, title, brand, quantity, tags, location or policies of all the selected drafts at once">Bulk edit</button>
             <button class="dv-btn small" id="bulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected drafts and saves them, so publishing does not stop on a missing one">Fill specifics with AI</button>
             <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the VeRO words out of the selected drafts with AI">Remove VeRO words</button>
             <button class="dv-btn small" id="bulkDeleteBtn" type="button">Remove</button>
@@ -9561,7 +9595,10 @@ async function autoSuggestEmptyDraftCategories() {
     wireBulkBar();
   }
 
-  // ---------- Bulk edit: one profit % and one set of policies for the selected drafts ----------
+  // ---------- Bulk edit: change many drafts at once ----------
+  // Pick what to change, fill it in, preview exactly what would happen to each draft (the server does a dry run, saves nothing), then apply.
+  // Every option is something ELMS really has. The server checks the whole request before saving anything, skips a draft that cannot take
+  // a change (with the reason) and never half-edits one.
   async function bulkJson(path, method, body) {
     const res = await apiFetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await apiJson(res);
@@ -9569,28 +9606,131 @@ async function autoSuggestEmptyDraftCategories() {
     return data;
   }
 
+  const BE_CHUNK = 50;
+  const BE_FIELDS = [
+    { key: 'price', label: 'Price', hint: 'Fees, profit, minimum profit, cents' },
+    { key: 'title', label: 'Title', hint: 'Find and replace, add text, change case' },
+    { key: 'brand', label: 'Brand', hint: 'The Brand item specific' },
+    { key: 'quantity', label: 'Quantity', hint: 'How many you list' },
+    { key: 'tags', label: 'Tags', hint: 'Add, remove or replace' },
+    { key: 'stockMonitoring', label: 'Stock monitoring', hint: 'On or off' },
+    { key: 'priceMonitoring', label: 'Price monitoring', hint: 'On or off' },
+    { key: 'location', label: 'Item location', hint: 'Country, city, postcode' },
+    { key: 'policies', label: 'Policies', hint: 'Payment, shipping, return' },
+  ];
+
+  function bkeRuleSummary(rule) {
+    const parts = ['Fees ' + rule.feePercent + '%' + (Number(rule.feeFixed) > 0 ? ' + ' + rule.feeFixed : ''), 'profit ' + rule.profitPercent + '%' + (Number(rule.profitFixed) > 0 ? ' + ' + rule.profitFixed : '')];
+    if (Number(rule.minProfit) > 0) parts.push('minimum profit ' + rule.minProfit);
+    if (Number(rule.shipping) > 0) parts.push('shipping ' + rule.shipping);
+    if (rule.centsEnding !== null && rule.centsEnding !== undefined) parts.push('ends in .' + String(rule.centsEnding).padStart(2, '0'));
+    if ((rule.tiers || []).length) parts.push((rule.tiers.length) + ' cost range' + (rule.tiers.length === 1 ? '' : 's'));
+    return parts.join(' · ');
+  }
+
   async function openBulkEditModal(ids) {
     const chosen = ids.map((id) => draftListingMap.get(String(id))).filter(Boolean);
     if (!chosen.length) return;
+    const n = chosen.length;
     const accountIds = [...new Set(chosen.map((l) => l.ebay_account_id).filter(Boolean))];
+    const oneStore = accountIds.length === 1 && chosen.every((l) => l.ebay_account_id);
+    const currencies = [...new Set(chosen.map((l) => l.currency).filter(Boolean))];
     const first = chosen[0];
+
+    // the seller's saved pricing rule (real data; the Price section offers it only when there is one)
+    let saved = null;
+    let ruleDefaults = null;
+    try { const d = await bulkJson('/api/pricing/rule', 'GET'); ruleDefaults = d.rule; saved = d.isSet ? d.rule : null; } catch (_) { /* the boxes stay empty */ }
+    const base = saved || ruleDefaults || {};
+
     const overlay = document.createElement('div');
     overlay.className = 'elms-confirm-overlay';
+    const val = (v) => escapeAttr(v === null || v === undefined ? '' : String(v));
+    const numField = (id, label, v, extra = '') => '<label class="be-f"><span>' + label + '</span><input type="number" id="' + id + '" step="0.01" min="0" inputmode="decimal" value="' + val(v) + '" ' + extra + ' /></label>';
     overlay.innerHTML = `
-      <div class="elms-confirm-box bk-box" role="dialog" aria-modal="true" aria-label="Edit selected drafts">
-        <div class="elms-confirm-title">Edit ${chosen.length} selected draft${chosen.length === 1 ? '' : 's'}</div>
-        <div class="bk-sec">
-          <b>Profit</b>
-          <label class="bk-row"><input type="number" id="bkProfit" min="-99" max="1000" step="0.01" placeholder="e.g. 10" /><span>% profit on the Amazon price</span></label>
-          <small id="bkProfitHint">Each price becomes its Amazon price plus this %. Drafts with no Amazon price are skipped. Leave it empty to keep the prices as they are.</small>
+      <div class="elms-confirm-box bk-box be-box" role="dialog" aria-modal="true" aria-label="Bulk edit">
+        <div class="elms-confirm-title">Bulk edit <span class="be-count">${n} draft${n === 1 ? '' : 's'}</span></div>
+        <div class="be-layout">
+          <nav class="be-pick" aria-label="What to change">
+            <div class="be-pick-h">What do you want to change?</div>
+            ${BE_FIELDS.map((f) => `<label class="be-pick-i"><input type="checkbox" data-be-pick="${f.key}" /><span><b>${f.label}</b><small>${f.hint}</small></span></label>`).join('')}
+          </nav>
+          <div class="be-edit" id="bkeEdit">
+            <div class="be-empty" id="bkeEmpty">Tick what you want to change. Each one opens here, and what you set is applied to all ${n} selected draft${n === 1 ? '' : 's'}.</div>
+
+            <section class="be-sec" data-be-sec="price" hidden>
+              <h4>Price</h4>
+              <label class="bk-radio"><input type="radio" name="bkePriceMode" value="saved" ${saved ? 'checked' : 'disabled'} /> <span>Use my pricing rule${saved ? '<small class="be-inline">' + escapeHtml(bkeRuleSummary(saved)) + '</small>' : '<small class="be-inline">Not set yet: Settings &rarr; Pricing</small>'}</span></label>
+              <label class="bk-radio"><input type="radio" name="bkePriceMode" value="custom" ${saved ? '' : 'checked'} /> <span>Set the price here</span></label>
+              <div class="be-grid" id="bkePriceCustom" style="${saved ? 'display:none;' : ''}">
+                ${numField('bkePriceFee', 'Fees %', base.feePercent, 'max="60"')}
+                ${numField('bkePriceFeeFixed', 'Fixed fee', base.feeFixed)}
+                ${numField('bkePriceProfit', 'Additional profit %', base.profitPercent, 'max="1000"')}
+                ${numField('bkePriceProfitFixed', 'Additional profit', base.profitFixed)}
+                ${numField('bkePriceMin', 'Minimum profit', base.minProfit)}
+                ${numField('bkePriceShip', 'Include shipping price', base.shipping)}
+                <label class="be-f"><span>Price cents (empty = off)</span><input type="number" id="bkePriceCents" step="1" min="0" max="99" inputmode="numeric" value="${val(base.centsEnding)}" placeholder="e.g. 99" /></label>
+              </div>
+              <small>Every price is worked out from that draft's own Amazon price${currencies.length === 1 ? ' (' + escapeHtml(currencies[0]) + ')' : ''}, so nothing is guessed. A draft with no Amazon price is skipped and says so. Fixed amounts are in each draft's own currency.</small>
+            </section>
+
+            <section class="be-sec" data-be-sec="title" hidden>
+              <h4>Title</h4>
+              <label class="be-f"><span>What to do</span><select id="bkeTitleOp"><option value="replace">Find and replace</option><option value="prefix">Add text before</option><option value="suffix">Add text after</option><option value="case">Change capitals</option></select></label>
+              <div id="bkeTitleReplace" class="be-grid"><label class="be-f"><span>Find</span><input type="text" id="bkeTitleFind" maxlength="80" /></label><label class="be-f"><span>Replace with (empty removes it)</span><input type="text" id="bkeTitleWith" maxlength="80" /></label><label class="bk-radio"><input type="checkbox" id="bkeTitleCase" /> Match capitals exactly</label></div>
+              <label class="be-f" id="bkeTitleTextWrap" style="display:none;"><span>Text</span><input type="text" id="bkeTitleText" maxlength="80" /></label>
+              <label class="be-f" id="bkeTitleCaseWrap" style="display:none;"><span>Capitals</span><select id="bkeTitleCaseSel"><option value="title">Title Case</option><option value="upper">UPPER CASE</option><option value="lower">lower case</option></select></label>
+              <small>eBay allows 80 characters. A title that would go over is not cut: that draft is skipped and says so.</small>
+            </section>
+
+            <section class="be-sec" data-be-sec="brand" hidden>
+              <h4>Brand</h4>
+              <label class="be-f"><span>Brand</span><input type="text" id="bkeBrand" maxlength="65" /></label>
+              <small>Sets the Brand item specific of each draft. Its other item specifics stay as they are.</small>
+            </section>
+
+            <section class="be-sec" data-be-sec="quantity" hidden>
+              <h4>Quantity</h4>
+              <label class="be-f"><span>Quantity</span><input type="number" id="bkeQuantity" min="1" max="999" step="1" inputmode="numeric" /></label>
+            </section>
+
+            <section class="be-sec" data-be-sec="tags" hidden>
+              <h4>Tags</h4>
+              <label class="be-f"><span>What to do</span><select id="bkeTagMode"><option value="add">Add these tags</option><option value="remove">Remove these tags</option><option value="replace">Replace all tags with these</option><option value="clear">Remove all tags</option></select></label>
+              <label class="be-f" id="bkeTagsWrap"><span>Tags (separate with commas)</span><input type="text" id="bkeTags" /></label>
+            </section>
+
+            <section class="be-sec" data-be-sec="stockMonitoring" hidden>
+              <h4>Stock monitoring</h4>
+              <label class="be-f"><span>Watch Amazon stock</span><select id="bkeStock"><option value="on">On</option><option value="off">Off</option></select></label>
+            </section>
+
+            <section class="be-sec" data-be-sec="priceMonitoring" hidden>
+              <h4>Price monitoring</h4>
+              <label class="be-f"><span>Follow Amazon price changes</span><select id="bkePriceMon"><option value="on">On</option><option value="off">Off</option></select></label>
+            </section>
+
+            <section class="be-sec" data-be-sec="location" hidden>
+              <h4>Item location</h4>
+              <div class="be-grid">
+                <label class="be-f"><span>Country (2 letters)</span><input type="text" id="bkeLocCountry" maxlength="2" placeholder="GB" /></label>
+                <label class="be-f"><span>City</span><input type="text" id="bkeLocCity" maxlength="80" /></label>
+                <label class="be-f"><span>Postcode</span><input type="text" id="bkeLocPostal" maxlength="12" /></label>
+              </div>
+              <small>Only what you type is changed. Leave a box empty to keep it as it is.</small>
+            </section>
+
+            <section class="be-sec" data-be-sec="policies" hidden>
+              <h4>Policies</h4>
+              <div id="bkePolicies"></div>
+            </section>
+          </div>
         </div>
-        <div class="bk-sec">
-          <b>Policies</b>
-          <div id="bkPolicies"><div class="elms-loader sm" role="status" aria-label="Loading your eBay policies"></div></div>
-        </div>
+        <div class="be-result" id="bkeResult"></div>
         <div class="elms-confirm-actions">
           <button type="button" class="ord-btn" data-act="cancel">Cancel</button>
-          <button type="button" class="ord-btn primary" data-act="apply">Apply to ${chosen.length}</button>
+          <button type="button" class="ord-btn" data-act="preview" disabled>Preview changes</button>
+          <button type="button" class="ord-btn primary" data-act="apply" style="display:none;">Apply</button>
         </div>
       </div>`;
     document.body.appendChild(overlay);
@@ -9602,73 +9742,143 @@ async function autoSuggestEmptyDraftCategories() {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     overlay.querySelector('[data-act="cancel"]').addEventListener('click', close);
     const $ = (sel) => overlay.querySelector(sel);
+    const previewBtn = $('[data-act="preview"]');
+    const applyBtn = $('[data-act="apply"]');
+    const resultBox = $('#bkeResult');
 
-    // a live example from the first selected draft
-    const sym = CURRENCY_SYMBOLS[first.currency] || '$';
-    $('#bkProfit').addEventListener('input', () => {
-      const pct = Number($('#bkProfit').value);
-      const cost = Number(first.amazon_price ?? first._amazon_price);
-      const hint = $('#bkProfitHint');
-      if ($('#bkProfit').value === '' || !Number.isFinite(pct) || !(cost > 0)) return;
-      hint.textContent = `Example: ${String(first.title || 'first draft').slice(0, 40)} ${sym}${cost.toFixed(2)} → ${sym}${(cost * (1 + pct / 100)).toFixed(2)}`;
+    const picked = () => BE_FIELDS.map((f) => f.key).filter((k) => $('[data-be-pick="' + k + '"]').checked);
+    const resetPreview = () => { resultBox.innerHTML = ''; applyBtn.style.display = 'none'; };
+
+    // ---- tick a field: its editor opens on the right ----
+    overlay.querySelectorAll('[data-be-pick]').forEach((box) => box.addEventListener('change', () => {
+      const key = box.getAttribute('data-be-pick');
+      $('[data-be-sec="' + key + '"]').hidden = !box.checked;
+      $('#bkeEmpty').style.display = picked().length ? 'none' : '';
+      previewBtn.disabled = !picked().length;
+      if (key === 'policies' && box.checked) loadPolicies();
+      resetPreview();
+    }));
+    overlay.querySelector('#bkeEdit').addEventListener('input', resetPreview);
+    overlay.querySelector('#bkeEdit').addEventListener('change', resetPreview);
+
+    // ---- small show / hide rules inside the editors ----
+    overlay.querySelectorAll('input[name="bkePriceMode"]').forEach((r) => r.addEventListener('change', () => { $('#bkePriceCustom').style.display = $('input[name="bkePriceMode"]:checked').value === 'custom' ? '' : 'none'; }));
+    $('#bkeTitleOp').addEventListener('change', () => {
+      const op = $('#bkeTitleOp').value;
+      $('#bkeTitleReplace').style.display = op === 'replace' ? '' : 'none';
+      $('#bkeTitleTextWrap').style.display = op === 'prefix' || op === 'suffix' ? '' : 'none';
+      $('#bkeTitleCaseWrap').style.display = op === 'case' ? '' : 'none';
     });
+    $('#bkeTagMode').addEventListener('change', () => { $('#bkeTagsWrap').style.display = $('#bkeTagMode').value === 'clear' ? 'none' : ''; });
 
-    // policies belong to one eBay store, so they are only offered when the selection is from one store
-    const box = $('#bkPolicies');
-    if (accountIds.length !== 1) {
-      box.innerHTML = '<small>The selected drafts are in different stores (or not assigned to one yet). Select drafts from one store to change their policies.</small>';
-    } else {
+    // ---- policies belong to one eBay store: real ones are read from eBay, and only offered for one store ----
+    let policiesLoaded = false;
+    async function loadPolicies() {
+      if (policiesLoaded) return;
+      const box = $('#bkePolicies');
+      if (!oneStore) { box.innerHTML = '<small>The selected drafts are in different stores (or not in one yet). You can still switch them all to your account&rsquo;s default policies; to pick policies, select drafts from one store.</small><label class="bk-radio"><input type="radio" name="bkePol" value="default" checked /> Use my eBay account&rsquo;s default policies</label>'; policiesLoaded = true; return; }
+      box.innerHTML = '<div class="elms-loader sm" role="status" aria-label="Loading your eBay policies"></div>';
       try {
-        const data = await bulkJson(`/api/seller-settings/ebay-policies?accountId=${encodeURIComponent(accountIds[0])}${first.marketplace_id ? `&marketplaceId=${encodeURIComponent(first.marketplace_id)}` : ''}`, 'GET');
-        const opts = (list) => '<option value="">Don’t change</option>' + (list || []).map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.name || p.id)}</option>`).join('');
+        const data = await bulkJson('/api/seller-settings/ebay-policies?accountId=' + encodeURIComponent(accountIds[0]) + (first.marketplace_id ? '&marketplaceId=' + encodeURIComponent(first.marketplace_id) : ''), 'GET');
+        const opts = (list) => '<option value="">Don’t change</option>' + (list || []).map((p) => '<option value="' + escapeAttr(p.id) + '">' + escapeHtml(p.name || p.id) + '</option>').join('');
         box.innerHTML = `
-          <label class="bk-radio"><input type="radio" name="bkPol" value="keep" checked /> Keep the policies as they are</label>
-          <label class="bk-radio"><input type="radio" name="bkPol" value="default" /> Use my eBay account&rsquo;s default policies</label>
-          <label class="bk-radio"><input type="radio" name="bkPol" value="choose" /> Choose the policies</label>
-          <div class="bk-pols" id="bkPols" style="display:none;">
-            <label>Payment policy<select id="bkPay">${opts(data.paymentPolicies)}</select></label>
-            <label>Shipping policy<select id="bkShip">${opts(data.fulfillmentPolicies)}</select></label>
-            <label>Return policy<select id="bkRet">${opts(data.returnPolicies)}</select></label>
+          <label class="bk-radio"><input type="radio" name="bkePol" value="default" checked /> Use my eBay account&rsquo;s default policies</label>
+          <label class="bk-radio"><input type="radio" name="bkePol" value="choose" /> Choose the policies</label>
+          <div class="bk-pols" id="bkePols" style="display:none;">
+            <label>Payment policy<select id="bkePay">${opts(data.paymentPolicies)}</select></label>
+            <label>Shipping policy<select id="bkeShip">${opts(data.fulfillmentPolicies)}</select></label>
+            <label>Return policy<select id="bkeRet">${opts(data.returnPolicies)}</select></label>
           </div>`;
-        box.querySelectorAll('input[name="bkPol"]').forEach((r) => r.addEventListener('change', () => { $('#bkPols').style.display = box.querySelector('input[name="bkPol"]:checked').value === 'choose' ? '' : 'none'; }));
+        box.querySelectorAll('input[name="bkePol"]').forEach((r) => r.addEventListener('change', () => { $('#bkePols').style.display = box.querySelector('input[name="bkePol"]:checked').value === 'choose' ? '' : 'none'; }));
+        policiesLoaded = true;
       } catch (err) {
-        box.innerHTML = `<small>Could not load your eBay policies: ${escapeHtml(err.message)}</small>`;
+        box.innerHTML = '<small>Could not load your eBay policies: ' + escapeHtml(err.message) + '</small>';
       }
     }
 
-    const applyBtn = $('[data-act="apply"]');
-    applyBtn.addEventListener('click', async () => {
-      const pctRaw = $('#bkProfit').value.trim();
-      const mode = box.querySelector('input[name="bkPol"]:checked')?.value || 'keep';
-      if (!pctRaw && mode === 'keep') { showToast('Edit selected', 'Type a profit % or choose policies first.', 'info'); return; }
-      const pct = Number(pctRaw);
-      if (pctRaw && (!Number.isFinite(pct) || pct < -99 || pct > 1000)) { showToast('Edit selected', 'Profit must be between -99 and 1000.', 'error'); return; }
-      const label = applyBtn.textContent;
-      applyBtn.disabled = true; applyBtn.textContent = 'Applying…';
-      const summary = [];
+    // ---- what the seller filled in, as the server wants it (a field left empty stops the preview with a plain message) ----
+    function readChanges() {
+      const changes = {};
+      const need = (id, label) => { const v = $(id).value.trim(); if (v === '') throw new Error(label + ': enter a number (0 if you do not want it).'); return v; };
+      for (const key of picked()) {
+        if (key === 'price') {
+          if ($('input[name="bkePriceMode"]:checked').value === 'saved') changes.price = { mode: 'saved' };
+          else {
+            const cents = $('#bkePriceCents').value.trim();
+            changes.price = { mode: 'custom', rule: { feePercent: need('#bkePriceFee', 'Fees %'), feeFixed: need('#bkePriceFeeFixed', 'Fixed fee'), profitPercent: need('#bkePriceProfit', 'Additional profit %'), profitFixed: need('#bkePriceProfitFixed', 'Additional profit'), minProfit: need('#bkePriceMin', 'Minimum profit'), shipping: need('#bkePriceShip', 'Include shipping price'), centsEnding: cents === '' ? null : cents } };
+          }
+        } else if (key === 'title') {
+          const op = $('#bkeTitleOp').value;
+          changes.title = op === 'replace' ? { op, find: $('#bkeTitleFind').value, with: $('#bkeTitleWith').value, caseSensitive: $('#bkeTitleCase').checked }
+            : op === 'case' ? { op, case: $('#bkeTitleCaseSel').value } : { op, text: $('#bkeTitleText').value };
+        } else if (key === 'brand') changes.brand = $('#bkeBrand').value;
+        else if (key === 'quantity') changes.quantity = $('#bkeQuantity').value;
+        else if (key === 'tags') changes.tags = { mode: $('#bkeTagMode').value, tags: $('#bkeTags').value };
+        else if (key === 'stockMonitoring') changes.stockMonitoring = $('#bkeStock').value === 'on';
+        else if (key === 'priceMonitoring') changes.priceMonitoring = $('#bkePriceMon').value === 'on';
+        else if (key === 'location') changes.location = { countryLocation: $('#bkeLocCountry').value, locationCity: $('#bkeLocCity').value, postalCode: $('#bkeLocPostal').value };
+        else if (key === 'policies') {
+          const mode = overlay.querySelector('input[name="bkePol"]:checked') ? overlay.querySelector('input[name="bkePol"]:checked').value : 'default';
+          changes.policies = mode === 'choose' ? { mode, paymentPolicyId: $('#bkePay').value, fulfillmentPolicyId: $('#bkeShip').value, returnPolicyId: $('#bkeRet').value } : { mode: 'default' };
+        }
+      }
+      return changes;
+    }
+
+    // ---- run it (dry run or for real) in small requests, so the progress shows and none times out ----
+    async function runAll(dryRun, changes, onProgress) {
+      const all = { results: [], summary: { changed: 0, unchanged: 0, skipped: 0 } };
+      for (let i = 0; i < ids.length; i += BE_CHUNK) {
+        if (onProgress) onProgress(Math.min(i + BE_CHUNK, ids.length));
+        const data = await bulkJson('/api/listings/bulk-edit', 'POST', { ids: ids.slice(i, i + BE_CHUNK), dryRun, changes });
+        all.results.push(...data.results);
+        for (const k of ['changed', 'unchanged', 'skipped']) all.summary[k] += data.summary[k];
+      }
+      return all;
+    }
+
+    const fmtVal = (field, v) => (v === null || v === undefined || v === '' ? '—' : field === 'Price' ? Number(v).toFixed(2) : String(v));
+    const nameOf = (r) => escapeHtml(String(r.title || r.id).slice(0, 70));
+    function renderPreview(out) {
+      const s = out.summary;
+      const changed = out.results.filter((r) => r.status === 'changed');
+      const skipped = out.results.filter((r) => r.status === 'skipped');
+      let html = '<div class="be-sum"><b>' + s.changed + '</b> will change' + (s.unchanged ? ' · ' + s.unchanged + ' already like this' : '') + (s.skipped ? ' · <span class="be-warn">' + s.skipped + ' skipped</span>' : '') + '</div>';
+      if (changed.length) {
+        html += '<div class="be-rows">' + changed.slice(0, 6).map((r) => '<div class="be-row"><b>' + nameOf(r) + '</b>' + r.diff.map((d) => '<div><span>' + escapeHtml(d.field) + '</span> ' + escapeHtml(fmtVal(d.field, d.from)) + ' &rarr; <b>' + escapeHtml(fmtVal(d.field, d.to)) + '</b></div>').join('') + '</div>').join('')
+          + (changed.length > 6 ? '<div class="be-more">and ' + (changed.length - 6) + ' more</div>' : '') + '</div>';
+      }
+      if (skipped.length) html += '<div class="be-skips"><b>Skipped</b>' + skipped.slice(0, 8).map((r) => '<div>' + nameOf(r) + ': ' + escapeHtml(r.reason || '') + '</div>').join('') + (skipped.length > 8 ? '<div>and ' + (skipped.length - 8) + ' more</div>' : '') + '</div>';
+      resultBox.innerHTML = html;
+    }
+
+    previewBtn.addEventListener('click', async () => {
+      let changes;
+      try { changes = readChanges(); } catch (err) { resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + '</div>'; applyBtn.style.display = 'none'; return; }
+      previewBtn.disabled = true; resultBox.innerHTML = '<div class="elms-loader sm" role="status" aria-label="Checking"></div>'; applyBtn.style.display = 'none';
       try {
-        if (pctRaw) {
-          const r = await bulkJson('/api/listings/bulk-pricing', 'POST', { ids, profitPercent: pct });
-          summary.push(`${r.updated} priced at ${pct}% profit` + (r.skipped.length ? `, ${r.skipped.length} skipped (${r.skipped[0].reason})` : ''));
-        }
-        if (mode === 'default') {
-          const r = await bulkJson('/api/listings/bulk-settings', 'PATCH', { ids, useDynamicPolicies: true });
-          summary.push(`${r.updated} now use your account’s default policies`);
-        } else if (mode === 'choose') {
-          const body = { ids, useDynamicPolicies: false };
-          if ($('#bkPay').value) body.paymentPolicyId = $('#bkPay').value;
-          if ($('#bkShip').value) body.fulfillmentPolicyId = $('#bkShip').value;
-          if ($('#bkRet').value) body.returnPolicyId = $('#bkRet').value;
-          if (Object.keys(body).length === 2) throw new Error('Choose at least one policy.');
-          const r = await bulkJson('/api/listings/bulk-settings', 'PATCH', body);
-          summary.push(`${r.updated} policies updated`);
-        }
-        showToast('Edit selected', summary.join('. ') + '.', 'success');
+        const out = await runAll(true, changes);
+        renderPreview(out);
+        if (out.summary.changed > 0) { applyBtn.textContent = 'Apply to ' + out.summary.changed + ' draft' + (out.summary.changed === 1 ? '' : 's'); applyBtn.style.display = ''; }
+      } catch (err) {
+        resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + '</div>';
+      } finally { previewBtn.disabled = !picked().length; }
+    });
+
+    applyBtn.addEventListener('click', async () => {
+      let changes;
+      try { changes = readChanges(); } catch (err) { resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + '</div>'; return; }
+      applyBtn.disabled = true; previewBtn.disabled = true;
+      const label = applyBtn.textContent;
+      try {
+        const out = await runAll(false, changes, (upTo) => { applyBtn.textContent = 'Applying ' + upTo + '/' + ids.length + '…'; });
+        const s = out.summary;
+        showToast('Bulk edit', s.changed + ' draft' + (s.changed === 1 ? '' : 's') + ' changed' + (s.unchanged ? ', ' + s.unchanged + ' already like this' : '') + (s.skipped ? ', ' + s.skipped + ' skipped' : '') + '.', s.skipped && !s.changed ? 'error' : 'success');
         close();
         loadDrafts();
       } catch (err) {
-        showToast('Edit selected', (summary.length ? summary.join('. ') + '. ' : '') + err.message, 'error');
-        applyBtn.disabled = false; applyBtn.textContent = label;
+        resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + ' Some drafts may already be changed: preview again to see.</div>';
+        applyBtn.disabled = false; previewBtn.disabled = false; applyBtn.textContent = label;
       }
     });
   }
