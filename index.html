@@ -3071,6 +3071,29 @@
   .st-acct-name-edit { display:flex; gap:8px; margin-top:10px; max-width:480px; }
   .st-acct-name-edit .st-input { height:36px; }
   .st-acct-actions { display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
+  .st-acct-status { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+  .ebst-chip { font:inherit; font-size:12px; font-weight:700; padding:4px 10px; border-radius:99px; background:#EEF2F7; color:#334155; border:0; }
+  .ebst-chip.good { background:#EDF7DC; color:#4C7A0B; }
+  .ebst-chip.warn { background:#FFF4DB; color:#8A5A00; }
+  button.ebst-chip.warn { cursor:pointer; }
+  button.ebst-chip.warn:hover { background:#FFEBC0; }
+  .ebst-issues { margin:0 0 14px; padding:12px 14px; border:1.5px solid #F5DDA0; background:#FFFBF0; border-radius:12px; font-size:13px; color:#5B4300; }
+  .ebst-chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .ebst-list { margin-top:10px; }
+  .ebst-item { padding:9px 0; border-top:1px solid #F1E6C4; font-size:13px; }
+  .ebst-item b { color:#0F172A; }
+  .ebst-item small { color:#64748B; margin-left:6px; }
+  .ebst-item ul { margin:4px 0 0 18px; padding:0; color:#5B4300; }
+  .ebst-more { margin-top:8px; font-size:12px; color:#64748B; }
+  .ap-bar { height:8px; border-radius:99px; background:#E8EDF3; overflow:hidden; }
+  .ap-bar i { display:block; height:100%; background:#86B817; border-radius:99px; }
+  .ap-bar.warn i { background:#F0A020; }
+  .ap-bar.bad i { background:#DC2626; }
+  .ap-row { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 96px; gap:10px; align-items:center; padding:7px 0; border-top:1px solid var(--line); font-size:12.5px; }
+  .ap-row:first-of-type { border-top:0; }
+  .ap-row .nm { font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ap-row .nm small { color:var(--grey); font-weight:500; margin-left:6px; }
+  .ap-row .nu { text-align:right; color:#334155; font-variant-numeric:tabular-nums; }
   .st-table { width:100%; border-collapse:collapse; font-size:13.5px; }
   .st-table th { text-align:left; font-size:11.5px; letter-spacing:.04em; text-transform:uppercase; color:#64748B; padding:8px 10px; border-bottom:1.5px solid var(--line); }
   .st-table td { padding:12px 10px; border-bottom:1px solid #EEF2F7; }
@@ -5271,6 +5294,14 @@
               </div>
               <p class="meta-line" style="margin:2px 0 12px;">What the extension charges for an import is set under <b>Credit Costs</b> (the rows that start with &ldquo;Extension&rdquo;). A price of 0 makes it free, and the extension then says so.</p>
               <div class="st-actions"><button class="st-btn primary" id="saveImportPolicyBtn" type="button">Save</button><div id="importPolicyStatus"></div></div>
+            </section>
+            <section class="st-card" id="ebayUsageCard">
+              <div class="st-head">
+                <div class="st-ico blue">&#128200;</div>
+                <div class="st-head-txt"><h2>eBay API usage today</h2><p>How much of eBay's daily call allowance ELMS has used (all sellers together).</p></div>
+              </div>
+              <div id="ebayUsageBody"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+              <div class="st-actions"><button class="st-btn small" id="ebayUsageRefreshBtn" type="button">Refresh</button><div id="ebayUsageStatus"></div></div>
             </section>
             <section class="st-card">
               <div class="st-head">
@@ -9726,6 +9757,27 @@ async function autoSuggestEmptyDraftCategories() {
     return s || 'active';
   }
 
+  // eBay's own list of live listings that break a rule (Compliance API), for the store that is selected. Read once per visit; the server remembers it for 30 minutes.
+  let llFlag = null; // { accountId, status }
+  function llFlagHtml() {
+    const v = llFlag && llFlag.status && llFlag.status.violations;
+    if (!v || !v.total) return '';
+    const chips = v.byType.map((t) => '<button type="button" class="ebst-chip warn" data-ebst-type="' + escapeAttr(t.complianceType) + '" data-ebst-account="' + escapeAttr(llFlag.accountId) + '" data-ebst-target="llFlagDetails" title="Show the listings">\u26A0 ' + Number(t.listingCount) + ' \u00b7 ' + escapeHtml(t.label) + '</button>').join('');
+    return '<div class="ebst-issues"><b>\u26A0 eBay flagged ' + v.total + ' live listing' + (v.total === 1 ? '' : 's') + ' for rule problems.</b> Fix them so eBay does not hide or end them.<div class="ebst-chips">' + chips + '</div><div id="llFlagDetails"></div></div>';
+  }
+  async function llLoadFlags() {
+    try {
+      const accountId = await getActiveStoreId();
+      if (!accountId) return;
+      const res = await apiFetch('/api/ebay-accounts/' + encodeURIComponent(accountId) + '/status');
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      llFlag = { accountId, status: data.status };
+      const el = document.getElementById('llFlagBanner');
+      if (el) el.innerHTML = llFlagHtml();
+    } catch (_) { /* the page works without it */ }
+  }
+
   async function loadListings() {
     const container = document.getElementById('listingsContent');
     container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading listings"></div>';
@@ -9738,8 +9790,10 @@ async function autoSuggestEmptyDraftCategories() {
       }
       llAll = (data.listings || []).map(veroTag);
       llPage = 1;
+      llFlag = null;
       renderListings();
       llAutoRefresh();
+      llLoadFlags();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
@@ -9835,6 +9889,7 @@ async function autoSuggestEmptyDraftCategories() {
           ${kpi('Average margin', avgMargin == null ? '\u2014' : avgMargin + '%', 'sell vs. Amazon cost', avgMargin == null ? '' : avgMargin >= 15 ? 'good' : avgMargin < 5 ? 'bad' : '')}
           ${kpi('Need attention', counts.issues, counts.issues ? 'open the card to fix' : 'no problems', counts.issues ? 'bad' : 'good')}
         </div>
+        <div id="llFlagBanner">${llFlagHtml()}</div>
         <div class="dv-toolbar">
           <span class="dv-seg" role="tablist">${tab('all', 'All', counts.all)}${tab('active', 'Active', counts.active)}${tab('sold', 'Sold', counts.sold)}${tab('ended', 'Ended', counts.ended)}${tab('issues', 'Issues', counts.issues)}</span>
           <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search title, SKU or item ID" value="${escapeAttr(llSearch)}" /></div>
@@ -11555,6 +11610,8 @@ async function autoSuggestEmptyDraftCategories() {
                 <input class="st-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="${escapeAttr(acc.storeName || acc.username || 'e.g. USA Store / UK Store')}" />
                 <button class="st-btn small" data-action="save-name" type="button">Save name</button>
               </div>
+              <div class="st-acct-status" data-status><div class="elms-loader" style="width:64px;margin:6px 0 0;" role="status" aria-label="Loading"></div></div>
+              <div id="ebstIssues-${acc.id}"></div>
             </div>
             <div class="st-acct-actions">
               ${!acc.isActive ? `<button class="st-btn small" data-action="activate-account" type="button">Switch to this store</button>` : ''}
@@ -11563,11 +11620,79 @@ async function autoSuggestEmptyDraftCategories() {
           </div>
         `).join('');
         wireEbayAccountRowActions();
+        loadStoreStatuses(currentEbayAccounts);
       }
 
       populatePoliciesAccountSelector();
     } catch (err) {
       listEl.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  // ---------- eBay store status: selling limit and listings that break an eBay rule (read from eBay, remembered for 30 minutes) ----------
+  function ebstMoney(value, currency) {
+    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(value); }
+    catch (_) { return (currency ? currency + ' ' : '') + value; }
+  }
+  function ebstChipsHtml(status, accountId, targetId) {
+    const chips = [];
+    const limit = status.sellingLimit;
+    if (limit) {
+      const parts = [];
+      if (limit.quantity != null) parts.push(Number(limit.quantity).toLocaleString() + ' items');
+      if (limit.amount) parts.push(ebstMoney(limit.amount.value, limit.amount.currency));
+      chips.push('<span class="ebst-chip" title="eBay limits how much a new or small seller may sell each month. eBay refuses a publish that goes over it.">Monthly selling limit: ' + escapeHtml(parts.join(' \u00b7 ')) + '</span>');
+    } else if (!(status.errors && status.errors.privileges)) {
+      chips.push('<span class="ebst-chip good" title="eBay returned no monthly cap for this account.">No monthly selling limit</span>');
+    }
+    if (status.registrationCompleted === false) chips.push('<span class="ebst-chip warn" title="Finish the seller registration in eBay Seller Hub.">Seller registration not finished on eBay</span>');
+    const v = status.violations;
+    if (v && v.total > 0) {
+      v.byType.forEach((t) => chips.push('<button type="button" class="ebst-chip warn" data-ebst-type="' + escapeAttr(t.complianceType) + '" data-ebst-account="' + escapeAttr(accountId) + '" data-ebst-target="' + escapeAttr(targetId) + '" title="Show the listings">\u26A0 ' + Number(t.listingCount) + ' \u00b7 ' + escapeHtml(t.label) + '</button>'));
+    } else if (v) {
+      chips.push('<span class="ebst-chip good">No eBay rule problems</span>');
+    }
+    if (!chips.length) chips.push('<span class="ebst-chip" title="' + escapeAttr(Object.values(status.errors || {})[0] || '') + '">eBay status not available</span>');
+    return chips.join('');
+  }
+  function ebstListHtml(data) {
+    if (!data.listings.length) return '<div class="ebst-more">eBay shows no listings for this problem any more. The count updates within half an hour.</div>';
+    return '<div class="ebst-list">' + data.listings.map((l) => '<div class="ebst-item"><b>' + escapeHtml(l.title || l.sku || l.listingId) + '</b><small>eBay item ' + escapeHtml(l.listingId) + '</small>'
+      + (l.violations.length ? '<ul>' + l.violations.map((x) => '<li>' + escapeHtml(x.message) + '</li>').join('') + '</ul>' : '') + '</div>').join('')
+      + (data.total > data.listings.length ? '<div class="ebst-more">Showing the first ' + data.listings.length + ' of ' + data.total + '.</div>' : '') + '</div>';
+  }
+  // One click handler for every "problem" chip (Settings and Live listings): it opens or closes the list of listings under it.
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest ? e.target.closest('[data-ebst-type]') : null;
+    if (!btn) return;
+    const target = document.getElementById(btn.getAttribute('data-ebst-target'));
+    if (!target) return;
+    const type = btn.getAttribute('data-ebst-type');
+    if (target.getAttribute('data-open') === type) { target.innerHTML = ''; target.removeAttribute('data-open'); return; }
+    target.setAttribute('data-open', type);
+    target.innerHTML = '<div class="elms-loader" style="width:64px;margin:10px 0;" role="status" aria-label="Loading"></div>';
+    try {
+      const res = await apiFetch('/api/ebay-accounts/' + encodeURIComponent(btn.getAttribute('data-ebst-account')) + '/violations?type=' + encodeURIComponent(type));
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the listings from eBay.');
+      if (target.getAttribute('data-open') === type) target.innerHTML = ebstListHtml(data);
+    } catch (err) {
+      target.innerHTML = '<div class="state-msg error">' + escapeHtml(err.message) + '</div>';
+    }
+  });
+  async function loadStoreStatuses(accounts) {
+    for (const acc of accounts) {
+      const row = document.querySelector('#ebayAccountsList [data-account-id="' + acc.id + '"]');
+      const box = row && row.querySelector('[data-status]');
+      if (!box) continue;
+      try {
+        const res = await apiFetch('/api/ebay-accounts/' + encodeURIComponent(acc.id) + '/status');
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'eBay did not answer.');
+        box.innerHTML = ebstChipsHtml(data.status, acc.id, 'ebstIssues-' + acc.id);
+      } catch (err) {
+        box.innerHTML = '<span class="ebst-chip" title="' + escapeAttr(err.message) + '">eBay status not available</span>';
+      }
     }
   }
 
@@ -14764,7 +14889,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadAdminPage() {
     loadAdminAdmins();
     loadAdminAffiliates();
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -15409,6 +15534,47 @@ async function autoSuggestEmptyDraftCategories() {
       status.className='success'; status.textContent='Saved.';
     } catch (err) { status.className='error'; status.textContent=err.message; }
     finally { btn.disabled=false; }
+  });
+
+  // ---------- Admin Panel: eBay API usage ----------
+  // ELMS's own count of Trading calls today (eBay allows 5,000 a day for the whole app) next to eBay's numbers for every API.
+  async function loadEbayUsage(force) {
+    const body = document.getElementById('ebayUsageBody');
+    if (!body) return;
+    try {
+      const res = await apiFetch('/api/admin/ebay-usage' + (force ? '?refresh=1' : ''));
+      const data = await res.json();
+      if (!res.ok || !data.success) { body.innerHTML = '<div class="state-msg error">' + escapeHtml(data.error || 'Could not load the eBay usage.') + '</div>'; return; }
+      const fmt = (n) => Number(n || 0).toLocaleString();
+      const level = (pct) => (pct >= 90 ? 'bad' : pct >= 70 ? 'warn' : '');
+      const row = (name, note, used, limit) => {
+        const pct = limit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+        return '<div class="ap-row"><div class="nm" title="' + escapeAttr(name + (note ? ' ' + note : '')) + '">' + escapeHtml(name) + (note ? '<small>' + escapeHtml(note) + '</small>' : '') + '</div><div class="ap-bar ' + level(pct) + '"><i style="width:' + pct + '%"></i></div><div class="nu">' + fmt(used) + ' / ' + fmt(limit) + '</div></div>';
+      };
+      const u = data.usage || {};
+      let html = '<p class="meta-line" style="margin:0 0 4px;"><b>Trading API</b>, counted by ELMS for ' + escapeHtml(u.day || 'today') + (u.exhausted ? ' <span style="color:#B91C1C;">(eBay said the limit is reached)</span>' : '') + '</p>'
+        + row('All Trading calls', '', u.total, u.limit) + row('Views & watchers', 'their share', u.stats, u.statsLimit);
+      const run = data.lastStatsRun;
+      html += '<p class="meta-line" style="margin:8px 0 14px;">' + (run
+        ? 'Last statistics run ' + escapeHtml(new Date(run.at).toLocaleString()) + ': ' + (run.skipped ? 'skipped (' + escapeHtml(run.skipped) + ')' : fmt(run.synced) + ' listing(s) from ' + fmt(run.stores) + ' store(s) with ' + fmt(run.calls) + ' eBay call(s)' + (run.viewsInBulk ? ', views came with the bulk answer' : ', eBay sent no views in bulk, so a few are read one by one') + (run.limited ? ', stopped: the day\'s share is used up' : ''))
+        : 'No statistics run since the server started.') + '</p>';
+      if (data.ebay) {
+        const used = data.ebay.filter((r) => r.used > 0).slice(0, 12);
+        html += '<p class="meta-line" style="margin:0 0 4px;"><b>eBay\'s own count</b> (every API, all sellers together)</p>'
+          + (used.length ? used.map((r) => row(r.apiName || r.apiContext, r.resource && r.resource !== r.apiName ? r.resource : '', r.used, r.limit)).join('') : '<p class="meta-line" style="margin:0;">No calls counted yet today.</p>');
+      } else if (data.ebayError) {
+        html += '<p class="meta-line" style="margin:0;">eBay\'s own numbers are not available right now: ' + escapeHtml(data.ebayError) + '</p>';
+      }
+      body.innerHTML = html;
+    } catch (err) {
+      body.innerHTML = '<div class="state-msg error">Could not connect to the server: ' + escapeHtml(err.message) + '</div>';
+    }
+  }
+  document.getElementById('ebayUsageRefreshBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('ebayUsageRefreshBtn');
+    btn.disabled = true;
+    await loadEbayUsage(true);
+    btn.disabled = false;
   });
 
   // ---------- Admin Panel: Welcome Bonus ----------
