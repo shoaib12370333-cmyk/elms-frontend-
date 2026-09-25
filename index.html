@@ -15735,7 +15735,7 @@ async function autoSuggestEmptyDraftCategories() {
       container.innerHTML = `
 
         <table class="data-table">
-          <thead><tr><th>Date</th><th>Amount</th><th>Credits</th><th>Status</th></tr></thead>
+          <thead><tr><th>Date</th><th>Amount</th><th>Credits</th><th>Status</th><th></th></tr></thead>
           <tbody>
             ${data.purchases.map((p) => `
               <tr>
@@ -15743,13 +15743,44 @@ async function autoSuggestEmptyDraftCategories() {
                 <td>$${p.priceUsd.toFixed(2)}${p.discountPercent > 0 ? `<span class="ph-was">$${Number(p.listPriceUsd).toFixed(2)}</span><span class="ph-off">-${fmtPct(p.discountPercent)}%</span>` : ''}</td>
                 <td>${p.creditsGranted.toLocaleString()}</td>
                 <td><span class="status-badge ${p.status === 'completed' ? 'published' : 'draft'}">${escapeHtml(p.status)}</span></td>
+                <td>${p.provider === 'voucher' ? '' : `<button class="btn-small save" type="button" data-invoice="${escapeAttr(p.id)}">Invoice</button>`}</td>
               </tr>
             `).join('')}
           </tbody>
         </table></div>
       `;
+      container.querySelectorAll('[data-invoice]').forEach((btn) => btn.addEventListener('click', () => downloadInvoice(btn.dataset.invoice, btn)));
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  // Downloads the invoice (PDF) of one of the user's purchases.
+  async function downloadInvoice(id, btn) {
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Preparing…';
+    try {
+      const res = await apiFetch(`/api/payments/invoice/${encodeURIComponent(id)}`);
+      if (!res.ok) {
+        let msg = 'Could not get the invoice.';
+        try { msg = (await res.json()).error || msg; } catch (_) { /* not JSON */ }
+        throw new Error(msg);
+      }
+      const name = ((res.headers.get('Content-Disposition') || '').match(/filename="([^"]+)"/) || [])[1] || 'invoice.pdf';
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      showToast('Invoice', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
     }
   }
 
