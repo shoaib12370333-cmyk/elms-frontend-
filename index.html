@@ -3061,6 +3061,19 @@
   .bc-plan-icons { display:flex; gap:6px; align-items:center; margin:14px 0 4px; flex-wrap:wrap; }
   .bc-plan-icons svg { height:22px; width:auto; border-radius:4px; }
   .bc-plan-label { font-size:12px; color:var(--grey); margin-bottom:12px; }
+  .bc-billing { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:0 0 16px; } .bc-billing-note { font-size:12.5px; color:var(--grey); }
+  .bc-term { font-size:14px; font-weight:600; color:var(--grey); margin-left:2px; }
+  .bc-custom { margin-top:20px; background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:22px; display:flex; flex-direction:column; gap:16px; box-shadow:0 6px 22px rgba(20,35,60,.05); }
+  .bc-custom-head { display:flex; flex-direction:column; gap:2px; } .bc-custom-head span { font-size:13px; color:var(--grey); }
+  .bc-custom-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr)); gap:20px; }
+  .bc-cfield { display:flex; flex-direction:column; gap:8px; min-width:0; } .bc-cfield label { font-size:12.5px; font-weight:700; color:#4b5563; }
+  .bc-cinput { display:flex; align-items:center; gap:6px; border:1.5px solid var(--line); border-radius:12px; padding:0 12px; height:46px; background:#fff; } .bc-cinput span { color:var(--grey); font-weight:700; } .bc-cinput input { flex:1; min-width:0; border:0; outline:0; font:800 20px Inter,sans-serif; background:transparent; }
+  .bc-cfield input[type=range] { width:100%; accent-color:#0064D2; }
+  .bc-crange { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--grey); }
+  .bc-cstepper { display:flex; align-items:center; gap:8px; } .bc-cstepper button { width:46px; height:46px; border:1.5px solid var(--line); border-radius:12px; background:#fff; font:700 22px Inter,sans-serif; cursor:pointer; } .bc-cstepper button:hover { background:#F1F5F9; } .bc-cstepper input { flex:1; min-width:0; height:46px; border:1.5px solid var(--line); border-radius:12px; text-align:center; font:800 20px Inter,sans-serif; }
+  .bc-csummary { background:#F8FAFC; border:1px solid var(--line); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; font-size:14px; } .bc-crow { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:#374151; } .bc-crow b { font-weight:700; text-align:right; }
+  .bc-ctotal { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px 12px; padding-top:10px; border-top:1px dashed var(--line); } .bc-ctotal span { font-weight:700; } .bc-ctotal b { font-size:26px; font-weight:800; } .bc-ctotal small { color:var(--grey); font-size:12.5px; } .bc-cerr { color:#B42318; font-weight:600; }
+  .bc-custom .bc-buy { margin-top:0; }
   .bc-buy { margin-top:auto; height:46px; border:none; border-radius:12px; background:#0064D2; color:#fff; font:inherit; font-weight:800; font-size:15px; cursor:pointer; }
   .bc-buy:hover { background:#0055B3; } .bc-buy:disabled { opacity:.6; cursor:wait; }
   .bc-plan.best .bc-buy { background:linear-gradient(135deg,#0064D2,#4F46E5); }
@@ -4892,14 +4905,31 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico green">&#128179;</div>
-              <div class="st-head-txt"><h2>Credit plans</h2><p>The packs shown on Buy credits. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Paddle is optional and off unless PAYMENT_PROVIDER=paddle.</p></div>
+              <div class="st-head-txt"><h2>Credit plans</h2><p>The plans shown on Buy credits (the price is for one month; a yearly price switches the yearly option on). A monthly or yearly plan runs one term from the payment; when it ends the credits and the extra eBay-account limit end with it. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Paddle is optional and off unless PAYMENT_PROVIDER=paddle.</p></div>
             </div>
             <div id="adminPlansContent"><p class="state-msg">Loading&hellip;</p></div>
+            <div class="st-custom" id="customPlanCard">
+              <div class="st-custom-title">Custom plan (the buyer picks the amount)</div>
+              <p class="meta-line" style="margin:0 0 10px;">The buyer chooses dollars a month, monthly or yearly, and extra eBay stores. Credits = dollars x credits per dollar. A year is 12 months minus the yearly discount. Extra stores are charged by the month on top.</p>
+              <div class="st-grid">
+                <div class="st-field"><label>Lowest amount a month (USD)</label><input class="st-input" type="number" id="cpMin" min="1" step="1" /></div>
+                <div class="st-field"><label>Highest amount a month (USD)</label><input class="st-input" type="number" id="cpMax" min="1" step="1" /></div>
+                <div class="st-field"><label>Credits per dollar</label><input class="st-input" type="number" id="cpRate" min="0.01" step="0.01" /></div>
+                <div class="st-field"><label>Yearly discount (%)</label><input class="st-input" type="number" id="cpDiscount" min="0" max="90" step="0.5" /></div>
+                <div class="st-field"><label>eBay stores included</label><input class="st-input" type="number" id="cpIncluded" min="1" step="1" /></div>
+                <div class="st-field"><label>Price of each extra store (USD a month)</label><input class="st-input" type="number" id="cpExtra" min="0" step="0.5" /></div>
+                <div class="st-field"><label>Most extra stores a buyer can add</label><input class="st-input" type="number" id="cpMaxExtra" min="0" step="1" /></div>
+                <div class="st-field"><label>Custom plan</label><select class="st-input" id="cpEnabled"><option value="true">On</option><option value="false">Off</option></select></div>
+              </div>
+              <div class="meta-line" id="cpPreview" style="margin:8px 0;"></div>
+              <div class="st-actions"><button class="st-btn primary" id="saveCustomPlanBtn" type="button">Save custom plan</button><div id="customPlanStatus"></div></div>
+            </div>
             <div class="st-custom">
               <div class="st-custom-title">Add a plan</div>
               <div class="st-grid">
                 <div class="st-field"><label>Plan name</label><input class="st-input" type="text" id="newPlanName" placeholder="e.g. Starter" /></div>
-                <div class="st-field"><label>Price (USD)</label><input class="st-input" type="number" id="newPlanPrice" step="0.01" placeholder="10" /></div>
+                <div class="st-field"><label>Price a month (USD)</label><input class="st-input" type="number" id="newPlanPrice" step="0.01" placeholder="120" /></div>
+                <div class="st-field"><label>Yearly price (USD, optional)</label><input class="st-input" type="number" id="newPlanYearly" step="0.01" min="0" placeholder="1200 - switches the yearly option on" /></div>
                 <div class="st-field"><label>Credits</label><input class="st-input" type="number" id="newPlanCredits" placeholder="300" /></div>
                 <div class="st-field"><label>eBay accounts they can connect</label><input class="st-input" type="number" id="newPlanEbayAccounts" min="1" placeholder="1" /></div>
                 <div class="st-field"><label>Paddle Price ID (optional)</label><input class="st-input mono" type="text" id="newPlanPaddleId" placeholder="pri_01..." /></div>
@@ -13767,6 +13797,8 @@ async function autoSuggestEmptyDraftCategories() {
     ebay_accounts: { icon: '&#128722;', label: 'Extra eBay accounts' },
   };
   let pricingVoucherId = ''; // the voucher chosen on Buy credits ('' = none)
+  let pricingBilling = 'monthly'; // the term chosen on Buy credits: 'monthly' | 'yearly'
+  let customChoice = { amountUsd: 120, extraStores: 0 }; // what the buyer picked in the custom plan
 
   function voucherExpiryText(v) {
     if (v.state === 'used') return v.usedAt ? 'Used on ' + new Date(v.usedAt).toLocaleDateString() : 'Used';
@@ -15388,7 +15420,56 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // ---------- Admin Panel: Manage Plans ----------
+  // ----- custom plan settings -----
+  const CP_FIELDS = { cpMin: 'minUsd', cpMax: 'maxUsd', cpRate: 'creditsPerUsd', cpDiscount: 'yearlyDiscountPercent', cpIncluded: 'includedStores', cpExtra: 'extraStoreMonthlyUsd', cpMaxExtra: 'maxExtraStores' };
+  const cpForm = () => {
+    const out = { enabled: document.getElementById('cpEnabled').value === 'true' };
+    Object.entries(CP_FIELDS).forEach(([id, key]) => { out[key] = Number(document.getElementById(id).value); });
+    return out;
+  };
+  function cpPaintPreview() {
+    const s = cpForm();
+    const el = document.getElementById('cpPreview');
+    if (!el) return;
+    const usd = (n) => '$' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    const amount = Math.min(Math.max(120, s.minUsd || 0), s.maxUsd || 120);
+    const year = amount * 12 * (1 - (s.yearlyDiscountPercent || 0) / 100);
+    el.textContent = `Example: ${usd(amount)} a month = ${Math.round(amount * s.creditsPerUsd).toLocaleString()} credits. A year = ${usd(year)} for ${Math.round(amount * s.creditsPerUsd * 12).toLocaleString()} credits. ${s.includedStores} eBay store${s.includedStores === 1 ? '' : 's'} included, each extra store +${usd(s.extraStoreMonthlyUsd)} a month.`;
+  }
+  async function loadCustomPlanSettings() {
+    try {
+      const res = await apiFetch('/api/admin/settings/custom-plan');
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      Object.entries(CP_FIELDS).forEach(([id, key]) => { document.getElementById(id).value = data.custom[key]; });
+      document.getElementById('cpEnabled').value = data.custom.enabled ? 'true' : 'false';
+      cpPaintPreview();
+    } catch (_) { /* the plans list shows its own error */ }
+  }
+  Object.keys(CP_FIELDS).forEach((id) => document.getElementById(id)?.addEventListener('input', cpPaintPreview));
+  document.getElementById('saveCustomPlanBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('saveCustomPlanBtn');
+    const status = document.getElementById('customPlanStatus');
+    btn.disabled = true;
+    status.className = '';
+    status.textContent = 'Saving\u2026';
+    try {
+      const res = await apiFetch('/api/admin/settings/custom-plan', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cpForm()) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save.');
+      status.className = 'success';
+      status.textContent = 'Saved.';
+      loadCustomPlanSettings();
+    } catch (err) {
+      status.className = 'error';
+      status.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   async function loadAdminPlans() {
+    loadCustomPlanSettings();
     const container = document.getElementById('adminPlansContent');
     container.innerHTML = '<p class="state-msg">Loading&hellip;</p>';
 
@@ -15410,13 +15491,14 @@ async function autoSuggestEmptyDraftCategories() {
 
         <table class="data-table">
           <thead>
-            <tr><th>Name</th><th>Price (USD)</th><th>Credits</th><th>eBay accounts</th><th>Paddle ID (optional)</th><th>Active</th><th></th></tr>
+            <tr><th>Name</th><th>Price a month (USD)</th><th>Yearly price (USD)</th><th>Credits a month</th><th>eBay accounts</th><th>Paddle ID (optional)</th><th>Active</th><th></th></tr>
           </thead>
           <tbody>
             ${data.plans.map((p) => `
               <tr data-plan-id="${p.id}">
                 <td><input class="editable-input" data-field="name" value="${escapeAttr(p.name)}" style="width:120px;" /></td>
                 <td><input class="editable-input" data-field="priceUsd" type="number" step="0.01" value="${p.priceUsd}" style="width:90px;" /></td>
+                <td><input class="editable-input" data-field="yearlyPriceUsd" type="number" step="0.01" min="0" value="${p.yearlyPriceUsd || ''}" placeholder="off" title="A price here switches the yearly option on (12 months of credits at once). Empty = no yearly option." style="width:90px;" /></td>
                 <td><input class="editable-input" data-field="credits" type="number" value="${p.credits}" style="width:90px;" /></td>
                 <td><input class="editable-input" data-field="maxEbayAccounts" type="number" min="1" value="${p.maxEbayAccounts || ''}" placeholder="—" style="width:80px;" /></td>
                 <td><input class="editable-input" data-field="paddlePriceId" value="${escapeAttr(p.paddlePriceId || '')}" style="width:140px;" /></td>
@@ -15456,6 +15538,7 @@ async function autoSuggestEmptyDraftCategories() {
         const credits = Number(row.querySelector('[data-field="credits"]').value);
         const paddlePriceId = row.querySelector('[data-field="paddlePriceId"]').value.trim();
         const maxEbayAccounts = Number(row.querySelector('[data-field="maxEbayAccounts"]').value) || null;
+        const yearlyPriceUsd = row.querySelector('[data-field="yearlyPriceUsd"]').value.trim();
         const active = row.querySelector('[data-field="active"]').value === 'true';
 
         saveBtn.disabled = true;
@@ -15465,7 +15548,7 @@ async function autoSuggestEmptyDraftCategories() {
           const res = await apiFetch(`/api/admin/plans/${planId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts, active }),
+            body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts, yearlyPriceUsd, active }),
           });
           const data = await res.json();
 
@@ -15509,6 +15592,7 @@ async function autoSuggestEmptyDraftCategories() {
     const credits = Number(document.getElementById('newPlanCredits').value);
     const paddlePriceId = document.getElementById('newPlanPaddleId').value.trim();
     const maxEbayAccounts = Number(document.getElementById('newPlanEbayAccounts').value) || null;
+    const yearlyPriceUsd = document.getElementById('newPlanYearly').value.trim();
 
     if (!name || !priceUsd || !credits) {
       statusEl.className = 'error';
@@ -15524,7 +15608,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/admin/plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts }),
+        body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts, yearlyPriceUsd }),
       });
       const data = await res.json();
 
@@ -15541,6 +15625,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('newPlanCredits').value = '';
       document.getElementById('newPlanPaddleId').value = '';
       document.getElementById('newPlanEbayAccounts').value = '';
+      document.getElementById('newPlanYearly').value = '';
       loadAdminPlans();
     } catch (err) {
       statusEl.className = 'error';
@@ -15634,44 +15719,131 @@ async function autoSuggestEmptyDraftCategories() {
           <select id="bcVoucherSelect" aria-label="Voucher"><option value="">No voucher</option>${usable.map((v) => `<option value="${escapeAttr(v.id)}" ${v.id === pricingVoucherId ? 'selected' : ''}>${escapeHtml(v.description)}${v.expiresAt ? ' (until ' + escapeHtml(new Date(v.expiresAt).toLocaleDateString()) + ')' : ''}</option>`).join('')}</select>
         </div>` : '';
 
+      const offersYearly = data.plans.some((p) => p.yearlyPriceUsd) || !!data.custom;
+      if (!offersYearly) pricingBilling = 'monthly';
+      const topDiscount = data.custom && data.custom.yearlyDiscountPercent > 0 ? ` &middot; the custom plan saves ${fmtPct(data.custom.yearlyDiscountPercent)}% a year` : '';
+      const billingSwitch = offersYearly ? `<div class="bc-billing"><span class="dv-seg" role="group" aria-label="Billing"><button type="button" data-billing="monthly" class="${pricingBilling === 'monthly' ? 'on' : ''}">Monthly</button><button type="button" data-billing="yearly" class="${pricingBilling === 'yearly' ? 'on' : ''}">Yearly</button></span><span class="bc-billing-note">One payment buys one ${pricingBilling === 'yearly' ? 'year' : 'month'}${pricingBilling === 'yearly' ? topDiscount : ''}. It does not renew by itself.</span></div>` : '';
+      const cs = data.custom;
+      const customCard = cs ? `
+        <div class="bc-custom" id="bcCustom">
+          <div class="bc-custom-head"><div class="bc-plan-name">Build your own plan</div><span>Choose how much you spend, for how long, and how many eBay stores you need.</span></div>
+          <div class="bc-custom-grid">
+            <div class="bc-cfield">
+              <label for="bcAmountNum">Amount a month (USD)</label>
+              <div class="bc-cinput"><span>$</span><input id="bcAmountNum" type="number" min="${cs.minUsd}" max="${cs.maxUsd}" step="1" value="${Math.min(cs.maxUsd, Math.max(cs.minUsd, customChoice.amountUsd))}" inputmode="numeric" /></div>
+              <input id="bcAmountRange" type="range" min="${cs.minUsd}" max="${cs.maxUsd}" step="10" value="${Math.min(cs.maxUsd, Math.max(cs.minUsd, customChoice.amountUsd))}" aria-label="Amount a month" />
+              <div class="bc-crange"><span>$${cs.minUsd}</span><span>$${cs.maxUsd.toLocaleString()}</span></div>
+            </div>
+            <div class="bc-cfield">
+              <label for="bcStoresNum">Extra eBay stores</label>
+              <div class="bc-cstepper"><button type="button" id="bcStoresMinus" aria-label="One less">&minus;</button><input id="bcStoresNum" type="number" min="0" max="${cs.maxExtraStores}" step="1" value="${Math.min(cs.maxExtraStores, customChoice.extraStores)}" inputmode="numeric" /><button type="button" id="bcStoresPlus" aria-label="One more">+</button></div>
+              <div class="bc-crange"><span>${cs.includedStores} store${cs.includedStores === 1 ? '' : 's'} included</span><span>+$${Number(cs.extraStoreMonthlyUsd).toLocaleString()} a month each</span></div>
+            </div>
+          </div>
+          <div class="bc-csummary" id="bcCustomSummary">Working it out&hellip;</div>
+          <button class="bc-buy" id="bcCustomBuy" type="button" disabled>Buy</button>
+        </div>` : '';
+      const myPlan = data.myPlan ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${data.myPlan.planName ? escapeHtml(data.myPlan.planName) + ' runs' : 'Your plan runs'} until ${escapeHtml(new Date(data.myPlan.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span>Buying again adds a new term after it. When a plan ends, its credits and extra eBay stores end with it.</span></div></div>` : '';
+
       container.innerHTML = `
+        ${myPlan}
         ${picker}
         ${banner}
+        ${billingSwitch}
         <div class="bc-plans">
           ${data.plans.map((p) => {
-            const isBest = p.id === bestValuePlanId && data.plans.length > 1;
-            const hasOff = p.discountedPriceUsd != null && p.discountedPriceUsd < p.priceUsd;
-            const payNow = hasOff ? p.discountedPriceUsd : p.priceUsd;
-            const perCredit = (payNow / p.credits * 100).toFixed(2);
+            const yr = pricingBilling === 'yearly';
+            const noYear = yr && !p.yearlyPriceUsd;
+            const listUsd = yr ? p.yearlyPriceUsd : p.priceUsd;
+            const shownCredits = yr ? p.credits * 12 : p.credits;
+            const discUsd = yr ? p.discountedYearlyPriceUsd : p.discountedPriceUsd;
+            const isBest = p.id === bestValuePlanId && data.plans.length > 1 && !yr;
+            const hasOff = !noYear && discUsd != null && discUsd < listUsd;
+            const payNow = hasOff ? discUsd : listUsd;
+            const perCredit = noYear ? '' : (payNow / shownCredits * 100).toFixed(2);
+            const yearSave = yr && !noYear ? Math.max(0, p.priceUsd * 12 - payNow) : 0;
             return `
               <div class="bc-plan ${isBest ? 'best' : ''} ${hasOff || p.voucherNotValid ? 'has-off' : ''}">
-                ${hasOff ? `<div class="bc-off">${fmtPct((1 - payNow / p.priceUsd) * 100)}% off</div>` : ''}
+                ${hasOff ? `<div class="bc-off">${fmtPct((1 - payNow / listUsd) * 100)}% off</div>` : ''}
                 ${p.voucherNotValid ? '<div class="bc-plan-badnote" style="position:absolute;top:12px;left:16px;right:16px;">Your voucher is not valid for this plan.</div>' : ''}
                 ${isBest ? '<div class="bc-badge">Best value</div>' : ''}
                 <div class="bc-plan-name">${escapeHtml(p.name)}</div>
-                <div class="bc-plan-credits">${p.credits.toLocaleString()}<small>credits</small></div>
-                <div class="bc-plan-price">${hasOff ? `<s>$${p.priceUsd.toFixed(2)}</s><span class="bc-new">$${payNow.toFixed(2)}</span>` : '$' + p.priceUsd.toFixed(2)}</div>
-                ${hasOff ? `<div class="bc-save">You save $${(p.priceUsd - payNow).toFixed(2)}</div>` : ''}
-                <div class="bc-plan-per">&#8776; ${perCredit}&cent; per credit</div>
-                ${p.maxEbayAccounts ? `<div class="bc-plan-label" style="font-weight:800;color:var(--ink);">+ ${p.maxEbayAccounts} eBay account${p.maxEbayAccounts === 1 ? '' : 's'}</div>` : ''}
-                ${data.provider === 'cashtap' ? '<div class="bc-plan-label">Wallet, CashApp, card &amp; more &middot; secure checkout by CashTap</div>' : `<div class="bc-plan-icons">${PAYMENT_ICONS_SVG}</div><div class="bc-plan-label">Card, PayPal &amp; more</div>`}
-                <button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${p.credits.toLocaleString()} credits</button>
+                ${noYear ? '<div class="bc-plan-price" style="font-size:16px;color:var(--grey);">No yearly option</div><div class="bc-plan-per">This plan is monthly only.</div>' : `
+                <div class="bc-plan-credits">${shownCredits.toLocaleString()}<small>credits for ${yr ? '1 year' : '1 month'}</small></div>
+                <div class="bc-plan-price">${hasOff ? `<s>$${listUsd.toFixed(2)}</s><span class="bc-new">$${payNow.toFixed(2)}</span>` : '$' + listUsd.toFixed(2)}<small class="bc-term">${yr ? '/year' : '/month'}</small></div>
+                ${hasOff ? `<div class="bc-save">You save $${(listUsd - payNow).toFixed(2)}</div>` : ''}
+                ${yr ? `<div class="bc-plan-per">&#8776; $${(payNow / 12).toFixed(2)} a month${yearSave > 0.005 ? ' &middot; $' + yearSave.toFixed(2) + ' less than paying monthly' : ''}</div>` : ''}
+                <div class="bc-plan-per">&#8776; ${perCredit}&cent; per credit</div>`}
+                ${p.maxEbayAccounts && !noYear ? `<div class="bc-plan-label" style="font-weight:800;color:var(--ink);">+ ${p.maxEbayAccounts} eBay account${p.maxEbayAccounts === 1 ? '' : 's'}</div>` : ''}
+                ${noYear ? '' : data.provider === 'cashtap' ? '<div class="bc-plan-label">Wallet, CashApp, card &amp; more &middot; secure checkout by CashTap</div>' : `<div class="bc-plan-icons">${PAYMENT_ICONS_SVG}</div><div class="bc-plan-label">Card, PayPal &amp; more</div>`}
+                <button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button"${noYear ? ' disabled' : ''}>${noYear ? 'Monthly only' : 'Buy ' + shownCredits.toLocaleString() + ' credits'}</button>
               </div>
             `;
           }).join('')}
         </div>
+        ${customCard}
       `;
 
       document.querySelectorAll('.pricing-buy-btn').forEach((btn) => {
         btn.addEventListener('click', () => startCheckout(btn.getAttribute('data-plan-id'), btn));
       });
+      document.querySelectorAll('.bc-billing [data-billing]').forEach((b) => b.addEventListener('click', () => { pricingBilling = b.dataset.billing; loadPlanCards(); }));
+      if (cs) wireCustomPlan(cs);
       document.getElementById('bcVoucherSelect')?.addEventListener('change', (e) => { pricingVoucherId = e.target.value; loadPlanCards(); });
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
   }
 
-  async function startCheckout(planId, btn) {
+  // The custom plan: the summary comes from the server (the same numbers the checkout uses).
+  function wireCustomPlan(cs) {
+    const num = document.getElementById('bcAmountNum');
+    const range = document.getElementById('bcAmountRange');
+    const stores = document.getElementById('bcStoresNum');
+    const summary = document.getElementById('bcCustomSummary');
+    const buy = document.getElementById('bcCustomBuy');
+    if (!num || !range || !stores || !summary || !buy) return;
+    let timer = null;
+    let seq = 0;
+    const usd = (n) => '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const amount = () => Math.round(Number(num.value));
+    const extra = () => Math.max(0, Math.round(Number(stores.value) || 0));
+    async function quote() {
+      const my = ++seq;
+      customChoice = { amountUsd: amount() || cs.minUsd, extraStores: extra() };
+      buy.disabled = true;
+      try {
+        const res = await apiFetch(`/api/payments/custom-quote?amountUsd=${amount()}&billing=${pricingBilling}&extraStores=${extra()}`);
+        const d = await res.json();
+        if (my !== seq) return;
+        if (!res.ok || !d.success) { summary.innerHTML = `<span class="bc-cerr">${escapeHtml(d.error || 'Could not work that out.')}</span>`; buy.textContent = 'Buy'; return; }
+        const o = d.offer;
+        const b = o.breakdown;
+        const pay = d.discountedPriceUsd != null && d.discountedPriceUsd < o.priceUsd ? d.discountedPriceUsd : o.priceUsd;
+        summary.innerHTML = `
+          <div class="bc-crow"><span>${o.credits.toLocaleString()} credits</span><b>for ${o.termMonths === 12 ? '1 year' : '1 month'}</b></div>
+          <div class="bc-crow"><span>${o.maxEbayAccounts} eBay store${o.maxEbayAccounts === 1 ? '' : 's'}</span><b>${b.extraStores ? b.includedStores + ' included + ' + b.extraStores + ' extra (+' + usd(b.extraStoresUsd) + ' a month)' : 'included'}</b></div>
+          ${o.termMonths === 12 ? `<div class="bc-crow"><span>12 months</span><b>${usd(b.yearlyFullUsd)}${b.yearlyDiscountPercent ? ' &minus; ' + fmtPct(b.yearlyDiscountPercent) + '% yearly discount' : ''}</b></div>` : ''}
+          ${pay < o.priceUsd ? `<div class="bc-crow"><span>Referral discount</span><b>&minus;${usd(o.priceUsd - pay)}</b></div>` : ''}
+          <div class="bc-ctotal"><span>Total</span><b>${usd(pay)}</b><small>${o.termMonths === 12 ? 'once, for a year' : 'once, for a month'} &middot; about ${(pay / o.credits * 100).toFixed(2)}&cent; per credit</small></div>`;
+        buy.textContent = `Buy custom plan · ${usd(pay)}`;
+        buy.disabled = false;
+      } catch (err) {
+        if (my === seq) summary.innerHTML = `<span class="bc-cerr">Could not connect to the server.</span>`;
+      }
+    }
+    const later = () => { clearTimeout(timer); timer = setTimeout(quote, 250); };
+    num.addEventListener('input', () => { if (amount() >= cs.minUsd && amount() <= cs.maxUsd) range.value = String(Math.round(amount() / 10) * 10); later(); });
+    range.addEventListener('input', () => { num.value = range.value; later(); });
+    stores.addEventListener('input', later);
+    document.getElementById('bcStoresMinus').addEventListener('click', () => { stores.value = String(Math.max(0, extra() - 1)); later(); });
+    document.getElementById('bcStoresPlus').addEventListener('click', () => { stores.value = String(Math.min(cs.maxExtraStores, extra() + 1)); later(); });
+    buy.addEventListener('click', () => startCheckout(null, buy, { amountUsd: amount(), extraStores: extra() }));
+    quote();
+  }
+
+  async function startCheckout(planId, btn, custom) {
+    const idleLabel = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Starting checkout\u2026';
 
@@ -15679,7 +15851,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
+        body: JSON.stringify(custom ? { custom, billing: pricingBilling } : { planId, billing: pricingBilling, ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
       });
       const data = await res.json();
 
@@ -15710,7 +15882,7 @@ async function autoSuggestEmptyDraftCategories() {
       alert('Could not connect to the server: ' + err.message);
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Buy now';
+      btn.textContent = idleLabel;
     }
   }
 
