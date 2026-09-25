@@ -5261,6 +5261,19 @@
             </section>
             <section class="st-card">
               <div class="st-head">
+                <div class="st-ico yellow">&#128230;</div>
+                <div class="st-head-txt"><h2>Imports without an eBay account</h2><p>Let people import products before they connect a store.</p></div>
+                <label class="toggle-switch"><input type="checkbox" id="importPolicyToggle" /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="st-field">
+                <label>Status <span class="welcome-bonus-label" id="importPolicyStateLabel" style="text-transform:none;letter-spacing:0;">Allowed</span></label>
+                <p class="meta-line" id="importPolicyHelp" style="margin:6px 0 0;"></p>
+              </div>
+              <p class="meta-line" style="margin:2px 0 12px;">What the extension charges for an import is set under <b>Credit Costs</b> (the rows that start with &ldquo;Extension&rdquo;). A price of 0 makes it free, and the extension then says so.</p>
+              <div class="st-actions"><button class="st-btn primary" id="saveImportPolicyBtn" type="button">Save</button><div id="importPolicyStatus"></div></div>
+            </section>
+            <section class="st-card">
+              <div class="st-head">
                 <div class="st-ico blue">&#129513;</div>
                 <div class="st-head-txt"><h2>Browser extension</h2><p>Links and IDs used by the ELMS Chrome extension.</p></div>
               </div>
@@ -15409,10 +15422,45 @@ async function autoSuggestEmptyDraftCategories() {
       toggle.checked = !!data.settings.welcomeBonusEnabled;
       document.getElementById('welcomeBonusStateLabel').textContent = toggle.checked ? 'On' : 'Off';
       document.getElementById('welcomeBonusCredits').value = data.settings.welcomeBonusCredits ?? 10;
+      document.getElementById('importPolicyToggle').checked = data.settings.importWithoutEbayAccount !== false;
+      renderImportPolicyText();
     } catch (err) {
       // Non-critical - the form just keeps its default values if this fails.
     }
   }
+
+  // ---------- Admin Panel: imports without an eBay account ----------
+  function renderImportPolicyText() {
+    const on = document.getElementById('importPolicyToggle').checked;
+    document.getElementById('importPolicyStateLabel').textContent = on ? 'Allowed' : 'Not allowed';
+    document.getElementById('importPolicyHelp').textContent = on
+      ? 'Allowed: the extension, the Import page and bulk imports work even when no eBay store is connected. The draft is saved without a store and the person chooses one when they publish.'
+      : 'Not allowed: a person with no connected eBay store is asked to connect one before importing. Nothing is charged for that attempt.';
+  }
+  document.getElementById('importPolicyToggle').addEventListener('change', renderImportPolicyText);
+  document.getElementById('saveImportPolicyBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('saveImportPolicyBtn');
+    const statusEl = document.getElementById('importPolicyStatus');
+    btn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = 'Saving\u2026';
+    try {
+      const res = await apiFetch('/api/admin/settings/import-policy', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ importWithoutEbayAccount: document.getElementById('importPolicyToggle').checked }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) { statusEl.className = 'error'; statusEl.textContent = data.error || 'Could not save this setting.'; return; }
+      statusEl.className = 'success';
+      statusEl.textContent = 'Saved!';
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   document.getElementById('welcomeBonusToggle').addEventListener('change', (e) => {
     document.getElementById('welcomeBonusStateLabel').textContent = e.target.checked ? 'On' : 'Off';
@@ -15470,7 +15518,7 @@ async function autoSuggestEmptyDraftCategories() {
 
         <table class="data-table" id="adminUsersTable">
           <thead>
-            <tr><th>User</th><th>Status</th><th>Plan</th><th>Last sign-in</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
+            <tr><th>User</th><th>Status</th><th>Plan</th><th>eBay</th><th>Last sign-in</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
           </thead>
           <tbody>
             ${adminUsersData.map((u) => `
@@ -15478,6 +15526,7 @@ async function autoSuggestEmptyDraftCategories() {
                 <td class="row-title">${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">SUSPENDED</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span></td>
                 <td data-cell="status" style="white-space:nowrap;">${adminUserStatusHtml(u)}</td>
                 <td data-cell="plan">${adminUserPlanHtml(u)}</td>
+                <td data-cell="ebay" style="font-size:12.5px;">${adminUserEbayHtml(u)}</td>
                 <td data-cell="login" style="font-size:12.5px;">${adminUserLoginHtml(u)}</td>
                 <td><input class="editable-input" data-field="creditBalance" type="number" value="${u.creditBalance}" style="width:100px;" /></td>
                 <td><input class="editable-input" data-field="stockCheckIntervalDays" type="number" min="1" value="${u.stockCheckIntervalDays}" style="width:80px;" /></td>
@@ -15501,7 +15550,11 @@ async function autoSuggestEmptyDraftCategories() {
   let adminUsersData = [];
   let adminUserFilter = 'all';
   const adminUserAgo = (min) => (min == null ? 'never' : min < 1 ? 'just now' : min < 60 ? `${min} min ago` : min < 1440 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} d ago`);
-  const adminUserRowAttrs = (u) => `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended ? 1 : 0}"`;
+  const adminUserRowAttrs = (u) => `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}"`;
+  // Has this person connected an eBay store (and how many, on which eBay sites)?
+  const adminUserEbayHtml = (u) => (u.ebay && u.ebay.connected
+    ? `<span class="ad-tag paid">CONNECTED</span><br /><small style="color:var(--grey);">${u.ebay.stores} store${u.ebay.stores === 1 ? '' : 's'}${u.ebay.marketplaces && u.ebay.marketplaces.length ? ' &middot; ' + escapeHtml(u.ebay.marketplaces.map((m) => String(m).replace('EBAY_', '')).join(', ')) : ''}</small>`
+    : '<span class="ad-tag free">NOT CONNECTED</span>');
   const adminUserStatusHtml = (u) => (u.online
     ? '<span class="ad-dot on"></span><b style="color:#15803D;">Online</b>'
     : `<span class="ad-dot"></span>${u.minutesAgo == null ? 'Never seen' : 'Left ' + adminUserAgo(u.minutesAgo)}`);
@@ -15516,7 +15569,7 @@ async function autoSuggestEmptyDraftCategories() {
     const box = document.getElementById('adminUserChips');
     if (!box || !summary) return;
     const chip = (key, label, n) => `<button type="button" class="ad-chipbtn${adminUserFilter === key ? ' on' : ''}" data-user-filter="${key}">${label}<b>${n}</b></button>`;
-    box.innerHTML = chip('all', 'All', summary.total) + chip('online', '● Online now', summary.online) + chip('paid', 'Bought a plan', summary.paid) + chip('free', 'Free plan', summary.free) + chip('suspended', 'Suspended', summary.suspended);
+    box.innerHTML = chip('all', 'All', summary.total) + chip('online', '● Online now', summary.online) + chip('paid', 'Bought a plan', summary.paid) + chip('free', 'Free plan', summary.free) + chip('suspended', 'Suspended', summary.suspended) + chip('ebay', 'eBay connected', summary.ebayConnected || 0) + chip('noebay', 'No eBay yet', summary.ebayNotConnected || 0);
     box.querySelectorAll('[data-user-filter]').forEach((b) => b.addEventListener('click', () => { adminUserFilter = b.dataset.userFilter; renderAdminUserChips(summary); applyAdminUserSearch(); }));
   }
 
@@ -15532,8 +15585,9 @@ async function autoSuggestEmptyDraftCategories() {
       adminUsersData.forEach((u) => {
         const row = document.querySelector(`#adminUsersContent tr[data-user-id="${u.id}"]`);
         if (!row) return;
-        row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended ? 1 : 0);
+        row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended ? 1 : 0); row.setAttribute('data-ebay', u.ebay && u.ebay.connected ? 1 : 0);
         row.querySelector('[data-cell="status"]').innerHTML = adminUserStatusHtml(u);
+        row.querySelector('[data-cell="ebay"]').innerHTML = adminUserEbayHtml(u);
         row.querySelector('[data-cell="plan"]').innerHTML = adminUserPlanHtml(u);
         row.querySelector('[data-cell="login"]').innerHTML = adminUserLoginHtml(u);
       });
@@ -15550,7 +15604,9 @@ async function autoSuggestEmptyDraftCategories() {
         || (adminUserFilter === 'online' && row.dataset.online === '1')
         || (adminUserFilter === 'paid' && row.dataset.paid === '1')
         || (adminUserFilter === 'free' && row.dataset.paid !== '1')
-        || (adminUserFilter === 'suspended' && row.dataset.suspended === '1');
+        || (adminUserFilter === 'suspended' && row.dataset.suspended === '1')
+        || (adminUserFilter === 'ebay' && row.dataset.ebay === '1')
+        || (adminUserFilter === 'noebay' && row.dataset.ebay !== '1');
       row.style.display = matchesFilter && (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
     });
   }
