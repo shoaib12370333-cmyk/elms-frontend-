@@ -3208,6 +3208,30 @@
   .pc-money .st-input { padding-left:30px; }
   .pc-money.pct .st-input { padding-left:12px; padding-right:30px; }
   .pc-money.pct .pc-sign { left:auto; right:12px; }
+  .pr-layout { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:26px; align-items:start; }
+  @media (max-width: 900px) { .pr-layout { grid-template-columns:minmax(0,1fr); } }
+  .pr-group { margin-top:20px; }
+  .pr-group:first-child { margin-top:0; }
+  .pr-group h3 { margin:0 0 10px; font-size:13px; font-weight:800; letter-spacing:.02em; color:#0F172A; }
+  .pr-group h3 small { font-weight:600; color:#64748B; margin-left:6px; letter-spacing:0; }
+  .pr-preview { position:sticky; top:14px; padding:18px; border:1.5px solid var(--line); border-radius:14px; background:#F8FAFD; }
+  .pr-preview h3 { margin:0 0 12px; font-size:13px; font-weight:800; }
+  .pr-line { display:flex; justify-content:space-between; gap:12px; padding:7px 0; font-size:13.5px; border-top:1px solid #E6ECF4; }
+  .pr-line:first-of-type { border-top:0; }
+  .pr-line span { color:#475569; }
+  .pr-line b { font-variant-numeric:tabular-nums; }
+  .pr-total { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-top:8px; padding:12px 14px; border-radius:12px; background:#0F172A; color:#fff; }
+  .pr-total span { font-size:12.5px; font-weight:700; opacity:.85; }
+  .pr-total b { font-size:22px; font-variant-numeric:tabular-nums; }
+  .pr-notes { margin-top:10px; display:grid; gap:4px; font-size:12px; color:#475569; }
+  .pr-notes .warn { color:#8A5A00; }
+  .pr-tiers { display:grid; gap:8px; margin-top:8px; }
+  .pr-tier { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)) 34px; gap:8px; align-items:center; }
+  .pr-tier.head { font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#64748B; }
+  .pr-tier .st-input { height:36px; }
+  .pr-tier button { height:34px; border:0; border-radius:8px; background:#EEF2F7; color:#334155; font-weight:800; cursor:pointer; }
+  .imp-rule { margin-top:8px; padding:9px 12px; border-radius:10px; background:#EDF7DC; color:#3B5F0A; font-size:12.5px; line-height:1.45; }
+  .imp-rule a { color:inherit; font-weight:700; text-decoration:underline; cursor:pointer; }
   .pc-goal { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:4px; background:#F1F5F9; border-radius:12px; margin-bottom:12px; }
   .pc-goal button { height:38px; border:none; border-radius:9px; background:transparent; font:inherit; font-size:12.5px; font-weight:700; color:#475569; cursor:pointer; transition:background .15s, color .15s, box-shadow .15s; }
   .pc-goal button.on { background:#fff; color:#0064D2; box-shadow:0 2px 8px rgba(15,23,42,.1); }
@@ -4173,6 +4197,7 @@
 
               <div class="imp-markup">
                 <div class="imp-label">Markup <em>added to the Amazon price to get your eBay selling price</em></div>
+                <div class="imp-rule" id="impRuleNote" style="display:none;">Your <b>pricing rule</b> sets the eBay price (fees and profit). Leave the markup empty to use it, or type a markup % to use that instead. <a id="impRuleLink">Change the rule</a></div>
                 <div class="imp-markup-row">
                   <div class="imp-chips" id="impMarkupChips">
                     <button type="button" class="imp-chip" data-markup="0">0%</button>
@@ -4454,6 +4479,63 @@
           </div>
           <div id="ebayAccountsList" class="st-accts"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           <div id="ebayConnectStatus" style="margin-top:10px;"></div>
+        </section>
+
+        <section class="st-card" id="pricingCard">
+          <div class="st-head">
+            <div class="st-ico green">&#128176;</div>
+            <div class="st-head-txt"><h2>Pricing</h2><p>How ELMS prices the products you import from now on. Products already in your Drafts are not changed.</p></div>
+            <label class="toggle-switch" title="Use this rule for new imports"><input type="checkbox" id="prEnabled" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="pr-layout">
+            <div class="pr-form">
+              <div class="pr-group">
+                <div class="st-grid">
+                  <div class="st-field"><label for="prCurrency">Amounts are in</label><select class="st-input" id="prCurrency"></select></div>
+                </div>
+                <div class="st-hint" style="margin-top:8px;">Fixed amounts below are in this currency. For a product in another currency ELMS converts them, and refuses the import if it cannot get the exchange rate.</div>
+              </div>
+              <div class="pr-group">
+                <h3>Fees <small>eBay takes its percentage from what the buyer pays in total</small></h3>
+                <div class="st-grid">
+                  <div class="st-field"><label for="prFeePct">Fees %</label><div class="pc-money pct"><span class="pc-sign">%</span><input class="st-input" id="prFeePct" type="number" min="0" max="60" step="0.01" inputmode="decimal" /></div></div>
+                  <div class="st-field"><label for="prFeeFixed">Fixed fee per order</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prFeeFixed" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
+                </div>
+                <div class="st-hint" style="margin-top:8px;">Typical eBay fees are about 13% plus 0.30 per order. <a href="#" id="prHelpCalc">Help me calculate</a></div>
+              </div>
+              <div class="pr-group">
+                <h3>Profit <small>on top of what the product costs you</small></h3>
+                <div class="st-grid">
+                  <div class="st-field"><label for="prProfitPct">Additional profit %</label><div class="pc-money pct"><span class="pc-sign">%</span><input class="st-input" id="prProfitPct" type="number" min="0" max="1000" step="0.01" inputmode="decimal" /></div></div>
+                  <div class="st-field"><label for="prProfitFixed">Additional profit</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prProfitFixed" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
+                  <div class="st-field"><label for="prMinProfit">Minimum profit per product</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prMinProfit" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
+                </div>
+              </div>
+              <div class="pr-group">
+                <h3>Additional pricing settings</h3>
+                <div class="st-grid">
+                  <div class="st-field"><label for="prShipping">Include shipping price</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prShipping" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
+                  <div class="st-field"><label for="prCents">Set price cents value</label><div class="pc-money pct"><span class="pc-sign">&cent;</span><input class="st-input" id="prCents" type="number" min="0" max="99" step="1" inputmode="numeric" placeholder="Off" /></div></div>
+                </div>
+                <div class="st-hint" style="margin-top:8px;">Shipping is added to the product cost before the profit. Cents: 99 makes every price end in .99 (it only ever rounds up, never below the price the rule gives); 0 makes it a whole number; empty leaves the price as it is.</div>
+              </div>
+              <div class="pr-group">
+                <h3>Dynamic profit <small>a different profit for different product costs</small></h3>
+                <label class="auth-terms-checkbox"><input type="checkbox" id="prTiersOn" /><span>Use different profit for cost ranges</span></label>
+                <div id="prTiersBox" style="display:none;">
+                  <div class="pr-tiers" id="prTiers"></div>
+                  <button class="st-btn small" id="prAddTier" type="button" style="margin-top:10px;">+ Add a range</button>
+                  <div class="st-hint" style="margin-top:8px;">A product whose cost is in a range uses that range's profit instead of the profit above. A cost outside every range uses the profit above. Leave &ldquo;To&rdquo; empty for no upper limit.</div>
+                </div>
+              </div>
+              <div class="st-actions"><button class="st-btn primary" id="prSaveBtn" type="button">Save pricing</button><div id="prStatus"></div></div>
+            </div>
+            <aside class="pr-preview">
+              <h3>Try your rule</h3>
+              <div class="st-field"><label for="prCost">Product cost</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 100" /></div></div>
+              <div id="prResult" style="margin-top:14px;"></div>
+            </aside>
+          </div>
         </section>
 
         <section class="st-card">
@@ -5952,8 +6034,8 @@
   btn.addEventListener('click', () => {
     const amazonUrl = document.getElementById('amazonUrl').value.trim();
     const markupInput = document.getElementById('markupPercent');
-    const markupPercent = markupInput?.value === '' ? 0 : Number(markupInput.value);
-    if (!Number.isFinite(markupPercent) || markupPercent < -99 || markupPercent > 1000) {
+    const markupPercent = importMarkupValue(markupInput);
+    if (markupPercent !== undefined && (!Number.isFinite(markupPercent) || markupPercent < -99 || markupPercent > 1000)) {
       resultDiv.innerHTML = '<div class="state-msg error">Markup must be between -99% and 1000%.</div>';
       return;
     }
@@ -6036,20 +6118,51 @@
   document.getElementById('impTabSingle').addEventListener('click', () => setImportTab('single'));
   document.getElementById('impTabLarge').addEventListener('click', () => setImportTab('large'));
 
+  // The seller's pricing rule (Settings > Pricing), as far as the Import page needs to know: is it switched on.
+  let pricingRuleState = { loaded: false, enabled: false };
+  let impMarkupRefresh = null;
+  // The markup % an import request carries: what is typed. With the pricing rule on and the box empty, nothing (the rule prices the
+  // product); with no rule, an empty box means 0%, as it always did. A typed markup always wins over the rule.
+  function importMarkupValue(input) {
+    if (!input || input.value === '') return pricingRuleState.enabled ? undefined : 0;
+    return Number(input.value);
+  }
+  function applyPricingRuleToImportPage() {
+    const input = document.getElementById('markupPercent');
+    if (!input) return;
+    const note = document.getElementById('impRuleNote');
+    if (note) note.style.display = pricingRuleState.enabled ? '' : 'none';
+    if (pricingRuleState.enabled) {
+      if (input.value === '0' && !input.dataset.touched) input.value = '';
+      input.placeholder = 'Rule';
+    } else {
+      if (input.value === '' && !input.dataset.touched) input.value = '0';
+      input.placeholder = 'Custom';
+    }
+    if (impMarkupRefresh) impMarkupRefresh();
+  }
+  document.getElementById('impRuleLink')?.addEventListener('click', () => showPage('settings'));
+
   // Markup presets + a live worked example under the field.
   (function wireMarkupControls() {
     const input = document.getElementById('markupPercent');
     const example = document.getElementById('impMarkupExample');
     const chips = document.querySelectorAll('#impMarkupChips .imp-chip');
     const refresh = () => {
+      if (pricingRuleState.enabled && input.value === '') {
+        chips.forEach((c) => c.classList.remove('active'));
+        example.textContent = 'Priced by your pricing rule. Pick a markup only to use that instead.';
+        return;
+      }
       const v = input.value === '' ? 0 : Number(input.value);
       chips.forEach((c) => c.classList.toggle('active', Number(c.dataset.markup) === v));
       if (!Number.isFinite(v)) { example.textContent = ''; return; }
       const sell = 100 * (1 + v / 100);
       example.textContent = `Example: $100 Amazon price + ${v}% = $${sell.toFixed(2)} on eBay.`;
     };
-    chips.forEach((c) => c.addEventListener('click', () => { input.value = c.dataset.markup; refresh(); }));
-    input.addEventListener('input', refresh);
+    chips.forEach((c) => c.addEventListener('click', () => { input.value = c.dataset.markup; input.dataset.touched = '1'; refresh(); }));
+    input.addEventListener('input', () => { input.dataset.touched = '1'; refresh(); });
+    impMarkupRefresh = refresh;
     refresh();
   })();
 
@@ -6057,8 +6170,8 @@
     const bulkBtn = document.getElementById('bulkFetchBtn');
     const statusEl = document.getElementById('bulkImportStatus');
     const bulkMarkupInput = document.getElementById('markupPercent');
-    const markupPercent = bulkMarkupInput?.value === '' ? 0 : Number(bulkMarkupInput.value);
-    if (!Number.isFinite(markupPercent) || markupPercent < -99 || markupPercent > 1000) {
+    const markupPercent = importMarkupValue(bulkMarkupInput);
+    if (markupPercent !== undefined && (!Number.isFinite(markupPercent) || markupPercent < -99 || markupPercent > 1000)) {
       statusEl.className = 'error';
       statusEl.textContent = 'Markup must be between -99% and 1000%.';
       return;
@@ -6199,8 +6312,8 @@
     const btn = document.getElementById('largeImportBtn');
     const statusEl = document.getElementById('largeImportStatus');
     const markupInput = document.getElementById('markupPercent');
-    const markupPercent = markupInput?.value === '' ? 0 : Number(markupInput.value);
-    if (!Number.isFinite(markupPercent) || markupPercent < -99 || markupPercent > 1000) {
+    const markupPercent = importMarkupValue(markupInput);
+    if (markupPercent !== undefined && (!Number.isFinite(markupPercent) || markupPercent < -99 || markupPercent > 1000)) {
       statusEl.className = 'error';
       statusEl.textContent = 'Markup must be between -99% and 1000%.';
       return;
@@ -7094,7 +7207,7 @@
     document.getElementById('userChip').style.display = 'block';
     document.getElementById('sidebarFooter').textContent = user.googleId ? 'Signed in via Google' : 'Signed in';
     updateCreditBalanceChip(user.creditBalance);
-    Promise.allSettled([refreshDraftsCountBadge(), refreshSystemNotificationBadge(), refreshMessageBadge(), populateSidebarEbayWidget(), refreshVoucherBadge()]);
+    Promise.allSettled([refreshDraftsCountBadge(), refreshSystemNotificationBadge(), refreshMessageBadge(), populateSidebarEbayWidget(), refreshVoucherBadge(), refreshPricingRuleState()]);
     startBackgroundRefresh();
     const adminNavLink = document.getElementById('adminNavLink');
     if (adminNavLink) adminNavLink.style.display = user.role === 'admin' ? 'flex' : 'none';
@@ -11224,6 +11337,207 @@ async function autoSuggestEmptyDraftCategories() {
     return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  // ---------- Settings: Pricing rule ----------
+  // How ELMS prices the products you import from now on. The server does all the maths: the same function prices an import and
+  // answers the preview here, so the number on this screen is the number that gets saved.
+  const PR_MARKET_CURRENCY = { EBAY_US: 'USD', EBAY_GB: 'GBP', EBAY_AU: 'AUD', EBAY_CA: 'CAD', EBAY_DE: 'EUR', EBAY_FR: 'EUR', EBAY_IT: 'EUR', EBAY_ES: 'EUR', EBAY_IE: 'EUR', EBAY_NL: 'EUR', EBAY_AT: 'EUR', EBAY_BE: 'EUR', EBAY_CH: 'CHF', EBAY_PL: 'PLN', EBAY_HK: 'HKD', EBAY_SG: 'SGD', EBAY_MY: 'MYR', EBAY_PH: 'PHP' };
+  const prEl = (id) => document.getElementById(id);
+  let prPreviewTimer = null;
+  let prPreviewSeq = 0;
+
+  const prSign = (cur) => CURRENCY_SYMBOLS[cur] || (cur ? cur + ' ' : '');
+  const prMoney = (v, cur) => prSign(cur) + Number(v).toFixed(2);
+
+  function prRefreshSigns() {
+    const sign = String(prSign(prEl('prCurrency').value)).trim();
+    document.querySelectorAll('#pricingCard [data-pr-sign]').forEach((s) => { s.textContent = sign; });
+  }
+
+  function prStoreCurrency() {
+    const account = (currentEbayAccounts || []).find((a) => a.isActive) || (currentEbayAccounts || [])[0];
+    return account ? PR_MARKET_CURRENCY[account.marketplaceId] || null : null;
+  }
+
+  function prTierRowHtml(t) {
+    const v = (x) => (x === null || x === undefined ? '' : escapeAttr(String(x)));
+    return '<div class="pr-tier" data-tier>'
+      + '<input class="st-input" data-t="from" type="number" min="0" step="0.01" inputmode="decimal" value="' + v(t.from) + '" aria-label="From cost" />'
+      + '<input class="st-input" data-t="to" type="number" min="0" step="0.01" inputmode="decimal" value="' + v(t.to) + '" placeholder="No limit" aria-label="To cost" />'
+      + '<input class="st-input" data-t="profitPercent" type="number" min="0" max="1000" step="0.01" inputmode="decimal" value="' + v(t.profitPercent) + '" aria-label="Profit %" />'
+      + '<input class="st-input" data-t="profitFixed" type="number" min="0" step="0.01" inputmode="decimal" value="' + v(t.profitFixed) + '" aria-label="Additional profit" />'
+      + '<button type="button" data-t-remove title="Remove this range" aria-label="Remove this range">&times;</button></div>';
+  }
+  function prRenderTiers(tiers) {
+    const head = '<div class="pr-tier head"><span>From cost</span><span>To cost</span><span>Profit %</span><span>Profit</span><span></span></div>';
+    prEl('prTiers').innerHTML = head + (tiers || []).map(prTierRowHtml).join('');
+    prEl('prTiersBox').style.display = prEl('prTiersOn').checked ? '' : 'none';
+  }
+
+  function prFill(rule) {
+    prEl('prEnabled').checked = !!rule.enabled;
+    const codes = Object.keys(CURRENCY_SYMBOLS);
+    prEl('prCurrency').innerHTML = codes.map((c) => '<option value="' + c + '">' + c + ' (' + escapeHtml(String(CURRENCY_SYMBOLS[c]).trim()) + ')</option>').join('');
+    const cur = rule.currency || prStoreCurrency() || 'USD';
+    prEl('prCurrency').value = codes.includes(cur) ? cur : 'USD';
+    prEl('prFeePct').value = rule.feePercent;
+    prEl('prFeeFixed').value = rule.feeFixed;
+    prEl('prProfitPct').value = rule.profitPercent;
+    prEl('prProfitFixed').value = rule.profitFixed;
+    prEl('prMinProfit').value = rule.minProfit;
+    prEl('prShipping').value = rule.shipping;
+    prEl('prCents').value = rule.centsEnding === null || rule.centsEnding === undefined ? '' : rule.centsEnding;
+    prEl('prTiersOn').checked = (rule.tiers || []).length > 0;
+    prRenderTiers(rule.tiers || []);
+    prRefreshSigns();
+  }
+
+  // The rule as the form holds it. A field that must have a number is never left empty (an empty field would silently become a default).
+  function prReadForm() {
+    const need = [['prFeePct', 'Fees %'], ['prFeeFixed', 'Fixed fee per order'], ['prProfitPct', 'Additional profit %'], ['prProfitFixed', 'Additional profit'], ['prMinProfit', 'Minimum profit per product'], ['prShipping', 'Include shipping price']];
+    for (const [id, label] of need) {
+      if (prEl(id).value.trim() === '') return { error: label + ': enter a number (0 if you do not want it).' };
+    }
+    const cents = prEl('prCents').value.trim();
+    const tiers = prEl('prTiersOn').checked
+      ? Array.from(document.querySelectorAll('#prTiers [data-tier]')).map((row) => {
+        const g = (k) => row.querySelector('[data-t="' + k + '"]').value.trim();
+        return { from: g('from'), to: g('to') === '' ? null : g('to'), profitPercent: g('profitPercent'), profitFixed: g('profitFixed') };
+      })
+      : [];
+    return {
+      rule: {
+        enabled: prEl('prEnabled').checked,
+        currency: prEl('prCurrency').value,
+        feePercent: prEl('prFeePct').value.trim(),
+        feeFixed: prEl('prFeeFixed').value.trim(),
+        profitPercent: prEl('prProfitPct').value.trim(),
+        profitFixed: prEl('prProfitFixed').value.trim(),
+        minProfit: prEl('prMinProfit').value.trim(),
+        shipping: prEl('prShipping').value.trim(),
+        centsEnding: cents === '' ? null : cents,
+        tiers,
+      },
+    };
+  }
+
+  function prBreakdownHtml(b, cur) {
+    const line = (label, value) => '<div class="pr-line"><span>' + label + '</span><b>' + prMoney(value, cur) + '</b></div>';
+    const notes = [];
+    if (b.tier) notes.push('Cost range ' + (b.tier.index + 1) + ' applies (' + prMoney(b.tier.from, cur) + (b.tier.to === null ? ' and up' : ' to ' + prMoney(b.tier.to, cur)) + ').');
+    if (b.minProfitApplied) notes.push('<span class="warn">The minimum profit raised the price.</span>');
+    if (b.endingApplied) notes.push('The price was rounded up to the cents you chose.');
+    notes.push('Profit margin ' + b.marginPercent + '% of the price \u00b7 price is ' + b.markupPercent + '% above the cost.');
+    return line('Product cost', b.cost)
+      + (b.shipping > 0 ? line('Shipping added', b.shipping) : '')
+      + line('Your profit', b.profit)
+      + line('eBay fees (' + b.feePercent + '%)', b.fees)
+      + (b.feeFixed > 0 ? line('Fixed fee', b.feeFixed) : '')
+      + '<div class="pr-total"><span>Selling price</span><b>' + prMoney(b.price, cur) + '</b></div>'
+      + '<div class="pr-notes">' + notes.map((n) => '<div>' + n + '</div>').join('') + '</div>';
+  }
+
+  function prSchedulePreview() {
+    clearTimeout(prPreviewTimer);
+    prPreviewTimer = setTimeout(prPreview, 250);
+  }
+  async function prPreview() {
+    const box = prEl('prResult');
+    if (!box) return;
+    if (prEl('prCost').value.trim() === '') { box.innerHTML = '<p class="meta-line" style="margin:0;">Type what a product costs to see the price this rule gives.</p>'; return; }
+    const form = prReadForm();
+    if (form.error) { box.innerHTML = '<p class="meta-line" style="margin:0;">' + escapeHtml(form.error) + '</p>'; return; }
+    const seq = ++prPreviewSeq;
+    try {
+      const res = await apiFetch('/api/pricing/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cost: Number(prEl('prCost').value), rule: form.rule }) });
+      const data = await res.json();
+      if (seq !== prPreviewSeq) return;
+      if (!res.ok || !data.success) { box.innerHTML = '<p class="meta-line" style="margin:0;color:#B91C1C;">' + escapeHtml(data.error || 'Could not work out the price.') + '</p>'; return; }
+      box.innerHTML = prBreakdownHtml(data.breakdown, form.rule.currency);
+    } catch (err) {
+      if (seq === prPreviewSeq) box.innerHTML = '<p class="meta-line" style="margin:0;color:#B91C1C;">Could not connect to the server: ' + escapeHtml(err.message) + '</p>';
+    }
+  }
+
+  async function loadPricingRule() {
+    if (!prEl('pricingCard')) return;
+    try {
+      const res = await apiFetch('/api/pricing/rule');
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load your pricing rule.');
+      pricingRuleState = { loaded: true, enabled: !!data.rule.enabled };
+      prFill(data.rule);
+      prPreview();
+      applyPricingRuleToImportPage();
+    } catch (err) {
+      prEl('prStatus').className = 'error';
+      prEl('prStatus').textContent = err.message;
+    }
+  }
+  // At start: the Import page needs to know whether the rule is on.
+  async function refreshPricingRuleState() {
+    try {
+      const res = await apiFetch('/api/pricing/rule');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pricingRuleState = { loaded: true, enabled: !!data.rule.enabled };
+        applyPricingRuleToImportPage();
+      }
+    } catch (_) { /* the Import page then works as before, with its markup box */ }
+  }
+
+  (function wirePricingCard() {
+    const card = prEl('pricingCard');
+    if (!card) return;
+    card.addEventListener('input', () => { prSchedulePreview(); });
+    prEl('prCurrency').addEventListener('change', () => { prRefreshSigns(); prSchedulePreview(); });
+    prEl('prEnabled').addEventListener('change', () => { prEl('prStatus').textContent = ''; });
+    prEl('prTiersOn').addEventListener('change', () => {
+      if (prEl('prTiersOn').checked && !document.querySelector('#prTiers [data-tier]')) prRenderTiers([{ from: 0, to: null, profitPercent: prEl('prProfitPct').value || '', profitFixed: 0 }]);
+      else prRenderTiers(Array.from(document.querySelectorAll('#prTiers [data-tier]')).map((row) => ({ from: row.querySelector('[data-t="from"]').value, to: row.querySelector('[data-t="to"]').value, profitPercent: row.querySelector('[data-t="profitPercent"]').value, profitFixed: row.querySelector('[data-t="profitFixed"]').value })));
+      prSchedulePreview();
+    });
+    prEl('prAddTier').addEventListener('click', () => {
+      const rows = document.querySelectorAll('#prTiers [data-tier]');
+      if (rows.length >= 10) { showToast('Pricing', 'Use at most 10 ranges.', 'info'); return; }
+      const last = rows[rows.length - 1];
+      const from = last ? last.querySelector('[data-t="to"]').value : '0';
+      prEl('prTiers').insertAdjacentHTML('beforeend', prTierRowHtml({ from, to: '', profitPercent: '', profitFixed: 0 }));
+    });
+    prEl('prTiers').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-t-remove]');
+      if (!btn) return;
+      btn.closest('[data-tier]').remove();
+      prSchedulePreview();
+    });
+    prEl('prHelpCalc').addEventListener('click', (e) => { e.preventDefault(); showPage('calculator'); });
+    prEl('prSaveBtn').addEventListener('click', async () => {
+      const btn = prEl('prSaveBtn');
+      const statusEl = prEl('prStatus');
+      const form = prReadForm();
+      if (form.error) { statusEl.className = 'error'; statusEl.textContent = form.error; return; }
+      btn.disabled = true;
+      statusEl.className = '';
+      statusEl.textContent = 'Saving\u2026';
+      try {
+        const res = await apiFetch('/api/pricing/rule', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form.rule) });
+        const data = await res.json();
+        if (!res.ok || !data.success) { statusEl.className = 'error'; statusEl.textContent = data.error || 'Could not save your pricing rule.'; return; }
+        pricingRuleState = { loaded: true, enabled: !!data.rule.enabled };
+        prFill(data.rule);
+        prPreview();
+        applyPricingRuleToImportPage();
+        statusEl.className = 'success';
+        statusEl.textContent = 'Saved.';
+        showToast('Pricing saved', data.rule.enabled ? 'Products you import from now on are priced by this rule. Products already in Drafts are not changed.' : 'The rule is saved but switched off: imports use the markup % as before.', 'success');
+      } catch (err) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'Could not connect to the server: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  })();
+
   // ---------- Settings page ----------
   let currentEbayAccounts = [];
   let selectedPoliciesAccountId = null;
@@ -11231,6 +11545,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadSettingsPage() {
     loadSecurityOverview();
     loadVeroSettings();
+    loadPricingRule();
     await loadEbayAccountsList();
     await loadOrderSyncSettings();
     await loadExtensionKey();
