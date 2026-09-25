@@ -890,10 +890,10 @@
 })();
 </script>
 <script>
-// An affiliate's link (elmstool.com/?aff=CODE): remember it for 60 days; the sign-up sends it, so the affiliate earns on this person's payments.
+// An affiliate's link (elmstool.com/?via=CODE, the older ?aff=CODE also works): remember it for 60 days; the sign-up sends it, so the affiliate earns on this person's payments.
 (function () {
   try {
-    var c = String(new URLSearchParams(location.search).get('aff') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
+    var q = new URLSearchParams(location.search); var c = String(q.get('via') || q.get('aff') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
     if (c) localStorage.setItem('elmsAff', JSON.stringify({ code: c, at: Date.now() }));
   } catch (e) { /* no storage: the link still works for the referral */ }
 })();

@@ -5409,13 +5409,13 @@
   function cleanRefCode(v) { return String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24); }
   function storedRefCode() { try { return cleanRefCode(localStorage.getItem(REF_KEY)); } catch (_) { return ''; } }
   function fmtPct(n) { return String(Number(Number(n).toFixed(2))); }
-  // An affiliate's link (elmstool.com/?aff=CODE): remembered for 60 days and sent with the sign-up; whoever signs up belongs to that affiliate.
+  // An affiliate's link (elmstool.com/?via=CODE, the older ?aff=CODE also works): remembered for 60 days and sent with the sign-up; whoever signs up belongs to that affiliate.
   const AFF_KEY = 'elmsAff';
   function storedAffCode() {
     try { const v = JSON.parse(localStorage.getItem(AFF_KEY) || 'null'); return v && v.code && Date.now() - v.at < 60 * 86400000 ? String(v.code).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24) : ''; } catch (_) { return ''; }
   }
   (function captureAffFromLink() {
-    try { const c = new URLSearchParams(location.search).get('aff'); const code = String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24); if (code) localStorage.setItem(AFF_KEY, JSON.stringify({ code, at: Date.now() })); } catch (_) { /* no storage: the referral still works without it */ }
+    try { const q = new URLSearchParams(location.search); const c = q.get('via') || q.get('aff'); const code = String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24); if (code) localStorage.setItem(AFF_KEY, JSON.stringify({ code, at: Date.now() })); } catch (_) { /* no storage: the referral still works without it */ }
   })();
   (function captureRefFromLink() {
     try { const c = cleanRefCode(new URLSearchParams(location.search).get('ref')); if (c) localStorage.setItem(REF_KEY, c); } catch (_) { /* no storage: the code can still be typed */ }
