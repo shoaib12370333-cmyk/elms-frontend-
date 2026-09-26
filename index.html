@@ -2824,6 +2824,7 @@
   .imp-margin-btn { height:42px; padding:0 26px; border-radius:12px; border:1.5px solid #2563eb; background:#fff; color:#2563eb; font:800 14px Inter,sans-serif; cursor:pointer; }
   .imp-margin-btn:hover { background:#eff6ff; }
   .imp-margin-sum { color:var(--grey); font-size:13px; font-weight:600; }
+  .imp-margin-sum.off { color:#B45309; background:#FEF3C7; padding:6px 12px; border-radius:10px; font-weight:700; }
   .mg-onoff { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; font-weight:700; font-size:14px; }
   .imp-markup-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .imp-chips { display:flex; gap:8px; flex-wrap:wrap; }
@@ -6199,8 +6200,8 @@
   function marginSummaryText() {
     const r = pricingRuleState.rule;
     if (!pricingRuleState.loaded) return '';
-    if (!r || !pricingRuleState.isSet) return 'Not set yet. Press Margin to choose your fees and profit.';
-    if (!pricingRuleState.enabled) return 'Off: products are imported at the Amazon price (0%). Press Margin to switch it on.';
+    if (!r || !pricingRuleState.isSet) return 'Margin is not set: products are imported at the Amazon price (0%). Press Margin to set it.';
+    if (!pricingRuleState.enabled) return 'Margin is OFF: products are imported at the Amazon price (0%). Press Margin and switch it on.';
     const bits = ['Fees ' + r.feePercent + '%' + (Number(r.feeFixed) ? ' + ' + r.feeFixed : ''), 'Profit ' + r.profitPercent + '%' + (Number(r.profitFixed) ? ' + ' + r.profitFixed : '')];
     if (Number(r.minProfit)) bits.push('min. profit ' + r.minProfit);
     if (Number(r.shipping)) bits.push('shipping ' + r.shipping);
@@ -6210,7 +6211,8 @@
   function renderMarginSummary() {
     const text = marginSummaryText();
     const a = document.getElementById('marginSummary'); if (a && text) a.textContent = text;
-    const b = document.getElementById('impMarginSummary'); if (b) b.textContent = text;
+    const b = document.getElementById('impMarginSummary');
+    if (b) { b.textContent = text; b.classList.toggle('off', pricingRuleState.loaded && !(pricingRuleState.isSet && pricingRuleState.enabled)); }
   }
   function openMarginModal() {
     document.getElementById('marginModal').classList.add('open');
@@ -6226,7 +6228,10 @@
   // The markup % an import request carries: what is typed. With the pricing rule on and the box empty, nothing (the rule prices the
   // product); with no rule, an empty box means 0%, as it always did. A typed markup always wins over the rule.
   function importMarkupValue(input) {
-    if (!input || input.value === '') return pricingRuleState.enabled ? undefined : 0;
+    // The markup box is not shown any more. A markup is sent only when one was typed there; otherwise the SERVER prices the product: by the
+    // Margin when it is on, at the Amazon price when it is not. (Before, a 0 was sent whenever this page had not yet learned that the
+    // Margin was on - a slow start of the server, or an import right after opening the page - and a 0 makes the server skip the Margin.)
+    if (!input || !input.dataset.touched || input.value === '') return undefined;
     return Number(input.value);
   }
   function applyPricingRuleToImportPage() {
@@ -12052,6 +12057,7 @@ async function autoSuggestEmptyDraftCategories() {
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not load your pricing rule.');
       pricingRuleState = { loaded: true, enabled: !!data.rule.enabled, rule: data.rule, isSet: data.isSet !== undefined ? !!data.isSet : true };
       prFill(data.rule);
+      if (data.isSet === false) prEl('prEnabled').checked = true; // first time: the person is setting a margin to use it
       prPreview();
       applyPricingRuleToImportPage();
     } catch (err) {
