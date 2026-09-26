@@ -2813,6 +2813,11 @@
   .imp-textarea { width:100%; box-sizing:border-box; border:1.5px solid var(--grey-light); border-radius:12px; padding:12px 14px; font:500 14px Inter,sans-serif; resize:vertical; outline:0; }
   .imp-textarea:focus { border-color:var(--blue); box-shadow:0 0 0 4px rgba(37,99,235,.10); }
   .imp-markup { margin-top:22px; padding-top:20px; border-top:1px dashed var(--line); }
+  .imp-margin { margin-top:22px; padding-top:20px; border-top:1px dashed var(--line); display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .imp-margin-btn { height:42px; padding:0 26px; border-radius:12px; border:1.5px solid #2563eb; background:#fff; color:#2563eb; font:800 14px Inter,sans-serif; cursor:pointer; }
+  .imp-margin-btn:hover { background:#eff6ff; }
+  .imp-margin-sum { color:var(--grey); font-size:13px; font-weight:600; }
+  .mg-onoff { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; font-weight:700; font-size:14px; }
   .imp-markup-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .imp-chips { display:flex; gap:8px; flex-wrap:wrap; }
   .imp-chip { height:38px; padding:0 16px; border:1px solid var(--line); border-radius:999px; background:#fff; color:var(--ink); font:600 13px Inter,sans-serif; cursor:pointer; transition:all .12s; }
@@ -4177,7 +4182,7 @@
         <div class="imp-head">
           <div>
             <h1>Import a product</h1>
-            <div class="sub">Paste an Amazon link, set your markup and ELMS creates the eBay draft for you.</div>
+            <div class="sub">Paste an Amazon link, set your margin and ELMS creates the eBay draft for you.</div>
           </div>
           <button type="button" class="import-history-link" data-page="history">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg>
@@ -4229,7 +4234,11 @@
                 </div>
               </div>
 
-              <div class="imp-markup">
+              <div class="imp-margin">
+                <button type="button" class="imp-margin-btn" id="impMarginBtn">Margin</button>
+                <span class="imp-margin-sum" id="impMarginSummary"></span>
+              </div>
+              <div class="imp-markup" id="impOldMarkup" style="display:none;">
                 <div class="imp-label">Markup <em>added to the Amazon price to get your eBay selling price</em></div>
                 <div class="imp-rule" id="impRuleNote" style="display:none;">Your <b>pricing rule</b> sets the eBay price (fees and profit). Leave the markup empty to use it, or type a markup % to use that instead. <a id="impRuleLink">Change the rule</a></div>
                 <div class="imp-markup-row">
@@ -4259,7 +4268,7 @@
               <div class="imp-side-title">How it works</div>
               <ol class="imp-steps">
                 <li class="pipeline-step active" id="stepSource"><span class="dot"></span><div><b>Source</b><small>Paste the Amazon link and we pull the details.</small></div></li>
-                <li class="pipeline-step" id="stepPrice"><span class="dot"></span><div><b>Price</b><small>Your markup sets the eBay selling price.</small></div></li>
+                <li class="pipeline-step" id="stepPrice"><span class="dot"></span><div><b>Price</b><small>Your margin sets the eBay selling price.</small></div></li>
                 <li class="pipeline-step" id="stepPublish"><span class="dot"></span><div><b>Publish</b><small>Review the draft, then publish to eBay.</small></div></li>
               </ol>
             </div>
@@ -4518,57 +4527,8 @@
         <section class="st-card" id="pricingCard">
           <div class="st-head">
             <div class="st-ico green">&#128176;</div>
-            <div class="st-head-txt"><h2>Pricing</h2><p>How ELMS prices the products you import from now on. Products already in your Drafts are not changed.</p></div>
-            <label class="toggle-switch" title="Use this rule for new imports"><input type="checkbox" id="prEnabled" /><span class="toggle-slider"></span></label>
-          </div>
-          <div class="pr-layout">
-            <div class="pr-form">
-              <div class="pr-group">
-                <div class="st-grid">
-                  <div class="st-field"><label for="prCurrency">Amounts are in</label><select class="st-input" id="prCurrency"></select></div>
-                </div>
-                <div class="st-hint" style="margin-top:8px;">Fixed amounts below are in this currency. For a product in another currency ELMS converts them, and refuses the import if it cannot get the exchange rate.</div>
-              </div>
-              <div class="pr-group">
-                <h3>Fees <small>eBay takes its percentage from what the buyer pays in total</small></h3>
-                <div class="st-grid">
-                  <div class="st-field"><label for="prFeePct">Fees %</label><div class="pc-money pct"><span class="pc-sign">%</span><input class="st-input" id="prFeePct" type="number" min="0" max="60" step="0.01" inputmode="decimal" /></div></div>
-                  <div class="st-field"><label for="prFeeFixed">Fixed fee per order</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prFeeFixed" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
-                </div>
-                <div class="st-hint" style="margin-top:8px;">Typical eBay fees are about 13% plus 0.30 per order. <a href="#" id="prHelpCalc">Help me calculate</a></div>
-              </div>
-              <div class="pr-group">
-                <h3>Profit <small>on top of what the product costs you</small></h3>
-                <div class="st-grid">
-                  <div class="st-field"><label for="prProfitPct">Additional profit %</label><div class="pc-money pct"><span class="pc-sign">%</span><input class="st-input" id="prProfitPct" type="number" min="0" max="1000" step="0.01" inputmode="decimal" /></div></div>
-                  <div class="st-field"><label for="prProfitFixed">Additional profit</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prProfitFixed" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
-                  <div class="st-field"><label for="prMinProfit">Minimum profit per product</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prMinProfit" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
-                </div>
-              </div>
-              <div class="pr-group">
-                <h3>Additional pricing settings</h3>
-                <div class="st-grid">
-                  <div class="st-field"><label for="prShipping">Include shipping price</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prShipping" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
-                  <div class="st-field"><label for="prCents">Set price cents value</label><div class="pc-money pct"><span class="pc-sign">&cent;</span><input class="st-input" id="prCents" type="number" min="0" max="99" step="1" inputmode="numeric" placeholder="Off" /></div></div>
-                </div>
-                <div class="st-hint" style="margin-top:8px;">Shipping is added to the product cost before the profit. Cents: 99 makes every price end in .99 (it only ever rounds up, never below the price the rule gives); 0 makes it a whole number; empty leaves the price as it is.</div>
-              </div>
-              <div class="pr-group">
-                <h3>Dynamic profit <small>a different profit for different product costs</small></h3>
-                <label class="auth-terms-checkbox"><input type="checkbox" id="prTiersOn" /><span>Use different profit for cost ranges</span></label>
-                <div id="prTiersBox" style="display:none;">
-                  <div class="pr-tiers" id="prTiers"></div>
-                  <button class="st-btn small" id="prAddTier" type="button" style="margin-top:10px;">+ Add a range</button>
-                  <div class="st-hint" style="margin-top:8px;">A product whose cost is in a range uses that range's profit instead of the profit above. A cost outside every range uses the profit above. Leave &ldquo;To&rdquo; empty for no upper limit.</div>
-                </div>
-              </div>
-              <div class="st-actions"><button class="st-btn primary" id="prSaveBtn" type="button">Save pricing</button><div id="prStatus"></div></div>
-            </div>
-            <aside class="pr-preview">
-              <h3>Try your rule</h3>
-              <div class="st-field"><label for="prCost">Product cost</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 100" /></div></div>
-              <div id="prResult" style="margin-top:14px;"></div>
-            </aside>
+            <div class="st-head-txt"><h2>Margin</h2><p id="marginSummary">Set how the products you import are priced.</p></div>
+            <button class="st-btn primary" type="button" id="marginOpenBtn">Margin</button>
           </div>
         </section>
 
@@ -5450,6 +5410,66 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="marginModal">
+  <div class="modal-box" style="max-width:1000px;width:100%;max-height:92vh;overflow:auto;">
+    <div class="modal-header">
+      <h2>Margin</h2>
+      <button class="modal-close" id="marginCloseBtn" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="st-hint" style="margin:0 0 12px;">How ELMS prices the products you import from now on. Products already in your Drafts are not changed.</div>
+    <label class="mg-onoff"><span>Use this margin for new imports</span><span class="toggle-switch"><input type="checkbox" id="prEnabled" /><span class="toggle-slider"></span></span></label>
+    <div class="pr-layout">
+            <div class="pr-form">
+              <div class="pr-group">
+                <div class="st-grid">
+                  <div class="st-field"><label for="prCurrency">Amounts are in</label><select class="st-input" id="prCurrency"></select></div>
+                </div>
+                <div class="st-hint" style="margin-top:8px;">Fixed amounts below are in this currency. For a product in another currency ELMS converts them, and refuses the import if it cannot get the exchange rate.</div>
+              </div>
+              <div class="pr-group">
+                <h3>Fees <small>eBay takes its percentage from what the buyer pays in total</small></h3>
+                <div class="st-grid">
+                  <div class="st-field"><label for="prFeePct">Fees %</label><div class="pc-money pct"><span class="pc-sign">%</span><input class="st-input" id="prFeePct" type="number" min="0" max="60" step="0.01" inputmode="decimal" /></div></div>
+                  <div class="st-field"><label for="prFeeFixed">Fixed fee per order</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prFeeFixed" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
+                </div>
+                <div class="st-hint" style="margin-top:8px;">Typical eBay fees are about 13% plus 0.30 per order. <a href="#" id="prHelpCalc">Help me calculate</a></div>
+              </div>
+              <div class="pr-group">
+                <h3>Profit <small>on top of what the product costs you</small></h3>
+                <div class="st-grid">
+                  <div class="st-field"><label for="prProfitPct">Additional profit %</label><div class="pc-money pct"><span class="pc-sign">%</span><input class="st-input" id="prProfitPct" type="number" min="0" max="1000" step="0.01" inputmode="decimal" /></div></div>
+                  <div class="st-field"><label for="prProfitFixed">Additional profit</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prProfitFixed" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
+                  <div class="st-field"><label for="prMinProfit">Minimum profit per product</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prMinProfit" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
+                </div>
+              </div>
+              <div class="pr-group">
+                <h3>Additional pricing settings</h3>
+                <div class="st-grid">
+                  <div class="st-field"><label for="prShipping">Include shipping price</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prShipping" type="number" min="0" step="0.01" inputmode="decimal" /></div></div>
+                  <div class="st-field"><label for="prCents">Set price cents value</label><div class="pc-money pct"><span class="pc-sign">&cent;</span><input class="st-input" id="prCents" type="number" min="0" max="99" step="1" inputmode="numeric" placeholder="Off" /></div></div>
+                </div>
+                <div class="st-hint" style="margin-top:8px;">Shipping is added to the product cost before the profit. Cents: 99 makes every price end in .99 (it only ever rounds up, never below the price the rule gives); 0 makes it a whole number; empty leaves the price as it is.</div>
+              </div>
+              <div class="pr-group">
+                <h3>Dynamic profit <small>a different profit for different product costs</small></h3>
+                <label class="auth-terms-checkbox"><input type="checkbox" id="prTiersOn" /><span>Use different profit for cost ranges</span></label>
+                <div id="prTiersBox" style="display:none;">
+                  <div class="pr-tiers" id="prTiers"></div>
+                  <button class="st-btn small" id="prAddTier" type="button" style="margin-top:10px;">+ Add a range</button>
+                  <div class="st-hint" style="margin-top:8px;">A product whose cost is in a range uses that range's profit instead of the profit above. A cost outside every range uses the profit above. Leave &ldquo;To&rdquo; empty for no upper limit.</div>
+                </div>
+              </div>
+              <div class="st-actions"><button class="st-btn primary" id="prSaveBtn" type="button">Save pricing</button><div id="prStatus"></div></div>
+            </div>
+            <aside class="pr-preview">
+              <h3>Try your rule</h3>
+              <div class="st-field"><label for="prCost">Product cost</label><div class="pc-money"><span class="pc-sign" data-pr-sign>$</span><input class="st-input" id="prCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 100" /></div></div>
+              <div id="prResult" style="margin-top:14px;"></div>
+            </aside>
+          </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="pricingModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -6165,7 +6185,34 @@
   document.getElementById('impTabLarge').addEventListener('click', () => setImportTab('large'));
 
   // The seller's pricing rule (Settings > Pricing), as far as the Import page needs to know: is it switched on.
-  let pricingRuleState = { loaded: false, enabled: false };
+  let pricingRuleState = { loaded: false, enabled: false, rule: null, isSet: false };
+  // One line about the saved rule, shown next to the Margin buttons (Settings and Import).
+  function marginSummaryText() {
+    const r = pricingRuleState.rule;
+    if (!pricingRuleState.loaded) return '';
+    if (!r || !pricingRuleState.isSet) return 'Not set yet. Press Margin to choose your fees and profit.';
+    if (!pricingRuleState.enabled) return 'Off: products are imported at the Amazon price (0%). Press Margin to switch it on.';
+    const bits = ['Fees ' + r.feePercent + '%' + (Number(r.feeFixed) ? ' + ' + r.feeFixed : ''), 'Profit ' + r.profitPercent + '%' + (Number(r.profitFixed) ? ' + ' + r.profitFixed : '')];
+    if (Number(r.minProfit)) bits.push('min. profit ' + r.minProfit);
+    if (Number(r.shipping)) bits.push('shipping ' + r.shipping);
+    if (Array.isArray(r.tiers) && r.tiers.length) bits.push(r.tiers.length + ' cost range' + (r.tiers.length === 1 ? '' : 's'));
+    return 'On \u00b7 ' + bits.join(' \u00b7 ');
+  }
+  function renderMarginSummary() {
+    const text = marginSummaryText();
+    const a = document.getElementById('marginSummary'); if (a && text) a.textContent = text;
+    const b = document.getElementById('impMarginSummary'); if (b) b.textContent = text;
+  }
+  function openMarginModal() {
+    document.getElementById('marginModal').classList.add('open');
+    loadPricingRule(); // fills the boxes with the saved rule
+  }
+  function closeMarginModal() { document.getElementById('marginModal')?.classList.remove('open'); }
+  document.getElementById('marginOpenBtn')?.addEventListener('click', openMarginModal);
+  document.getElementById('impMarginBtn')?.addEventListener('click', openMarginModal);
+  document.getElementById('marginCloseBtn')?.addEventListener('click', closeMarginModal);
+  document.getElementById('marginModal')?.addEventListener('click', (e) => { if (e.target.id === 'marginModal') closeMarginModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.getElementById('marginModal')?.classList.contains('open')) closeMarginModal(); });
   let impMarkupRefresh = null;
   // The markup % an import request carries: what is typed. With the pricing rule on and the box empty, nothing (the rule prices the
   // product); with no rule, an empty box means 0%, as it always did. A typed markup always wins over the rule.
@@ -6186,8 +6233,9 @@
       input.placeholder = 'Custom';
     }
     if (impMarkupRefresh) impMarkupRefresh();
+    renderMarginSummary();
   }
-  document.getElementById('impRuleLink')?.addEventListener('click', () => showPage('settings'));
+  document.getElementById('impRuleLink')?.addEventListener('click', openMarginModal);
 
   // Markup presets + a live worked example under the field.
   (function wireMarkupControls() {
@@ -11721,7 +11769,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/pricing/rule');
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not load your pricing rule.');
-      pricingRuleState = { loaded: true, enabled: !!data.rule.enabled };
+      pricingRuleState = { loaded: true, enabled: !!data.rule.enabled, rule: data.rule, isSet: data.isSet !== undefined ? !!data.isSet : true };
       prFill(data.rule);
       prPreview();
       applyPricingRuleToImportPage();
@@ -11736,7 +11784,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/pricing/rule');
       const data = await res.json();
       if (res.ok && data.success) {
-        pricingRuleState = { loaded: true, enabled: !!data.rule.enabled };
+        pricingRuleState = { loaded: true, enabled: !!data.rule.enabled, rule: data.rule, isSet: data.isSet !== undefined ? !!data.isSet : true };
         applyPricingRuleToImportPage();
       }
     } catch (_) { /* the Import page then works as before, with its markup box */ }
@@ -11779,12 +11827,13 @@ async function autoSuggestEmptyDraftCategories() {
         const res = await apiFetch('/api/pricing/rule', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form.rule) });
         const data = await res.json();
         if (!res.ok || !data.success) { statusEl.className = 'error'; statusEl.textContent = data.error || 'Could not save your pricing rule.'; return; }
-        pricingRuleState = { loaded: true, enabled: !!data.rule.enabled };
+        pricingRuleState = { loaded: true, enabled: !!data.rule.enabled, rule: data.rule, isSet: data.isSet !== undefined ? !!data.isSet : true };
         prFill(data.rule);
         prPreview();
         applyPricingRuleToImportPage();
         statusEl.className = 'success';
         statusEl.textContent = 'Saved.';
+        closeMarginModal();
         showToast('Pricing saved', data.rule.enabled ? 'Products you import from now on are priced by this rule. Products already in Drafts are not changed.' : 'The rule is saved but switched off: imports use the markup % as before.', 'success');
       } catch (err) {
         statusEl.className = 'error';
