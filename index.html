@@ -13699,6 +13699,13 @@ async function autoSuggestEmptyDraftCategories() {
     return 'Member';
   }
 
+  // The letter in the round avatar. A member's is the first letter of their name; everything eBay sends shows the same "e", because
+  // eBay's notices come from many sender names ("ebay", "Payments", an id ...) and their first letters looked like random letters.
+  function messageAvatarLetter(name, isEbay) {
+    if (isEbay) return 'e';
+    return String(name || '').trim().charAt(0).toUpperCase() || '?';
+  }
+
   function messageMatches(row) {
     if (messageTypeFilter !== 'all' && row.conversation_type !== messageTypeFilter) return false;
     if (messageFilter === 'unread' && row.is_read) return false;
@@ -13813,7 +13820,7 @@ async function autoSuggestEmptyDraftCategories() {
       return `
       <div class="msg-item ${r.is_read ? '' : 'unread'} ${selectedMessageId === r.id ? 'active' : ''}" data-message-id="${escapeAttr(r.id)}">
         <label class="msg-item-check" data-message-check><input type="checkbox" data-check-id="${escapeAttr(r.id)}" ${messageSelectedIds.has(r.id) ? 'checked' : ''} /></label>
-        <div class="msg-avatar ${isEbay ? 'ebay' : ''}"${avatarStyle}>${escapeHtml(String(name).trim().charAt(0).toUpperCase() || '?')}</div>
+        <div class="msg-avatar ${isEbay ? 'ebay' : ''}"${avatarStyle}>${escapeHtml(messageAvatarLetter(name, isEbay))}</div>
         <div class="msg-item-main">
           <div class="msg-item-top"><span class="msg-item-name">${escapeHtml(name)}${buyerRatingHtml(r.buyer_profile)}</span><span class="msg-item-time">${escapeHtml(messageTime(r.last_message_date))}</span></div>
           <div class="msg-item-subject">${escapeHtml(r.subject || (r.conversation_type === 'FROM_MEMBERS' ? 'Member message' : 'eBay notification'))}</div>
@@ -14142,7 +14149,7 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('messageDetail').innerHTML = `
       <div class="msg-thread-head">
         <button class="msg-back" id="messageBackBtn" type="button" aria-label="Back to conversations">&lsaquo;</button>
-        <div class="msg-avatar big ${c.conversation_type === 'FROM_EBAY' ? 'ebay' : ''}"${c.conversation_type === 'FROM_EBAY' ? '' : ` style="background:${avatarColorFor(name)[0]};color:${avatarColorFor(name)[1]};"`}>${escapeHtml(String(name).trim().charAt(0).toUpperCase() || '?')}</div>
+        <div class="msg-avatar big ${c.conversation_type === 'FROM_EBAY' ? 'ebay' : ''}"${c.conversation_type === 'FROM_EBAY' ? '' : ` style="background:${avatarColorFor(name)[0]};color:${avatarColorFor(name)[1]};"`}>${escapeHtml(messageAvatarLetter(name, c.conversation_type === 'FROM_EBAY'))}</div>
         <div class="msg-thread-title"><b>${escapeHtml(name)} ${buyerRatingHtml(c.buyer_profile)}</b><span>${escapeHtml(memberSinceText(c.buyer_profile) || `${c.subject || 'Customer conversation'} · ${c.ebay_account_display_name || c.ebay_account_label || c.ebay_account_username || 'eBay store'}`)}</span>
           ${c.trashed_at ? `<em>Trash retention: ${Math.max(0, 30 - Math.floor((Date.now() - new Date(c.trashed_at).getTime()) / 86400000))} day(s) remaining</em>` : ''}</div>
         <div class="msg-thread-head-actions">
