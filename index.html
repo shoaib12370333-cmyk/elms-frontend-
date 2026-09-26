@@ -3581,6 +3581,8 @@
   .dv-seg button.on { background:#fff; color:var(--dv-ink); box-shadow:0 1px 4px rgba(15,23,42,.1); }
   .dv-selectall { display:inline-flex; align-items:center; gap:8px; font:600 13px Inter,sans-serif; color:var(--dv-mute); cursor:pointer; }
   .dv-selectall input, .dv-check { width:18px; height:18px; accent-color:#0064D2; cursor:pointer; }
+  .dv-selectevery { border:none; background:none; padding:0; color:#0064D2; font:700 13px Inter,sans-serif; cursor:pointer; text-decoration:underline; }
+  .dv-selectevery[hidden] { display:none; }
 
   /* draft cards */
   .dv-list { display:grid; gap:16px; }
@@ -8548,7 +8550,7 @@
             ${stage('draft', '&#128221;', 'Ready to publish')}${stage('publishing', '&#9889;', 'Publishing now', 'publishing')}${stage('scheduled', '&#128339;', 'Scheduled', 'scheduled')}${stage('error', '&#9888;&#65039;', 'Needs attention', 'error')}
           </div>
           <div class="dv-toolbar">
-            <label class="dv-selectall"><input type="checkbox" id="draftSelectAll" /> Select all</label>
+            <label class="dv-selectall"><input type="checkbox" id="draftSelectAll" /> Select</label><button type="button" class="dv-selectevery" id="draftSelectEvery" hidden title="Select every product of this view, on all pages"></button>
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
             <select id="draftSort" class="dv-select"><option value="created">Newest imported</option><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
             <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
@@ -8607,6 +8609,7 @@
         if (draftPage > pages) draftPage = pages;
         const startIdx = (draftPage - 1) * DRAFTS_PAGE_SIZE;
         const pageItems = filtered.slice(startIdx, startIdx + DRAFTS_PAGE_SIZE);
+        draftPageIds = pageItems.map((l) => String(l.id));
         const list = document.getElementById('draftProductList');
         if (list) list.innerHTML = pageItems.length ? pageItems.map((l) => draftRowHtml(l)).join('') : `<div class="dv-empty" style="grid-column:1/-1"><b>Nothing here</b>No products match this view. Try another stage or clear the search.</div>`;
         const footer = document.getElementById('draftFooter');
@@ -8669,9 +8672,16 @@
         showPage('import');
         setTimeout(() => document.getElementById('amazonUrl')?.focus(), 50);
       });
+      // "Select" ticks the products of this page; then "Select all N" appears and ticks every product of the view, on all pages.
       document.getElementById('draftSelectAll')?.addEventListener('change', (e) => {
-        if (e.target.checked) draftFilteredIds.forEach((id) => draftSelected.add(id));
-        else draftFilteredIds.forEach((id) => draftSelected.delete(id));
+        if (e.target.checked) draftPageIds.forEach((id) => draftSelected.add(id));
+        else if (draftFilteredIds.length && draftFilteredIds.every((id) => draftSelected.has(id))) draftFilteredIds.forEach((id) => draftSelected.delete(id)); // everything was selected: untick everything
+        else draftPageIds.forEach((id) => draftSelected.delete(id));
+        syncDraftChecks();
+        updateBulkBar();
+      });
+      document.getElementById('draftSelectEvery')?.addEventListener('click', () => {
+        draftFilteredIds.forEach((id) => draftSelected.add(id));
         syncDraftChecks();
         updateBulkBar();
       });
@@ -8887,6 +8897,7 @@
   // The drafts ticked in the Drafts page. Kept here (not read from the checkboxes) because the list shows 20 at a time:
   // a tick on page 1 must still count on page 2, and "Select all" must mean every draft the current view shows.
   let draftSelected = new Set();
+  let draftPageIds = []; // the drafts on the page being looked at
   let draftFilteredIds = []; // ids the current search / stage / VeRO filter shows, across all pages
 
   function draftSupplierLabel(l) {
@@ -10201,11 +10212,17 @@ async function autoSuggestEmptyDraftCategories() {
     const bar = document.getElementById('draftBulkBar');
     const countLabel = document.getElementById('draftSelectedCount');
     const selectAll = document.getElementById('draftSelectAll');
+    const every = document.getElementById('draftSelectEvery');
     const total = draftSelected.size;
+    const inPage = draftPageIds.filter((id) => draftSelected.has(id)).length;
     const inView = draftFilteredIds.filter((id) => draftSelected.has(id)).length;
     if (selectAll) {
-      selectAll.checked = draftFilteredIds.length > 0 && inView === draftFilteredIds.length;
-      selectAll.indeterminate = inView > 0 && inView < draftFilteredIds.length;
+      selectAll.checked = draftPageIds.length > 0 && inPage === draftPageIds.length;
+      selectAll.indeterminate = inPage > 0 && inPage < draftPageIds.length;
+    }
+    if (every) {
+      every.hidden = !(draftPageIds.length > 0 && inPage === draftPageIds.length && inView < draftFilteredIds.length);
+      every.textContent = 'Select all ' + draftFilteredIds.length;
     }
     if (!bar) return;
     bar.classList.toggle('has-selection', total > 0);
@@ -10328,6 +10345,7 @@ async function autoSuggestEmptyDraftCategories() {
   let llSort = 'newest';
   let llVeroOnly = false;
   let llSelected = new Set(); // ids of the live listings ticked for "Change price"
+  let llPageIds = []; // the selectable (active) live listings on the page being looked at
   const LL_PAGE_SIZE = 12;
 
   function llListingStatus(l) {
@@ -10415,7 +10433,6 @@ async function autoSuggestEmptyDraftCategories() {
     const dir = (get, up) => (a, b) => { const x = get(a), y = get(b); if (x === null && y === null) return 0; if (x === null) return 1; if (y === null) return -1; return up ? x - y : y - x; };
     const by = {
       newest: (a, b) => new Date(b.created_at || b.updated_at || 0) - new Date(a.created_at || a.updated_at || 0),
-      price: dir((l) => numOf(l.sell_price), false),
       priceLow: dir((l) => numOf(l.sell_price), true),
       profit: dir(profitOf, false),
       profitLow: dir(profitOf, true),
@@ -10453,6 +10470,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (llPage > pages) llPage = pages;
     const start = (llPage - 1) * LL_PAGE_SIZE;
     const pageRows = filtered.slice(start, start + LL_PAGE_SIZE);
+    llPageIds = pageRows.filter((l) => llListingStatus(l) === 'active').map((l) => String(l.id));
 
     const tab = (key, label, n) => `<button type="button" class="${llTab === key ? 'on' : ''}" data-ll-tab="${key}">${label} <span>${n}</span></button>`;
     const sum = (f) => llAll.reduce((a, l) => a + (Number(f(l)) || 0), 0);
@@ -10480,11 +10498,11 @@ async function autoSuggestEmptyDraftCategories() {
         </div>
         <div id="llFlagBanner">${llFlagHtml()}</div>
         <div class="dv-toolbar">
-          <label class="dv-selectall"><input type="checkbox" id="llSelectAll" /> Select all</label>
+          <label class="dv-selectall"><input type="checkbox" id="llSelectAll" /> Select</label><button type="button" class="dv-selectevery" id="llSelectEvery" hidden title="Select every live listing of this view, on all pages"></button>
           <span class="dv-seg" role="tablist">${tab('all', 'All', counts.all)}${tab('active', 'Active', counts.active)}${tab('sold', 'Sold', counts.sold)}${tab('ended', 'Ended', counts.ended)}${tab('issues', 'Issues', counts.issues)}</span>
           <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search title, SKU or item ID" value="${escapeAttr(llSearch)}" /></div>
           <select id="llSortSelect" class="dv-select">
-            ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
+            ${[['newest', 'Newest first'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
           ${veroPattern ? `<button type="button" class="dv-btn vero-filter${llVeroOnly ? ' on' : ''}" id="llVeroFilter" title="Show only listings that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b>${llAll.filter((l) => l._vero && l._vero.terms.length).length}</b></button>` : ''}
           <button class="dv-btn" id="llExportBtn" type="button">Export CSV</button>
@@ -10518,9 +10536,15 @@ async function autoSuggestEmptyDraftCategories() {
   function llUpdateBulkBar() {
     const bar = document.getElementById('llBulkBar');
     const all = document.getElementById('llSelectAll');
+    const every = document.getElementById('llSelectEvery');
     const ids = llSelectableIds();
     const inView = ids.filter((id) => llSelected.has(id)).length;
-    if (all) { all.checked = ids.length > 0 && inView === ids.length; all.indeterminate = inView > 0 && inView < ids.length; all.disabled = !ids.length; }
+    const inPage = llPageIds.filter((id) => llSelected.has(id)).length;
+    if (all) { all.checked = llPageIds.length > 0 && inPage === llPageIds.length; all.indeterminate = inPage > 0 && inPage < llPageIds.length; all.disabled = !llPageIds.length; }
+    if (every) {
+      every.hidden = !(llPageIds.length > 0 && inPage === llPageIds.length && inView < ids.length);
+      every.textContent = 'Select all ' + ids.length;
+    }
     if (!bar) return;
     bar.classList.toggle('has-selection', llSelected.size > 0);
     const label = document.getElementById('llSelectedCount');
@@ -10633,10 +10657,15 @@ async function autoSuggestEmptyDraftCategories() {
       if (cb.checked) llSelected.add(id); else llSelected.delete(id);
       llUpdateBulkBar();
     }));
+    // "Select" ticks the listings of this page; then "Select all N" appears and ticks every active listing of the view, on all pages.
     root.querySelector('#llSelectAll')?.addEventListener('change', (e) => {
-      llSelectableIds().forEach((id) => { if (e.target.checked) llSelected.add(id); else llSelected.delete(id); });
+      const every = llSelectableIds();
+      if (e.target.checked) llPageIds.forEach((id) => llSelected.add(id));
+      else if (every.length && every.every((id) => llSelected.has(id))) every.forEach((id) => llSelected.delete(id)); // everything was selected: untick everything
+      else llPageIds.forEach((id) => llSelected.delete(id));
       llSyncChecks(); llUpdateBulkBar();
     });
+    root.querySelector('#llSelectEvery')?.addEventListener('click', () => { llSelectableIds().forEach((id) => llSelected.add(id)); llSyncChecks(); llUpdateBulkBar(); });
     root.querySelector('#llClearBtn')?.addEventListener('click', () => { llSelected.clear(); llSyncChecks(); llUpdateBulkBar(); });
     root.querySelector('#llChangePriceBtn')?.addEventListener('click', () => {
       const active = new Set(llAll.filter((l) => llListingStatus(l) === 'active').map((l) => String(l.id)));
