@@ -2924,6 +2924,17 @@
   .ord-tab.active { color:#0064D2; border-bottom-color:#0064D2; } .ord-tab.active span { background:#E7F0FD; color:#0064D2; }
   .ord-toolbar { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
   .ord-search { flex:1 1 260px; min-width:0; } .ord-search input { width:100%; box-sizing:border-box; height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; font:500 14px Inter,sans-serif; background:#fff; outline:0; } .ord-search input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  /* ---- Dashboard: Net Profit ---- */
+  .dash-np { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:0 0 18px; }
+  .dash-np-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:12px 0 14px; }
+  .dash-np-tabs button { border:1.5px solid #E2E8F0; background:#fff; border-radius:999px; padding:6px 13px; font:700 12.5px Inter,sans-serif; color:#475569; cursor:pointer; }
+  .dash-np-tabs button.on { background:#0064D2; border-color:#0064D2; color:#fff; }
+  .dash-np-nums { display:flex; gap:26px; flex-wrap:wrap; }
+  .dash-np-num .lbl { font:700 12px Inter,sans-serif; color:#64748B; text-transform:uppercase; letter-spacing:.04em; }
+  .dash-np-num .val { font:800 30px/1.15 Inter,sans-serif; font-variant-numeric:tabular-nums; margin:3px 0 2px; } .dash-np-num .val.good { color:#3F6208; } .dash-np-num .val.bad { color:#B42318; }
+  .dash-np-num .hint { font:600 12.5px Inter,sans-serif; color:#94A3B8; }
+  .dash-np-foot { margin-top:12px; font:600 13px Inter,sans-serif; color:#64748B; }
+  .dash-np-empty { padding:6px 0 2px; font:500 14px/1.5 Inter,sans-serif; color:#64748B; }
   /* ---- Net Profit sheet: everything fits the width of the page, no side scroll ---- */
   .np-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
   .np-search { position:relative; flex:1 1 260px; min-width:200px; max-width:420px; }
@@ -2948,7 +2959,9 @@
   .np-in.need { background:#FFFBEB; border-color:#FCD34D; } .np-in.own { background:#F5F3FF; border-color:#C4B5FD; } .np-in.saving { opacity:.55; }
   .np-in.net { background:#F8FBFF; border-color:#BFDBFE; }
   .np-good { color:#3F6208; font-weight:700; } .np-bad { color:#B42318; font-weight:700; } .np-muted { color:#94A3B8; }
-  .np-table tfoot td { background:#F1F5F9; font-weight:800; color:#0F172A; border-top:2px solid #CBD5E1; border-bottom:0; height:46px; }
+  .np-table .np-totals td { background:#F1F5F9; font-weight:800; color:#0F172A; border-bottom:1px solid #CBD5E1; height:46px; }
+  .np-table tfoot.np-totals td { border-top:2px solid #CBD5E1; border-bottom:0; }
+  .np-table .np-totals tr:hover td { background:#F1F5F9; }
   .np-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:14px 16px; border-top:1px solid #EEF1F5; font:600 13px Inter,sans-serif; color:var(--dv-mute); }
   .np-empty { padding:54px 16px; text-align:center; color:var(--dv-mute); } .np-empty b { display:block; font-size:16px; color:var(--dv-ink); margin-bottom:6px; }
   @media (max-width: 900px) {
@@ -2959,8 +2972,8 @@
     .np-table td::before { content:attr(data-label); flex:0 0 auto; font:800 11px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#64748B; text-align:left; }
     .np-table td.np-title-td { display:block; text-align:left; } .np-table td.np-title-td::before { display:none; }
     .np-t { white-space:normal; } .np-cell { width:150px; flex:0 0 150px; }
-    .np-table tfoot td { font-size:13px; }
-    .np-table tfoot tr { background:#F1F5F9; } .np-table tfoot td { background:transparent; border:0; }
+    .np-table .np-totals td { font-size:13px; }
+    .np-table .np-totals tr { background:#F1F5F9; } .np-table .np-totals td { background:transparent; border:0; }
   }
   .ord-table-wrap { background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow-x:auto; }
   .ord-table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; color:#4b5563; min-width:900px; }
@@ -5815,7 +5828,7 @@
     import: ['Import a product', 'Paste an Amazon link, price it, send it to eBay.'],
     drafts: ['Drafts', 'Products fetched and saved, ready to publish with one click.'],
     listings: ['Live listings', 'Everything published to eBay from ELMS.'],
-    netprofit: ['Net Profit', 'What each order really made you, line by line.'],
+    netprofit: ['Net Profit', 'What each ELMS order really made you, line by line.'],
     orders: ['Orders', 'Orders placed by buyers on your eBay listings.'],
     messages: ['Messages', 'Manage eBay conversations, replies, notes, and saved replies.'],
     history: ['Import history', 'Every Amazon product fetched so far.'],
@@ -8256,6 +8269,13 @@
             <div class="dash-body"><div class="label">${c.label}</div><div class="value${valueSizeClass(c.value)}">${c.value}</div><div class="hint">${escapeHtml(c.hint)}</div></div>
           </div>`).join('')}
         </div>
+        <div class="dash-np" id="dashNetProfit">
+          <div class="dash-section-head"><div class="section-title" style="margin:0;padding:0;border-top:none;">Net Profit</div><button class="view-all" data-dashboard-action="netprofit">Open the sheet</button></div>
+          <div class="dash-np-tabs" role="group" aria-label="Period">
+            <button type="button" data-np-range="today">Today</button><button type="button" data-np-range="7">7 days</button><button type="button" data-np-range="30">30 days</button><button type="button" data-np-range="month">This month</button><button type="button" data-np-range="all">All time</button>
+          </div>
+          <div id="dashNpBody"><div class="elms-loader sm" role="status" aria-label="Loading the net profit"></div></div>
+        </div>
         <div class="dashboard-columns">
           <div class="product-card dash-box">
             <div class="dash-section-head"><div class="section-title" style="margin:0;padding:0;border-top:none;">Recent publish activity</div><button class="view-all" data-dashboard-action="listings">View all</button></div>
@@ -8280,6 +8300,8 @@
         </div>`;
       container.querySelectorAll('[data-dashboard-action]').forEach((btn) => btn.addEventListener('click', () => showPage(btn.dataset.dashboardAction)));
       document.getElementById('dashNotifViewAll')?.addEventListener('click', () => openNotificationCenter());
+      container.querySelectorAll('#dashNetProfit [data-np-range]').forEach((b) => b.addEventListener('click', () => { dashNpRange = b.getAttribute('data-np-range'); loadDashNetProfit(); }));
+      loadDashNetProfit(); // on its own, so the rest of the dashboard never waits for it
       container.querySelectorAll('.dash-notif[data-notification-id]').forEach((el) => el.addEventListener('click', () => openNotificationCenter(el.dataset.notificationId)));
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">${escapeHtml(err.message || 'Could not load dashboard.')}</div>`;
@@ -11183,15 +11205,18 @@ async function autoSuggestEmptyDraftCategories() {
       + '</tr>';
   }
   function npRenderTotals() {
-    const foot = document.getElementById('npFoot');
-    if (!foot) return;
+    const top = document.getElementById('npTotals');
+    const end = document.getElementById('npFoot');
+    if (!top) return;
     const totals = npTotals(npLines);
-    if (!totals.length) { foot.innerHTML = ''; return; }
-    foot.innerHTML = totals.map((t) => {
+    if (!totals.length) { top.innerHTML = ''; if (end) end.innerHTML = ''; return; }
+    const html = totals.map((t) => {
       const label = 'Total' + (totals.length > 1 && t.currency ? ' \u00b7 ' + t.currency : '') + ' \u00b7 ' + t.lines + ' line' + (t.lines === 1 ? '' : 's');
       const cell = (label2, v) => '<td class="np-num" data-label="' + label2 + '">' + escapeHtml(npMoney(v, t.currency)) + '</td>';
       return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Amazon price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('eBay cost', t.ebay_cost) + cell('Net profit', t.net_profit) + '</tr>';
     }).join('');
+    top.innerHTML = html;
+    if (end) end.innerHTML = html;
   }
   function npRenderFoot() {
     const box = document.getElementById('npMore');
@@ -11210,22 +11235,22 @@ async function autoSuggestEmptyDraftCategories() {
     if (!body) return;
     if (!npLines.length) {
       const filtered = npFilters.q || npFilters.accountId || npFilters.range !== 'all';
-      body.innerHTML = '<tr><td colspan="7" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date.' : 'Every order you get on eBay appears here as one line.') + '</div></td></tr>';
+      body.innerHTML = '<tr><td colspan="7" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div></td></tr>';
     } else body.innerHTML = npLines.map(npRowHtml).join('');
     npRenderTotals();
     npRenderFoot();
   }
 
-  function npRange() {
+  function npRange() { return npRangeBounds(npFilters.range, npFilters.from, npFilters.to); }
+  function npRangeBounds(r, customFrom, customTo) {
     const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
     const endOfDay = (d) => { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; };
     const now = new Date();
-    const r = npFilters.range;
     if (r === 'today') return [startOfDay(now), endOfDay(now)];
     if (r === '7') return [startOfDay(new Date(now.getTime() - 6 * 86400000)), endOfDay(now)];
     if (r === '30') return [startOfDay(new Date(now.getTime() - 29 * 86400000)), endOfDay(now)];
     if (r === 'month') return [startOfDay(new Date(now.getFullYear(), now.getMonth(), 1)), endOfDay(now)];
-    if (r === 'custom') return [npFilters.from ? startOfDay(npFilters.from + 'T00:00:00') : null, npFilters.to ? endOfDay(npFilters.to + 'T00:00:00') : null];
+    if (r === 'custom') return [customFrom ? startOfDay(customFrom + 'T00:00:00') : null, customTo ? endOfDay(customTo + 'T00:00:00') : null];
     return [null, null];
   }
   function npQuery(extra) {
@@ -11338,8 +11363,9 @@ async function autoSuggestEmptyDraftCategories() {
           <table class="np-table">
             <colgroup><col style="width:28%"><col style="width:15%"><col style="width:12%"><col style="width:12%"><col style="width:11%"><col style="width:11%"><col style="width:11%"></colgroup>
             <thead><tr><th>Title</th><th>Order ID</th><th class="r">Amazon price</th><th class="r">eBay price</th><th class="r">Profit</th><th class="r">eBay cost</th><th class="r">Net profit</th></tr></thead>
+            <tbody id="npTotals" class="np-totals"></tbody>
             <tbody id="npBody"></tbody>
-            <tfoot id="npFoot"></tfoot>
+            <tfoot id="npFoot" class="np-totals"></tfoot>
           </table>
           <div id="npMore"></div>
         </div>`;
@@ -11375,6 +11401,36 @@ async function autoSuggestEmptyDraftCategories() {
       }).catch(() => { npAccountsLoaded = false; });
     }
     npFetch(false);
+  }
+
+  // ---------- Dashboard: Net Profit (what was typed on the sheet, added up; one light request) ----------
+  let dashNpRange = 'month';
+  let dashNpSeq = 0;
+  async function loadDashNetProfit() {
+    const box = document.getElementById('dashNpBody');
+    if (!box) return;
+    const seq = ++dashNpSeq;
+    document.querySelectorAll('#dashNetProfit [data-np-range]').forEach((b) => b.classList.toggle('on', b.getAttribute('data-np-range') === dashNpRange));
+    box.innerHTML = '<div class="elms-loader sm" role="status" aria-label="Loading the net profit"></div>';
+    const [from, to] = npRangeBounds(dashNpRange);
+    const p = new URLSearchParams();
+    if (from) p.set('from', from.toISOString());
+    if (to) p.set('to', to.toISOString());
+    try {
+      const res = await apiFetch('/api/net-profit/summary?' + p.toString());
+      const d = await res.json();
+      if (seq !== dashNpSeq) return;
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the net profit.');
+      if (!d.currencies.length) {
+        box.innerHTML = '<div class="dash-np-empty">' + (d.ordersTotal ? 'No net profit typed for these ' + d.ordersTotal + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' yet. ' : 'No orders in this period. ') + 'Open the Net Profit sheet and type what each order really made you: the total appears here.</div>';
+        return;
+      }
+      box.innerHTML = '<div class="dash-np-nums">' + d.currencies.map((c) => '<div class="dash-np-num"><div class="lbl">Net profit' + (d.currencies.length > 1 && c.currency ? ' \u00b7 ' + escapeHtml(c.currency) : '') + '</div><div class="val ' + (c.net_profit < 0 ? 'bad' : 'good') + '">' + escapeHtml(npMoney(c.net_profit, c.currency)) + '</div><div class="hint">from ' + c.orders + ' order' + (c.orders === 1 ? '' : 's') + '</div></div>').join('') + '</div>'
+        + '<div class="dash-np-foot">' + d.orders + ' of ' + d.ordersTotal + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' have a net profit typed.</div>';
+    } catch (err) {
+      if (seq !== dashNpSeq) return;
+      box.innerHTML = '<div class="dash-np-empty">' + escapeHtml(err.message) + '</div>';
+    }
   }
 
   // ---------- Orders page ----------
