@@ -8200,7 +8200,7 @@
     try {
       const [dashRes, ordersRes, notifRes] = await Promise.all([
         apiFetch('/api/dashboard'),
-        apiFetch('/api/orders').catch(() => null),
+        apiFetch('/api/orders/summary').catch(() => null),
         apiFetch('/api/system-notifications?limit=8').catch(() => null),
       ]);
       const data = await dashRes.json();
@@ -8208,18 +8208,19 @@
       const s = data.stats || {};
       const recent = data.recentPublishes || [];
 
-      let orders = [];
-      try { const od = ordersRes && ordersRes.ok ? await ordersRes.json() : null; if (od && od.success) orders = od.orders || []; } catch (_) {}
+      // { orders, currencies: [{ currency, orders, revenue, profit, profit_orders }] }, the currency with the most orders first (a pound and a dollar are never added together)
+      let ordersTotal = 0; let primary = null; let otherCurrencies = 0;
+      try { const od = ordersRes && ordersRes.ok ? await ordersRes.json() : null; if (od && od.success) { ordersTotal = Number(od.orders) || 0; primary = (od.currencies || [])[0] || null; otherCurrencies = Math.max(0, (od.currencies || []).length - 1); } } catch (_) {}
       try { const nd = notifRes && notifRes.ok ? await notifRes.json() : null; if (nd && nd.success) systemNotifications = Array.isArray(nd.notifications) ? nd.notifications : []; } catch (_) {}
 
-      // Revenue = sum of order sale prices; profit = sum of the per-order profit ELMS already
-      // computes from the saved Amazon price. Orders with no buy price are skipped for profit.
-      const numOrNull = (v) => (v != null && v !== '' && Number.isFinite(Number(v))) ? Number(v) : null;
-      const revenue = orders.reduce((t, o) => t + (numOrNull(o.sale_price) ?? 0), 0);
-      const profitRows = orders.map((o) => numOrNull(o.profit)).filter((v) => v != null);
-      const profit = profitRows.reduce((t, v) => t + v, 0);
-      const cur = orders.find((o) => o.currency)?.currency;
+      // Revenue = sum of order sale prices; profit = sum of the per-order profit ELMS already computes from the saved Amazon price
+      // (orders with no buy price are skipped for profit; cancelled orders are not counted). Both are worked out by the server, for the currency with the most orders.
+      const revenue = primary ? Number(primary.revenue) : 0;
+      const profitCount = primary ? Number(primary.profit_orders) || 0 : 0;
+      const profit = primary && primary.profit != null ? Number(primary.profit) : 0;
+      const cur = primary ? primary.currency : undefined;
       const money = (n) => formatPrice(n, cur || 'USD');
+      const onlyCur = otherCurrencies && cur ? ' \u00b7 ' + cur + ' only' : '';
 
       const hour = new Date().getHours();
       const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -8237,9 +8238,9 @@
       };
 
       const cards = [
-        { ico:'profit', theme:'green', label:'Profit', value: profitRows.length ? money(profit) : '\u2014', hint: profitRows.length ? 'From ' + profitRows.length + ' order' + (profitRows.length === 1 ? '' : 's') : 'No order profit yet' },
-        { ico:'revenue', theme:'blue', label:'Total revenue', value: orders.length ? money(revenue) : '\u2014', hint:'Sales from eBay orders' },
-        { ico:'orders', theme:'pink', label:'Orders', value: orders.length || Number(s.orders || 0), hint:'eBay orders synced' },
+        { ico:'profit', theme:'green', label:'Profit', value: profitCount ? money(profit) : '\u2014', hint: profitCount ? 'From ' + profitCount + ' order' + (profitCount === 1 ? '' : 's') + onlyCur : 'No order profit yet' },
+        { ico:'revenue', theme:'blue', label:'Total revenue', value: primary ? money(revenue) : '\u2014', hint: 'Sales from eBay orders' + onlyCur },
+        { ico:'orders', theme:'pink', label:'Orders', value: ordersTotal || Number(s.orders || 0), hint:'eBay orders synced' },
         { ico:'products', theme:'purple', label:'New products', value: Number(s.imports || 0), hint:'Products imported' }
       ];
 
