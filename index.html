@@ -3607,6 +3607,9 @@
   .dv-title { margin:0; font:700 14px/1.4 Inter,sans-serif; color:var(--dv-ink); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
   .dv-title:hover { color:#0064D2; }
   .dv-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  /* the seller's private note on a card (one line, the whole text is in the tooltip) */
+  .dv-note { font:600 12px Inter,sans-serif; color:#92400E; background:#FEF3C7; border-radius:8px; padding:4px 9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .ord-links { margin-top:5px; }
   .dv-chip { font:600 11.5px Inter,sans-serif; padding:3px 9px; border-radius:99px; background:var(--dv-soft); color:#475569; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-decoration:none; }
   a.dv-chip:hover { background:#E8F1FD; color:#0064D2; }
   .dv-error { display:flex; gap:8px; padding:8px 10px; border-radius:10px; background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; font:600 12px/1.4 Inter,sans-serif; word-break:break-word; }
@@ -8610,7 +8613,7 @@
         const status = document.getElementById('draftStatusFilter')?.value || 'all';
         const sort = document.getElementById('draftSort')?.value || 'created';
         const filtered = allDrafts.filter((l) => {
-          const haystack = `${l.title || ''} ${l.sku || ''}`.toLowerCase();
+          const haystack = `${l.title || ''} ${l.sku || ''} ${l.note || ''}`.toLowerCase();
           // "Ready to publish" also shows failed items (not just the "Needs attention" tab) -
           // a listing that failed to publish still needs to be published, so it stays visible
           // where the seller is already looking, with its error badge and a Retry button.
@@ -8996,6 +8999,7 @@
             <label class="elms-ed-field"><span>Category</span><select data-ui-field="category"><option value="">Select category</option>${cats}</select></label>
             <label class="elms-ed-field"><span>Shipping Methods</span><select data-ui-field="shipping_method">${shipMethods.map(([v, t]) => `<option value="${v}"${v === (l.shipping_method || '') ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
             <label class="elms-ed-field full"><span>Tags</span><input type="text" data-ui-field="tags" placeholder="Enter tags, separated by commas" value="${escapeAttr(Array.isArray(l.tags) ? l.tags.join(', ') : (l.tags || ''))}" /></label>
+            <label class="elms-ed-field full"><span>Private note <em>only for you: it stays with this product and is never sent to eBay or Amazon</em></span><textarea data-ui-field="note" rows="3" maxlength="2000" placeholder="Add a note for yourself (supplier, reminder, anything)\u2026">${escapeHtml(l.note || '')}</textarea></label>
           </div>
           <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="use_dynamic_policies"${l.use_dynamic_policies ? ' checked' : ''} /><span class="elms-ed-switch"></span>Use Dynamic Policies (Shipping, Payment, Returns)</label>
           <small class="elms-ed-note" data-ui-policy-note>On: the eBay account's default policies are used. Off: the policies chosen below apply to this product.</small>
@@ -9058,6 +9062,7 @@
       categoryId: cat ? cat.value : '',
       description: f('description') ? f('description').value : '',
       tags: val('tags').split(',').map((t) => t.trim()).filter(Boolean),
+      note: f('note') ? f('note').value.trim() : undefined,
       shippingMethod: val('shipping_method'),
       useDynamicPolicies: !!f('use_dynamic_policies')?.checked,
       paymentPolicyId: val('payment_policy_id'),
@@ -9080,7 +9085,7 @@
   // The subset of the editor that PATCH /api/listings/:id/settings understands.
   function editorSettingsBody(v) {
     return {
-      tags: v.tags, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies,
+      tags: v.tags, note: v.note, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies,
       paymentPolicyId: v.paymentPolicyId || null, fulfillmentPolicyId: v.fulfillmentPolicyId || null, returnPolicyId: v.returnPolicyId || null,
       countryLocation: v.countryLocation || null, locationCity: v.locationCity || null, postalCode: v.postalCode || null,
       stockMonitoring: v.stockMonitoring, priceMonitoring: v.priceMonitoring,
@@ -9531,6 +9536,7 @@
             ${variants > 1 ? `<span class="dv-chip">${variants} variants</span>` : ''}
             ${veroChipHtml(l, status !== 'publishing')}
           </div>
+          ${l.note ? `<div class="dv-note" title="${escapeAttr(l.note)}">&#128221; ${escapeHtml(String(l.note).split('\n')[0])}</div>` : ''}
           ${status === 'error' && l.error_message ? `<div class="dv-error"><span>!</span><span>${escapeHtml(l.error_message)}</span></div>` : ''}
           ${when ? `<div class="dv-when">Goes live ${escapeHtml(when)}</div>` : ''}
           <div class="dv-money" data-amazon="${amazonNum ?? ''}" data-sym="${escapeAttr(sym)}">
@@ -10473,7 +10479,7 @@ async function autoSuggestEmptyDraftCategories() {
       if (llVeroOnly && !(l._vero && l._vero.terms.length)) return false;
       if (llSearch) {
         const q = llSearch.toLowerCase();
-        const hay = `${l.title || ''} ${l.sku || ''} ${l.listing_id || ''}`.toLowerCase();
+        const hay = `${l.title || ''} ${l.sku || ''} ${l.listing_id || ''} ${l.note || ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -10629,6 +10635,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${uploadedText ? `<span class="dv-chip">Listed ${escapeHtml(uploadedText)}</span>` : ''}
             ${veroChipHtml(l, false)}
           </div>
+          ${l.note ? `<div class="dv-note" title="${escapeAttr(l.note)}">&#128221; ${escapeHtml(String(l.note).split('\n')[0])}</div>` : ''}
           ${st === 'issues' ? `<div class="lv-issue"><span>!</span><span>${escapeHtml(l.error_message || 'This listing has an issue.')}</span></div>` : ''}
         </div>
         <div class="lv-metrics">
@@ -10914,7 +10921,7 @@ async function autoSuggestEmptyDraftCategories() {
           try {
             const sres = await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/settings`, {
               method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ tags: v.tags, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies, stockMonitoring: v.stockMonitoring, priceMonitoring: v.priceMonitoring }),
+              body: JSON.stringify({ tags: v.tags, note: v.note, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies, stockMonitoring: v.stockMonitoring, priceMonitoring: v.priceMonitoring }),
             });
             const sdata = await sres.json();
             if (sres.ok && sdata.success && sdata.listing) {
@@ -11139,6 +11146,15 @@ async function autoSuggestEmptyDraftCategories() {
 
   function orders_money(n, cur) { return formatPrice(n, cur); }
 
+  // The same two links a live listing has: the live eBay listing and the Amazon product (the link of its import, else Amazon's page for the ASIN).
+  function orderLinksHtml(o) {
+    const chips = [];
+    if (o.legacy_item_id) chips.push(`<a class="dv-chip" href="https://www.${ebayDomainFor(o)}/itm/${encodeURIComponent(o.legacy_item_id)}" target="_blank" rel="noopener noreferrer" title="Open the live eBay listing">eBay ${escapeHtml(o.legacy_item_id)} &#8599;</a>`);
+    const asin = o.asin || '';
+    if (o.amazon_url || asin) chips.push(`<a class="dv-chip" href="${escapeAttr(o.amazon_url || 'https://www.amazon.com/dp/' + encodeURIComponent(asin))}" target="_blank" rel="noopener noreferrer" title="Open the Amazon product">Amazon${asin ? ' ' + escapeHtml(asin) : ''} &#8599;</a>`);
+    return chips.length ? `<div class="dv-chips ord-links">${chips.join('')}</div>` : '';
+  }
+
   function orderRowHtml(o) {
     const ship = orderShipBy(o);
     const address = o.shipping_address || {};
@@ -11148,7 +11164,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td data-label="Order"><div class="ord-id">${escapeHtml(o.ebay_order_id || '—')}</div><div class="ord-sub">${escapeHtml(orderShortDate(orderDateOf(o)))}</div></td>
         <td data-label="Item"><div class="ord-item">
           ${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
-          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${(o.ebay_account_label || o.ebay_account_username) ? ' · ' + escapeHtml(o.ebay_account_label || o.ebay_account_username) : ''}</div></div>
+          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${(o.ebay_account_label || o.ebay_account_username) ? ' · ' + escapeHtml(o.ebay_account_label || o.ebay_account_username) : ''}</div>${orderLinksHtml(o)}</div>
         </div></td>
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
         <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}</td>
@@ -11168,7 +11184,7 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#ordersAccountFilterSelect')?.addEventListener('change', async (e) => { ordersAccountFilter = e.target.value; ordersPage = 1; try { await fetchOrdersList(); } catch (err) { showToast('Orders', err.message, 'error'); } renderOrders(); });
     root.querySelector('#syncOrdersBtn')?.addEventListener('click', () => syncOrdersFromEbay(false));
     root.querySelector('#syncOrdersFullBtn')?.addEventListener('click', () => syncOrdersFromEbay(true));
-    root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', () => openOrderDetail(row.getAttribute('data-order-id'))));
+    root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('a')) return; openOrderDetail(row.getAttribute('data-order-id')); }));
   }
 
   async function syncOrdersFromEbay(full) {
@@ -11261,7 +11277,7 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="ord-item big">${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
           <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div>
             <div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}</div>
-            <div class="ord-sub">${o.sku ? 'SKU ' + escapeHtml(o.sku) : ''}${o.legacy_item_id ? ` · <a class="ad-link" href="https://www.${domain}/itm/${encodeURIComponent(o.legacy_item_id)}" target="_blank" rel="noopener noreferrer">Item ${escapeHtml(o.legacy_item_id)}</a>` : ''}</div></div></div>
+            <div class="ord-sub">${o.sku ? 'SKU ' + escapeHtml(o.sku) : ''}</div>${orderLinksHtml(o)}</div></div>
         </section>
 
         <section class="ord-sec"><h4>Payment</h4>
