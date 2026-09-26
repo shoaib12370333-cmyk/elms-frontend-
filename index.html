@@ -2924,6 +2924,44 @@
   .ord-tab.active { color:#0064D2; border-bottom-color:#0064D2; } .ord-tab.active span { background:#E7F0FD; color:#0064D2; }
   .ord-toolbar { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
   .ord-search { flex:1 1 260px; min-width:0; } .ord-search input { width:100%; box-sizing:border-box; height:40px; padding:0 14px; border:1px solid var(--line); border-radius:10px; font:500 14px Inter,sans-serif; background:#fff; outline:0; } .ord-search input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  /* ---- Net Profit sheet: everything fits the width of the page, no side scroll ---- */
+  .np-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .np-search { position:relative; flex:1 1 260px; min-width:200px; max-width:420px; }
+  .np-search svg { position:absolute; left:12px; top:50%; width:16px; height:16px; transform:translateY(-50%); color:#94A3B8; }
+  .np-search input { width:100%; box-sizing:border-box; height:40px; padding:0 12px 0 36px; border:1.5px solid var(--dv-line); border-radius:12px; background:#fff; font:500 14px Inter,sans-serif; color:var(--dv-ink); }
+  .np-custom { display:inline-flex; align-items:center; gap:6px; } .np-custom[hidden] { display:none; } .np-custom input { height:40px; padding:0 8px; border:1.5px solid var(--dv-line); border-radius:12px; font:500 13px Inter,sans-serif; background:#fff; }
+  .np-switch { display:inline-flex; align-items:center; gap:7px; font:600 13px Inter,sans-serif; color:var(--dv-mute); cursor:pointer; } .np-switch input { width:16px; height:16px; accent-color:#0064D2; }
+  .np-bar .np-export { margin-left:auto; }
+  .np-card { background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  .np-table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:13px; color:#374151; font-variant-numeric:tabular-nums; }
+  .np-table th { text-align:left; padding:0 10px; height:42px; background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; font:800 11px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:sticky; top:0; z-index:1; }
+  .np-table th.r, .np-table td.np-num { text-align:right; }
+  .np-table td { padding:6px 10px; height:44px; border-bottom:1px solid #EEF1F5; vertical-align:middle; overflow:hidden; }
+  .np-table tbody tr:hover td { background:#F8FBFF; }
+  .np-t { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; color:#1F2937; } .np-qty { font-style:normal; font-weight:800; font-size:11px; color:#0064D2; background:#E8F1FD; border-radius:6px; padding:1px 6px; margin-left:6px; }
+  .np-title-cell { display:flex; align-items:center; min-width:0; } .np-title-cell .np-t { flex:1 1 auto; min-width:0; }
+  .np-oid { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#475569; }
+  .np-cell { position:relative; display:block; }
+  .np-sign { position:absolute; left:9px; top:50%; transform:translateY(-50%); color:#94A3B8; font-weight:600; pointer-events:none; }
+  .np-in { width:100%; min-width:0; box-sizing:border-box; height:32px; padding:0 8px 0 24px; text-align:right; border:1.5px solid #E2E8F0; border-radius:8px; background:#fff; font:600 13px Inter,sans-serif; color:#111827; font-variant-numeric:tabular-nums; }
+  .np-in::placeholder { color:#94A3B8; font-weight:500; } .np-in:hover { border-color:#CBD5E1; } .np-in:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
+  .np-in.need { background:#FFFBEB; border-color:#FCD34D; } .np-in.own { background:#F5F3FF; border-color:#C4B5FD; } .np-in.saving { opacity:.55; }
+  .np-in.net { background:#F8FBFF; border-color:#BFDBFE; }
+  .np-good { color:#3F6208; font-weight:700; } .np-bad { color:#B42318; font-weight:700; } .np-muted { color:#94A3B8; }
+  .np-table tfoot td { background:#F1F5F9; font-weight:800; color:#0F172A; border-top:2px solid #CBD5E1; border-bottom:0; height:46px; }
+  .np-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:14px 16px; border-top:1px solid #EEF1F5; font:600 13px Inter,sans-serif; color:var(--dv-mute); }
+  .np-empty { padding:54px 16px; text-align:center; color:var(--dv-mute); } .np-empty b { display:block; font-size:16px; color:var(--dv-ink); margin-bottom:6px; }
+  @media (max-width: 900px) {
+    .np-table, .np-table tbody, .np-table tfoot, .np-table tr, .np-table td { display:block; width:100%; box-sizing:border-box; }
+    .np-table thead { display:none; }
+    .np-table tr { padding:12px 14px; border-bottom:8px solid var(--paper-raised); }
+    .np-table td { height:auto; border:0; padding:5px 0; display:flex; justify-content:space-between; align-items:center; gap:12px; text-align:right; overflow:visible; }
+    .np-table td::before { content:attr(data-label); flex:0 0 auto; font:800 11px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#64748B; text-align:left; }
+    .np-table td.np-title-td { display:block; text-align:left; } .np-table td.np-title-td::before { display:none; }
+    .np-t { white-space:normal; } .np-cell { width:150px; flex:0 0 150px; }
+    .np-table tfoot td { font-size:13px; }
+    .np-table tfoot tr { background:#F1F5F9; } .np-table tfoot td { background:transparent; border:0; }
+  }
   .ord-table-wrap { background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow-x:auto; }
   .ord-table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; color:#4b5563; min-width:900px; }
   .ord-table th { text-align:left; padding:0 14px; height:44px; font-size:12px; font-weight:700; color:#687180; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
@@ -4072,6 +4110,10 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         Orders
       </a>
+      <a href="#" data-page="netprofit">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Net Profit
+      </a>
       <a href="#" data-page="messages">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Messages
@@ -4323,6 +4365,10 @@
 
       <div id="page-orders" style="display:none;">
         <div id="ordersContent"><div class="elms-loader" role="status" aria-label="Loading orders"></div></div>
+      </div>
+
+      <div id="page-netprofit" style="display:none;">
+        <div id="netProfitContent"><div class="elms-loader" role="status" aria-label="Loading the sheet"></div></div>
       </div>
 
       <div id="page-messages" style="display:none;">
@@ -5279,6 +5325,7 @@
               <div class="st-field"><label>Mails per minute (batch size)</label><input class="st-input" type="number" min="1" max="100" id="limMailBatch" /></div>
               <div class="st-field"><label>Mails per day (announcements)</label><input class="st-input" type="number" min="1" max="100000" id="limMailDaily" /></div>
               <div class="st-field"><label>Bulk product import: links at a time</label><input class="st-input" type="number" min="1" max="50" id="limBulkImport" /></div>
+              <div class="st-field"><label>Net Profit sheet: lines for a free account (a plan has no limit)</label><input class="st-input" type="number" min="1" max="100000" id="limNetProfitFree" /></div>
               <div class="st-field"><label>Product cache (days)</label><input class="st-input" type="number" min="1" max="90" id="limProductCacheDays" /></div>
             </div>
             <p class="st-hint">Bulk import uses one Amazon (Canopy) call per link, so keep it within your Canopy plan. Maximum 50. Product cache: importing the same ASIN again within this many days reuses the saved data instead of a new provider call - the user is still charged a credit either way.</p>
@@ -5768,6 +5815,7 @@
     import: ['Import a product', 'Paste an Amazon link, price it, send it to eBay.'],
     drafts: ['Drafts', 'Products fetched and saved, ready to publish with one click.'],
     listings: ['Live listings', 'Everything published to eBay from ELMS.'],
+    netprofit: ['Net Profit', 'What each order really made you, line by line.'],
     orders: ['Orders', 'Orders placed by buyers on your eBay listings.'],
     messages: ['Messages', 'Manage eBay conversations, replies, notes, and saved replies.'],
     history: ['Import history', 'Every Amazon product fetched so far.'],
@@ -5786,7 +5834,7 @@
   // Every page has its own address (elmstool.com/listing, /draft, ...), so a refresh,
   // a bookmark or a shared link opens the same page instead of the dashboard.
   const PAGE_PATHS = {
-    dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders',
+    dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders', netprofit: '/net-profit',
     messages: '/messages', history: '/import-history', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer', affiliate: '/affiliate', vouchers: '/vouchers',
     settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin',
   };
@@ -5854,8 +5902,8 @@
     if (!opts.fromPop) syncUrlToPage(page, !!opts.replace);
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
-    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'history' || page === 'admin');
-    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'messages', 'history', 'research-tools', 'calculator', 'referrals', 'affiliate', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
+    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'netprofit' || page === 'history' || page === 'admin');
+    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'netprofit', 'messages', 'history', 'research-tools', 'calculator', 'referrals', 'affiliate', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
@@ -5871,6 +5919,7 @@
     if (page === 'drafts') loadDrafts();
     if (page === 'listings') loadListings();
     if (page === 'orders') loadOrders();
+    if (page === 'netprofit') loadNetProfit();
     if (page === 'messages') loadMessagesPage();
     if (page === 'research-tools') loadResearchToolsPage();
     if (page === 'calculator') loadCalculatorPage();
@@ -11075,6 +11124,257 @@ async function autoSuggestEmptyDraftCategories() {
         document.body.appendChild(menu);
       });
     });
+  }
+
+  // ---------- Net Profit sheet ----------
+  // One line per order: TITLE, ORDER ID, AMAZON PRICE, EBAY PRICE, PROFIT, EBAY COST, NET PROFIT. AMAZON PRICE and NET PROFIT are typed (AMAZON PRICE
+  // is filled from ELMS when the cost is saved); PROFIT and EBAY COST are worked out here in whole cents with the same rule as the server:
+  // PROFIT = EBAY PRICE - AMAZON PRICE, EBAY COST = PROFIT - NET PROFIT (empty until the net profit is typed). Prices are per piece.
+  let npLines = [];
+  let npInfo = { total: 0, paid: false, hasMore: false, locked: false, freeLines: 1000, pageSize: 1000 };
+  let npFilters = { q: '', accountId: '', range: 'all', from: '', to: '', cancelled: false };
+  let npSeq = 0;
+  let npAccountsLoaded = false;
+
+  const npCents = (v) => { if (v === null || v === undefined || v === '') return null; const n = Number(v); if (!Number.isFinite(n)) return null; return Math.sign(n) * Math.round(Math.abs(n) * 100 + 1e-7); };
+  const npSign = (currency) => CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '');
+  const npMoney = (amount, currency) => (amount === null || amount === undefined ? '' : (amount < 0 ? '-' : '') + npSign(currency) + Math.abs(amount).toFixed(2));
+  function npParse(text) {
+    let t = String(text).trim().replace(/[\u00A3$\u20AC\s]/g, '');
+    if (t === '') return null;
+    if (t.includes(',') && !t.includes('.')) t = t.replace(',', '.'); else t = t.replace(/,/g, '');
+    const n = Number(t);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  /** The total rows: one per currency (a euro and a dollar are never added), each column adds only the cells that have a number. */
+  function npTotals(lines) {
+    const by = new Map();
+    for (const l of lines) {
+      const key = l.currency || '';
+      if (!by.has(key)) by.set(key, { currency: l.currency || null, lines: 0, sums: { amazon_price: null, ebay_price: null, profit: null, ebay_cost: null, net_profit: null } });
+      const t = by.get(key);
+      t.lines += 1;
+      for (const col of Object.keys(t.sums)) { const c = npCents(l[col]); if (c !== null) t.sums[col] = (t.sums[col] || 0) + c; }
+    }
+    return [...by.values()].map((t) => ({ currency: t.currency, lines: t.lines, ...Object.fromEntries(Object.entries(t.sums).map(([k, v]) => [k, v === null ? null : v / 100])) }));
+  }
+
+  function npInputCell(field, l, value, cls, hint) {
+    return '<div class="np-cell"><span class="np-sign">' + escapeHtml(npSign(l.currency).trim()) + '</span><input class="np-in ' + cls + '" data-np-field="' + field + '" type="text" inputmode="decimal" autocomplete="off" placeholder="Type" value="' + (value === null || value === undefined ? '' : Number(value).toFixed(2)) + '"' + (hint ? ' title="' + escapeAttr(hint) + '"' : '') + ' /></div>';
+  }
+  function npAmazonCell(l) {
+    const hint = l.amazon_note ? l.amazon_note : l.amazon_original ? 'Converted from ' + formatPrice(l.amazon_original.amount, l.amazon_original.currency) + ' at today\u2019s rate. Type your own figure to use it instead.' : l.amazon_manual ? 'Your own figure. Empty it to go back to the price saved with the listing.' : l.amazon_price === null ? 'No Amazon price is saved for this order: type what one piece cost.' : 'The price saved with the listing. Type another figure to use your own.';
+    return npInputCell('amazon', l, l.amazon_price, l.amazon_price === null ? 'need' : l.amazon_manual ? 'own' : '', hint);
+  }
+  function npProfitCell(l) {
+    return l.profit === null ? '' : '<span class="' + (l.profit >= 0 ? 'np-good' : 'np-bad') + '" data-np-profit>' + escapeHtml(npMoney(l.profit, l.currency)) + '</span>';
+  }
+  function npRowHtml(l) {
+    const date = l.date && !isNaN(new Date(l.date)) ? new Date(l.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    const oidTitle = [l.store, date, l.ebay_item_id ? 'Item ' + l.ebay_item_id : ''].filter(Boolean).join(' \u00b7 ');
+    return '<tr data-np-id="' + escapeAttr(l.id) + '">'
+      + '<td class="np-title-td" data-label="Title"><div class="np-title-cell"><span class="np-t" title="' + escapeAttr(l.title) + '">' + escapeHtml(l.title || '\u2014') + '</span>' + (l.quantity > 1 ? '<em class="np-qty" title="This order has ' + l.quantity + ' pieces. The prices are for one piece.">\u00d7' + l.quantity + '</em>' : '') + '</div></td>'
+      + '<td data-label="Order ID"><span class="np-oid" title="' + escapeAttr(oidTitle) + '">' + escapeHtml(l.ebay_order_id || '\u2014') + '</span></td>'
+      + '<td class="np-num" data-label="Amazon price">' + npAmazonCell(l) + '</td>'
+      + '<td class="np-num" data-label="eBay price">' + escapeHtml(npMoney(l.ebay_price, l.currency)) + '</td>'
+      + '<td class="np-num" data-label="Profit">' + npProfitCell(l) + '</td>'
+      + '<td class="np-num" data-label="eBay cost" data-np-cost>' + escapeHtml(npMoney(l.ebay_cost, l.currency)) + '</td>'
+      + '<td class="np-num" data-label="Net profit">' + npInputCell('net', l, l.net_profit, 'net', 'Type what you really made on this order. eBay cost is then worked out for you.') + '</td>'
+      + '</tr>';
+  }
+  function npRenderTotals() {
+    const foot = document.getElementById('npFoot');
+    if (!foot) return;
+    const totals = npTotals(npLines);
+    if (!totals.length) { foot.innerHTML = ''; return; }
+    foot.innerHTML = totals.map((t) => {
+      const label = 'Total' + (totals.length > 1 && t.currency ? ' \u00b7 ' + t.currency : '') + ' \u00b7 ' + t.lines + ' line' + (t.lines === 1 ? '' : 's');
+      const cell = (label2, v) => '<td class="np-num" data-label="' + label2 + '">' + escapeHtml(npMoney(v, t.currency)) + '</td>';
+      return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Amazon price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('eBay cost', t.ebay_cost) + cell('Net profit', t.net_profit) + '</tr>';
+    }).join('');
+  }
+  function npRenderFoot() {
+    const box = document.getElementById('npMore');
+    if (!box) return;
+    if (!npLines.length) { box.innerHTML = ''; return; }
+    const shown = npLines.length.toLocaleString();
+    let text = 'Showing ' + shown + ' of ' + npInfo.total.toLocaleString() + ' line' + (npInfo.total === 1 ? '' : 's');
+    let button = '';
+    if (npInfo.hasMore) button = '<button type="button" class="dv-btn primary" id="npAdd">Add lines</button>';
+    else if (npInfo.locked) { text = 'Free plan: ' + shown + ' of ' + npInfo.total.toLocaleString() + ' lines. Upgrade to see and add the rest.'; button = '<button type="button" class="dv-btn primary" id="npAdd">Add lines</button>'; }
+    else text = 'All ' + shown + ' line' + (npLines.length === 1 ? ' is' : 's are') + ' shown';
+    box.innerHTML = '<div class="np-foot"><span>' + escapeHtml(text) + '</span>' + button + '</div>';
+  }
+  function npRenderBody() {
+    const body = document.getElementById('npBody');
+    if (!body) return;
+    if (!npLines.length) {
+      const filtered = npFilters.q || npFilters.accountId || npFilters.range !== 'all';
+      body.innerHTML = '<tr><td colspan="7" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date.' : 'Every order you get on eBay appears here as one line.') + '</div></td></tr>';
+    } else body.innerHTML = npLines.map(npRowHtml).join('');
+    npRenderTotals();
+    npRenderFoot();
+  }
+
+  function npRange() {
+    const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+    const endOfDay = (d) => { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; };
+    const now = new Date();
+    const r = npFilters.range;
+    if (r === 'today') return [startOfDay(now), endOfDay(now)];
+    if (r === '7') return [startOfDay(new Date(now.getTime() - 6 * 86400000)), endOfDay(now)];
+    if (r === '30') return [startOfDay(new Date(now.getTime() - 29 * 86400000)), endOfDay(now)];
+    if (r === 'month') return [startOfDay(new Date(now.getFullYear(), now.getMonth(), 1)), endOfDay(now)];
+    if (r === 'custom') return [npFilters.from ? startOfDay(npFilters.from + 'T00:00:00') : null, npFilters.to ? endOfDay(npFilters.to + 'T00:00:00') : null];
+    return [null, null];
+  }
+  function npQuery(extra) {
+    const p = new URLSearchParams();
+    if (npFilters.q) p.set('q', npFilters.q);
+    if (npFilters.accountId) p.set('accountId', npFilters.accountId);
+    if (npFilters.cancelled) p.set('includeCancelled', '1');
+    const [from, to] = npRange();
+    if (from) p.set('from', from.toISOString());
+    if (to) p.set('to', to.toISOString());
+    Object.entries(extra || {}).forEach(([k, v]) => p.set(k, String(v)));
+    return p.toString();
+  }
+
+  async function npFetch(append) {
+    const seq = ++npSeq;
+    const body = document.getElementById('npBody');
+    if (!append && body) body.innerHTML = '<tr><td colspan="7" style="padding:0;border:0;"><div class="elms-loader sm" role="status" aria-label="Loading the sheet" style="margin:40px auto;"></div></td></tr>';
+    const addBtn = document.getElementById('npAdd');
+    if (append && addBtn) { addBtn.disabled = true; addBtn.textContent = 'Adding\u2026'; }
+    try {
+      const res = await apiFetch('/api/net-profit?' + npQuery({ offset: append ? npLines.length : 0, limit: npInfo.pageSize || 1000 }));
+      const data = await res.json();
+      if (seq !== npSeq) return;
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the sheet.');
+      npLines = append ? npLines.concat(data.lines) : data.lines;
+      npInfo = { total: data.total, paid: data.paid, hasMore: data.hasMore, locked: data.locked, freeLines: data.freeLines, pageSize: data.pageSize || 1000 };
+      npRenderBody();
+    } catch (err) {
+      if (seq !== npSeq) return;
+      if (!append && body) body.innerHTML = '<tr><td colspan="7" style="padding:0;border:0;"><div class="np-empty"><b>Could not load the sheet</b>' + escapeHtml(err.message) + '</div></td></tr>';
+      else { showToast('Could not add lines', err.message, 'error'); npRenderFoot(); }
+    }
+  }
+
+  async function npSaveCell(tr, input) {
+    const id = tr.getAttribute('data-np-id');
+    const line = npLines.find((x) => x.id === id);
+    if (!line) return;
+    const field = input.getAttribute('data-np-field');
+    const current = field === 'amazon' ? line.amazon_price : line.net_profit;
+    const value = npParse(input.value);
+    if (Number.isNaN(value)) { showToast('Not a number', 'Type the amount as a number, for example 12.50.', 'error'); input.value = current === null ? '' : Number(current).toFixed(2); npPreviewRow(tr); return; }
+    if (npCents(value) === npCents(current)) { input.value = value === null ? '' : value.toFixed(2); return; }
+    input.classList.add('saving');
+    try {
+      const res = await apiFetch('/api/net-profit/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(field === 'amazon' ? { amazonPrice: value } : { netProfit: value }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save.');
+      npLines[npLines.findIndex((x) => x.id === id)] = data.line;
+      const focusField = document.activeElement && tr.contains(document.activeElement) ? document.activeElement.getAttribute('data-np-field') : null;
+      tr.outerHTML = npRowHtml(data.line);
+      if (focusField) { const again = document.querySelector('#npBody tr[data-np-id="' + id.replace(/"/g, '') + '"] [data-np-field="' + focusField + '"]'); if (again) again.focus(); }
+      npRenderTotals();
+    } catch (err) {
+      showToast('Not saved', err.message, 'error');
+      input.classList.remove('saving');
+      input.value = current === null ? '' : Number(current).toFixed(2);
+      npPreviewRow(tr);
+    }
+  }
+  /** While typing, PROFIT and EBAY COST follow at once (the saved answer from the server is the same rule). */
+  function npPreviewRow(tr) {
+    const line = npLines.find((x) => x.id === tr.getAttribute('data-np-id'));
+    if (!line) return;
+    const a = npCents(npParse(tr.querySelector('[data-np-field="amazon"]').value));
+    const n = npCents(npParse(tr.querySelector('[data-np-field="net"]').value));
+    const e = npCents(line.ebay_price);
+    const profit = e !== null && a !== null && !Number.isNaN(a) ? e - a : null;
+    const cost = profit !== null && n !== null && !Number.isNaN(n) ? profit - n : null;
+    const pCell = tr.querySelector('td[data-label="Profit"]');
+    if (pCell) pCell.innerHTML = profit === null ? '' : '<span class="' + (profit >= 0 ? 'np-good' : 'np-bad') + '">' + escapeHtml(npMoney(profit / 100, line.currency)) + '</span>';
+    const cCell = tr.querySelector('[data-np-cost]');
+    if (cCell) cCell.textContent = cost === null ? '' : npMoney(cost / 100, line.currency);
+  }
+
+  async function npExport(btn) {
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Preparing\u2026';
+    try {
+      const res = await apiFetch('/api/net-profit/export?' + npQuery());
+      if (!res.ok) { let msg = 'Could not make the file.'; try { const d = await res.json(); msg = d.error || msg; } catch (_) { /* keep */ } throw new Error(msg); }
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'net-profit-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    } catch (err) {
+      showToast('Export failed', err.message, 'error');
+    } finally { btn.disabled = false; btn.textContent = label; }
+  }
+
+  async function loadNetProfit() {
+    const root = document.getElementById('netProfitContent');
+    if (!root) return;
+    if (!document.getElementById('npBody')) {
+      root.innerHTML = `
+        <div class="np-bar">
+          <div class="np-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="search" id="npSearch" placeholder="Search a title or order ID" autocomplete="off" /></div>
+          <select id="npStore" class="dv-select" aria-label="Store"><option value="">All stores</option></select>
+          <select id="npRange" class="dv-select" aria-label="Date">
+            <option value="all">All time</option><option value="today">Today</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="month">This month</option><option value="custom">Choose dates\u2026</option>
+          </select>
+          <span class="np-custom" id="npCustom" hidden><input type="date" id="npFrom" aria-label="From" /><span>to</span><input type="date" id="npTo" aria-label="To" /></span>
+          <label class="np-switch"><input type="checkbox" id="npCancelled" /> Show cancelled</label>
+          <button type="button" class="dv-btn np-export" id="npExport">Export CSV</button>
+        </div>
+        <div class="np-card">
+          <table class="np-table">
+            <colgroup><col style="width:28%"><col style="width:15%"><col style="width:12%"><col style="width:12%"><col style="width:11%"><col style="width:11%"><col style="width:11%"></colgroup>
+            <thead><tr><th>Title</th><th>Order ID</th><th class="r">Amazon price</th><th class="r">eBay price</th><th class="r">Profit</th><th class="r">eBay cost</th><th class="r">Net profit</th></tr></thead>
+            <tbody id="npBody"></tbody>
+            <tfoot id="npFoot"></tfoot>
+          </table>
+          <div id="npMore"></div>
+        </div>`;
+      let timer = null;
+      document.getElementById('npSearch').addEventListener('input', (e) => { clearTimeout(timer); timer = setTimeout(() => { npFilters.q = e.target.value.trim(); npFetch(false); }, 350); });
+      document.getElementById('npStore').addEventListener('change', (e) => { npFilters.accountId = e.target.value; npFetch(false); });
+      document.getElementById('npRange').addEventListener('change', (e) => { npFilters.range = e.target.value; document.getElementById('npCustom').hidden = npFilters.range !== 'custom'; if (npFilters.range !== 'custom' || npFilters.from || npFilters.to) npFetch(false); });
+      ['npFrom', 'npTo'].forEach((id) => document.getElementById(id).addEventListener('change', (e) => { npFilters[id === 'npFrom' ? 'from' : 'to'] = e.target.value; npFetch(false); }));
+      document.getElementById('npCancelled').addEventListener('change', (e) => { npFilters.cancelled = e.target.checked; npFetch(false); });
+      document.getElementById('npExport').addEventListener('click', (e) => npExport(e.currentTarget));
+      document.getElementById('npMore').addEventListener('click', async (e) => {
+        if (!e.target.closest('#npAdd')) return;
+        if (npInfo.hasMore) { npFetch(true); return; }
+        if (await elmsConfirm('Your free plan shows up to ' + npInfo.freeLines.toLocaleString() + ' lines of the Net Profit sheet. Upgrade to add more lines, 1000 at a time, with no limit.', { title: 'Add more lines', okText: 'Upgrade', cancelText: 'Not now' })) showPage('pricing');
+      });
+      const body = document.getElementById('npBody');
+      body.addEventListener('input', (e) => { const inp = e.target.closest('.np-in'); if (inp) npPreviewRow(inp.closest('tr')); });
+      body.addEventListener('change', (e) => { const inp = e.target.closest('.np-in'); if (inp) npSaveCell(inp.closest('tr'), inp); });
+      body.addEventListener('keydown', (e) => {
+        const inp = e.target.closest('.np-in');
+        if (!inp) return;
+        if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
+        else if (e.key === 'Escape') { const line = npLines.find((x) => x.id === inp.closest('tr').getAttribute('data-np-id')); const v = line && (inp.getAttribute('data-np-field') === 'amazon' ? line.amazon_price : line.net_profit); inp.value = v === null || v === undefined ? '' : Number(v).toFixed(2); npPreviewRow(inp.closest('tr')); inp.blur(); }
+      });
+    }
+    if (!npAccountsLoaded) {
+      npAccountsLoaded = true;
+      apiFetch('/api/ebay-accounts').then((r) => r.json()).then((d) => {
+        const sel = document.getElementById('npStore');
+        if (!sel || !d.success) return;
+        sel.insertAdjacentHTML('beforeend', (d.accounts || []).map((a) => '<option value="' + escapeAttr(a.id) + '">' + escapeHtml(a.label || a.displayName || a.username || 'Store') + '</option>').join(''));
+        sel.value = npFilters.accountId;
+      }).catch(() => { npAccountsLoaded = false; });
+    }
+    npFetch(false);
   }
 
   // ---------- Orders page ----------
@@ -16418,6 +16718,7 @@ async function autoSuggestEmptyDraftCategories() {
         document.getElementById('limMailBatch').value = l.limits.mailBatchSize;
         document.getElementById('limMailDaily').value = l.limits.mailDailyCap;
         document.getElementById('limBulkImport').value = l.limits.bulkImportMax;
+        document.getElementById('limNetProfitFree').value = l.limits.netProfitFreeLines;
         document.getElementById('limProductCacheDays').value = l.limits.productCacheDays;
       }
       const label = { sending: 'Sending', paused: 'Paused', done: 'Done', cancelled: 'Cancelled' };
@@ -16477,7 +16778,7 @@ async function autoSuggestEmptyDraftCategories() {
     const btn = document.getElementById('limSaveBtn'), st = document.getElementById('limStatus');
     btn.disabled = true; st.className = ''; st.textContent = 'Saving\u2026';
     try {
-      const body = { mailBatchSize: Number(document.getElementById('limMailBatch').value), mailDailyCap: Number(document.getElementById('limMailDaily').value), bulkImportMax: Number(document.getElementById('limBulkImport').value), productCacheDays: Number(document.getElementById('limProductCacheDays').value) };
+      const body = { mailBatchSize: Number(document.getElementById('limMailBatch').value), mailDailyCap: Number(document.getElementById('limMailDaily').value), bulkImportMax: Number(document.getElementById('limBulkImport').value), netProfitFreeLines: Number(document.getElementById('limNetProfitFree').value), productCacheDays: Number(document.getElementById('limProductCacheDays').value) };
       const res = await apiFetch('/api/admin/settings/limits', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save.');
       st.className = 'success'; st.textContent = 'Saved. Active immediately.';
