@@ -8455,7 +8455,7 @@
     { key: 'total', label: 'Total', get: (l) => l.total_quantity ?? l.total },
     { key: 'oosdays', label: 'OOS Days', get: (l) => l.oos_days ?? l.oosDays },
     { key: 'price', label: 'Price', get: (l) => l.sell_price != null && Number.isFinite(Number(l.sell_price)) ? Number(l.sell_price).toFixed(2) : null },
-    { key: 'profit', label: 'Profit', get: (l) => (l.sell_price != null && l.amazon_price != null && Number.isFinite(Number(l.sell_price)) && Number.isFinite(Number(l.amazon_price))) ? (Number(l.sell_price) - Number(l.amazon_price)).toFixed(2) : null },
+    { key: 'profit', label: 'Profit', get: (l) => { const pf = listingProfit(l); return pf ? pf.amount.toFixed(2) : null; } },
     { key: 'itemid', label: 'Item ID', get: (l) => l.ebay_item_id ?? l.ebayItemId ?? l.ebay_listing_id ?? l.item_id },
     { key: 'sold', label: 'Sold', get: (l) => l.sold_count ?? l.sold ?? l.quantity_sold },
     { key: 'dws', label: 'DWS', get: (l) => l.dws },
@@ -9444,6 +9444,26 @@
     } finally { btn.disabled = false; btn.textContent = label; }
   }
 
+  // The profit of a listing. When it was priced by the seller's Margin rule, the rule (its fees and shipping) is saved with the listing, so the
+  // profit shown is what is left AFTER eBay's fees: exactly what the rule was asked for (profit 30% shows +30% of the cost). Before, every
+  // card showed "sell price minus cost" (before the fees), which looked nothing like the profit that had been set.
+  // Without a saved rule only that difference is known (before eBay's fees).
+  function listingProfit(l, sellOverride) {
+    const n = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
+    const sell = sellOverride !== undefined ? n(sellOverride) : n(l.sell_price);
+    const cost = n(l.amazon_price);
+    if (sell == null || cost == null) return null;
+    const r = l.pricing_rule && typeof l.pricing_rule === 'object' ? l.pricing_rule : null;
+    if (r && n(r.feePercent) != null) {
+      const costTotal = cost + (n(r.shipping) || 0);
+      const amount = sell - costTotal - (sell * n(r.feePercent) / 100 + (n(r.feeFixed) || 0));
+      return { amount, percent: costTotal > 0 ? (amount / costTotal) * 100 : null, afterFees: true };
+    }
+    const amount = sell - cost;
+    return { amount, percent: cost > 0 ? (amount / cost) * 100 : null, afterFees: false };
+  }
+  const listingProfitHint = (pf) => (pf && pf.afterFees ? 'Profit after eBay fees (the fees of your Margin rule)' : 'Sell price minus cost, before eBay fees');
+
   function draftRowHtml(l) {
     const status = l.status || 'draft';
     const label = { draft: 'Ready', publishing: 'Publishing\u2026', scheduled: 'Scheduled', error: 'Failed' }[status] || status;
@@ -9453,13 +9473,9 @@
     const amazonNum = l.amazon_price != null && Number.isFinite(Number(l.amazon_price)) ? Number(l.amazon_price) : null;
     const sellNum = l.sell_price != null && Number.isFinite(Number(l.sell_price)) ? Number(l.sell_price) : null;
     const money = (n) => n == null ? '\u2014' : `${sym}${n.toFixed(2)}`;
-    const profit = amazonNum != null && sellNum != null ? sellNum - amazonNum : null;
-    // The stored markup (what was actually typed at import/edit time, e.g. "10") is shown, not
-    // profit/sellPrice recomputed on the fly - that's a DIFFERENT number (margin-on-revenue,
-    // e.g. 9% for a 10% markup) and showing it next to Profit made it look like ELMS silently
-    // changed the markup the seller set.
-    const storedMarkup = l.markup_percent != null && Number.isFinite(Number(l.markup_percent)) ? Number(l.markup_percent) : null;
-    const margin = storedMarkup != null ? Math.round(storedMarkup) : (profit != null && sellNum ? Math.round((profit / sellNum) * 100) : null);
+    const pf = listingProfit(l);
+    const profit = pf ? pf.amount : null;
+    const margin = pf && pf.percent != null ? Math.round(pf.percent) : null; // of the cost, like the "Profit %" in the Margin popup
     const variants = Array.isArray(l.variants) && l.variants.length ? l.variants.length : (Number(l.variants_count) || 1);
     const when = status === 'scheduled' && l.scheduled_at && !isNaN(new Date(l.scheduled_at)) ? new Date(l.scheduled_at).toLocaleString() : '';
     return `
@@ -9484,7 +9500,7 @@
             <label>Cost<b>${escapeHtml(money(amazonNum))}</b></label>
             <label>Sell price<input type="number" step="0.01" min="0" data-field="sellPrice" value="${escapeAttr(l.sell_price ?? '')}" data-action-stop /></label>
             <label>Qty<input type="number" min="1" data-field="quantity" value="${escapeAttr(l.quantity ?? 1)}" /></label>
-            <div class="dv-profit ${profit == null ? '' : profit >= 0 ? 'good' : 'bad'}" data-profit>Profit <b>${profit == null ? '\u2014' : `${profit >= 0 ? '+' : '-'}${sym}${Math.abs(profit).toFixed(2)}${margin != null ? ` \u00b7 ${margin}%` : ''}`}</b></div>
+            <div class="dv-profit ${profit == null ? '' : profit >= 0 ? 'good' : 'bad'}" data-profit title="${escapeAttr(listingProfitHint(pf))}">Profit <b>${profit == null ? '\u2014' : `${profit >= 0 ? '+' : '-'}${sym}${Math.abs(profit).toFixed(2)}${margin != null ? ` \u00b7 ${margin}%` : ''}`}</b></div>
           </div>
           <input type="hidden" data-field="categoryId" value="${escapeAttr(l.category_id || '')}" />
         </div>
@@ -9556,11 +9572,14 @@ async function autoSuggestEmptyDraftCategories() {
       row.querySelector('[data-action="open-editor"]')?.addEventListener('click', openEditorNow);
       const moneyBox = row.querySelector('.dv-money');
       const liveProfit = () => {
-        const amazon = parseFloat(moneyBox.getAttribute('data-amazon')); const sell = parseFloat(row.querySelector('[data-field="sellPrice"]').value);
+        const sell = parseFloat(row.querySelector('[data-field="sellPrice"]').value);
         const el = moneyBox.querySelector('[data-profit]'); const sym = moneyBox.getAttribute('data-sym') || '$';
-        if (!Number.isFinite(amazon) || !Number.isFinite(sell)) { el.className = 'dv-profit'; el.innerHTML = 'Profit <b>\u2014</b>'; return; }
-        const p = sell - amazon; const m = sell ? Math.round((p / sell) * 100) : 0;
-        el.className = 'dv-profit ' + (p >= 0 ? 'good' : 'bad'); el.innerHTML = 'Profit <b>' + (p >= 0 ? '+' : '-') + sym + Math.abs(p).toFixed(2) + ' \u00b7 ' + m + '%</b>';
+        const listing = draftListingMap.get(String(id));
+        const pf = listing && Number.isFinite(sell) ? listingProfit(listing, sell) : null;
+        if (!pf) { el.className = 'dv-profit'; el.innerHTML = 'Profit <b>\u2014</b>'; return; }
+        el.className = 'dv-profit ' + (pf.amount >= 0 ? 'good' : 'bad');
+        el.title = listingProfitHint(pf);
+        el.innerHTML = 'Profit <b>' + (pf.amount >= 0 ? '+' : '-') + sym + Math.abs(pf.amount).toFixed(2) + (pf.percent != null ? ' \u00b7 ' + Math.round(pf.percent) + '%' : '') + '</b>';
       };
       row.querySelector('[data-field="sellPrice"]').addEventListener('input', liveProfit);
       ['sellPrice', 'quantity'].forEach((name) => row.querySelector('[data-field="' + name + '"]').addEventListener('change', () => saveBtn.click()));
@@ -10480,11 +10499,12 @@ async function autoSuggestEmptyDraftCategories() {
     const cur = l.currency;
     const num = (v) => (v != null && v !== '' && Number.isFinite(Number(v))) ? Number(v) : null;
     const buy = num(l.amazon_price), sell = num(l.sell_price);
-    const profit = buy != null && sell != null ? sell - buy : null;
+    const pf = listingProfit(l);
+    const profit = pf ? pf.amount : null;
     // Show the markup that was actually set (see draftRowHtml's identical note) rather than
     // profit/sellPrice recomputed on the fly, which is a different, smaller-looking number.
     const storedMarkup = num(l.markup_percent);
-    const margin = storedMarkup != null ? Math.round(storedMarkup) : (profit != null && sell ? Math.round((profit / sell) * 100) : null);
+    const margin = pf && pf.percent != null ? Math.round(pf.percent) : (storedMarkup != null ? Math.round(storedMarkup) : null);
     const count = (v, fallback = 0) => { if (typeof v === 'boolean') return v ? 1 : 0; const n = num(v); return n == null ? fallback : n; };
     const available = count(l.quantity, 1);
     const onHold = count(l.on_hold ?? l.onHold);
@@ -10515,7 +10535,7 @@ async function autoSuggestEmptyDraftCategories() {
         </div>
         <div class="lv-metrics">
           <div class="lv-m"><span>Price</span><b>${sell != null ? escapeHtml(formatPrice(sell, cur)) : dash}</b><small>cost ${buy != null ? escapeHtml(formatPrice(buy, cur)) : dash}</small></div>
-          <div class="lv-m ${profit == null ? '' : profit >= 0 ? 'good' : 'bad'}"><span>Profit</span><b>${profit != null ? escapeHtml(formatPrice(profit, cur)) : dash}</b><small>${margin != null ? margin + '% margin' : 'no cost data'}</small></div>
+          <div class="lv-m ${profit == null ? '' : profit >= 0 ? 'good' : 'bad'}" title="${escapeAttr(listingProfitHint(pf))}"><span>Profit</span><b>${profit != null ? escapeHtml(formatPrice(profit, cur)) : dash}</b><small>${margin != null ? margin + (pf && pf.afterFees ? '% profit' : '% margin') : 'no cost data'}</small></div>
           <div class="lv-m"><span>Stock</span><b>${available}</b><small>${onHold} hold \u00b7 ${oos} out</small><div class="lv-stock"><i class="a" style="width:${pct(available)}%"></i><i class="h" style="width:${pct(onHold)}%"></i><i class="o" style="width:${pct(oos)}%"></i></div></div>
           <div class="lv-m"><span>Sold</span><b>${count(l.sold_count ?? l.sold ?? l.quantity_sold)}</b><small>units</small></div>
           <div class="lv-m"><span>Views</span><b>${val(l.views ?? l.view_count)}</b><small>${val(l.watchers ?? l.watch_count)} watchers</small></div>
