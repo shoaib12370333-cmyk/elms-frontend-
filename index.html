@@ -4983,6 +4983,7 @@
           <button class="ad-tab" data-admin-tab="affiliates" type="button">Affiliates <span class="ad-count" id="adminAffCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="mail" type="button">Mail</button>
           <button class="ad-tab" data-admin-tab="tickets" type="button">Support <span class="ad-count" id="adminTicketsCount" style="display:none;"></span></button>
+          <button class="ad-tab" data-admin-tab="appeals" type="button">Appeals <span class="ad-count" id="adminAppealsCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="security" type="button">Security</button>
           <button class="ad-tab" data-admin-tab="settings" type="button">Settings</button>
           <button class="ad-tab" data-admin-tab="admins" id="adminAdminsTab" type="button" style="display:none;">Admins</button>
@@ -5310,6 +5311,17 @@
               <div class="st-head-txt"><h2>Support tickets</h2><p>Open a ticket to read it, reply and resolve.</p></div>
             </div>
             <div id="adminTicketsContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
+        </div>
+
+        <!-- Appeals: people whose account was suspended (or whose network was blocked) ask for a second look -->
+        <div class="ad-panel" data-admin-panel="appeals" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#9888;</div>
+              <div class="st-head-txt"><h2>Appeals</h2><p>Open an appeal to read it, then reinstate the account or answer by email. A permanently banned person cannot send an appeal.</p></div>
+            </div>
+            <div id="adminAppealsContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           </section>
         </div>
 
@@ -7129,13 +7141,20 @@
     document.getElementById('userChip').style.display = 'none';
     document.getElementById('elmsBlocked')?.remove();
     const suspended = blocked && blocked.kind === 'account';
+    // A permanent ban cannot be appealed: the form is not shown at all (the server refuses it as well).
+    const banned = !!(suspended && blocked.permanent);
     const el = document.createElement('div');
     el.id = 'elmsBlocked';
     el.className = 'elms-blocked';
     el.innerHTML = `<div class="elms-blocked-box" role="alertdialog" aria-modal="true">
-      <h2>${suspended ? 'Your account is suspended' : 'Access from this network is blocked'}</h2>
-      <p>${suspended ? 'You cannot use ELMS right now.' : 'ELMS cannot be used from this connection right now.'} This is the reason our team gave:</p>
+      <h2>${banned ? 'Your account has been permanently banned' : suspended ? 'Your account is suspended' : 'Access from this network is blocked'}</h2>
+      <p>${banned ? 'You can no longer use ELMS.' : suspended ? 'You cannot use ELMS right now.' : 'ELMS cannot be used from this connection right now.'} This is the reason our team gave:</p>
       <div class="elms-blocked-reason">${escapeHtml((blocked && blocked.reason) || 'No reason was given.')}</div>
+      ${banned ? `
+      <p>This decision is final, so the appeal form is not available. You can read how suspension and ending work in the <a href="/terms.html#ending" target="_blank" rel="noopener">Terms of Service</a>.</p>
+      <div class="elms-blocked-actions">
+        <button type="button" class="btn-small" id="appealBackBtn" style="background:var(--grey-light);color:var(--ink);">Back to sign in</button>
+      </div>` : `
       <b style="font:800 14px Inter,sans-serif;">Think this is a mistake? Send an appeal</b>
       <label for="appealEmail">Your ELMS account email</label>
       <input id="appealEmail" type="email" autocomplete="email" placeholder="you@example.com" />
@@ -7145,11 +7164,12 @@
         <button type="button" class="btn-small save" id="appealSendBtn">Send appeal</button>
         <button type="button" class="btn-small" id="appealBackBtn" style="background:var(--grey-light);color:var(--ink);">Back to sign in</button>
       </div>
-      <div class="elms-blocked-status" id="appealStatus"></div>
+      <div class="elms-blocked-status" id="appealStatus"></div>`}
     </div>`;
     document.body.appendChild(el);
-    const status = el.querySelector('#appealStatus');
     el.querySelector('#appealBackBtn').addEventListener('click', () => window.location.reload());
+    if (banned) return;
+    const status = el.querySelector('#appealStatus');
     el.querySelector('#appealSendBtn').addEventListener('click', async (e) => {
       const btn = e.currentTarget;
       const email = el.querySelector('#appealEmail').value.trim();
@@ -15441,7 +15461,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadAdminPage() {
     loadAdminAdmins();
     loadAdminAffiliates();
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -16241,7 +16261,7 @@ async function autoSuggestEmptyDraftCategories() {
           <tbody>
             ${adminUsersData.map((u) => `
               <tr data-user-id="${u.id}" ${adminUserRowAttrs(u)}>
-                <td class="row-title">${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">SUSPENDED</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span></td>
+                <td class="row-title">${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">' + (u.banned ? 'BANNED' : 'SUSPENDED') + '</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span></td>
                 <td data-cell="status" style="white-space:nowrap;">${adminUserStatusHtml(u)}</td>
                 <td data-cell="plan">${adminUserPlanHtml(u)}</td>
                 <td data-cell="ebay" style="font-size:12.5px;">${adminUserEbayHtml(u)}</td>
@@ -16268,7 +16288,7 @@ async function autoSuggestEmptyDraftCategories() {
   let adminUsersData = [];
   let adminUserFilter = 'all';
   const adminUserAgo = (min) => (min == null ? 'never' : min < 1 ? 'just now' : min < 60 ? `${min} min ago` : min < 1440 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} d ago`);
-  const adminUserRowAttrs = (u) => `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}"`;
+  const adminUserRowAttrs = (u) => `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended && !u.banned ? 1 : 0}" data-banned="${u.banned ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}"`;
   // Has this person connected an eBay store (and how many, on which eBay sites)?
   const adminUserEbayHtml = (u) => (u.ebay && u.ebay.connected
     ? `<span class="ad-tag paid">CONNECTED</span><br /><small style="color:var(--grey);">${u.ebay.stores} store${u.ebay.stores === 1 ? '' : 's'}${u.ebay.marketplaces && u.ebay.marketplaces.length ? ' &middot; ' + escapeHtml(u.ebay.marketplaces.map((m) => String(m).replace('EBAY_', '')).join(', ')) : ''}</small>`
@@ -16287,7 +16307,7 @@ async function autoSuggestEmptyDraftCategories() {
     const box = document.getElementById('adminUserChips');
     if (!box || !summary) return;
     const chip = (key, label, n) => `<button type="button" class="ad-chipbtn${adminUserFilter === key ? ' on' : ''}" data-user-filter="${key}">${label}<b>${n}</b></button>`;
-    box.innerHTML = chip('all', 'All', summary.total) + chip('online', '● Online now', summary.online) + chip('paid', 'Bought a plan', summary.paid) + chip('free', 'Free plan', summary.free) + chip('suspended', 'Suspended', summary.suspended) + chip('ebay', 'eBay connected', summary.ebayConnected || 0) + chip('noebay', 'No eBay yet', summary.ebayNotConnected || 0);
+    box.innerHTML = chip('all', 'All', summary.total) + chip('online', '● Online now', summary.online) + chip('paid', 'Bought a plan', summary.paid) + chip('free', 'Free plan', summary.free) + chip('suspended', 'Suspended', summary.suspended) + chip('banned', 'Banned', summary.banned || 0) + chip('ebay', 'eBay connected', summary.ebayConnected || 0) + chip('noebay', 'No eBay yet', summary.ebayNotConnected || 0);
     box.querySelectorAll('[data-user-filter]').forEach((b) => b.addEventListener('click', () => { adminUserFilter = b.dataset.userFilter; renderAdminUserChips(summary); applyAdminUserSearch(); }));
   }
 
@@ -16303,7 +16323,7 @@ async function autoSuggestEmptyDraftCategories() {
       adminUsersData.forEach((u) => {
         const row = document.querySelector(`#adminUsersContent tr[data-user-id="${u.id}"]`);
         if (!row) return;
-        row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended ? 1 : 0); row.setAttribute('data-ebay', u.ebay && u.ebay.connected ? 1 : 0);
+        row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended && !u.banned ? 1 : 0); row.setAttribute('data-banned', u.banned ? 1 : 0); row.setAttribute('data-ebay', u.ebay && u.ebay.connected ? 1 : 0);
         row.querySelector('[data-cell="status"]').innerHTML = adminUserStatusHtml(u);
         row.querySelector('[data-cell="ebay"]').innerHTML = adminUserEbayHtml(u);
         row.querySelector('[data-cell="plan"]').innerHTML = adminUserPlanHtml(u);
@@ -16323,6 +16343,7 @@ async function autoSuggestEmptyDraftCategories() {
         || (adminUserFilter === 'paid' && row.dataset.paid === '1')
         || (adminUserFilter === 'free' && row.dataset.paid !== '1')
         || (adminUserFilter === 'suspended' && row.dataset.suspended === '1')
+        || (adminUserFilter === 'banned' && row.dataset.banned === '1')
         || (adminUserFilter === 'ebay' && row.dataset.ebay === '1')
         || (adminUserFilter === 'noebay' && row.dataset.ebay !== '1');
       row.style.display = matchesFilter && (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
@@ -16351,22 +16372,22 @@ async function autoSuggestEmptyDraftCategories() {
   // One user: their sign-ins (IP, place, device) with a Block IP button on each, suspend / reinstate, send a message.
   async function openUserSecurityModal(u) {
     const m = adminModal(`
-      <div class="draft-title">${escapeHtml(u.name || u.email)}${u.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}</div>
+      <div class="draft-title">${escapeHtml(u.name || u.email)}${u.banned ? ' <span class="ad-tag bad">BANNED</span>' : u.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}</div>
       <div class="meta-line">${escapeHtml(u.email)} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}</div>
-      ${u.suspended ? `<div class="elms-blocked-reason" style="margin-top:12px;">Suspended: ${escapeHtml(u.suspendedReason || '')}</div>` : ''}
+      ${u.suspended ? `<div class="elms-blocked-reason" style="margin-top:12px;">${u.banned ? 'Permanently banned (no appeal)' : 'Suspended'}: ${escapeHtml(u.suspendedReason || '')}</div>` : ''}
       <div class="ad-chips" style="margin-top:14px;">
         <button class="btn-small" data-sec="message">Send a message</button>
-        ${u.role === 'admin' ? '' : (u.suspended ? '<button class="btn-small save" data-sec="unsuspend">Reinstate account</button>' : '<button class="btn-small" data-sec="suspend" style="background:#FEF2F2;color:#B42318;">Suspend account…</button>')}
+        ${u.role === 'admin' ? '' : (u.suspended
+    ? '<button class="btn-small save" data-sec="unsuspend">Reinstate account…</button>' + (u.banned ? '' : '<button class="btn-small" data-sec="ban" style="background:#FEF2F2;color:#B42318;">Ban permanently…</button>')
+    : '<button class="btn-small" data-sec="suspend" style="background:#FEF2F2;color:#B42318;">Suspend or ban…</button>')}
         <button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Close</button>
       </div>
       <div class="section-title">Recent sign-ins</div>
       <div id="secLogins"><div class="elms-loader" role="status" aria-label="Loading"></div></div>`, true);
     m.querySelector('[data-sec="message"]')?.addEventListener('click', () => { m.remove(); setAdminTab('security'); document.getElementById('noticeTo').value = u.email; document.getElementById('noticeTitle').focus(); });
     m.querySelector('[data-sec="suspend"]')?.addEventListener('click', () => openSuspendDialog(u));
-    m.querySelector('[data-sec="unsuspend"]')?.addEventListener('click', async () => {
-      if (!(await elmsConfirm(`Reinstate ${u.email}? They can sign in again.`, { okText: 'Reinstate' }))) return;
-      try { await adminPost(`/api/admin/security/users/${u.id}/unsuspend`); showToast('Reinstated', u.email, 'success'); m.remove(); loadAdminUsers(); } catch (err) { showToast('Could not reinstate', err.message, 'error'); }
-    });
+    m.querySelector('[data-sec="ban"]')?.addEventListener('click', () => openSuspendDialog(u, { permanent: true }));
+    m.querySelector('[data-sec="unsuspend"]')?.addEventListener('click', () => openReinstateDialog(u));
     try {
       const res = await apiFetch(`/api/admin/security/users/${u.id}/logins`);
       const data = await res.json();
@@ -16387,24 +16408,60 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
-  function openSuspendDialog(u) {
+  // Suspend (the person can appeal) or ban for good (no appeal). Either way they get an email with your reason.
+  function openSuspendDialog(u, { permanent = false } = {}) {
     const m = adminModal(`
-      <div class="draft-title">Suspend ${escapeHtml(u.email)}</div>
-      <p class="meta-line">They cannot sign in, open sessions end, and scheduled listings go back to drafts. They see your reason and can appeal.</p>
+      <div class="draft-title">Suspend or ban ${escapeHtml(u.email)}</div>
       <div class="ad-form" style="margin-top:12px;">
-        <label for="susReason">Reason (shown to the person)</label>
+        <label style="display:flex; gap:10px; align-items:flex-start; text-align:left; padding:10px 12px; margin:0 0 8px; border:1px solid var(--line); border-radius:10px; cursor:pointer; font-weight:400;"><input type="radio" name="susKind" value="suspend" style="width:auto; flex:none; margin:3px 0 0;" ${permanent ? '' : 'checked'} /><span><b>Suspend</b> &mdash; they cannot sign in, but they can send an appeal from the blocked screen.</span></label>
+        <label style="display:flex; gap:10px; align-items:flex-start; text-align:left; padding:10px 12px; margin:0 0 8px; border:1px solid var(--line); border-radius:10px; cursor:pointer; font-weight:400;"><input type="radio" name="susKind" value="ban" style="width:auto; flex:none; margin:3px 0 0;" ${permanent ? 'checked' : ''} /><span><b>Permanent ban</b> &mdash; no appeal is possible. You can still reinstate them later, but only with a message that is emailed to them.</span></label>
+        <p class="meta-line" style="margin:10px 0 0;">Either way: open sessions end, scheduled listings go back to drafts, and the person gets an email with your reason.</p>
+        <label for="susReason">Reason (shown to the person and sent to them by email)</label>
         <textarea id="susReason" rows="3" maxlength="500" placeholder="e.g. Fraudulent orders. Repeated chargebacks."></textarea>
-        <label for="susNote">Private note (only admins see it)</label>
+        <label for="susNote">Private note (only admins see it, never emailed)</label>
         <textarea id="susNote" rows="2" maxlength="1000"></textarea>
         <div class="ad-chips"><button class="btn-small save" id="susGo">Suspend account</button><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Cancel</button></div>
         <div id="susStatus"></div>
       </div>`);
-    m.querySelector('#susGo').addEventListener('click', async (e) => {
-      const btn = e.currentTarget; const reason = m.querySelector('#susReason').value.trim();
+    const go = m.querySelector('#susGo');
+    const isBan = () => (m.querySelector('input[name="susKind"]:checked') || {}).value === 'ban';
+    const syncButton = () => { go.textContent = isBan() ? 'Ban permanently' : 'Suspend account'; go.style.background = isBan() ? '#B42318' : ''; go.style.color = isBan() ? '#fff' : ''; };
+    m.querySelectorAll('input[name="susKind"]').forEach((r) => r.addEventListener('change', syncButton));
+    syncButton();
+    go.addEventListener('click', async () => {
+      const ban = isBan(); const reason = m.querySelector('#susReason').value.trim();
       if (reason.length < 3) { m.querySelector('#susStatus').textContent = 'Write the reason first.'; return; }
+      if (ban && !(await elmsConfirm(`Ban ${u.email} permanently?\n\nThey cannot appeal. You can reinstate them later, but only with a message that is emailed to them.`, { title: 'Permanent ban', okText: 'Ban permanently', danger: true }))) return;
+      go.disabled = true;
+      try {
+        const out = await adminPost(`/api/admin/security/users/${u.id}/suspend`, { reason, note: m.querySelector('#susNote').value.trim(), permanent: ban });
+        showToast(ban ? 'Banned' : 'Suspended', u.email + (out.emailed ? ' · they were told by email' : ' · but the email could not be sent'), out.emailed ? 'success' : 'error');
+        m.remove(); loadAdminUsers(); loadAdminAppeals();
+      } catch (err) { m.querySelector('#susStatus').textContent = err.message; go.disabled = false; }
+    });
+  }
+
+  // Reinstate a suspended or banned account. A permanent ban needs a message first; it goes to the person by email.
+  function openReinstateDialog(u) {
+    const banned = !!u.banned;
+    const m = adminModal(`
+      <div class="draft-title">Reinstate ${escapeHtml(u.email)}</div>
+      <p class="meta-line">${banned ? 'This account is permanently banned. Write a message to the person first. It is emailed to them together with the news that they can sign in again.' : 'They can sign in again and are told by email. You can add a message.'}</p>
+      <div class="ad-form" style="margin-top:12px;">
+        <label for="reinMsg">${banned ? 'Message to the person (required, at least 10 characters)' : 'Message to the person (optional)'}</label>
+        <textarea id="reinMsg" rows="5" maxlength="1000" placeholder="e.g. We looked at your case again. You can use ELMS again, please follow the rules."></textarea>
+        <div class="ad-chips"><button class="btn-small save" id="reinGo">Reinstate account</button><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Cancel</button></div>
+        <div id="reinStatus"></div>
+      </div>`);
+    m.querySelector('#reinGo').addEventListener('click', async (e) => {
+      const btn = e.currentTarget; const message = m.querySelector('#reinMsg').value.trim();
+      if (banned && message.length < 10) { m.querySelector('#reinStatus').textContent = 'Write the message to the person first (at least 10 characters).'; return; }
       btn.disabled = true;
-      try { await adminPost(`/api/admin/security/users/${u.id}/suspend`, { reason, note: m.querySelector('#susNote').value.trim() }); showToast('Suspended', u.email, 'success'); m.remove(); loadAdminUsers(); }
-      catch (err) { m.querySelector('#susStatus').textContent = err.message; btn.disabled = false; }
+      try {
+        const out = await adminPost(`/api/admin/security/users/${u.id}/unsuspend`, { message });
+        showToast('Reinstated', u.email + (out.emailed ? ' · they were told by email' : ' · but the email could not be sent'), out.emailed ? 'success' : 'error');
+        m.remove(); loadAdminUsers(); loadAdminAppeals();
+      } catch (err) { m.querySelector('#reinStatus').textContent = err.message; btn.disabled = false; }
     });
   }
 
@@ -16657,6 +16714,100 @@ async function autoSuggestEmptyDraftCategories() {
       const ticketId = row.getAttribute('data-ticket-id');
       const ticket = tickets.find((t) => t.id === ticketId);
       row.addEventListener('click', () => openTicketDetailModal(ticket));
+    });
+  }
+
+  // ---------- Admin: appeals (people who were suspended or blocked and ask for a second look) ----------
+  const appealAccountTag = (acc) => (!acc ? '<span class="ad-tag free">NO ACCOUNT</span>' : acc.permanent ? '<span class="ad-tag bad">BANNED</span>' : acc.suspended ? '<span class="ad-tag bad">SUSPENDED</span>' : '<span class="ad-tag paid">ACTIVE</span>');
+  // The appeal text without the small print the server adds under it (IP address, account state).
+  const appealPreview = (message) => String(message || '').split('\n\n--\n')[0].replace(/\s+/g, ' ').trim().slice(0, 140);
+
+  async function loadAdminAppeals() {
+    const container = document.getElementById('adminAppealsContent');
+    if (!container) return;
+    try {
+      const res = await apiFetch('/api/admin/security/appeals');
+      const data = await res.json();
+      if (!res.ok || !data.success) { container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load the appeals.')}</div>`; return; }
+      const badge = document.getElementById('adminAppealsCount');
+      if (badge) { badge.textContent = data.open; badge.style.display = data.open ? 'inline-block' : 'none'; }
+      if (!data.appeals.length) { container.innerHTML = '<div class="empty-state">No appeals yet.</div>'; return; }
+      container.innerHTML = `<table class="data-table">
+        <thead><tr><th>Person</th><th>Account</th><th>Appeal</th><th>Sent</th><th>Status</th><th></th></tr></thead>
+        <tbody>${data.appeals.map((a) => `
+          <tr data-appeal-id="${escapeAttr(a.id)}" class="clickable-row">
+            <td class="row-title">${escapeHtml(a.name || '—')}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(a.email || '')}</span></td>
+            <td>${appealAccountTag(a.account)}</td>
+            <td style="max-width:340px;">${escapeHtml(appealPreview(a.message))}</td>
+            <td style="white-space:nowrap;">${escapeHtml(new Date(a.createdAt).toLocaleString())}</td>
+            <td><span class="status-badge ${a.status === 'resolved' ? 'published' : 'draft'}">${a.status === 'resolved' ? 'answered' : 'open'}</span></td>
+            <td><button class="btn-small" type="button">Open</button></td>
+          </tr>`).join('')}</tbody></table>`;
+      container.querySelectorAll('tr[data-appeal-id]').forEach((row) => row.addEventListener('click', () => openAppealModal(data.appeals.find((a) => a.id === row.dataset.appealId))));
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  // One appeal: what the person wrote, the state of their account, and what you can do: reinstate (with a message), decline (with a reply) or close.
+  function openAppealModal(a) {
+    if (!a) return;
+    const acc = a.account;
+    const open = a.status !== 'resolved';
+    const who = { customer: 'The person', admin: 'You', system: 'ELMS' };
+    const thread = [{ from: 'customer', text: a.message, at: a.createdAt }].concat(a.thread || []);
+    const accountLine = !acc
+      ? '<div class="meta-line" style="margin-top:10px;">No ELMS account uses this email address.</div>'
+      : acc.suspended
+        ? `<div class="elms-blocked-reason" style="margin-top:12px;">${acc.permanent ? 'Permanently banned' : 'Suspended'}${acc.since ? ' on ' + escapeHtml(new Date(acc.since).toLocaleDateString()) : ''}: ${escapeHtml(acc.reason || 'No reason recorded.')}</div>`
+        : '<div class="meta-line" style="margin-top:10px;">This account is not suspended any more.</div>';
+    const canReinstate = !!(acc && acc.suspended);
+    const m = adminModal(`
+      <div class="draft-title">${escapeHtml(a.name || a.email || 'Appeal')} ${appealAccountTag(acc)}</div>
+      <div class="meta-line">${escapeHtml(a.email || '')} &middot; sent ${escapeHtml(new Date(a.createdAt).toLocaleString())} &middot; ${open ? 'open' : 'answered'}</div>
+      ${accountLine}
+      <div class="section-title">Conversation</div>
+      <div style="display:grid; gap:8px;">${thread.map((t) => `
+        <div style="padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:${t.from === 'admin' ? '#EFF6FF' : t.from === 'system' ? 'transparent' : '#F8FAFC'}; font-size:13.5px; white-space:pre-wrap;${t.from === 'system' ? ' color:var(--grey); font-style:italic;' : ''}"><b style="display:block; font-size:12px; color:var(--grey); font-style:normal;">${escapeHtml(who[t.from] || t.from)} &middot; ${escapeHtml(new Date(t.at).toLocaleString())}</b>${escapeHtml(t.text || '')}</div>`).join('')}</div>
+      ${open ? `
+      <div class="ad-form" style="margin-top:16px;">
+        <label for="apMsg">Your message to the person (sent by email)</label>
+        <textarea id="apMsg" rows="5" maxlength="1000" placeholder="${canReinstate ? 'Reinstating: say why, and what you expect from now on. Declining: say why.' : 'Your answer.'}"></textarea>
+        ${acc && acc.permanent ? '<div class="meta-line">This account is permanently banned, so reinstating it needs a message of at least 10 characters.</div>' : ''}
+        <div class="ad-chips">
+          ${canReinstate ? '<button class="btn-small save" id="apReinstate" type="button">Reinstate account</button>' : ''}
+          <button class="btn-small" id="apDecline" type="button" style="background:#FEF2F2;color:#B42318;">Decline and send message</button>
+          <button class="btn-small" id="apClose" type="button" style="background:var(--grey-light);color:var(--ink);">Close without a reply</button>
+          <button class="btn-small" data-close type="button" style="background:var(--grey-light);color:var(--ink);">Cancel</button>
+        </div>
+        <div id="apStatus"></div>
+      </div>` : `
+      <div class="ad-chips" style="margin-top:16px;"><button class="btn-small" data-close type="button" style="background:var(--grey-light);color:var(--ink);">Close</button></div>`}`, true);
+    if (!open) return;
+    const status = m.querySelector('#apStatus');
+    const busy = (on) => m.querySelectorAll('.ad-chips button').forEach((b) => { b.disabled = on; });
+    const done = (title, emailed) => {
+      showToast(title, (a.email || '') + (emailed === undefined ? '' : emailed ? ' · they were told by email' : ' · but the email could not be sent'), emailed === false ? 'error' : 'success');
+      m.remove(); loadAdminAppeals(); loadAdminTickets(); loadAdminUsers();
+    };
+    m.querySelector('#apReinstate')?.addEventListener('click', async () => {
+      const message = m.querySelector('#apMsg').value.trim();
+      if (acc.permanent && message.length < 10) { status.textContent = 'Write the message to the person first (at least 10 characters).'; return; }
+      busy(true);
+      try { const out = await adminPost(`/api/admin/security/users/${acc.id}/unsuspend`, { message }); done('Reinstated', out.emailed); }
+      catch (err) { status.textContent = err.message; busy(false); }
+    });
+    m.querySelector('#apDecline').addEventListener('click', async () => {
+      const message = m.querySelector('#apMsg').value.trim();
+      if (message.length < 5) { status.textContent = 'Write your answer first. It is emailed to the person.'; return; }
+      busy(true);
+      try { const out = await adminPost(`/api/admin/tickets/${a.id}/resolve`, { adminReply: message }); done('Answered', out.emailed); }
+      catch (err) { status.textContent = err.message; busy(false); }
+    });
+    m.querySelector('#apClose').addEventListener('click', async () => {
+      busy(true);
+      try { await adminPost(`/api/admin/tickets/${a.id}/resolve`, {}); done('Closed'); }
+      catch (err) { status.textContent = err.message; busy(false); }
     });
   }
 
