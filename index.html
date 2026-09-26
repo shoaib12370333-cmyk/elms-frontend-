@@ -9616,7 +9616,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // ---------- Bulk edit: change many drafts at once ----------
-  // Pick what to change, fill it in, preview exactly what would happen to each draft (the server does a dry run, saves nothing), then apply.
+  // Pick what to change, fill it in, press Apply: it is done at once (no preview step). A draft that cannot take the change is skipped and the reason is shown.
   // Every option is something ELMS really has. The server checks the whole request before saving anything, skips a draft that cannot take
   // a change (with the reason) and never half-edits one.
   async function bulkJson(path, method, body) {
@@ -9749,8 +9749,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="be-result" id="bkeResult"></div>
         <div class="elms-confirm-actions">
           <button type="button" class="ord-btn" data-act="cancel">Cancel</button>
-          <button type="button" class="ord-btn" data-act="preview" disabled>Preview changes</button>
-          <button type="button" class="ord-btn primary" data-act="apply" style="display:none;">Apply</button>
+          <button type="button" class="ord-btn primary" data-act="apply" disabled></button>
         </div>
       </div>`;
     document.body.appendChild(overlay);
@@ -9762,24 +9761,25 @@ async function autoSuggestEmptyDraftCategories() {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     overlay.querySelector('[data-act="cancel"]').addEventListener('click', close);
     const $ = (sel) => overlay.querySelector(sel);
-    const previewBtn = $('[data-act="preview"]');
     const applyBtn = $('[data-act="apply"]');
     const resultBox = $('#bkeResult');
+    const applyLabel = 'Apply to ' + ids.length + ' draft' + (ids.length === 1 ? '' : 's');
+    applyBtn.textContent = applyLabel;
 
     const picked = () => BE_FIELDS.map((f) => f.key).filter((k) => $('[data-be-pick="' + k + '"]').checked);
-    const resetPreview = () => { resultBox.innerHTML = ''; applyBtn.style.display = 'none'; };
+    const resetResult = () => { resultBox.innerHTML = ''; };
 
     // ---- tick a field: its editor opens on the right ----
     overlay.querySelectorAll('[data-be-pick]').forEach((box) => box.addEventListener('change', () => {
       const key = box.getAttribute('data-be-pick');
       $('[data-be-sec="' + key + '"]').hidden = !box.checked;
       $('#bkeEmpty').style.display = picked().length ? 'none' : '';
-      previewBtn.disabled = !picked().length;
+      applyBtn.disabled = !picked().length;
       if (key === 'policies' && box.checked) loadPolicies();
-      resetPreview();
+      resetResult();
     }));
-    overlay.querySelector('#bkeEdit').addEventListener('input', resetPreview);
-    overlay.querySelector('#bkeEdit').addEventListener('change', resetPreview);
+    overlay.querySelector('#bkeEdit').addEventListener('input', resetResult);
+    overlay.querySelector('#bkeEdit').addEventListener('change', resetResult);
 
     // ---- small show / hide rules inside the editors ----
     overlay.querySelectorAll('input[name="bkePriceMode"]').forEach((r) => r.addEventListener('change', () => { $('#bkePriceCustom').style.display = $('input[name="bkePriceMode"]:checked').value === 'custom' ? '' : 'none'; }));
@@ -9845,60 +9845,61 @@ async function autoSuggestEmptyDraftCategories() {
       return changes;
     }
 
-    // ---- run it (dry run or for real) in small requests, so the progress shows and none times out ----
-    async function runAll(dryRun, changes, onProgress) {
+    // ---- run it in small requests (so none times out), three at a time, so even hundreds of drafts are done in moments ----
+    async function runAll(changes, onProgress) {
       const all = { results: [], summary: { changed: 0, unchanged: 0, skipped: 0 } };
-      for (let i = 0; i < ids.length; i += BE_CHUNK) {
-        if (onProgress) onProgress(Math.min(i + BE_CHUNK, ids.length));
-        const data = await bulkJson('/api/listings/bulk-edit', 'POST', { ids: ids.slice(i, i + BE_CHUNK), dryRun, changes });
-        all.results.push(...data.results);
-        for (const k of ['changed', 'unchanged', 'skipped']) all.summary[k] += data.summary[k];
+      const chunks = [];
+      for (let i = 0; i < ids.length; i += BE_CHUNK) chunks.push(ids.slice(i, i + BE_CHUNK));
+      let finished = 0;
+      for (let w = 0; w < chunks.length; w += 3) {
+        const wave = chunks.slice(w, w + 3);
+        const outs = await Promise.allSettled(wave.map((chunk) => bulkJson('/api/listings/bulk-edit', 'POST', { ids: chunk, dryRun: false, changes })));
+        for (const out of outs) {
+          if (out.status !== 'fulfilled') continue;
+          all.results.push(...out.value.results);
+          for (const k of ['changed', 'unchanged', 'skipped']) all.summary[k] += out.value.summary[k];
+        }
+        const failed = outs.find((out) => out.status === 'rejected');
+        if (failed) {
+          const err = failed.reason instanceof Error ? failed.reason : new Error(String(failed.reason));
+          err.partial = all.summary.changed > 0; // something was already saved before this stopped
+          throw err;
+        }
+        finished += wave.reduce((n, c) => n + c.length, 0);
+        if (onProgress) onProgress(finished);
       }
       return all;
     }
 
     const fmtVal = (field, v) => (v === null || v === undefined || v === '' ? '—' : field === 'Price' ? Number(v).toFixed(2) : String(v));
     const nameOf = (r) => escapeHtml(String(r.title || r.id).slice(0, 70));
-    function renderPreview(out) {
-      const s = out.summary;
-      const changed = out.results.filter((r) => r.status === 'changed');
+    // What could not be changed, with the reason (nothing is hidden now that there is no preview).
+    function renderSkipped(out) {
       const skipped = out.results.filter((r) => r.status === 'skipped');
-      let html = '<div class="be-sum"><b>' + s.changed + '</b> will change' + (s.unchanged ? ' · ' + s.unchanged + ' already like this' : '') + (s.skipped ? ' · <span class="be-warn">' + s.skipped + ' skipped</span>' : '') + '</div>';
-      if (changed.length) {
-        html += '<div class="be-rows">' + changed.slice(0, 6).map((r) => '<div class="be-row"><b>' + nameOf(r) + '</b>' + r.diff.map((d) => '<div><span>' + escapeHtml(d.field) + '</span> ' + escapeHtml(fmtVal(d.field, d.from)) + ' &rarr; <b>' + escapeHtml(fmtVal(d.field, d.to)) + '</b></div>').join('') + '</div>').join('')
-          + (changed.length > 6 ? '<div class="be-more">and ' + (changed.length - 6) + ' more</div>' : '') + '</div>';
-      }
-      if (skipped.length) html += '<div class="be-skips"><b>Skipped</b>' + skipped.slice(0, 8).map((r) => '<div>' + nameOf(r) + ': ' + escapeHtml(r.reason || '') + '</div>').join('') + (skipped.length > 8 ? '<div>and ' + (skipped.length - 8) + ' more</div>' : '') + '</div>';
+      const s2 = out.summary;
+      let html = '<div class="be-sum"><b>' + s2.changed + '</b> changed' + (s2.unchanged ? ' · ' + s2.unchanged + ' already like this' : '') + ' · <span class="be-warn">' + s2.skipped + ' skipped</span></div>';
+      html += '<div class="be-skips"><b>Skipped</b>' + skipped.slice(0, 12).map((r) => '<div>' + nameOf(r) + ': ' + escapeHtml(r.reason || '') + '</div>').join('') + (skipped.length > 12 ? '<div>and ' + (skipped.length - 12) + ' more</div>' : '') + '</div>';
       resultBox.innerHTML = html;
     }
-
-    previewBtn.addEventListener('click', async () => {
-      let changes;
-      try { changes = readChanges(); } catch (err) { resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + '</div>'; applyBtn.style.display = 'none'; return; }
-      previewBtn.disabled = true; resultBox.innerHTML = '<div class="elms-loader sm" role="status" aria-label="Checking"></div>'; applyBtn.style.display = 'none';
-      try {
-        const out = await runAll(true, changes);
-        renderPreview(out);
-        if (out.summary.changed > 0) { applyBtn.textContent = 'Apply to ' + out.summary.changed + ' draft' + (out.summary.changed === 1 ? '' : 's'); applyBtn.style.display = ''; }
-      } catch (err) {
-        resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + '</div>';
-      } finally { previewBtn.disabled = !picked().length; }
-    });
 
     applyBtn.addEventListener('click', async () => {
       let changes;
       try { changes = readChanges(); } catch (err) { resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + '</div>'; return; }
-      applyBtn.disabled = true; previewBtn.disabled = true;
-      const label = applyBtn.textContent;
+      applyBtn.disabled = true; resultBox.innerHTML = '';
       try {
-        const out = await runAll(false, changes, (upTo) => { applyBtn.textContent = 'Applying ' + upTo + '/' + ids.length + '…'; });
-        const s = out.summary;
-        showToast('Bulk edit', s.changed + ' draft' + (s.changed === 1 ? '' : 's') + ' changed' + (s.unchanged ? ', ' + s.unchanged + ' already like this' : '') + (s.skipped ? ', ' + s.skipped + ' skipped' : '') + '.', s.skipped && !s.changed ? 'error' : 'success');
-        close();
+        const out = await runAll(changes, (upTo) => { applyBtn.textContent = 'Applying ' + upTo + '/' + ids.length + '…'; });
+        const s2 = out.summary;
+        showToast('Bulk edit', s2.changed + ' draft' + (s2.changed === 1 ? '' : 's') + ' changed' + (s2.unchanged ? ', ' + s2.unchanged + ' already like this' : '') + (s2.skipped ? ', ' + s2.skipped + ' skipped' : '') + '.', s2.skipped && !s2.changed ? 'error' : 'success');
         loadDrafts();
+        if (s2.skipped) { // keep the window open so the reasons can be read
+          renderSkipped(out);
+          applyBtn.style.display = 'none';
+          overlay.querySelector('[data-act="cancel"]').textContent = 'Close';
+        } else close();
       } catch (err) {
-        resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + ' Some drafts may already be changed: preview again to see.</div>';
-        applyBtn.disabled = false; previewBtn.disabled = false; applyBtn.textContent = label;
+        resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + (err.partial ? ' Some drafts were already changed: close this window and look at your Drafts.' : ' Nothing was changed.') + '</div>';
+        applyBtn.disabled = false; applyBtn.textContent = applyLabel;
+        if (err.partial) loadDrafts();
       }
     });
   }
