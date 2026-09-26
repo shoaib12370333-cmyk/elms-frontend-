@@ -16249,7 +16249,7 @@ async function autoSuggestEmptyDraftCategories() {
                 <td><input class="editable-input" data-field="creditBalance" type="number" value="${u.creditBalance}" style="width:100px;" /></td>
                 <td><input class="editable-input" data-field="stockCheckIntervalDays" type="number" min="1" value="${u.stockCheckIntervalDays}" style="width:80px;" /></td>
                 <td><input class="editable-input" data-field="maxEbayAccounts" type="number" min="0" value="${u.maxEbayAccounts ?? 1}" style="width:80px;" /></td>
-                <td style="white-space:nowrap;"><button class="btn-small save" data-action="save-user">Save</button> <button class="btn-small" data-action="user-security" style="background:var(--grey-light);color:var(--ink);">Security</button></td>
+                <td style="white-space:nowrap;"><button class="btn-small save" data-action="save-user">Save</button> <button class="btn-small" data-action="user-security" style="background:var(--grey-light);color:var(--ink);">Security</button> <button class="btn-small" data-action="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told." style="background:var(--grey-light);color:var(--ink);">Draft links</button></td>
               </tr>
             `).join('')}
           </tbody>
@@ -16521,6 +16521,36 @@ async function autoSuggestEmptyDraftCategories() {
       row.querySelector('[data-action="user-security"]')?.addEventListener('click', () => {
         const user = adminUsersData.find((u) => u.id === userId);
         if (user) openUserSecurityModal(user);
+      });
+      // Downloads the Amazon links of this user's drafts as a CSV (one column). A plain read: the user is not told.
+      row.querySelector('[data-action="draft-links"]')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        const label = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Preparing\u2026';
+        try {
+          const res = await apiFetch('/api/admin/users/' + encodeURIComponent(userId) + '/draft-links');
+          if (!res.ok) {
+            let message = 'Could not download the links.';
+            try { message = (await res.json()).error || message; } catch (_) { /* keep the plain message */ }
+            throw new Error(message);
+          }
+          const blob = await res.blob();
+          const user = adminUsersData.find((u) => u.id === userId);
+          const who = user && user.email ? user.email.split('@')[0].replace(/[^a-z0-9._-]/gi, '') : userId;
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'draft-amazon-links-' + who + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+        } catch (err) {
+          showToast('Draft links', err.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = label;
+        }
       });
 
       saveBtn.addEventListener('click', async () => {
