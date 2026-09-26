@@ -724,6 +724,10 @@
     object-fit: cover;
     background: var(--paper-raised);
   }
+  /* The round picture: the Google photo when there is one, else the first letter of the name (an email sign-up has no photo). */
+  .user-avatar { position: relative; flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: #E7F0FD; color: #0064D2; font: 800 14px Inter, sans-serif; }
+  .user-avatar img { position: absolute; inset: 0; }
+  .user-avatar img[hidden] { display: none; }
   .user-chip-meta {
     display: flex;
     flex-direction: column;
@@ -4158,7 +4162,7 @@
         </a>
         <div class="user-chip" id="userChip">
           <button class="user-chip-trigger" id="userChipTrigger" type="button" aria-haspopup="true" aria-expanded="false">
-            <img id="userAvatar" src="" alt="" />
+            <span class="user-avatar" id="userAvatarWrap"><span id="userAvatarLetter"></span><img id="userAvatar" alt="" referrerpolicy="no-referrer" hidden /></span>
             <span class="user-chip-meta">
               <span class="name" id="userName"></span>
               <span class="role" id="userRole"></span>
@@ -7307,12 +7311,26 @@
    * restored session). Hides the full-screen Auth Page, reveals the app,
    * and populates the top-right user chip / sidebar admin link.
    */
+  // The letter is always drawn; the Google photo covers it once it has loaded. No photo (email sign-up, or Google has none), or one that
+  // cannot be loaded, leaves the first letter of the name (of the email when there is no name).
+  function setUserAvatar(user) {
+    const img = document.getElementById('userAvatar');
+    const letter = document.getElementById('userAvatarLetter');
+    if (!img || !letter) return;
+    const source = String(user.name || user.username || user.email || '').trim().replace(/^[^\p{L}\p{N}]+/u, '');
+    letter.textContent = (Array.from(source)[0] || '?').toUpperCase();
+    img.hidden = true;
+    img.onload = () => { img.hidden = false; };
+    img.onerror = () => { img.hidden = true; };
+    if (user.picture) img.src = user.picture; else img.removeAttribute('src');
+  }
+
   function showApp(user) {
     window.currentUser = user;
     document.getElementById('authPage').style.display = 'none';
     document.getElementById('appShell').style.display = 'flex';
 
-    document.getElementById('userAvatar').src = user.picture || '';
+    setUserAvatar(user);
     document.getElementById('userName').textContent = user.name || user.username || user.email || '';
     // Subtitle is dynamic: admins see "Admin", everyone else sees their plan
     // name (falling back to "Free Plan"). Never hardcode "Admin" for all users.
