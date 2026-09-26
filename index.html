@@ -1305,6 +1305,7 @@
   .be-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:8px; }
   .be-f { display:grid; gap:4px; font-size:12px; font-weight:700; color:#475569; margin-top:8px; }
   .be-grid .be-f { margin-top:0; }
+  .be-f textarea { width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font:inherit; font-size:14px; font-weight:400; color:var(--ink); background:#fff; resize:vertical; }
   .be-f input, .be-f select { width:100%; min-width:0; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font:inherit; font-size:14px; font-weight:400; color:var(--ink); background:#fff; }
   .be-inline { display:block; margin:2px 0 0; color:#64748B; font-size:12.5px; font-weight:400; }
   .be-result { margin-top:12px; }
@@ -3608,7 +3609,12 @@
   .dv-title:hover { color:#0064D2; }
   .dv-chips { display:flex; flex-wrap:wrap; gap:6px; }
   /* the seller's private note on a card (one line, the whole text is in the tooltip) */
-  .dv-note { font:600 12px Inter,sans-serif; color:#92400E; background:#FEF3C7; border-radius:8px; padding:4px 9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .dv-note { display:block; text-align:left; border:none; cursor:pointer; font:600 12px Inter,sans-serif; color:#92400E; background:#FEF3C7; border-radius:8px; padding:4px 9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .dv-note:hover { background:#FDE68A; }
+  .dv-note.add { color:#94A3B8; background:transparent; border:1px dashed #CBD5E1; font-weight:600; }
+  .dv-note.add:hover { color:#92400E; border-color:#F59E0B; background:#FFFBEB; }
+  .dv-note-edit { width:100%; box-sizing:border-box; padding:8px 10px; border:1.5px solid #F59E0B; border-radius:10px; background:#FFFBEB; font:500 13px/1.4 Inter,sans-serif; color:#1F2937; resize:vertical; }
+  .dv-note-actions { display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap; } .dv-note-actions small { color:#94A3B8; font-size:11.5px; }
   .ord-links { margin-top:5px; }
   .dv-chip { font:600 11.5px Inter,sans-serif; padding:3px 9px; border-radius:99px; background:var(--dv-soft); color:#475569; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-decoration:none; }
   a.dv-chip:hover { background:#E8F1FD; color:#0064D2; }
@@ -8637,6 +8643,7 @@
         const pageItems = filtered.slice(startIdx, startIdx + DRAFTS_PAGE_SIZE);
         draftPageIds = pageItems.map((l) => String(l.id));
         const list = document.getElementById('draftProductList');
+        const restoreNote = keepNoteEditor(list);
         if (list) list.innerHTML = pageItems.length ? pageItems.map((l) => draftRowHtml(l)).join('') : `<div class="dv-empty" style="grid-column:1/-1"><b>Nothing here</b>No products match this view. Try another stage or clear the search.</div>`;
         const footer = document.getElementById('draftFooter');
         if (footer) {
@@ -8657,6 +8664,7 @@
           }
         }
         wireDraftRows();
+        restoreNote();
         updateBulkBar();
       };
       ['draftProductSearch','draftStatusFilter','draftSort'].forEach((id) => document.getElementById(id)?.addEventListener(id === 'draftSort' ? 'change' : 'input', () => {
@@ -8986,7 +8994,7 @@
         <div class="elms-editor-tabs" role="tablist">
           <button type="button" class="elms-editor-tab active" data-ui-tab="product" role="tab">Product</button>
           <button type="button" class="elms-editor-tab" data-ui-tab="description" role="tab">Description</button>
-          <button type="button" class="elms-editor-tab" data-ui-tab="variants" role="tab">Variants (${variants.length || 1})</button>
+          <button type="button" class="elms-editor-tab" data-ui-tab="variants" role="tab">Variants (1)</button>
           <button type="button" class="elms-editor-tab" data-ui-tab="images" role="tab">Images</button>
           <button type="button" class="elms-editor-tab" data-ui-tab="specs" role="tab">Item Specifications</button>
         </div>
@@ -8999,7 +9007,6 @@
             <label class="elms-ed-field"><span>Category</span><select data-ui-field="category"><option value="">Select category</option>${cats}</select></label>
             <label class="elms-ed-field"><span>Shipping Methods</span><select data-ui-field="shipping_method">${shipMethods.map(([v, t]) => `<option value="${v}"${v === (l.shipping_method || '') ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
             <label class="elms-ed-field full"><span>Tags</span><input type="text" data-ui-field="tags" placeholder="Enter tags, separated by commas" value="${escapeAttr(Array.isArray(l.tags) ? l.tags.join(', ') : (l.tags || ''))}" /></label>
-            <label class="elms-ed-field full"><span>Private note <em>only for you: it stays with this product and is never sent to eBay or Amazon</em></span><textarea data-ui-field="note" rows="3" maxlength="2000" placeholder="Add a note for yourself (supplier, reminder, anything)\u2026">${escapeHtml(l.note || '')}</textarea></label>
           </div>
           <label class="elms-ed-toggle"><input type="checkbox" data-ui-field="use_dynamic_policies"${l.use_dynamic_policies ? ' checked' : ''} /><span class="elms-ed-switch"></span>Use Dynamic Policies (Shipping, Payment, Returns)</label>
           <small class="elms-ed-note" data-ui-policy-note>On: the eBay account's default policies are used. Off: the policies chosen below apply to this product.</small>
@@ -9028,7 +9035,7 @@
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="variants">
-          ${variants.length ? variants.map((v, i) => variantRowHtml(v, l, i)).join('') : '<div class="elms-ed-variant"><b>Variants: 1</b><span>Single variant</span></div>'}
+          ${variantRowHtml({ asin: l.sku || '', title: l.title || '', image: l.main_image || images[0] || '', price: l.amazon_price, dimensions: (variants[0] && variants[0].dimensions) || [], isCurrentProduct: true }, l, 0)}
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="images">
@@ -9062,7 +9069,6 @@
       categoryId: cat ? cat.value : '',
       description: f('description') ? f('description').value : '',
       tags: val('tags').split(',').map((t) => t.trim()).filter(Boolean),
-      note: f('note') ? f('note').value.trim() : undefined,
       shippingMethod: val('shipping_method'),
       useDynamicPolicies: !!f('use_dynamic_policies')?.checked,
       paymentPolicyId: val('payment_policy_id'),
@@ -9085,7 +9091,7 @@
   // The subset of the editor that PATCH /api/listings/:id/settings understands.
   function editorSettingsBody(v) {
     return {
-      tags: v.tags, note: v.note, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies,
+      tags: v.tags, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies,
       paymentPolicyId: v.paymentPolicyId || null, fulfillmentPolicyId: v.fulfillmentPolicyId || null, returnPolicyId: v.returnPolicyId || null,
       countryLocation: v.countryLocation || null, locationCity: v.locationCity || null, postalCode: v.postalCode || null,
       stockMonitoring: v.stockMonitoring, priceMonitoring: v.priceMonitoring,
@@ -9506,6 +9512,65 @@
   }
   const listingProfitHint = (pf) => (pf && pf.afterFees ? 'Profit after eBay fees (the fees of your Margin rule)' : 'Sell price minus cost, before eBay fees');
 
+  // The seller's private note, on the card itself: click it (or "+ Add note") to write, Save keeps it with the product. It is never sent to eBay or Amazon.
+  function noteBlockHtml(l) {
+    const note = String(l.note || '');
+    return '<div class="dv-note-wrap" data-note-wrap>' + (note
+      ? '<button type="button" class="dv-note" data-note-edit title="' + escapeAttr(note + '\n(click to edit)') + '">&#128221; ' + escapeHtml(note.split('\n')[0]) + '</button>'
+      : '<button type="button" class="dv-note add" data-note-edit>+ Add note</button>') + '</div>';
+  }
+  function noteListingOf(card) {
+    const id = String(card.getAttribute('data-listing-id'));
+    return card.classList.contains('lv-card') ? llAll.find((x) => String(x.id) === id) : draftListingMap.get(id);
+  }
+  function openCardNoteEditor(wrap) {
+    const card = wrap.closest('[data-listing-id]');
+    const l = card && noteListingOf(card);
+    if (!l) return;
+    wrap.innerHTML = '<textarea class="dv-note-edit" rows="3" maxlength="2000" placeholder="A note for yourself (supplier, reminder, anything)\u2026">' + escapeHtml(l.note || '') + '</textarea>'
+      + '<div class="dv-note-actions"><button type="button" class="dv-btn small primary" data-note-save>Save</button><button type="button" class="dv-btn small" data-note-cancel>Cancel</button><small>Only for you. Never sent to eBay or Amazon.</small></div>';
+    const ta = wrap.querySelector('textarea');
+    ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+    const close = () => { wrap.outerHTML = noteBlockHtml(l); };
+    const save = async () => {
+      const saveBtn = wrap.querySelector('[data-note-save]');
+      if (saveBtn) saveBtn.disabled = true;
+      try {
+        const res = await apiFetch('/api/listings/' + encodeURIComponent(l.id) + '/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ note: ta.value.trim() }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save the note.');
+        l.note = (data.listing && data.listing.note) || '';
+        close();
+      } catch (err) {
+        showToast('Could not save the note', err.message, 'error');
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    };
+    wrap.querySelector('[data-note-save]').addEventListener('click', save);
+    wrap.querySelector('[data-note-cancel]').addEventListener('click', close);
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.stopPropagation(); close(); }
+      else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); }
+    });
+  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-note-edit]');
+    if (!btn) return;
+    e.stopPropagation();
+    openCardNoteEditor(btn.closest('[data-note-wrap]'));
+  });
+  // A list that is drawn again (a search, a page, a background import) must not throw away a note that is being written.
+  function keepNoteEditor(root) {
+    const ta = root && root.querySelector('.dv-note-edit');
+    if (!ta) return () => {};
+    const id = ta.closest('[data-listing-id]') && ta.closest('[data-listing-id]').getAttribute('data-listing-id');
+    const text = ta.value;
+    return () => {
+      const wrap = id && root.querySelector('[data-listing-id="' + String(id).replace(/"/g, '') + '"] [data-note-wrap]');
+      if (wrap) { openCardNoteEditor(wrap); wrap.querySelector('textarea').value = text; }
+    };
+  }
+
   function draftRowHtml(l) {
     const status = l.status || 'draft';
     const label = { draft: 'Ready', publishing: 'Publishing\u2026', scheduled: 'Scheduled', error: 'Failed' }[status] || status;
@@ -9518,7 +9583,6 @@
     const pf = listingProfit(l);
     const profit = pf ? pf.amount : null;
     const margin = pf && pf.percent != null ? Math.round(pf.percent) : null; // of the cost, like the "Profit %" in the Margin popup
-    const variants = Array.isArray(l.variants) && l.variants.length ? l.variants.length : (Number(l.variants_count) || 1);
     const when = status === 'scheduled' && l.scheduled_at && !isNaN(new Date(l.scheduled_at)) ? new Date(l.scheduled_at).toLocaleString() : '';
     return `
       <article class="dv-card" data-listing-id="${escapeAttr(l.id)}" data-status="${escapeAttr(status)}" data-full-title="${escapeAttr(l.title || l.sku || '')}">
@@ -9533,10 +9597,9 @@
             ${asin ? (l.amazon_url ? `<a class="dv-chip" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation" title="Open the Amazon product">${escapeHtml(asin)} &#8599;</a>` : `<span class="dv-chip">${escapeHtml(asin)}</span>`) : ''}
             <span class="dv-chip">${escapeHtml(draftSupplierLabel(l))}</span>
             ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
-            ${variants > 1 ? `<span class="dv-chip">${variants} variants</span>` : ''}
             ${veroChipHtml(l, status !== 'publishing')}
           </div>
-          ${l.note ? `<div class="dv-note" title="${escapeAttr(l.note)}">&#128221; ${escapeHtml(String(l.note).split('\n')[0])}</div>` : ''}
+          ${noteBlockHtml(l)}
           ${status === 'error' && l.error_message ? `<div class="dv-error"><span>!</span><span>${escapeHtml(l.error_message)}</span></div>` : ''}
           ${when ? `<div class="dv-when">Goes live ${escapeHtml(when)}</div>` : ''}
           <div class="dv-money" data-amazon="${amazonNum ?? ''}" data-sym="${escapeAttr(sym)}">
@@ -9877,6 +9940,7 @@ async function autoSuggestEmptyDraftCategories() {
     { key: 'brand', label: 'Brand', hint: 'The Brand item specific' },
     { key: 'quantity', label: 'Quantity', hint: 'How many you list' },
     { key: 'tags', label: 'Tags', hint: 'Add, remove or replace' },
+    { key: 'note', label: 'Note', hint: 'Your private note: replace, add to, or clear' },
     { key: 'stockMonitoring', label: 'Stock monitoring', hint: 'On or off' },
     { key: 'priceMonitoring', label: 'Price monitoring', hint: 'On or off' },
     { key: 'location', label: 'Item location', hint: 'Country, city, postcode' },
@@ -9969,6 +10033,13 @@ async function autoSuggestEmptyDraftCategories() {
               <label class="be-f" id="bkeTagsWrap"><span>Tags (separate with commas)</span><input type="text" id="bkeTags" /></label>
             </section>
 
+            <section class="be-sec" data-be-sec="note" hidden>
+              <h4>Note</h4>
+              <label class="be-f"><span>What to do</span><select id="bkeNoteMode"><option value="set">Replace the note with this text</option><option value="append">Add this text to the end of the note</option><option value="clear">Remove the note</option></select></label>
+              <label class="be-f" id="bkeNoteWrap"><span>Note</span><textarea id="bkeNote" rows="3" maxlength="2000"></textarea></label>
+              <small>Only for you. It stays with the product and is never sent to eBay or Amazon.</small>
+            </section>
+
             <section class="be-sec" data-be-sec="stockMonitoring" hidden>
               <h4>Stock monitoring</h4>
               <label class="be-f"><span>Watch Amazon stock</span><select id="bkeStock"><option value="on">On</option><option value="off">Off</option></select></label>
@@ -10040,6 +10111,7 @@ async function autoSuggestEmptyDraftCategories() {
       $('#bkeTitleCaseWrap').style.display = op === 'case' ? '' : 'none';
     });
     $('#bkeTagMode').addEventListener('change', () => { $('#bkeTagsWrap').style.display = $('#bkeTagMode').value === 'clear' ? 'none' : ''; });
+    $('#bkeNoteMode').addEventListener('change', () => { $('#bkeNoteWrap').style.display = $('#bkeNoteMode').value === 'clear' ? 'none' : ''; });
 
     // ---- policies belong to one eBay store: real ones are read from eBay, and only offered for one store ----
     let policiesLoaded = false;
@@ -10084,6 +10156,7 @@ async function autoSuggestEmptyDraftCategories() {
         } else if (key === 'brand') changes.brand = $('#bkeBrand').value;
         else if (key === 'quantity') changes.quantity = $('#bkeQuantity').value;
         else if (key === 'tags') changes.tags = { mode: $('#bkeTagMode').value, tags: $('#bkeTags').value };
+        else if (key === 'note') changes.note = { mode: $('#bkeNoteMode').value, text: $('#bkeNote').value };
         else if (key === 'stockMonitoring') changes.stockMonitoring = $('#bkeStock').value === 'on';
         else if (key === 'priceMonitoring') changes.priceMonitoring = $('#bkePriceMon').value === 'on';
         else if (key === 'location') changes.location = { countryLocation: $('#bkeLocCountry').value, locationCity: $('#bkeLocCity').value, postalCode: $('#bkeLocPostal').value };
@@ -10488,6 +10561,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   function renderListings() {
     const container = document.getElementById('listingsContent');
+    const restoreNote = keepNoteEditor(container);
     const counts = {
       all: llAll.length,
       active: llAll.filter((l) => llListingStatus(l) === 'active').length,
@@ -10552,6 +10626,7 @@ async function autoSuggestEmptyDraftCategories() {
     `;
 
     wireListingsPage();
+    restoreNote();
     llUpdateBulkBar();
   }
 
@@ -10635,7 +10710,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${uploadedText ? `<span class="dv-chip">Listed ${escapeHtml(uploadedText)}</span>` : ''}
             ${veroChipHtml(l, false)}
           </div>
-          ${l.note ? `<div class="dv-note" title="${escapeAttr(l.note)}">&#128221; ${escapeHtml(String(l.note).split('\n')[0])}</div>` : ''}
+          ${noteBlockHtml(l)}
           ${st === 'issues' ? `<div class="lv-issue"><span>!</span><span>${escapeHtml(l.error_message || 'This listing has an issue.')}</span></div>` : ''}
         </div>
         <div class="lv-metrics">
@@ -10921,7 +10996,7 @@ async function autoSuggestEmptyDraftCategories() {
           try {
             const sres = await apiFetch(`/api/listings/${encodeURIComponent(l.id)}/settings`, {
               method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ tags: v.tags, note: v.note, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies, stockMonitoring: v.stockMonitoring, priceMonitoring: v.priceMonitoring }),
+              body: JSON.stringify({ tags: v.tags, shippingMethod: v.shippingMethod || null, useDynamicPolicies: v.useDynamicPolicies, stockMonitoring: v.stockMonitoring, priceMonitoring: v.priceMonitoring }),
             });
             const sdata = await sres.json();
             if (sres.ok && sdata.success && sdata.listing) {
