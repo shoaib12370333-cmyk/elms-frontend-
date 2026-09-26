@@ -2687,7 +2687,13 @@
   .ll-editor-close:hover { background:#f1f5f9; }
   .ll-editor-body { flex:1 1 auto; overflow:auto; padding:18px 20px; background:#f8fafd; }
   .ll-editor-core { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; padding:14px 16px; margin-bottom:14px; }
-  .ll-editor-foot { flex:0 0 auto; display:flex; justify-content:flex-end; gap:10px; padding:14px 20px; border-top:1px solid var(--line); background:#fff; }
+  .ll-editor-foot { flex:0 0 auto; display:flex; justify-content:flex-end; align-items:center; gap:10px; padding:14px 20px; border-top:1px solid var(--line); background:#fff; }
+  .ll-autosave { margin-right:auto; font-size:13px; font-weight:600; color:var(--grey); }
+  .ll-autosave.err { color:#B42318; }
+  .dv-live { margin:0 0 12px; padding:10px 14px; border:1px solid #BFDBFE; border-radius:12px; background:#EFF6FF; color:#1E3A8A; font-size:13.5px; font-weight:600; display:grid; gap:8px; }
+  .dv-live-row { display:grid; gap:6px; }
+  .dv-live-row i { display:block; height:6px; border-radius:99px; background:#DBEAFE; overflow:hidden; }
+  .dv-live-row i b { display:block; height:100%; background:#2563EB; border-radius:99px; transition:width .4s; }
   #llEditModal .elms-editor { margin:0; position:static; width:auto; max-width:none; }
   @media (max-width:700px) { .ll-editor-core { grid-template-columns:1fr; } #llEditModal .ll-editor-box { height:100vh; max-height:100vh; border-radius:0; } #llEditModal.modal-overlay { padding:0; } }
   #llEditModal .elms-editor { margin:0 18px 18px 64px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; overflow:hidden; box-sizing:border-box; min-width:0; }
@@ -8482,7 +8488,12 @@
     else openDraftDetailModal(id);
   }
 
-  async function loadDrafts() {
+  // The Drafts page keeps what you were doing (page number, tab, search, sort, selection) when it refreshes: after an edit, a publish or
+  // a background import it updates in place instead of drawing everything again from page 1 (a draft you had just edited used to
+  // "disappear": it jumped to the top and the list went back to the first page). Only the first draw shows the loading skeleton.
+  const draftsView = { refresh: null, merge: null, since: null };
+  async function loadDrafts(opts = {}) {
+    if (!opts.full && draftsView.refresh && document.getElementById('elmsDraftsLayout')) return draftsView.refresh();
     const container = document.getElementById('draftsContent');
     container.innerHTML = `<div class="draft-loading"><div class="draft-skeleton"></div><div class="draft-skeleton"></div><div class="draft-skeleton"></div></div>`;
 
@@ -8500,6 +8511,7 @@
         container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load drafts.')}</div>`;
         return;
       }
+      draftsView.since = data.serverTime || null;
 
       const allDrafts = (data.listings || []).map(veroTag);
       draftListingMap = new Map(allDrafts.map((item) => [String(item.id), item]));
@@ -8508,7 +8520,8 @@
       setTimeout(openDraftFromUrl, 0);
       let draftVeroOnly = false;
       const veroCount = () => allDrafts.filter((l) => l._vero.terms.length).length;
-      const counts = allDrafts.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
+      const computeCounts = () => allDrafts.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
+      let counts = computeCounts();
       if (!allDrafts.length) {
         container.innerHTML = '<div class="dv"><div class="dv-empty"><b>No drafts yet</b>Import an Amazon product and it is saved here automatically, ready to review and publish.<br><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div></div>';
         document.getElementById('draftAddProductBtn')?.addEventListener('click', () => { showPage('import'); setTimeout(() => document.getElementById('amazonUrl')?.focus(), 50); });
@@ -8527,13 +8540,14 @@
             <div><h1>Drafts</h1><p>Products you imported and have not published yet. Check the numbers, open the editor, then send them to eBay.</p></div>
             <div class="dv-hero-actions"><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div>
           </header>
+          <div class="dv-live" id="draftsLiveBanner" style="display:none;" role="status"></div>
           <div class="dv-stages">
             ${stage('draft', '&#128221;', 'Ready to publish')}${stage('publishing', '&#9889;', 'Publishing now', 'publishing')}${stage('scheduled', '&#128339;', 'Scheduled', 'scheduled')}${stage('error', '&#9888;&#65039;', 'Needs attention', 'error')}
           </div>
           <div class="dv-toolbar">
             <label class="dv-selectall"><input type="checkbox" id="draftSelectAll" /> Select all</label>
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
-            <select id="draftSort" class="dv-select"><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
+            <select id="draftSort" class="dv-select"><option value="created">Newest imported</option><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
             <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
             ${veroPattern ? '' : '<button type="button" class="dv-btn" id="draftVeroSetup" title="Add the brand names eBay removes listings for, and ELMS will warn you about them">&#9888; Set up VeRO words</button>'}
             ${veroPattern ? `<button type="button" class="dv-btn vero-filter" id="draftVeroFilter" title="Show only drafts that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="draftVeroCount">${veroCount()}</b></button>` : ''}
@@ -8566,7 +8580,7 @@
       const renderDraftProductList = () => {
         const query = String(document.getElementById('draftProductSearch')?.value || '').trim().toLowerCase();
         const status = document.getElementById('draftStatusFilter')?.value || 'all';
-        const sort = document.getElementById('draftSort')?.value || 'updated';
+        const sort = document.getElementById('draftSort')?.value || 'created';
         const filtered = allDrafts.filter((l) => {
           const haystack = `${l.title || ''} ${l.sku || ''}`.toLowerCase();
           // "Ready to publish" also shows failed items (not just the "Needs attention" tab) -
@@ -8578,7 +8592,9 @@
           if (sort === 'title') return String(a.title || a.sku || '').localeCompare(String(b.title || b.sku || ''));
           if (sort === 'price') return Number(b.sell_price || 0) - Number(a.sell_price || 0);
           if (sort === 'profit') return (Number(b.sell_price || 0) - Number(b.amazon_price || 0)) - (Number(a.sell_price || 0) - Number(a.amazon_price || 0));
-          return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+          // "Newest imported" is the default: editing a draft does not move it (it used to jump to the top and seem to vanish).
+          if (sort === 'updated') return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+          return (new Date(b.created_at || 0) - new Date(a.created_at || 0)) || String(b.id).localeCompare(String(a.id));
         });
         draftFilteredIds = filtered.map((l) => String(l.id));
         // A draft the current search / stage hides is no longer selected, so a bulk action never touches something that is not on screen.
@@ -8662,10 +8678,127 @@
       });
       renderDraftProductList();
       autoSuggestEmptyDraftCategories();
+
+      // ----- refresh and live updates that keep the view -----
+      const updateStageNumbers = () => {
+        counts = computeCounts();
+        document.querySelectorAll('#draftsContent [data-inner-status]').forEach((btn) => {
+          const b = btn.querySelector('b');
+          if (b) b.textContent = stageCount(btn.getAttribute('data-inner-status'));
+        });
+        const vc = document.getElementById('draftVeroCount');
+        if (vc) vc.textContent = veroCount();
+      };
+      // New or changed drafts (from a background import) are put into the list as they arrive.
+      draftsView.merge = (items) => {
+        for (const raw of items) {
+          const l = veroTag(raw);
+          const i = allDrafts.findIndex((x) => String(x.id) === String(l.id));
+          if (i >= 0) allDrafts[i] = l; else allDrafts.push(l);
+          draftListingMap.set(String(l.id), l);
+        }
+        updateStageNumbers();
+        renderDraftProductList();
+        refreshDraftsCountBadge();
+      };
+      // The whole queue again, drawn in place.
+      draftsView.refresh = async () => {
+        try {
+          const res = await apiFetch('/api/listings/queue');
+          const d = await res.json();
+          if (!res.ok || !d.success) return;
+          draftsView.since = d.serverTime || draftsView.since;
+          allDrafts.length = 0;
+          (d.listings || []).map(veroTag).forEach((l) => allDrafts.push(l));
+          draftListingMap = new Map(allDrafts.map((item) => [String(item.id), item]));
+          updateStageNumbers();
+          renderDraftProductList();
+          refreshDraftsCountBadge();
+        } catch (_) { /* the next refresh will do it */ }
+      };
+      startDraftsLive();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
     refreshDraftsCountBadge();
+  }
+
+  // ---------- Drafts page: live updates while a background import or a "Publish all" is running ----------
+  // Every few seconds (only while the Drafts page is on screen): new drafts of a background import are added to the list as they are
+  // saved, and a banner says how far the import / the publish is. When a "Publish all" is done the server also puts a notification in the bell.
+  const draftsLive = { timer: null, busy: false, wasImporting: false, batchId: null, lastBatchKey: '', lastRefresh: 0 };
+  try { draftsLive.batchId = localStorage.getItem('elmsPublishBatch') || null; } catch (_) { /* no storage */ }
+  function setDraftsBanner(lines) {
+    const el = document.getElementById('draftsLiveBanner');
+    if (!el) return;
+    el.innerHTML = lines.map((l) => `<div class="dv-live-row"><span>${escapeHtml(l.text)}</span><i><b style="width:${Math.max(3, Math.min(100, l.percent))}%"></b></i></div>`).join('');
+    el.style.display = lines.length ? '' : 'none';
+  }
+  function rememberPublishBatch(id) {
+    draftsLive.batchId = id || null;
+    draftsLive.lastBatchKey = '';
+    try { if (id) localStorage.setItem('elmsPublishBatch', id); else localStorage.removeItem('elmsPublishBatch'); } catch (_) { /* no storage */ }
+  }
+  async function draftsLiveTick() {
+    const page = document.getElementById('page-drafts');
+    if (!page || page.style.display === 'none' || document.hidden || !draftsView.merge || draftsLive.busy) return;
+    draftsLive.busy = true;
+    try {
+      const lines = [];
+      // 1. a background import
+      let importing = null;
+      try {
+        const r = await apiFetch('/api/fetch-product/bulk-job');
+        const d = await r.json();
+        if (r.ok && d.success) {
+          const active = (d.jobs || []).filter((j) => j.status === 'queued' || j.status === 'polling');
+          if (active.length) importing = { total: active.reduce((n, j) => n + (j.total || 0), 0), done: active.reduce((n, j) => n + (j.done || 0) + (j.failed || 0), 0) };
+        }
+      } catch (_) { /* try again in a moment */ }
+      if (importing) {
+        draftsLive.wasImporting = true;
+        lines.push({ text: `Importing ${importing.done} of ${importing.total} products in the background. New drafts appear here as they are saved.`, percent: importing.total ? (importing.done / importing.total) * 100 : 3 });
+        const url = '/api/listings/queue' + (draftsView.since ? '?since=' + encodeURIComponent(draftsView.since) : '');
+        const res = await apiFetch(url);
+        const d = await res.json();
+        if (res.ok && d.success) {
+          draftsView.since = d.serverTime || draftsView.since;
+          if ((d.listings || []).length) draftsView.merge(d.listings);
+        }
+      } else if (draftsLive.wasImporting) {
+        draftsLive.wasImporting = false;
+        await draftsView.refresh();
+        showToast('Import finished', 'Your products are in Drafts.', 'success');
+      }
+      // 2. a "Publish all"
+      if (draftsLive.batchId) {
+        const r = await apiFetch('/api/listings/publish-batch/' + encodeURIComponent(draftsLive.batchId));
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.success) {
+          const b = d.batch;
+          const finished = b.published + b.failed + b.other;
+          const key = b.published + '/' + b.failed;
+          if (b.done) {
+            rememberPublishBatch(null);
+            await draftsView.refresh();
+            refreshCreditBalanceChip();
+            showToast(b.failed ? `${b.published} published, ${b.failed} failed` : 'Publishing finished', b.failed ? 'The failed ones are under "Needs attention" with the reason.' : (b.total === 1 ? 'Your product was published to eBay.' : `All ${b.total} of your products were published to eBay.`), b.failed ? 'error' : 'success');
+          } else {
+            lines.push({ text: `Publishing ${finished} of ${b.total}${b.failed ? ` (${b.failed} failed)` : ''}. You will be notified when all of them are published.`, percent: b.total ? (finished / b.total) * 100 : 3 });
+            if (key !== draftsLive.lastBatchKey && Date.now() - draftsLive.lastRefresh > 12000) {
+              draftsLive.lastBatchKey = key; draftsLive.lastRefresh = Date.now();
+              await draftsView.refresh();
+            }
+          }
+        } else if (r.status === 404) rememberPublishBatch(null);
+      }
+      setDraftsBanner(lines);
+    } catch (_) { /* the next tick */ }
+    finally { draftsLive.busy = false; }
+  }
+  function startDraftsLive() {
+    if (!draftsLive.timer) draftsLive.timer = setInterval(draftsLiveTick, 5000);
+    draftsLiveTick();
   }
 
   // ---------- VeRO words ----------
@@ -9259,10 +9392,11 @@
         const stillEmpty = (d.data?.missing || []).length ? ` (${d.data.missing.join(', ')})` : '';
         // Saved right away, so the draft is ready to publish and the values do not get lost by leaving the editor.
         const saveBtn = ed.querySelector('[data-ui-action="save-editor"]');
-        const autoSaved = !!(n && saveBtn && !saveBtn.disabled);
+        // The draft editor window has no Save button of its own: it saves by itself, so the AI's values are handed to it.
+        const autoSaved = !!(n && ((saveBtn && !saveBtn.disabled) || ed._requestSave));
         showToast('Item specifics', n ? `AI filled ${n} specific${n === 1 ? '' : 's'}${autoSaved ? ' and saved them' : ''}.${missing ? ` ${missing} required still empty${stillEmpty}: fill ${missing === 1 ? 'it' : 'them'} in, then save.` : autoSaved ? '' : ' Review them, then save.'}` : 'Nothing new to fill. Everything the facts allow is already set.', n ? 'success' : 'info');
         refreshCreditBalanceChip();
-        if (autoSaved) saveBtn.click();
+        if (autoSaved) { if (saveBtn && !saveBtn.disabled) saveBtn.click(); else ed._requestSave(); }
       } catch (err) { showToast('AI item specifics failed', err.message, 'error'); }
       finally { btn.disabled = false; btn.textContent = label; }
     });
@@ -10076,33 +10210,28 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       bulkPublishBtn.disabled = true;
-      // A few at a time (not all at once): eBay answers with generic "system error" when it is hit with many
-      // publishes together. Every result is counted, so the message says how many really went live.
-      // (The server now does the slow part in the background, a few at a time, so starting them is quick: what is left to
-      // count here is how many could be started. How each one went is announced by the publish watcher when they are done.)
-      const results = { started: 0, failed: 0, firstError: '' };
-      let next = 0;
-      const worker = async () => {
-        while (next < ids.length) {
-          const id = ids[next++];
-          bulkPublishBtn.textContent = `Starting ${Math.min(next, ids.length)}/${ids.length}\u2026`;
-          try {
-            const queued = await queuePublish(id, accountId);
-            if (queued.ok) results.started += 1;
-            else { results.failed += 1; results.firstError = results.firstError || queued.error || ''; }
-          } catch (err) { results.failed += 1; results.firstError = results.firstError || err.message; }
+      bulkPublishBtn.textContent = 'Starting\u2026';
+      // One request for the whole selection: the server claims every draft and queues them at once (before: one request per draft, three at
+      // a time, which alone took minutes for a thousand). What eBay does with them happens in the background.
+      try {
+        const res = await apiFetch('/api/listings/publish-batch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not start publishing.');
+        const notStarted = data.notStarted ? ` ${data.notStarted} could not be started${data.skipped && data.skipped[0] ? ' (' + data.skipped[0].error + ')' : ''}.` : '';
+        if (!data.started) {
+          showToast('Nothing was started', notStarted.trim() || 'The selected drafts cannot be published right now.', 'error');
+        } else {
+          showToast('Publishing started', 'Your products are being published. You will be notified when all of them are published.' + notStarted, 'info');
+          rememberPublishBatch(data.batchId);
         }
-      };
-      await Promise.all([worker(), worker(), worker()]);
-      showToast(
-        results.failed ? `${results.started} publishing, ${results.failed} could not start` : 'Publishing',
-        results.failed ? `First problem: ${results.firstError}` : `${results.started} listing${results.started === 1 ? '' : 's'} started. eBay is working on them in the background, you can keep working.`,
-        results.failed ? 'error' : 'info'
-      );
-
+      } catch (err) {
+        showToast('Could not start publishing', err.message, 'error');
+      }
       bulkPublishBtn.disabled = false;
       bulkPublishBtn.textContent = 'Publish all';
-      loadDrafts();
+      draftSelected.clear(); syncDraftChecks(); updateBulkBar();
+      await loadDrafts();
+      draftsLiveTick();
     });
 
     document.getElementById('bulkEditBtn')?.addEventListener('click', () => {
@@ -10501,6 +10630,7 @@ async function autoSuggestEmptyDraftCategories() {
           <div id="llEditorHost">${draftEditorHtml(l, { showSave: false })}</div>
         </div>
         <div class="ll-editor-foot">
+          <span class="ll-autosave" id="llAutoStatus"></span>
           <button type="button" class="btn-small" data-ll-close style="background:var(--grey-light);color:var(--ink);">Cancel</button>
           <button type="button" class="btn-small save" data-action="save">Save changes</button>
         </div>
@@ -10508,8 +10638,72 @@ async function autoSuggestEmptyDraftCategories() {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
     wireDraftEditor(overlay.querySelector('#llEditorHost'), l);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay || e.target.closest('[data-ll-close]')) llCloseEditor(); });
+
+    // ---- A DRAFT saves every change by itself, a moment after you stop (typing, choosing, or the AI filling the item specifics) ----
+    // Before, nothing was saved until "Save changes": the AI's item specifics (and everything else) were lost if the window was closed.
+    const editorEl = overlay.querySelector('[data-ui-editor]');
+    const autoStatus = overlay.querySelector('#llAutoStatus');
+    let autoTimer = null; let autoSaving = false; let autoAgain = false; let autoChanged = false;
+    const setAuto = (text, cls) => { if (autoStatus) { autoStatus.textContent = text; autoStatus.className = 'll-autosave' + (cls ? ' ' + cls : ''); } };
+    const coreNow = () => JSON.stringify([overlay.querySelector('[data-field="sellPrice"]').value, overlay.querySelector('[data-field="quantity"]').value]);
+    let coreSaved = coreNow();
+    async function autoSaveNow() {
+      if (!isDraftMode || !overlay.isConnected) return true;
+      if (autoSaving) { autoAgain = true; return false; }
+      const v = collectEditorValues(editorEl);
+      const before = editorEl._initial || {};
+      if (JSON.stringify(v) === JSON.stringify(before) && coreNow() === coreSaved && !editorEl._veroBullets && !(editorEl._veroExtraAspects && Object.keys(editorEl._veroExtraAspects).length)) return true; // nothing to save
+      const title = v.title || l.title;
+      if (String(title || '').trim().length < 3) { setAuto('Not saved yet: the title is too short.', 'err'); return false; }
+      autoSaving = true; setAuto('Saving\u2026');
+      try {
+        const sellPrice = Number(overlay.querySelector('[data-field="sellPrice"]').value) || null;
+        const quantity = Number(overlay.querySelector('[data-field="quantity"]').value) || 1;
+        const categoryId = v.categoryId || l.category_id || '';
+        const requestBody = { title, sellPrice, quantity, categoryId };
+        const extraAspects = editorEl._veroExtraAspects && Object.keys(editorEl._veroExtraAspects).length ? editorEl._veroExtraAspects : null;
+        const aspectsChanged = v.ebayAspects && JSON.stringify(v.ebayAspects) !== JSON.stringify(before.ebayAspects);
+        const mergedAspects = (aspectsChanged || extraAspects) ? { ...(v.ebayAspects || l.ebay_aspects || {}), ...(extraAspects || {}) } : null;
+        ['description', 'specifications', 'images'].forEach((k) => { if (JSON.stringify(v[k]) !== JSON.stringify(before[k])) requestBody[k] = v[k]; });
+        if (mergedAspects) requestBody.ebayAspects = mergedAspects;
+        if (editorEl._veroBullets) requestBody.bulletPoints = editorEl._veroBullets;
+        if (l.ebay_account_id) requestBody.accountId = l.ebay_account_id;
+        const res = await apiFetch(`/api/list-on-ebay/${l.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save.');
+        Object.assign(l, { title, sell_price: sellPrice, quantity, category_id: categoryId });
+        Object.assign(l, (await saveEditorSettings(l.id, v)) || {});
+        editorEl._initial = { ...v }; editorEl._veroBullets = null; editorEl._veroExtraAspects = null; coreSaved = coreNow();
+        autoChanged = true;
+        setAuto('All changes saved');
+        return true;
+      } catch (err) {
+        setAuto('Not saved: ' + (err.message || 'try again'), 'err');
+        return false;
+      } finally {
+        autoSaving = false;
+        if (autoAgain) { autoAgain = false; clearTimeout(autoTimer); autoTimer = setTimeout(autoSaveNow, 300); }
+      }
+    }
+    const requestAutoSave = () => { if (!isDraftMode) return; setAuto('Unsaved changes\u2026'); clearTimeout(autoTimer); autoTimer = setTimeout(autoSaveNow, 1500); };
+    if (isDraftMode) {
+      // capture phase: also hears the events that code makes with new Event('input') (they do not bubble)
+      ['input', 'change'].forEach((t) => overlay.addEventListener(t, requestAutoSave, true));
+      editorEl._requestSave = requestAutoSave; // the AI item-specifics fill asks for a save through this
+    }
+    // Closing (X, Cancel, outside the window) first saves what is still waiting; the list is refreshed if anything was saved.
+    const closeEditor = async () => {
+      clearTimeout(autoTimer);
+      if (isDraftMode) {
+        const ok = await autoSaveNow();
+        if (!ok && !(await elmsConfirm('Some of your changes could not be saved. Close the window anyway?', { okText: 'Close anyway', cancelText: 'Keep editing' }))) return;
+      }
+      llCloseEditor();
+      if (isDraftMode && autoChanged && opts.onDone) opts.onDone();
+    };
+    overlay.addEventListener('click', (e) => { if (e.target === overlay || e.target.closest('[data-ll-close]')) closeEditor(); });
     overlay.querySelector('[data-action="save"]').addEventListener('click', async () => {
+      clearTimeout(autoTimer);
       const saveBtn = overlay.querySelector('[data-action="save"]');
       const v = collectEditorValues(overlay.querySelector('[data-ui-editor]'));
       const title = v.title || l.title;
