@@ -10438,6 +10438,7 @@ async function autoSuggestEmptyDraftCategories() {
     const dir = (get, up) => (a, b) => { const x = get(a), y = get(b); if (x === null && y === null) return 0; if (x === null) return 1; if (y === null) return -1; return up ? x - y : y - x; };
     const by = {
       newest: (a, b) => new Date(b.created_at || b.updated_at || 0) - new Date(a.created_at || a.updated_at || 0),
+      price: dir((l) => numOf(l.sell_price), false),
       priceLow: dir((l) => numOf(l.sell_price), true),
       profit: dir(profitOf, false),
       profitLow: dir(profitOf, true),
@@ -10507,7 +10508,7 @@ async function autoSuggestEmptyDraftCategories() {
           <span class="dv-seg" role="tablist">${tab('all', 'All', counts.all)}${tab('active', 'Active', counts.active)}${tab('sold', 'Sold', counts.sold)}${tab('ended', 'Ended', counts.ended)}${tab('issues', 'Issues', counts.issues)}</span>
           <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search title, SKU or item ID" value="${escapeAttr(llSearch)}" /></div>
           <select id="llSortSelect" class="dv-select">
-            ${[['newest', 'Newest first'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
+            ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
           ${veroPattern ? `<button type="button" class="dv-btn vero-filter${llVeroOnly ? ' on' : ''}" id="llVeroFilter" title="Show only listings that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b>${llAll.filter((l) => l._vero && l._vero.terms.length).length}</b></button>` : ''}
           <button class="dv-btn" id="llExportBtn" type="button">Export CSV</button>
