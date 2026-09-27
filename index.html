@@ -12143,12 +12143,43 @@ async function autoSuggestEmptyDraftCategories() {
   function orders_money(n, cur) { return formatPrice(n, cur); }
 
   // The same two links a live listing has: the live eBay listing and the Amazon product (the link of its import, else Amazon's page for the ASIN).
+  // Short labels ("eBay", "AMAZON") - the item number / ASIN is not lost, it is only in the title (hover) now, so the line these sit on (next to
+  // Qty) stays short. Bare <a> chips, no wrapping block: the caller puts them inline in the same line as other text (e.g. "Qty 2 · eBay ↗").
   function orderLinksHtml(o) {
     const chips = [];
-    if (o.legacy_item_id) chips.push(`<a class="dv-chip" href="https://www.${ebayDomainFor(o)}/itm/${encodeURIComponent(o.legacy_item_id)}" target="_blank" rel="noopener noreferrer" title="Open the live eBay listing">eBay ${escapeHtml(o.legacy_item_id)} &#8599;</a>`);
+    if (o.legacy_item_id) chips.push(`<a class="dv-chip" href="https://www.${ebayDomainFor(o)}/itm/${encodeURIComponent(o.legacy_item_id)}" target="_blank" rel="noopener noreferrer" title="Open the live eBay listing (item ${escapeAttr(o.legacy_item_id)})">eBay &#8599;</a>`);
     const asin = o.asin || '';
-    if (o.amazon_url || asin) chips.push(`<a class="dv-chip" href="${escapeAttr(o.amazon_url || 'https://www.amazon.com/dp/' + encodeURIComponent(asin))}" target="_blank" rel="noopener noreferrer" title="Open the Amazon product">Amazon${asin ? ' ' + escapeHtml(asin) : ''} &#8599;</a>`);
-    return chips.length ? `<div class="dv-chips ord-links">${chips.join('')}</div>` : '';
+    if (o.amazon_url || asin) chips.push(`<a class="dv-chip" href="${escapeAttr(o.amazon_url || 'https://www.amazon.com/dp/' + encodeURIComponent(asin))}" target="_blank" rel="noopener noreferrer" title="Open the Amazon product${asin ? ' (' + escapeAttr(asin) + ')' : ''}">AMAZON &#8599;</a>`);
+    return chips.join('');
+  }
+
+  /** The two Net Profit sheet cells (Buying price, Order earning), editable right on the order row/drawer - the same PATCH /api/net-profit/:id
+   * the sheet itself uses (npFigures/npApplyLine), so typing here and typing on the sheet are the same save. Saves on change (blur/Enter),
+   * no separate edit step. */
+  function orderSheetInputsHtml(o) {
+    return `<span class="ord-cost ord-inline-sheet">
+      <input type="number" min="0" step="0.01" inputmode="decimal" class="ord-sheet-input" data-order-sheet="amazon" placeholder="Buy cost" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" title="What you paid to buy this order (on Amazon)" />
+      <input type="number" step="0.01" inputmode="decimal" class="ord-sheet-input" data-order-sheet="earning" placeholder="Earning" value="${o.order_earning != null ? escapeAttr(String(Number(o.order_earning))) : ''}" title="What eBay pays you for this order (Order earnings in Seller Hub)" />
+    </span>`;
+  }
+
+  /** Saves the two inline Net Profit cells of one order row/drawer (see orderSheetInputsHtml). Shared by the row list and the drawer. */
+  async function saveOrderSheetInputs(id, amazonInput, earningInput) {
+    const read = (el) => { const raw = String(el.value || '').trim(); if (raw === '') return null; const n = Number(raw); return Number.isFinite(n) ? n : undefined; };
+    const amazonPrice = read(amazonInput);
+    const orderEarning = read(earningInput);
+    if (amazonPrice === undefined || orderEarning === undefined) { showToast('Could not save', 'Type the amounts as numbers, for example 12.50.', 'error'); return; }
+    try {
+      const res = await apiFetch(`/api/net-profit/${encodeURIComponent(id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amazonPrice, orderEarning }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save.');
+      const line = data.line || {};
+      const o = ordersAll.find((x) => String(x.id) === String(id));
+      if (o) Object.assign(o, { sheet_amazon_price: line.amazon_price ?? null, order_earning: line.order_earning ?? null, net_profit: line.net_profit ?? null });
+      showToast('Saved', 'Buying price and order earning saved.', 'success');
+    } catch (err) {
+      showToast('Could not save', err.message, 'error');
+    }
   }
 
   // Under the "Awaiting shipment" pill: one click marks the order as bought on Amazon (a reminder for the seller), or takes the mark away.
@@ -12170,7 +12201,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td data-label="Order"><div class="ord-id">${escapeHtml(o.ebay_order_id || '—')}</div><div class="ord-sub">${escapeHtml(orderShortDate(orderDateOf(o)))}</div></td>
         <td data-label="Item"><div class="ord-item">
           ${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
-          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${(o.ebay_account_label || o.ebay_account_username) ? ' · ' + escapeHtml(o.ebay_account_label || o.ebay_account_username) : ''}</div>${orderLinksHtml(o)}</div>
+          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${(o.ebay_account_label || o.ebay_account_username) ? ' · ' + escapeHtml(o.ebay_account_label || o.ebay_account_username) : ''}${orderLinksHtml(o) ? ' · ' + orderLinksHtml(o) : ''}</div>${orderSheetInputsHtml(o)}</div>
         </div></td>
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
         <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}${o.net_profit != null ? `<div class="ord-sub ${Number(o.net_profit) >= 0 ? 'good' : 'bad'}">Net profit ${escapeHtml(orderMoney(o, o.net_profit))}</div>` : ''}</td>
@@ -12212,7 +12243,17 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#ordersAccountFilterSelect')?.addEventListener('change', async (e) => { ordersAccountFilter = e.target.value; ordersPage = 1; try { await fetchOrdersList(); } catch (err) { showToast('Orders', err.message, 'error'); } renderOrders(); });
     root.querySelector('#syncOrdersBtn')?.addEventListener('click', () => syncOrdersFromEbay(false));
     root.querySelector('#syncOrdersFullBtn')?.addEventListener('click', () => syncOrdersFromEbay(true));
-    root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('a')) return; openOrderDetail(row.getAttribute('data-order-id')); }));
+    // The Buying price / Order earning boxes right on the row (orderSheetInputsHtml): typing in them must never open the drawer, and they
+    // save on their own (change/blur), the same PATCH /api/net-profit/:id the sheet and the drawer both use.
+    root.querySelectorAll('.ord-inline-sheet').forEach((wrap) => {
+      wrap.addEventListener('click', (e) => e.stopPropagation());
+      const amazonInput = wrap.querySelector('[data-order-sheet="amazon"]');
+      const earningInput = wrap.querySelector('[data-order-sheet="earning"]');
+      const save = () => { const id = wrap.closest('[data-order-id]')?.getAttribute('data-order-id'); if (id) saveOrderSheetInputs(id, amazonInput, earningInput); };
+      amazonInput?.addEventListener('change', save);
+      earningInput?.addEventListener('change', save);
+    });
+    root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('a, input, button')) return; openOrderDetail(row.getAttribute('data-order-id')); }));
   }
 
   // Marks an order as bought on Amazon (or takes the mark away). Only the seller's own reminder: nothing goes to eBay or Amazon.
@@ -12413,8 +12454,8 @@ async function autoSuggestEmptyDraftCategories() {
         <section class="ord-sec"><h4>Item</h4>
           <div class="ord-item big">${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
           <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div>
-            <div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}</div>
-            <div class="ord-sub">${o.sku ? 'SKU ' + escapeHtml(o.sku) : ''}</div>${orderLinksHtml(o)}</div></div>
+            <div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${orderLinksHtml(o) ? ' · ' + orderLinksHtml(o) : ''}</div>
+            ${o.sku ? `<div class="ord-sub">SKU ${escapeHtml(o.sku)}</div>` : ''}</div></div>
         </section>
 
         <section class="ord-sec"><h4>Payment</h4>
