@@ -837,9 +837,6 @@
   .import-page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap; }
   .import-page-head h1 { margin:0; font-size:30px; font-weight:800; letter-spacing:-0.02em; }
   .import-page-head .sub { margin-top:6px; color:var(--grey); font-size:14px; }
-  .import-history-link { display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; transition:background .12s, border-color .12s; }
-  .import-history-link:hover { background:var(--paper-raised); border-color:var(--grey-light); }
-  .import-history-link svg { width:16px; height:16px; color:var(--grey); }
 
   /* Step badge */
   .import-step-badge { display:inline-block; background:#E7F0FD; color:var(--blue); font-size:12px; font-weight:700; padding:5px 12px; border-radius:999px; margin-bottom:12px; }
@@ -4156,10 +4153,6 @@
       </a>
 
       <div class="sidebar-nav-label">Tools</div>
-      <a href="#" data-page="history">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg>
-        Import history
-      </a>
       <a href="#" data-page="research-tools">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         Research Tools
@@ -4286,10 +4279,6 @@
             <h1 id="impHeading">Import a product</h1>
             <div class="sub" id="impSub">Paste an Amazon link, set your margin and ELMS creates the eBay draft for you.</div>
           </div>
-          <button type="button" class="import-history-link" data-page="history">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg>
-            Import history
-          </button>
         </div>
 
         <div class="imp-source-tabs" role="tablist" style="display:flex;gap:8px;margin-bottom:16px;">
@@ -4558,10 +4547,6 @@
             </div>
           </section>
         </div>
-      </div>
-
-      <div id="page-history" style="display:none;">
-        <div id="historyContent"><div class="elms-loader" role="status" aria-label="Loading import history"></div></div>
       </div>
 
       <div id="page-research-tools" style="display:none;">
@@ -5649,6 +5634,13 @@
             </section>
             <section class="st-card">
               <div class="st-head">
+                <div class="st-ico yellow">&#128230;</div>
+                <div class="st-head-txt"><h2>Image storage cleanup</h2><p>Removes downloaded product images for imports that no longer have any draft or listing - frees Render Disk space. Runs automatically every night; use this to run it right now.</p></div>
+              </div>
+              <div class="st-actions"><button class="st-btn small" id="imageCleanupBtn" type="button">Clean up now</button><div id="imageCleanupStatus"></div></div>
+            </section>
+            <section class="st-card">
+              <div class="st-head">
                 <div class="st-ico blue">&#129513;</div>
                 <div class="st-head-txt"><h2>Browser extension</h2><p>Links and IDs used by the ELMS Chrome extension.</p></div>
               </div>
@@ -6002,7 +5994,6 @@
     netprofit: ['Net Profit', 'What each ELMS order really made you, line by line.'],
     orders: ['Orders', 'Orders placed by buyers on your eBay listings.'],
     messages: ['Messages', 'Manage eBay conversations, replies, notes, and saved replies.'],
-    history: ['Import history', 'Every Amazon product fetched so far.'],
     'research-tools': ['Research Tools', 'Keyword ranks, reviews, categories, and more - live from Amazon.'],
     calculator: ['eBay Price Calculator', 'Find the price that leaves your profit after eBay fees.'],
     referrals: ['Refer & Earn', 'Invite other sellers - they save, you earn.'],
@@ -6019,10 +6010,10 @@
   // a bookmark or a shared link opens the same page instead of the dashboard.
   const PAGE_PATHS = {
     dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders', netprofit: '/net-profit',
-    messages: '/messages', history: '/import-history', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer', affiliate: '/affiliate', vouchers: '/vouchers',
+    messages: '/messages', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer', affiliate: '/affiliate', vouchers: '/vouchers',
     settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin',
   };
-  const PATH_ALIASES = { '/drafts': 'drafts', '/listings': 'listings', '/order': 'orders', '/message': 'messages', '/history': 'history', '/pricing': 'pricing', '/credits': 'pricing', '/index.html': 'dashboard', '/': 'dashboard' };
+  const PATH_ALIASES = { '/drafts': 'drafts', '/listings': 'listings', '/order': 'orders', '/message': 'messages', '/pricing': 'pricing', '/credits': 'pricing', '/index.html': 'dashboard', '/': 'dashboard' };
   function pageFromPath(pathname) {
     const p = String(pathname || '/').replace(/\/+$/, '') || '/';
     const hit = Object.keys(PAGE_PATHS).find((k) => PAGE_PATHS[k] === p);
@@ -6086,8 +6077,8 @@
     if (!opts.fromPop) syncUrlToPage(page, !!opts.replace);
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
-    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'netprofit' || page === 'history' || page === 'admin');
-    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'netprofit', 'messages', 'history', 'research-tools', 'calculator', 'referrals', 'affiliate', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
+    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'netprofit' || page === 'admin');
+    ['dashboard', 'import', 'drafts', 'listings', 'orders', 'netprofit', 'messages', 'research-tools', 'calculator', 'referrals', 'affiliate', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
     });
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
@@ -6110,7 +6101,6 @@
     if (page === 'referrals') loadReferralsPage();
     if (page === 'affiliate') loadAffiliatePage();
     if (page === 'vouchers') loadVouchersPage();
-    if (page === 'history') loadHistory();
     if (page === 'settings') loadSettingsPage();
     if (page === 'pricing') loadPricingPage();
     if (page === 'support') loadSupportPage();
@@ -6415,12 +6405,6 @@
   // ---------- Bulk Import ----------
   const toggleBulkImportBtn = document.getElementById('toggleBulkImportBtn');
   const bulkImportSection = document.getElementById('bulkImportSection');
-
-  // "View import history" button on the Import page (outside the sidebar nav,
-  // so it needs its own click handler to navigate).
-  document.querySelectorAll('.import-history-link[data-page]').forEach((el) => {
-    el.addEventListener('click', () => showPage(el.getAttribute('data-page')));
-  });
 
   function setImportTab(mode) {
     // mode: 'single' | 'bulk' | 'large' (kept as a string now that there are three tabs;
@@ -13113,223 +13097,6 @@ async function autoSuggestEmptyDraftCategories() {
     }
   });
 
-  // Import History page state (client-side filtering / sorting / pagination).
-  let ihAllImports = [];
-  let ihFilter = { search: '', time: 'all', status: 'all' };
-  let ihSort = { key: 'created_at', dir: 'desc' };
-  let ihPage = 1;
-  const IH_PAGE_SIZE = 10;
-
-  function ihImportStatus(i) {
-    // Backend may or may not send a per-import status; treat anything not
-    // explicitly failed as a successful fetch.
-    const s = String(i.status || i.fetch_status || 'success').toLowerCase();
-    return (s === 'failed' || s === 'error') ? 'failed' : 'success';
-  }
-
-  async function loadHistory() {
-    const container = document.getElementById('historyContent');
-    container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading import history"></div>';
-    try {
-      const res = await apiFetch('/api/imports');
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load import history.')}</div>`;
-        return;
-      }
-      ihAllImports = Array.isArray(data.imports) ? data.imports : [];
-      ihPage = 1;
-      renderHistory();
-    } catch (err) {
-      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
-    }
-  }
-
-  function ihFilteredSorted() {
-    const now = Date.now();
-    const timeCutoff = { '24h': 86400000, '7d': 604800000, '30d': 2592000000 };
-    let rows = ihAllImports.filter((i) => {
-      // Search across title + ASIN
-      if (ihFilter.search) {
-        const q = ihFilter.search.toLowerCase();
-        const hay = `${i.title || ''} ${i.asin || ''}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      // Status
-      if (ihFilter.status !== 'all' && ihImportStatus(i) !== ihFilter.status) return false;
-      // Time window
-      if (ihFilter.time !== 'all') {
-        const t = new Date(i.created_at).getTime();
-        if (!Number.isNaN(t) && (now - t) > timeCutoff[ihFilter.time]) return false;
-      }
-      return true;
-    });
-    const { key, dir } = ihSort;
-    rows.sort((a, b) => {
-      let av, bv;
-      if (key === 'amazon_price' || key === 'suggested_price') { av = Number(a[key] || 0); bv = Number(b[key] || 0); }
-      else if (key === 'created_at') { av = new Date(a.created_at).getTime() || 0; bv = new Date(b.created_at).getTime() || 0; }
-      else { av = String(a[key] || '').toLowerCase(); bv = String(b[key] || '').toLowerCase(); }
-      if (av < bv) return dir === 'asc' ? -1 : 1;
-      if (av > bv) return dir === 'asc' ? 1 : -1;
-      return 0;
-    });
-    return rows;
-  }
-
-  function renderHistory() {
-    const container = document.getElementById('historyContent');
-    const total = ihAllImports.length;
-    const successful = ihAllImports.filter((i) => ihImportStatus(i) === 'success').length;
-    const failed = total - successful;
-    const lastImport = ihAllImports.reduce((latest, i) => {
-      const t = new Date(i.created_at).getTime();
-      return (!Number.isNaN(t) && t > latest) ? t : latest;
-    }, 0);
-    const lastImportStr = lastImport ? new Date(lastImport).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '—';
-    const lastImportTime = lastImport ? new Date(lastImport).toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' }) : '';
-
-    const sortArrows = '<span class="sort-arrows">&#9650;&#9660;</span>';
-    const filtered = ihFilteredSorted();
-    const pages = Math.max(1, Math.ceil(filtered.length / IH_PAGE_SIZE));
-    if (ihPage > pages) ihPage = pages;
-    const start = (ihPage - 1) * IH_PAGE_SIZE;
-    const pageRows = filtered.slice(start, start + IH_PAGE_SIZE);
-
-    container.innerHTML = `
-      <div class="ih-head">
-        <div class="ih-head-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg></div>
-        <div><h1>Import history</h1><div class="sub">Every Amazon product fetched so far.</div></div>
-      </div>
-
-      <div class="ih-stats">
-        <div class="ih-stat"><div class="ih-ico blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div><div class="ih-val">${total}</div><div class="ih-lbl">Total Products</div></div></div>
-        <div class="ih-stat"><div class="ih-ico green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="ih-val">${successful}</div><div class="ih-lbl">Successful</div></div></div>
-        <div class="ih-stat"><div class="ih-ico red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div><div class="ih-val">${failed}</div><div class="ih-lbl">Failed</div></div></div>
-        <div class="ih-stat"><div class="ih-ico sky"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="ih-lbl">Last Import</div><div class="ih-lbl-strong">${escapeHtml(lastImportStr)}</div><div class="ih-lbl">${escapeHtml(lastImportTime)}</div></div></div>
-        <div class="ih-import-btn-wrap"><button class="ih-import-btn" id="ihImportNewBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Import New Products</button></div>
-      </div>
-
-      <div class="ih-filters">
-        <div class="ih-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="ihSearchInput" placeholder="Search by title, ASIN..." value="${escapeAttr(ihFilter.search)}" /></div>
-        <label class="ih-select"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><select id="ihTimeSelect" style="border:none;background:none;font:inherit;color:inherit;cursor:pointer;outline:none;"><option value="all"${ihFilter.time==='all'?' selected':''}>All time</option><option value="24h"${ihFilter.time==='24h'?' selected':''}>Last 24 hours</option><option value="7d"${ihFilter.time==='7d'?' selected':''}>Last 7 days</option><option value="30d"${ihFilter.time==='30d'?' selected':''}>Last 30 days</option></select></label>
-        <label class="ih-select"><select id="ihStatusSelect" style="border:none;background:none;font:inherit;color:inherit;cursor:pointer;outline:none;"><option value="all"${ihFilter.status==='all'?' selected':''}>All status</option><option value="success"${ihFilter.status==='success'?' selected':''}>Successful</option><option value="failed"${ihFilter.status==='failed'?' selected':''}>Failed</option></select></label>
-        <button class="ih-reset" id="ihResetBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Reset</button>
-      </div>
-
-      ${filtered.length ? `
-      <div class="live-listings-wrap ad-live ih-wrap"><table class="ih-table">
-        <thead>
-          <tr>
-            <th style="width:34px;"></th>
-            <th class="ih-th-sort" data-sort="title">Product ${sortArrows}</th>
-            <th class="ih-th-sort" data-sort="asin">ASIN ${sortArrows}</th>
-            <th class="ih-th-sort" data-sort="amazon_price">Amazon price ${sortArrows}</th>
-            <th class="ih-th-sort" data-sort="suggested_price">Suggested price ${sortArrows}</th>
-            <th>Profit</th>
-            <th>Status</th>
-            <th class="ih-th-sort" data-sort="created_at">Fetched ${sortArrows}</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>${pageRows.map((i) => historyRowHtml(i)).join('')}</tbody>
-      </table></div>
-      <div class="ih-footer">
-        <div class="ih-showing">Showing ${filtered.length ? start + 1 : 0} to ${Math.min(start + IH_PAGE_SIZE, filtered.length)} of ${filtered.length} products</div>
-        ${ihPaginationHtml(ihPage, pages)}
-      </div>` : `<div class="empty-state">${ihAllImports.length ? 'No imports match your filters.' : 'No imports yet. Fetch a product from the Import page to see it here.'}</div>`}
-    `;
-
-    wireHistoryEvents();
-  }
-
-  function ihPaginationHtml(current, pages) {
-    if (pages <= 1) return '<div class="ih-pagination"></div>';
-    const items = [];
-    items.push(`<button class="ih-page-btn" data-page-nav="${current - 1}"${current === 1 ? ' disabled' : ''}>&lsaquo;</button>`);
-    const nums = new Set([1, pages, current, current - 1, current + 1]);
-    let last = 0;
-    for (let p = 1; p <= pages; p++) {
-      if (!nums.has(p)) continue;
-      if (p - last > 1) items.push('<span class="ih-page-ellipsis">&hellip;</span>');
-      items.push(`<button class="ih-page-btn${p === current ? ' active' : ''}" data-page-nav="${p}">${p}</button>`);
-      last = p;
-    }
-    items.push(`<button class="ih-page-btn" data-page-nav="${current + 1}"${current === pages ? ' disabled' : ''}>&rsaquo;</button>`);
-    return `<div class="ih-pagination">${items.join('')}</div>`;
-  }
-
-  function wireHistoryEvents() {
-    const root = document.getElementById('historyContent');
-    // Import New Products -> Import page
-    root.querySelector('#ihImportNewBtn')?.addEventListener('click', () => showPage('import'));
-    // Search (debounced-ish: re-render on input, reset to page 1)
-    const searchInput = root.querySelector('#ihSearchInput');
-    if (searchInput) {
-      searchInput.addEventListener('input', () => { ihFilter.search = searchInput.value.trim(); ihPage = 1; renderHistory();
-        // keep focus + caret at end after re-render
-        const el = document.getElementById('ihSearchInput'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
-      });
-    }
-    root.querySelector('#ihTimeSelect')?.addEventListener('change', (e) => { ihFilter.time = e.target.value; ihPage = 1; renderHistory(); });
-    root.querySelector('#ihStatusSelect')?.addEventListener('change', (e) => { ihFilter.status = e.target.value; ihPage = 1; renderHistory(); });
-    root.querySelector('#ihResetBtn')?.addEventListener('click', () => { ihFilter = { search:'', time:'all', status:'all' }; ihSort = { key:'created_at', dir:'desc' }; ihPage = 1; renderHistory(); });
-    // Sortable headers
-    root.querySelectorAll('.ih-th-sort').forEach((th) => th.addEventListener('click', () => {
-      const key = th.getAttribute('data-sort');
-      if (ihSort.key === key) ihSort.dir = ihSort.dir === 'asc' ? 'desc' : 'asc';
-      else { ihSort.key = key; ihSort.dir = key === 'created_at' ? 'desc' : 'asc'; }
-      renderHistory();
-    }));
-    // Pagination
-    root.querySelectorAll('[data-page-nav]').forEach((btn) => btn.addEventListener('click', () => {
-      if (btn.disabled) return;
-      ihPage = Number(btn.getAttribute('data-page-nav'));
-      renderHistory();
-    }));
-    // Re-fetch
-    root.querySelectorAll('[data-action="reimport"]').forEach((btn) => btn.addEventListener('click', () => {
-      const url = btn.getAttribute('data-url');
-      document.getElementById('amazonUrl').value = url || '';
-      showPage('import');
-    }));
-    // Copy ASIN
-    root.querySelectorAll('.copy-asin').forEach((btn) => btn.addEventListener('click', async () => {
-      const asin = btn.getAttribute('data-asin');
-      try { await navigator.clipboard.writeText(asin); showToast('Copied', 'ASIN ' + asin + ' copied to clipboard.', 'success'); }
-      catch (_) { /* clipboard may be blocked; ignore silently */ }
-    }));
-  }
-
-  function historyRowHtml(i) {
-    const asin = i.asin || '';
-    const fetchedFull = i.created_at ? new Date(i.created_at).toISOString().replace('.000', '') : '';
-    const fetchedRel = i.created_at ? notificationTime(i.created_at) : '';
-    return `
-      <tr>
-        <td><input type="checkbox" class="ih-row-check" /></td>
-        <td class="row-title">
-          ${i.main_image ? `<div style="display:flex;gap:11px;align-items:flex-start;"><img class="row-thumb" src="${escapeAttr(i.main_image)}" alt="" /><div>` : '<div>'}
-            <div>${escapeHtml(i.title || '—')}</div>
-            <a class="amazon-badge" href="${escapeAttr(i.amazon_url || (asin ? `https://www.amazon.com/dp/${asin}` : '#'))}" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.93 17.09c-2.02 1.49-4.95 2.28-7.47 2.28-3.53 0-6.71-1.31-9.11-3.48-.19-.17-.02-.4.21-.27 2.59 1.5 5.79 2.41 9.1 2.41 2.24 0 4.7-.46 6.97-1.43.34-.14.63.23.3.49z"/><path d="M16.76 16.15c-.26-.33-1.71-.16-2.36-.08-.2.02-.23-.15-.05-.28 1.15-.81 3.05-.58 3.27-.31.22.28-.06 2.18-1.14 3.09-.17.14-.33.06-.25-.12.25-.61.81-1.96.58-2.22z"/></svg>Amazon</a>
-          ${i.main_image ? '</div></div>' : '</div>'}
-        </td>
-        <td><span class="asin-cell">${escapeHtml(asin || '—')}${asin ? `<button class="copy-asin" data-asin="${escapeAttr(asin)}" title="Copy ASIN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>` : ''}</span></td>
-        <td>${i.amazon_price != null ? `<span class="ih-price buy">${escapeHtml(formatPrice(i.amazon_price, i.currency))}</span>` : '—'}</td>
-        <td>${i.suggested_price != null ? `<span class="ih-price sell">${escapeHtml(formatPrice(i.suggested_price, i.currency))}</span>` : '—'}</td>
-        <td>${(i.amazon_price != null && i.suggested_price != null) ? `<b class="ih-profit">${escapeHtml(formatPrice(Number(i.suggested_price) - Number(i.amazon_price), i.currency))}</b>` : '—'}</td>
-        <td><span class="ih-status ${ihImportStatus(i)}">${ihImportStatus(i) === 'failed' ? 'Failed' : 'Success'}</span></td>
-        <td><div>${escapeHtml(fetchedFull || i.created_at || '—')}</div>${fetchedRel ? `<div class="fetched-time">${escapeHtml(fetchedRel)}</div>` : ''}</td>
-        <td>
-          <div class="row-actions" style="display:flex;align-items:center;">
-            <button class="re-fetch-btn" data-action="reimport" data-url="${escapeAttr(i.amazon_url || '')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Re-fetch</button>
-            <button class="row-menu-btn" title="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }
-
   function escapeAttr(str) {
     if (!str) return '';
     return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -18096,6 +17863,29 @@ async function autoSuggestEmptyDraftCategories() {
     btn.disabled = true;
     await loadEbayUsage(true);
     btn.disabled = false;
+  });
+
+  // ---------- Admin Panel: image storage cleanup (jobs/imageCleanup.js's daily job, run on demand) ----------
+  document.getElementById('imageCleanupBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('imageCleanupBtn');
+    const status = document.getElementById('imageCleanupStatus');
+    btn.disabled = true;
+    status.className = '';
+    status.textContent = 'Cleaning up…';
+    try {
+      const res = await apiFetch('/api/admin/cleanup-images', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not clean up images.');
+      status.className = '';
+      status.textContent = data.foldersRemoved
+        ? `Removed ${data.foldersRemoved} of ${data.checked} checked import(s), freed ${data.freedMb} MB.`
+        : `Nothing to clean up (checked ${data.checked}).`;
+    } catch (err) {
+      status.className = 'error';
+      status.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
   });
 
   // ---------- Admin Panel: Welcome Bonus ----------
