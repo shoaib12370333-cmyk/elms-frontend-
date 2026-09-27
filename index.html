@@ -5021,6 +5021,7 @@
           <button class="ad-tab" data-admin-tab="users" type="button">Users</button>
           <button class="ad-tab" data-admin-tab="ai" type="button">AI</button>
           <button class="ad-tab" data-admin-tab="costs" type="button">Credit costs</button>
+          <button class="ad-tab" data-admin-tab="categories" type="button">Categories</button>
           <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
           <button class="ad-tab" data-admin-tab="referrals" type="button">Referrals</button>
           <button class="ad-tab" data-admin-tab="vouchers" type="button">Vouchers</button>
@@ -5108,6 +5109,14 @@
           </div>
           <section class="st-card">
             <div class="st-head">
+              <div class="st-ico blue">&#128193;</div>
+              <div class="st-head-txt"><h2>AI category</h2><p>Only when eBay's own category suggestion is out of calls for the day: the AI chooses from the category list you upload in the Categories tab. Nothing is charged while eBay answers.</p></div>
+              <label class="toggle-switch"><input type="checkbox" id="aiCategoryEnabled" /><span class="toggle-slider"></span></label>
+            </div>
+            <div class="st-field"><label>Credits per AI category</label><input class="st-input" type="number" min="0" step="1" id="aiCostCategory" /></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
               <div class="st-ico blue">&#129504;</div>
               <div class="st-head-txt"><h2>Model and style</h2><p>Applies to both AI title and AI description for every user.</p></div>
             </div>
@@ -5145,6 +5154,20 @@
             </div>
             <div id="actionCostsStatus" style="margin-bottom:10px;"></div>
             <div id="adminActionCostsContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
+        </div>
+
+        <!-- Categories -->
+        <div class="ad-panel" data-admin-panel="categories" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128193;</div>
+              <div class="st-head-txt"><h2>Category lists</h2><p>eBay's "Category IDs" CSV for each eBay site (columns CategoryID and Category Path). When eBay's own category suggestion is out of calls for the day, the AI chooses from the list of the seller's eBay site. Upload one file per country: ebay.com is the US list, ebay.co.uk the GB list, and so on.</p></div>
+            </div>
+            <div id="catListStatus" class="st-status"></div>
+            <input type="file" id="catListFile" accept=".csv,text/csv" hidden />
+            <div id="adminCategoryLists"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+            <p class="st-hint">Uploading again replaces that country's list at once. The AI is used only when eBay says its daily category limit is reached; it costs the seller the "AI category" credits set in the AI tab (nothing when the AI finds no category).</p>
           </section>
         </div>
 
@@ -16313,7 +16336,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadAdminPage() {
     loadAdminAdmins();
     loadAdminAffiliates();
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -16727,16 +16750,19 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('aiReplyEnabled').checked = !!d.settings.aiReplyEnabled;
       document.getElementById('aiCostAspects').value = d.costs.AI_ASPECTS ?? 1;
       document.getElementById('aiCostReply').value = d.costs.AI_REPLY ?? 1;
+      document.getElementById('aiCategoryEnabled').checked = d.settings.aiCategoryEnabled !== false;
+      document.getElementById('aiCostCategory').value = d.costs.AI_CATEGORY ?? 1;
       document.getElementById('aiDescriptionLength').value = d.settings.aiDescriptionLength || 'standard';
       document.getElementById('aiModel').value = d.settings.aiModel || '';
       document.getElementById('aiCustomInstructions').value = d.settings.aiCustomInstructions || '';
       banner.className = 'ad-banner ' + (d.apiKeyConfigured ? 'ok' : 'bad');
       banner.textContent = d.apiKeyConfigured ? 'AI is connected. Users are charged the credit cost below each time they use an AI button.' : 'ANTHROPIC_API_KEY is not set on the server, so every AI button will fail. Add it in Render \u2192 Environment.';
-      const u = d.usage;
+      const u = d.usage; const uc = u.category || { calls: 0, failed: 0, credits: 0 };
       document.getElementById('adminAiUsage').innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Feature</th><th>Successful</th><th>Failed</th><th>Credits spent</th></tr></thead><tbody>
         <tr><td>AI title</td><td>${u.title.calls}</td><td>${u.title.failed}</td><td>${u.title.credits}</td></tr>
         <tr><td>AI description</td><td>${u.description.calls}</td><td>${u.description.failed}</td><td>${u.description.credits}</td></tr>
         <tr><td>AI item specifics</td><td>${u.aspects.calls}</td><td>${u.aspects.failed}</td><td>${u.aspects.credits}</td></tr>
+        <tr><td>AI category</td><td>${uc.calls}</td><td>${uc.failed}</td><td>${uc.credits}</td></tr>
         <tr><td>AI message replies</td><td>${u.reply.calls}</td><td>${u.reply.failed}</td><td>${u.reply.credits}</td></tr></tbody></table></div>
         <p class="st-hint">Tokens used: ${u.inputTokens.toLocaleString()} in / ${u.outputTokens.toLocaleString()} out. Failed calls are refunded to the user.</p>`;
     } catch (err) { banner.className = 'ad-banner bad'; banner.textContent = err.message; }
@@ -16750,10 +16776,11 @@ async function autoSuggestEmptyDraftCategories() {
         aiDescriptionEnabled: document.getElementById('aiDescriptionEnabled').checked,
         aiAspectsEnabled: document.getElementById('aiAspectsEnabled').checked,
         aiReplyEnabled: document.getElementById('aiReplyEnabled').checked,
+        aiCategoryEnabled: document.getElementById('aiCategoryEnabled').checked,
         aiDescriptionLength: document.getElementById('aiDescriptionLength').value,
         aiModel: document.getElementById('aiModel').value.trim(),
         aiCustomInstructions: document.getElementById('aiCustomInstructions').value.trim(),
-        costs: { AI_TITLE: Number(document.getElementById('aiCostTitle').value), AI_DESCRIPTION: Number(document.getElementById('aiCostDescription').value), AI_ASPECTS: Number(document.getElementById('aiCostAspects').value), AI_REPLY: Number(document.getElementById('aiCostReply').value) },
+        costs: { AI_TITLE: Number(document.getElementById('aiCostTitle').value), AI_DESCRIPTION: Number(document.getElementById('aiCostDescription').value), AI_ASPECTS: Number(document.getElementById('aiCostAspects').value), AI_REPLY: Number(document.getElementById('aiCostReply').value), AI_CATEGORY: Number(document.getElementById('aiCostCategory').value) },
       };
       const res = await apiFetch('/api/admin/settings/ai', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save the AI settings.');
@@ -16943,6 +16970,63 @@ async function autoSuggestEmptyDraftCategories() {
       status.className = 'success'; status.textContent = 'Saved. New costs are active immediately.'; adminActionCosts = data.actionCosts || adminActionCosts;
     } catch (err) { status.className = 'error'; status.textContent = err.message; }
     finally { btn.disabled = false; }
+  });
+
+  // ---------- Admin Panel: Categories (the eBay category list of each country) ----------
+  let catUploadFor = null;
+  async function loadAdminCategories() {
+    const el = document.getElementById('adminCategoryLists'); if (!el) return;
+    try {
+      const res = await apiFetch('/api/admin/category-lists'); const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the category lists.');
+      let names = null; try { names = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (_) { /* the country code is shown instead */ }
+      const countryName = (code) => { try { return (names && names.of(code)) || code; } catch (_) { return code; } };
+      const when = (v) => (v ? new Date(v).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+      const row = (l) => `<tr>
+        <td><b>${escapeHtml(l.domain || l.marketplaceId)}</b><br><small>${escapeHtml(l.marketplaceId)}</small></td>
+        <td>${escapeHtml(countryName(l.country))}</td>
+        <td>${l.uploaded ? `<span class="status-badge published">${Number(l.count).toLocaleString('en-US')} categories</span><br><small>${escapeHtml(l.filename || 'CSV')} &middot; ${escapeHtml(when(l.updatedAt))}</small>` : '<span class="status-badge draft">Not uploaded</span>'}</td>
+        <td style="text-align:right;white-space:nowrap;"><button class="st-btn small primary" type="button" data-cat-upload="${escapeAttr(l.marketplaceId)}">${l.uploaded ? 'Replace CSV' : 'Upload CSV'}</button>${l.uploaded ? ` <button class="st-btn small danger" type="button" data-cat-remove="${escapeAttr(l.marketplaceId)}" data-domain="${escapeAttr(l.domain || l.marketplaceId)}">Remove</button>` : ''}</td>
+      </tr>`;
+      el.innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>eBay site</th><th>Country</th><th>Category list</th><th></th></tr></thead><tbody>${(d.lists || []).map(row).join('')}</tbody></table></div>`;
+    } catch (err) { el.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
+  }
+  document.getElementById('adminCategoryLists')?.addEventListener('click', async (e) => {
+    const up = e.target.closest('[data-cat-upload]');
+    const rm = e.target.closest('[data-cat-remove]');
+    const status = document.getElementById('catListStatus');
+    if (up) {
+      catUploadFor = up.dataset.catUpload;
+      const input = document.getElementById('catListFile');
+      input.value = '';
+      input.click();
+    } else if (rm) {
+      if (!(await elmsConfirm(`Remove the category list of ${rm.dataset.domain}? The AI can no longer choose categories for that eBay site until a new list is uploaded.`, { title: 'Remove category list', okText: 'Remove', danger: true }))) return;
+      try {
+        const res = await apiFetch(`/api/admin/category-lists/${encodeURIComponent(rm.dataset.catRemove)}`, { method: 'DELETE' }); const d = await res.json();
+        if (!res.ok || !d.success) throw new Error(d.error || 'Could not remove the list.');
+        status.className = 'st-status success'; status.textContent = 'The list of ' + rm.dataset.domain + ' was removed.';
+        loadAdminCategories();
+      } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
+    }
+  });
+  document.getElementById('catListFile')?.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    const marketplaceId = catUploadFor;
+    e.target.value = '';
+    if (!file || !marketplaceId) return;
+    const status = document.getElementById('catListStatus');
+    if (file.size > 12 * 1024 * 1024) { status.className = 'st-status error'; status.textContent = 'That file is too big (' + Math.round(file.size / 1048576) + ' MB). eBay\'s category CSV is about 1-2 MB.'; return; }
+    status.className = 'st-status'; status.textContent = 'Uploading ' + file.name + '\u2026';
+    try {
+      const csv = await file.text();
+      const res = await apiFetch(`/api/admin/category-lists/${encodeURIComponent(marketplaceId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ csv, filename: file.name }) });
+      const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not save this category list.');
+      status.className = 'st-status success';
+      status.textContent = marketplaceId + ': ' + Number(d.count).toLocaleString('en-US') + ' categories saved' + (d.skipped ? ' (' + d.skipped + ' unreadable rows left out)' : '') + '.';
+      loadAdminCategories();
+    } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
   });
 
   // ---------- Admin Panel: Chrome Extension ID ----------
