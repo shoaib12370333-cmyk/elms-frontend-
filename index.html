@@ -4295,6 +4295,7 @@
         <div class="imp-source-tabs" role="tablist" style="display:flex;gap:8px;margin-bottom:16px;">
           <button type="button" class="imp-tab active" id="impSourceAmazon" role="tab">Amazon</button>
           <button type="button" class="imp-tab" id="impSourceCj" role="tab">CJdropshipping</button>
+          <button type="button" class="imp-tab" id="impSourceAliexpress" role="tab">AliExpress</button>
         </div>
 
         <div id="impAmazonSection" class="imp-layout">
@@ -4437,6 +4438,40 @@
                 <div class="imp-side-card imp-tip">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
                   <div><b>Tip</b><small>CJ products import as drafts too, and show a "CJ" badge on Drafts and Live listings so you always know which supplier a listing came from.</small></div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+
+        <div id="impAliexpressSection" style="display:none;">
+          <div id="aliexpressNotConnected" class="product-card" style="display:none;text-align:center;padding:32px 20px;">
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px;">AliExpress is not connected yet</div>
+            <div class="meta-line" style="margin-bottom:14px;">Connect your AliExpress account in Settings to import products from AliExpress.</div>
+            <button type="button" class="st-btn primary" data-page="settings">Go to Settings</button>
+          </div>
+
+          <div id="aliexpressConnectedArea" style="display:none;">
+            <div class="imp-layout">
+              <div class="imp-card">
+                <div class="imp-body">
+                  <label class="imp-label" for="aliexpressProductInput">AliExpress product ID or product URL</label>
+                  <div class="imp-urlbox">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    <input type="text" id="aliexpressProductInput" placeholder="Product ID, or an aliexpress.com/item/... product link" autocomplete="off" />
+                  </div>
+                  <div class="imp-cta-row" style="margin-top:14px;">
+                    <button class="primary imp-cta" id="aliexpressImportByIdBtn">Find product</button>
+                  </div>
+                  <div id="aliexpressSkuPicker" style="display:none;margin-top:16px;"></div>
+                  <div id="aliexpressImportByIdStatus" style="margin-top:10px;"></div>
+                </div>
+              </div>
+
+              <aside class="imp-side">
+                <div class="imp-side-card imp-tip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+                  <div><b>Tip</b><small>AliExpress products import as drafts too, and show an "AliExpress" badge on Drafts and Live listings so you always know which supplier a listing came from.</small></div>
                 </div>
               </aside>
             </div>
@@ -6407,20 +6442,28 @@
   document.getElementById('impTabSingle').addEventListener('click', () => setImportTab('single'));
   document.getElementById('impTabLarge').addEventListener('click', () => setImportTab('large'));
 
-  // ---------- Import page: Amazon / CJdropshipping are two entirely separate sections (never shown at once) ----------
+  // ---------- Import page: Amazon / CJdropshipping / AliExpress are three entirely separate sections (never shown at once) ----------
+  const IMP_SOURCE_META = {
+    amazon: { heading: 'Import a product', sub: 'Paste an Amazon link, set your margin and ELMS creates the eBay draft for you.' },
+    cj: { heading: 'Import from CJdropshipping', sub: 'Paste a CJ product link/ID, or search the CJ catalog - ELMS creates the eBay draft for you.' },
+    aliexpress: { heading: 'Import from AliExpress', sub: 'Paste an AliExpress product link/ID - ELMS creates the eBay draft for you.' },
+  };
   function setImportSource(source) {
-    const isCj = source === 'cj';
-    document.getElementById('impAmazonSection').style.display = isCj ? 'none' : '';
-    document.getElementById('impCjSection').style.display = isCj ? '' : 'none';
-    document.getElementById('result').style.display = isCj ? 'none' : '';
-    document.getElementById('impSourceAmazon').classList.toggle('active', !isCj);
-    document.getElementById('impSourceCj').classList.toggle('active', isCj);
-    document.getElementById('impHeading').textContent = isCj ? 'Import from CJdropshipping' : 'Import a product';
-    document.getElementById('impSub').textContent = isCj ? 'Paste a CJ product link/ID, or search the CJ catalog - ELMS creates the eBay draft for you.' : 'Paste an Amazon link, set your margin and ELMS creates the eBay draft for you.';
-    if (isCj) refreshCjImportSection();
+    document.getElementById('impAmazonSection').style.display = source === 'amazon' ? '' : 'none';
+    document.getElementById('impCjSection').style.display = source === 'cj' ? '' : 'none';
+    document.getElementById('impAliexpressSection').style.display = source === 'aliexpress' ? '' : 'none';
+    document.getElementById('result').style.display = source === 'amazon' ? '' : 'none';
+    document.getElementById('impSourceAmazon').classList.toggle('active', source === 'amazon');
+    document.getElementById('impSourceCj').classList.toggle('active', source === 'cj');
+    document.getElementById('impSourceAliexpress').classList.toggle('active', source === 'aliexpress');
+    document.getElementById('impHeading').textContent = IMP_SOURCE_META[source].heading;
+    document.getElementById('impSub').textContent = IMP_SOURCE_META[source].sub;
+    if (source === 'cj') refreshCjImportSection();
+    if (source === 'aliexpress') refreshAliexpressImportSection();
   }
   document.getElementById('impSourceAmazon').addEventListener('click', () => setImportSource('amazon'));
   document.getElementById('impSourceCj').addEventListener('click', () => setImportSource('cj'));
+  document.getElementById('impSourceAliexpress').addEventListener('click', () => setImportSource('aliexpress'));
 
   async function refreshCjImportSection() {
     await loadCjSettings();
@@ -6428,6 +6471,15 @@
     document.getElementById('cjConnectedArea').style.display = cjConnected ? '' : 'none';
   }
   document.getElementById('cjNotConnected').addEventListener('click', (e) => {
+    if (e.target.closest('[data-page="settings"]')) showPage('settings');
+  });
+
+  async function refreshAliexpressImportSection() {
+    await loadAliexpressSettings();
+    document.getElementById('aliexpressNotConnected').style.display = aliexpressConnected ? 'none' : '';
+    document.getElementById('aliexpressConnectedArea').style.display = aliexpressConnected ? '' : 'none';
+  }
+  document.getElementById('aliexpressNotConnected').addEventListener('click', (e) => {
     if (e.target.closest('[data-page="settings"]')) showPage('settings');
   });
 
@@ -6556,6 +6608,75 @@
       refreshDraftsCountBadge();
       refreshCreditBalanceChip();
       showToast('Draft ready!', data.draft.title ? `"${data.draft.title.slice(0, 60)}${data.draft.title.length > 60 ? '…' : ''}" has been saved.` : 'Your CJ product has been saved.', 'success');
+    } catch (err) {
+      showToast('Import failed', err.message, 'error');
+    }
+  }
+
+  function aliexpressSkuCardHtml(s, productId) {
+    return `<div class="product-card" style="display:flex;gap:12px;align-items:center;padding:12px;">
+      <img src="${escapeAttr(s.image || '')}" alt="" style="width:56px;height:56px;border-radius:8px;object-fit:cover;background:#f1f5f9;flex:none;" onerror="this.style.visibility='hidden'">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:13px;">${escapeHtml(s.label || 'Option')}</div>
+        <div class="meta-line">${s.price != null ? '$' + Number(s.price).toFixed(2) : 'Price unknown'} &middot; ${s.inventory ?? 0} in stock</div>
+      </div>
+      <button type="button" class="st-btn primary small" data-aliexpress-import-sku="${escapeAttr(s.skuId)}" data-aliexpress-pid="${escapeAttr(productId)}">Import</button>
+    </div>`;
+  }
+
+  document.getElementById('aliexpressImportByIdBtn').addEventListener('click', async () => {
+    const input = document.getElementById('aliexpressProductInput');
+    const status = document.getElementById('aliexpressImportByIdStatus');
+    const picker = document.getElementById('aliexpressSkuPicker');
+    const url = input.value.trim();
+    if (!url) { status.textContent = 'Enter an AliExpress product ID or link.'; status.className = 'error'; return; }
+    picker.style.display = 'none'; picker.innerHTML = '';
+    status.textContent = 'Looking it up…'; status.className = '';
+    try {
+      const res = await apiFetch('/api/aliexpress/product?url=' + encodeURIComponent(url));
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not find that AliExpress product.');
+      const skus = data.product.skus || [];
+      if (skus.length === 1) {
+        status.textContent = '';
+        await importAliexpressProduct({ productId: data.product.aliexpressProductId, skuId: skus[0].skuId });
+        return;
+      }
+      status.textContent = skus.length ? `${data.product.title || 'This product'} has ${skus.length} options - pick one:` : 'This product has no orderable options.';
+      picker.innerHTML = skus.map((s) => aliexpressSkuCardHtml(s, data.product.aliexpressProductId)).join('');
+      picker.style.display = skus.length ? 'grid' : 'none';
+      picker.style.gap = '10px';
+    } catch (err) {
+      status.textContent = err.message;
+      status.className = 'error';
+    }
+  });
+  document.getElementById('aliexpressSkuPicker').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-aliexpress-import-sku]');
+    if (!btn) return;
+    importAliexpressProduct({ productId: btn.getAttribute('data-aliexpress-pid'), skuId: btn.getAttribute('data-aliexpress-import-sku') });
+  });
+
+  /** Imports one AliExpress product (optionally one sku of it, by skuId). A product with several options and no skuId given asks the server, which answers 400 with the sku list - handled the same way as the "pick an option" step above. */
+  async function importAliexpressProduct({ productId, skuId }) {
+    try {
+      const res = await apiFetch('/api/aliexpress/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId, skuId }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        if (data.skus && data.skus.length) {
+          const status = document.getElementById('aliexpressImportByIdStatus');
+          const picker = document.getElementById('aliexpressSkuPicker');
+          document.getElementById('aliexpressProductInput').value = productId;
+          status.textContent = `This product has ${data.skus.length} options - pick one:`;
+          picker.innerHTML = data.skus.map((s) => aliexpressSkuCardHtml(s, productId)).join('');
+          picker.style.display = 'grid'; picker.style.gap = '10px';
+          return;
+        }
+        throw new Error(data.error || 'Could not import that AliExpress product.');
+      }
+      refreshDraftsCountBadge();
+      refreshCreditBalanceChip();
+      showToast('Draft ready!', data.draft.title ? `"${data.draft.title.slice(0, 60)}${data.draft.title.length > 60 ? '…' : ''}" has been saved.` : 'Your AliExpress product has been saved.', 'success');
     } catch (err) {
       showToast('Import failed', err.message, 'error');
     }
@@ -8948,7 +9069,7 @@
             <label class="dv-selectall"><input type="checkbox" id="draftSelectAll" /> Select</label><button type="button" class="dv-selectevery" id="draftSelectEvery" hidden title="Select every product of this view, on all pages"></button>
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
             <select id="draftSort" class="dv-select"><option value="created">Newest imported</option><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
-            <select id="draftSourceFilter" class="dv-select" title="Filter by product source"><option value="">Every source</option><option value="amazon">Amazon</option><option value="cj">CJdropshipping</option></select>
+            <select id="draftSourceFilter" class="dv-select" title="Filter by product source"><option value="">Every source</option><option value="amazon">Amazon</option><option value="cj">CJdropshipping</option><option value="aliexpress">AliExpress</option></select>
             <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
             ${veroPattern ? '' : '<button type="button" class="dv-btn" id="draftVeroSetup" title="Add the brand names eBay removes listings for, and ELMS will warn you about them">&#9888; Set up VeRO words</button>'}
             ${veroPattern ? `<button type="button" class="dv-btn vero-filter" id="draftVeroFilter" title="Show only drafts that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="draftVeroCount">${veroCount()}</b></button>` : ''}
@@ -9313,6 +9434,7 @@
 
   function draftSupplierLabel(l) {
     if (l.source_platform === 'cj') return 'CJdropshipping';
+    if (l.source_platform === 'aliexpress') return 'AliExpress';
     const raw = String(l.supplier_country || l.supplierCountry || '').trim();
     if (raw) return /^amazon/i.test(raw) ? raw : `Amazon ${raw.toUpperCase()}`;
     const url = String(l.amazon_url || '');
@@ -9322,10 +9444,11 @@
     return 'Amazon';
   }
 
-  /** A small, coloured source badge ("Amazon" / "CJ") shown on every draft and listing card, so the seller always knows which supplier a product came from. */
+  /** A small, coloured source badge ("Amazon" / "CJ" / "AliExpress") shown on every draft and listing card, so the seller always knows which supplier a product came from. */
+  const SOURCE_BADGE = { cj: ['CJ', '#FEF3D0'], aliexpress: ['AliExpress', '#FEE4E2'], amazon: ['Amazon', '#E8F1FD'] };
   function sourceBadgeHtml(l) {
-    const isCj = l.source_platform === 'cj';
-    return `<span class="dv-chip" style="background:${isCj ? '#FEF3D0' : '#E8F1FD'};font-weight:700;">${isCj ? 'CJ' : 'Amazon'}</span>`;
+    const [label, bg] = SOURCE_BADGE[l.source_platform] || SOURCE_BADGE.amazon;
+    return `<span class="dv-chip" style="background:${bg};font-weight:700;">${label}</span>`;
   }
 
   // The 18 eBay marketplace countries ELMS can generate real postal codes for.
@@ -9982,7 +10105,7 @@
           <h3 class="dv-title" data-action="toggle-row">${escapeHtml(l.title || l.sku || 'Untitled product')}</h3>
           <div class="dv-chips">
             ${sourceBadgeHtml(l)}
-            ${l.source_platform === 'cj' ? `<span class="dv-chip">${escapeHtml(l.sku || '')}</span>` : (asin ? (l.amazon_url ? `<a class="dv-chip" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation" title="Open the Amazon product">${escapeHtml(asin)} &#8599;</a>` : `<span class="dv-chip">${escapeHtml(asin)}</span>`) : '')}
+            ${l.source_platform !== 'amazon' ? `<span class="dv-chip">${escapeHtml(l.sku || '')}</span>` : (asin ? (l.amazon_url ? `<a class="dv-chip" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation" title="Open the Amazon product">${escapeHtml(asin)} &#8599;</a>` : `<span class="dv-chip">${escapeHtml(asin)}</span>`) : '')}
             <span class="dv-chip">${escapeHtml(draftSupplierLabel(l))}</span>
             ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
             ${veroChipHtml(l, status !== 'publishing')}
@@ -10961,7 +11084,7 @@ async function autoSuggestEmptyDraftCategories() {
   let llPage = 1;
   let llSort = 'newest';
   let llVeroOnly = false;
-  let llSource = ''; // '' = every source, 'amazon', 'cj'
+  let llSource = ''; // '' = every source, 'amazon', 'cj', 'aliexpress'
   let llTotal = 0; // the listings of this view, on all pages
   let llPages = 1;
   let llSummary = null; // { counts, totals } from GET /api/listings/summary: the tabs' numbers and the boxes above the list
@@ -11158,7 +11281,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
           <select id="llSourceSelect" class="dv-select" title="Filter by product source">
-            ${[['', 'Every source'], ['amazon', 'Amazon'], ['cj', 'CJdropshipping']].map(([v, t]) => `<option value="${v}"${llSource === v ? ' selected' : ''}>${t}</option>`).join('')}
+            ${[['', 'Every source'], ['amazon', 'Amazon'], ['cj', 'CJdropshipping'], ['aliexpress', 'AliExpress']].map(([v, t]) => `<option value="${v}"${llSource === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
           ${veroPattern ? `<button type="button" class="dv-btn vero-filter${llVeroOnly ? ' on' : ''}" id="llVeroFilter" title="Show only listings that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="llVeroCount">${llSummary ? llSummary.counts.vero : '\u2026'}</b></button>` : ''}
           <button class="dv-btn" id="llExportBtn" type="button">Export CSV</button>
@@ -11257,7 +11380,7 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="dv-chips">
             ${sourceBadgeHtml(l)}
             ${itemId ? chip(llEbayUrl(l, itemId), 'eBay ' + itemId, 'Open the live eBay listing') : ''}
-            ${l.source_platform === 'cj' ? (l.sku ? `<span class="dv-chip">${escapeHtml(l.sku)}</span>` : '') : (asin ? chip(llAmazonUrl(l, asin), 'Amazon ' + asin, 'Open the Amazon product') : '')}
+            ${l.source_platform !== 'amazon' ? (l.sku ? `<span class="dv-chip">${escapeHtml(l.sku)}</span>` : '') : (asin ? chip(llAmazonUrl(l, asin), 'Amazon ' + asin, 'Open the Amazon product') : '')}
             ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
             ${uploadedText ? `<span class="dv-chip">Listed ${escapeHtml(uploadedText)}</span>` : ''}
             ${veroChipHtml(l, false)}
