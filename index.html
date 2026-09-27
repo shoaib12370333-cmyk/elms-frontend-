@@ -2700,6 +2700,10 @@
   .dv-live-row { display:grid; gap:6px; }
   .dv-live-row i { display:block; height:6px; border-radius:99px; background:#DBEAFE; overflow:hidden; }
   .dv-live-row i b { display:block; height:100%; background:#2563EB; border-radius:99px; transition:width .4s; }
+  /* the line at the top of Drafts after / while deleting many: "3,000 deleted - 120 drafts left" */
+  .dv-delnote { margin:0 0 12px; padding:10px 14px; border:1px solid #C5E08E; border-radius:12px; background:#F4FAE9; color:#3F6208; font-size:13.5px; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .dv-delnote.busy { border-color:#BFDBFE; background:#EFF6FF; color:#1E3A8A; } .dv-delnote.warn { border-color:#FCD34D; background:#FFFBEB; color:#92400E; }
+  .dv-delnote button { border:0; background:transparent; color:inherit; font:800 18px/1 Inter,sans-serif; cursor:pointer; opacity:.6; padding:0 4px; } .dv-delnote button:hover { opacity:1; }
   #llEditModal .elms-editor { margin:0; position:static; width:auto; max-width:none; }
   @media (max-width:700px) { .ll-editor-core { grid-template-columns:1fr; } #llEditModal .ll-editor-box { height:100vh; max-height:100vh; border-radius:0; } #llEditModal.modal-overlay { padding:0; } }
   #llEditModal .elms-editor { margin:0 18px 18px 64px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; overflow:hidden; box-sizing:border-box; min-width:0; }
@@ -8633,7 +8637,7 @@
   // The Drafts page keeps what you were doing (page number, tab, search, sort, selection) when it refreshes: after an edit, a publish or
   // a background import it updates in place instead of drawing everything again from page 1 (a draft you had just edited used to
   // "disappear": it jumped to the top and the list went back to the first page). Only the first draw shows the loading skeleton.
-  const draftsView = { refresh: null, merge: null, since: null };
+  const draftsView = { refresh: null, merge: null, remove: null, since: null };
   async function loadDrafts(opts = {}) {
     if (!opts.full && draftsView.refresh && document.getElementById('elmsDraftsLayout')) return draftsView.refresh();
     const container = document.getElementById('draftsContent');
@@ -8683,6 +8687,7 @@
             <div class="dv-hero-actions"><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div>
           </header>
           <div class="dv-live" id="draftsLiveBanner" style="display:none;" role="status"></div>
+          <div class="dv-delnote" id="draftsDeleteNote" style="display:none;" role="status"></div>
           <div class="dv-stages">
             ${stage('draft', '&#128221;', 'Ready to publish')}${stage('publishing', '&#9889;', 'Publishing now', 'publishing')}${stage('scheduled', '&#128339;', 'Scheduled', 'scheduled')}${stage('error', '&#9888;&#65039;', 'Needs attention', 'error')}
           </div>
@@ -8701,6 +8706,7 @@
             <b id="draftSelectedCount">0 selected</b>
             <button class="dv-btn primary small" id="bulkPublishBtn" type="button">Publish all</button>
             <button class="dv-btn small" id="bulkEditBtn" type="button" title="Change the price, title, brand, quantity, tags, location or policies of all the selected drafts at once">Bulk edit</button>
+            <button class="dv-btn small" id="bulkCategoryBtn" type="button" title="AI chooses the eBay category of the selected drafts that have none, from the category list of each draft's own eBay site (a US store uses the US list, a UK store the UK list)">Fill category with AI</button>
             <button class="dv-btn small" id="bulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected drafts and saves them, so publishing does not stop on a missing one">Fill specifics with AI</button>
             <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the VeRO words out of the selected drafts with AI">Remove VeRO words</button>
             <button class="dv-btn small" id="bulkDeleteBtn" type="button">Remove</button>
@@ -8867,6 +8873,16 @@
           renderDraftProductList();
           refreshDraftsCountBadge();
         } catch (_) { /* the next refresh will do it */ }
+      };
+      // Takes these drafts off the page at once (no request, no redraw of the whole list). Returns how many drafts are left in the list.
+      draftsView.remove = (ids) => {
+        const gone = new Set(ids.map(String));
+        for (let i = allDrafts.length - 1; i >= 0; i -= 1) if (gone.has(String(allDrafts[i].id))) allDrafts.splice(i, 1);
+        gone.forEach((id) => { draftListingMap.delete(id); draftSelected.delete(id); });
+        updateStageNumbers();
+        renderDraftProductList();
+        refreshDraftsCountBadge();
+        return allDrafts.length;
       };
       startDraftsLive();
     } catch (err) {
@@ -10337,6 +10353,131 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
+  // ---------- Drafts: delete many at once ----------
+  // The selected drafts leave the page AT ONCE; the server removes them a thousand at a time (one query and one delete command per request,
+  // so even thousands take seconds). A line at the top counts them: "3,000 deleted · 120 drafts left". A draft the server could not delete comes back.
+  const fmtCount = (n) => Number(n).toLocaleString('en-US');
+  function setDeleteNote(kind, text, dismissable) {
+    const el = document.getElementById('draftsDeleteNote');
+    if (!el) return;
+    if (!text) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    el.className = 'dv-delnote' + (kind ? ' ' + kind : '');
+    el.innerHTML = `<span>${escapeHtml(text)}</span>${dismissable ? '<button type="button" aria-label="Close" data-del-note-close>&times;</button>' : ''}`;
+    el.style.display = '';
+    el.querySelector('[data-del-note-close]')?.addEventListener('click', () => setDeleteNote('', ''));
+  }
+  const draftsWord = (n) => 'draft' + (n === 1 ? '' : 's');
+
+  async function bulkDeleteDrafts(ids, btn) {
+    const total = ids.length;
+    const label = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Deleting\u2026'; }
+    if (draftsView.remove) draftsView.remove(ids);
+    const leftNow = () => draftListingMap.size;
+    setDeleteNote('busy', `Deleting ${fmtCount(total)} ${draftsWord(total)}\u2026 ${fmtCount(leftNow())} ${draftsWord(leftNow())} left.`);
+    let deleted = 0; // removed by the server now
+    let alreadyGone = 0; // not there any more (deleted elsewhere): also gone
+    let notDeleted = 0;
+    let reason = '';
+    for (let i = 0; i < ids.length; i += 1000) {
+      const chunk = ids.slice(i, i + 1000);
+      try {
+        const res = await apiFetch('/api/listings/bulk-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: chunk }) });
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not delete the selected drafts.');
+        const removed = Number(data.deletedCount) || 0;
+        const errors = data.errors || [];
+        const gone = errors.filter((e) => /: not found\.$/.test(String(e))).length;
+        deleted += removed;
+        alreadyGone += gone;
+        notDeleted += Math.max(0, chunk.length - removed - gone);
+        if (!reason) { const other = errors.find((e) => !/: not found\.$/.test(String(e))); if (other) reason = String(other).replace(/^[^:]*:\s*/, ''); }
+      } catch (err) {
+        notDeleted += ids.length - i; // this request and the ones after it were not done
+        reason = err.message || 'Could not reach the server.';
+        break;
+      }
+      const done = Math.min(i + 1000, total);
+      if (done < total) setDeleteNote('busy', `Deleting\u2026 ${fmtCount(deleted + alreadyGone)} of ${fmtCount(total)} deleted \u00b7 ${fmtCount(total - done)} to go.`);
+    }
+    if (btn) { btn.disabled = false; btn.textContent = label; }
+    if (notDeleted && draftsView.refresh) await draftsView.refresh(); // the ones that were not deleted are back on the page
+    else if (!draftsView.remove) loadDrafts();
+    refreshDraftsCountBadge();
+    const gone = deleted + alreadyGone;
+    const left = leftNow();
+    if (notDeleted) setDeleteNote('warn', `${fmtCount(gone)} deleted \u00b7 ${fmtCount(notDeleted)} could not be deleted${reason ? ' (' + reason.slice(0, 140) + ')' : ''} \u00b7 ${fmtCount(left)} ${draftsWord(left)} left.`, true);
+    else setDeleteNote('', `\u2713 ${fmtCount(gone)} deleted \u00b7 ${fmtCount(left)} ${draftsWord(left)} left.`, true);
+  }
+
+  // ---------- Bulk: AI chooses the eBay category of the selected drafts that have none ----------
+  // From the category list of each draft's OWN eBay site (a US store's draft from the US list, a UK store's from the UK list: the lists the admin
+  // uploads in Admin > Categories). eBay is not asked, so it costs none of eBay's category limit. The admin-set credits are taken per draft that gets one.
+  async function bulkFillCategories(ids, btn) {
+    let cost = null;
+    try {
+      const r = await apiFetch('/api/listings/bulk-category/cost');
+      const d = await apiJson(r);
+      if (r.ok && d.success) cost = Number(d.cost);
+    } catch (_) { /* the dialog just leaves the price out */ }
+    const n = ids.length;
+    const price = cost === null ? '' : cost === 0
+      ? '\n\nThis is free.'
+      : `\n\nIt costs ${cost} credit${cost === 1 ? '' : 's'} per draft that gets a category: up to ${cost * n} credit${cost * n === 1 ? '' : 's'} for ${n} draft${n === 1 ? '' : 's'}. A draft that already has one, is skipped or fails is not charged.`;
+    const ok = await elmsConfirm(`AI will choose the eBay category of the selected drafts that have none, from the category list of each draft's own eBay site (a US store uses the US list, a UK store the UK list), and save it. A draft that already has a category is left alone.${price}`, { title: 'Fill category with AI', okText: 'Fill with AI' });
+    if (!ok) return;
+
+    const label = btn.textContent;
+    btn.disabled = true;
+    const all = [];
+    let stop = '';
+    try {
+      for (let i = 0; i < ids.length && !stop; i += 20) {
+        btn.textContent = `Filling ${Math.min(i + 20, ids.length)}/${ids.length}\u2026`;
+        const res = await apiFetch('/api/listings/bulk-category', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: ids.slice(i, i + 20) }) });
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
+        all.push(...data.results);
+        if (data.results.some((r) => r.status === 'no_credits')) stop = 'You ran out of credits. Buy more to continue.';
+      }
+    } catch (err) {
+      stop = err.message || 'Could not reach the server.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+    refreshCreditBalanceChip();
+    const count = (s) => all.filter((r) => r.status === s).length;
+    const spent = all.reduce((sum, r) => sum + (r.creditsUsed || 0), 0);
+    const reasons = new Map(); // the same reason for many drafts is said once, with how many
+    all.filter((r) => r.status === 'skipped' || r.status === 'failed').forEach((r) => reasons.set(r.reason || 'Not done.', (reasons.get(r.reason || 'Not done.') || 0) + 1));
+    const attention = [...reasons.entries()].map(([why, k]) => `${k} \u00d7 ${why}`);
+    if (stop) attention.unshift(stop);
+    const lines = [
+      `${count('filled')} categor${count('filled') === 1 ? 'y' : 'ies'} filled${count('has_category') ? `, ${count('has_category')} already had one` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
+      `Credits used: ${spent}.`,
+    ];
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box bk-box" role="dialog" aria-modal="true" aria-label="Category result">
+        <div class="elms-confirm-title">${count('filled') ? 'Categories filled' : 'Categories'}</div>
+        <div class="elms-confirm-message">${lines.map(escapeHtml).join('<br>')}</div>
+        ${attention.length ? `<div class="bk-sec"><b>Needs your attention</b><small style="margin-top:0;">${attention.slice(0, 12).map(escapeHtml).join('<br>')}${attention.length > 12 ? `<br>and ${attention.length - 12} more.` : ''}</small></div>` : ''}
+        <div class="elms-confirm-actions"><button type="button" class="ord-btn primary" data-act="ok">OK</button></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter') close(); };
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-act="ok"]').addEventListener('click', close);
+    overlay.querySelector('[data-act="ok"]').focus();
+    loadDrafts();
+  }
+
   // ---------- Bulk: AI fills the eBay item specifics of the selected drafts ----------
   // The server fills, checks (the same checks publishing runs) and SAVES them, and charges the admin-set credits per draft
   // that really got new specifics. A big selection goes in small requests so the progress can show and none times out.
@@ -10497,6 +10638,12 @@ async function autoSuggestEmptyDraftCategories() {
       openBulkEditModal(ids);
     });
 
+    document.getElementById('bulkCategoryBtn')?.addEventListener('click', () => {
+      const ids = getSelectedIds();
+      if (!ids.length) return;
+      bulkFillCategories(ids, document.getElementById('bulkCategoryBtn'));
+    });
+
     document.getElementById('bulkAspectsBtn')?.addEventListener('click', () => {
       const ids = getSelectedIds();
       if (!ids.length) return;
@@ -10525,22 +10672,7 @@ async function autoSuggestEmptyDraftCategories() {
       const ids = getSelectedIds();
       if (!ids.length) return;
       if (!(await elmsConfirm(`Delete ${ids.length} selected draft(s)?`, { danger: true }))) return;
-
-      bulkDeleteBtn.disabled = true;
-      bulkDeleteBtn.textContent = 'Deleting\u2026';
-
-      try {
-        const res = await apiFetch('/api/listings/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ids }) });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Could not delete the selected drafts.');
-        showToast('Drafts deleted', `${data.deletedCount || 0} draft(s) removed.${data.errors?.length ? ' ' + data.errors.length + ' could not be deleted.' : ''}`, 'success');
-      } catch (err) {
-        showToast('Bulk delete failed', err.message, 'error');
-      } finally {
-        bulkDeleteBtn.disabled = false;
-        bulkDeleteBtn.textContent = 'Remove';
-        loadDrafts();
-      }
+      bulkDeleteDrafts(ids, bulkDeleteBtn);
     });
   }
 
