@@ -11672,6 +11672,7 @@ async function autoSuggestEmptyDraftCategories() {
   let ordersPage = 1;
   let ordersAccounts = [];
   let ordersMarkFilter = 'all'; // on the Awaiting shipment tab: all | no (not ordered yet) | yes (ordered)
+  let ordersEbayNote = false; // the seller's switch: "Mark as ordered" also writes "ELMS: ordered <date>" in the private note of the eBay order (off until they switch it on)
 
   // The seller's own reminder that the item was bought on Amazon: the order's fulfillment step "ordered_from_amazon" (saving an Amazon order ID sets it too).
   const orderIsOrdered = (o) => o.fulfillment_status === 'ordered_from_amazon';
@@ -11721,13 +11722,21 @@ async function autoSuggestEmptyDraftCategories() {
       // ordersAccountFilter, not the accounts response), so run them in parallel
       // instead of back-to-back - this is a plain local DB read either way, never
       // a live eBay call, so the only real cost here is the network round trip.
-      const [accountsRes] = await Promise.all([apiFetch('/api/ebay-accounts'), fetchOrdersList()]);
+      const [accountsRes] = await Promise.all([apiFetch('/api/ebay-accounts'), fetchOrdersList(), loadEbayNoteSetting()]);
       const accountsData = await apiJson(accountsRes);
       ordersAccounts = (accountsRes.ok && accountsData.success) ? accountsData.accounts : [];
       renderOrders();
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
+  }
+
+  async function loadEbayNoteSetting() {
+    try {
+      const res = await apiFetch('/api/orders/ebay-note-setting');
+      const data = await apiJson(res);
+      ordersEbayNote = !!(res.ok && data.success && data.enabled);
+    } catch (_) { /* the switch just shows off */ }
   }
 
   async function fetchOrdersList() {
@@ -11784,6 +11793,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="ord-search"><input type="search" id="ordersSearchInput" placeholder="Search order ID, buyer, item, tracking…" value="${escapeAttr(ordersSearch)}" /></div>
         <select class="ord-select" id="ordersRangeSelect"><option value="7"${ordersRange === '7' ? ' selected' : ''}>Last 7 days</option><option value="30"${ordersRange === '30' ? ' selected' : ''}>Last 30 days</option><option value="90"${ordersRange === '90' ? ' selected' : ''}>Last 90 days</option><option value="all"${ordersRange === 'all' ? ' selected' : ''}>All time</option></select>
         ${ordersTab === 'awaiting_shipment' ? `<select class="ord-select" id="ordersMarkSelect" title="Which awaiting orders to show"><option value="all"${ordersMarkFilter === 'all' ? ' selected' : ''}>All awaiting shipment (${awaiting.length})</option><option value="no"${ordersMarkFilter === 'no' ? ' selected' : ''}>Not ordered yet (${notOrderedCount})</option><option value="yes"${ordersMarkFilter === 'yes' ? ' selected' : ''}>Ordered (${orderedCount})</option></select>` : ''}
+        <label class="np-switch" title="When you mark an order as ordered, ELMS also writes ELMS: ordered and the date in the private note of that order on eBay (only you see it). Your own note text there is kept."><input type="checkbox" id="ordersEbayNoteSwitch"${ordersEbayNote ? ' checked' : ''} /> Also write &ldquo;ordered&rdquo; in the eBay note</label>
       </div>
 
       ${rows.length ? `
@@ -11847,6 +11857,23 @@ async function autoSuggestEmptyDraftCategories() {
     search?.addEventListener('input', () => { ordersSearch = search.value.trim(); ordersPage = 1; renderOrders(); const el = document.getElementById('ordersSearchInput'); el?.focus(); el?.setSelectionRange(el.value.length, el.value.length); });
     root.querySelector('#ordersRangeSelect')?.addEventListener('change', (e) => { ordersRange = e.target.value; ordersPage = 1; renderOrders(); });
     root.querySelector('#ordersMarkSelect')?.addEventListener('change', (e) => { ordersMarkFilter = e.target.value; ordersPage = 1; renderOrders(); });
+    root.querySelector('#ordersEbayNoteSwitch')?.addEventListener('change', async (e) => {
+      const box = e.target;
+      const on = box.checked;
+      if (on && !(await elmsConfirm('When you mark an order as ordered, ELMS will also add \u201cELMS: ordered <date>\u201d to the private note of that order on eBay (only you see it). Your own note text there is kept, and Undo takes out only the ELMS mark.\n\nEach mark uses 2 of eBay\'s daily calls, and it only works for orders eBay still lists as awaiting shipment. This is new: after the first one, look at the order on eBay to see it.', { title: 'Write the eBay note too', okText: 'Switch on' }))) { box.checked = false; return; }
+      box.disabled = true;
+      try {
+        const res = await apiFetch('/api/orders/ebay-note-setting', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: on }) });
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this.');
+        ordersEbayNote = on;
+        showToast(on ? 'eBay note switched on' : 'eBay note switched off', on ? 'From now on, marking an order as ordered also writes it in the eBay note.' : 'Marking an order as ordered only marks it in ELMS.', 'success');
+      } catch (err) {
+        box.checked = !on;
+        showToast('Not saved', err.message, 'error');
+      }
+      box.disabled = false;
+    });
     root.querySelectorAll('[data-order-mark], [data-order-unmark]').forEach((b) => b.addEventListener('click', (e) => {
       e.stopPropagation(); // the row itself opens the order: this button only marks it
       setOrderOrdered(b.getAttribute('data-order-mark') || b.getAttribute('data-order-unmark'), b.hasAttribute('data-order-mark'), b);
@@ -11869,9 +11896,29 @@ async function autoSuggestEmptyDraftCategories() {
       renderOrders();
       if (document.getElementById('ordDrawer') && i >= 0) renderOrderDrawer(ordersAll[i]);
       showToast(ordered ? 'Marked as ordered' : 'Mark removed', ordered ? 'You will see it as ordered here until you ship it.' : 'This order is shown as not ordered yet.', 'success');
+      if (ordersEbayNote) writeEbayNote(id, ordered); // in the background: the mark in ELMS does not wait for eBay
     } catch (err) {
       if (btn && btn.isConnected) btn.disabled = false;
       showToast('Order', err.message, 'error');
+    }
+  }
+
+  // Writes (or takes out) "ELMS: ordered <date>" in the private note of the order on eBay. Never changes the ELMS mark: it only says how it went.
+  async function writeEbayNote(id, ordered) {
+    try {
+      const res = await apiFetch(`/api/orders/${encodeURIComponent(id)}/ebay-note`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ordered }) });
+      const data = await apiJson(res);
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not update the eBay note.');
+      const i = ordersAll.findIndex((x) => String(x.id) === String(id));
+      if (i >= 0 && data.order) ordersAll[i] = { ...ordersAll[i], ebay_note_at: data.order.ebay_note_at || null, ebay_note_error: data.order.ebay_note_error || null };
+      if (document.getElementById('ordDrawer') && i >= 0) renderOrderDrawer(ordersAll[i]);
+      const r = data.result || {};
+      if (r.status === 'written') showToast('eBay note added', 'The order on eBay now says \u201cELMS: ordered\u201d in its private note.', 'success');
+      else if (r.status === 'removed') showToast('eBay note updated', 'The ELMS mark is out of the eBay note.', 'success');
+      else if (r.status === 'unchanged') showToast('eBay note', r.message || 'Nothing to change.', 'info');
+      else showToast('eBay note not changed', r.message || 'eBay did not take it. The order is still marked in ELMS.', 'error');
+    } catch (err) {
+      showToast('eBay note not changed', err.message, 'error');
     }
   }
 
@@ -11999,7 +12046,7 @@ async function autoSuggestEmptyDraftCategories() {
         </section>
 
         <section class="ord-sec"><h4>Fulfillment</h4>
-          ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this from Amazon' : 'Not ordered from Amazon yet'}</b><small>Only a reminder for you: nothing is sent to eBay or Amazon.</small></div><button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></div>` : ''}
+          ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this from Amazon' : 'Not ordered from Amazon yet'}</b><small>${ordersEbayNote ? 'A reminder for you. ELMS also writes \u201cELMS: ordered\u201d in the private note of this order on eBay (only you see it).' : 'Only a reminder for you: nothing is sent to eBay or Amazon.'}</small>${o.ebay_note_error ? `<small class="bad">eBay note not changed: ${escapeHtml(o.ebay_note_error)}</small>` : o.ebay_note_at ? '<small>&#10003; It is in the eBay note too.</small>' : ''}</div><button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></div>` : ''}
           <label class="ord-field"><span>Amazon order ID <em>after you buy the item on Amazon</em></span>
             <div class="ord-row-inline"><input id="ordAmazonId" type="text" placeholder="e.g. 111-2222222-3333333" value="${escapeAttr(o.amazon_order_id || '')}" /><button class="ord-btn" type="button" id="ordSaveAmazon">Save</button></div></label>
           <label class="ord-field"><span>Tracking <em>uploaded to eBay so the buyer sees it</em></span>
