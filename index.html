@@ -13646,23 +13646,13 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) { /* Settings still renders fine with "not connected" until this loads. */ }
   }
 
-  document.getElementById('aliexpressConnectBtn')?.addEventListener('click', async () => {
-    const btn = document.getElementById('aliexpressConnectBtn');
-    const status = document.getElementById('aliexpressConnectStatus');
+  document.getElementById('aliexpressConnectBtn')?.addEventListener('click', () => {
+    // A direct navigation, never a fetch: /start sets a short-lived cookie (to carry which user this is through AliExpress's
+    // redirect, since AliExpress's redirect_uri allows no query string - see routes/aliexpressConnect.js) and then redirects
+    // straight to AliExpress. That cookie is only a genuine first-party cookie if the browser reaches /start by navigating
+    // there itself, not through an XHR/fetch call.
     const sessionToken = localStorage.getItem('elmsSessionToken');
-    btn.disabled = true;
-    status.className = '';
-    status.textContent = 'Redirecting to AliExpress…';
-    try {
-      const res = await apiFetch(`/api/aliexpress-connect/start?token=${encodeURIComponent(sessionToken)}`);
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not start the AliExpress connection.');
-      window.location.href = data.url;
-    } catch (err) {
-      status.textContent = err.message;
-      status.className = 'error';
-      btn.disabled = false;
-    }
+    window.location.href = `${API_BASE}/api/aliexpress-connect/start?token=${encodeURIComponent(sessionToken)}`;
   });
 
   document.getElementById('aliexpressDisconnectBtn')?.addEventListener('click', async () => {
