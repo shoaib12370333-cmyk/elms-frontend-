@@ -2696,6 +2696,7 @@
   .ll-editor-foot { flex:0 0 auto; display:flex; justify-content:flex-end; align-items:center; gap:10px; padding:14px 20px; border-top:1px solid var(--line); background:#fff; }
   .ll-autosave { margin-right:auto; font-size:13px; font-weight:600; color:var(--grey); }
   .ll-autosave.err { color:#B42318; }
+  .is-loading { opacity:.55; pointer-events:none; transition:opacity .15s; }
   .dv-live { margin:0 0 12px; padding:10px 14px; border:1px solid #BFDBFE; border-radius:12px; background:#EFF6FF; color:#1E3A8A; font-size:13.5px; font-weight:600; display:grid; gap:8px; }
   .dv-live-row { display:grid; gap:6px; }
   .dv-live-row i { display:block; height:6px; border-radius:99px; background:#DBEAFE; overflow:hidden; }
@@ -7201,7 +7202,7 @@
   // import history, dashboard) is requested for the store that is selected in the
   // sidebar. Other stores' data stays in the backend and comes back when that store
   // is selected again.
-  const STORE_SCOPED_GET = /^\/api\/(listings(\/queue|\/counts)?|dashboard|imports|system-notifications(\/unread-count)?|orders|notifications(\/unread-count)?)$/;
+  const STORE_SCOPED_GET = /^\/api\/(listings(\/queue|\/counts|\/summary|\/ids|\/export)?|dashboard|imports|system-notifications(\/unread-count)?|orders|notifications(\/unread-count)?)$/;
   const STORE_SCOPED_POST = /^\/api\/(orders\/sync|notifications\/sync|system-notifications\/mark-all-read)$/;
   let activeStoreId; // undefined = not loaded yet, '' = no store connected
   let activeStorePromise = null;
@@ -10088,11 +10089,20 @@ async function autoSuggestEmptyDraftCategories() {
   async function openBulkEditModal(ids, opts = {}) {
     const live = opts.live === true;
     const noun = live ? 'live listing' : 'draft';
-    const source = live ? new Map(llAll.map((l) => [String(l.id), l])) : draftListingMap;
+    let liveRows = [];
+    if (live) {
+      // the selected listings can be on any page: their rows come from the server
+      try {
+        const r = await apiFetch('/api/listings/rows', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
+        const d = await r.json();
+        if (r.ok && d.success) liveRows = d.listings || [];
+      } catch (_) { /* nothing to show: the window does not open */ }
+    }
+    const source = live ? new Map(liveRows.map((l) => [String(l.id), l])) : draftListingMap;
     const chosen = ids.map((id) => source.get(String(id))).filter(Boolean);
     if (!chosen.length) return;
-    ids = chosen.map((l) => String(l.id));
-    const n = chosen.length;
+    ids = live ? ids : chosen.map((l) => String(l.id)); // a big selection is not cut down to the rows that were read
+    const n = ids.length;
     const accountIds = [...new Set(chosen.map((l) => l.ebay_account_id).filter(Boolean))];
     const oneStore = accountIds.length === 1 && chosen.every((l) => l.ebay_account_id);
     const currencies = [...new Set(chosen.map((l) => l.currency).filter(Boolean))];
@@ -10683,16 +10693,26 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
-  // Live Listings page state (client-side tabs / search / pagination).
+  // Live Listings page state. The server sends ONE PAGE at a time and does the searching, sorting, filtering and counting (a big store used to take minutes:
+  // every listing was loaded with its description, pictures and specifications, and everything was worked out here). llAll is the rows of the page
+  // being looked at; what the seller sees is what the last request asked for.
   let llAll = [];
   let llTab = 'all';
   let llSearch = '';
   let llPage = 1;
   let llSort = 'newest';
   let llVeroOnly = false;
-  let llSelected = new Set(); // ids of the live listings ticked for "Change price"
+  let llTotal = 0; // the listings of this view, on all pages
+  let llPages = 1;
+  let llSummary = null; // { counts, totals } from GET /api/listings/summary: the tabs' numbers and the boxes above the list
+  let llSeq = 0; // the newest request wins
+  let llSearchTimer = null;
+  let llAutoRefreshed = false;
+  let llSelected = new Set(); // ids of the live listings ticked for "Change price" (they can be on any page)
   let llPageIds = []; // the selectable (active) live listings on the page being looked at
   const LL_PAGE_SIZE = 12;
+  // What each tab asks the server for. "Sold" and "Issues" are not statuses of a listing, so they show nothing (as before).
+  const LL_TAB_STATUS = { all: 'published', active: 'published', ended: 'ended', sold: 'sold', issues: 'issues' };
 
   function llListingStatus(l) {
     const s = String(l.status || '').toLowerCase();
@@ -10724,44 +10744,89 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (_) { /* the page works without it */ }
   }
 
+  /** A row from the server: the words of VeRO the server found in it become the row's _vero (the page used to scan every listing's whole text itself). */
+  function llTagRow(l) { l._vero = { terms: Array.isArray(l.vero_terms) ? l.vero_terms : [], fields: {} }; return l; }
+  /** What the current view asks for (the status of the tab, the search, "only VeRO"): the same for the page, the ids of "Select all" and the CSV file. */
+  function llFilterParams() {
+    const p = new URLSearchParams({ status: LL_TAB_STATUS[llTab] || 'published' });
+    if (llSearch) p.set('q', llSearch);
+    if (llVeroOnly) p.set('vero', '1');
+    return p;
+  }
+  async function llFetchPage() {
+    const seq = ++llSeq;
+    const p = llFilterParams();
+    p.set('page', String(llPage)); p.set('limit', String(LL_PAGE_SIZE)); p.set('sort', llSort);
+    const res = await apiFetch('/api/listings?' + p.toString());
+    const data = await res.json();
+    if (seq !== llSeq) return false; // a newer request took over
+    if (!res.ok || !data.success) throw new Error(data.error || 'Could not load listings.');
+    llTotal = data.total || 0;
+    llPages = data.pages || 1;
+    if (!(data.listings || []).length && llTotal > 0 && llPage > 1) { llPage = llPages; return llFetchPage(); } // the last page emptied out (a delete): the new last one
+    llAll = (data.listings || []).map(llTagRow);
+    llPage = data.page || llPage;
+    return true;
+  }
+  async function llFetchSummary() {
+    try {
+      const res = await apiFetch('/api/listings/summary');
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      llSummary = { counts: data.counts, totals: data.totals };
+      llApplySummary();
+      llAutoRefresh();
+    } catch (_) { /* the numbers stay as they were */ }
+  }
+  /** Changes what the view asks for (a tab, the sort, the search, a page), then shows the new page. */
+  async function llGo(change) {
+    change();
+    const box = document.getElementById('listingsContent');
+    if (box) box.classList.add('is-loading');
+    try { if (await llFetchPage()) renderListings(); } catch (err) { showToast('Live listings', err.message, 'error'); } finally { if (box) box.classList.remove('is-loading'); }
+  }
+  /** The same page again (after an edit, a delete, a sync) and the numbers above it. */
+  async function llRefresh() {
+    await llGo(() => {});
+    llFetchSummary();
+  }
+
   async function loadListings() {
     const container = document.getElementById('listingsContent');
     container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading listings"></div>';
+    llFlag = null;
+    llSummary = null;
+    llAutoRefreshed = false;
+    llPage = 1;
     try {
-      const [res] = await Promise.all([apiFetch('/api/listings?status=published'), ensureVeroWords()]);
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load listings.')}</div>`;
-        return;
-      }
-      llAll = (data.listings || []).map(veroTag);
-      const activeIds = new Set(llAll.filter((l) => llListingStatus(l) === 'active').map((l) => String(l.id)));
-      llSelected = new Set([...llSelected].filter((id) => activeIds.has(id)));
-      llPage = 1;
-      llFlag = null;
+      await ensureVeroWords();
+      await llFetchPage();
       renderListings();
-      llAutoRefresh();
+      llFetchSummary(); // the boxes above the list follow: the list does not wait for them
       llLoadFlags();
     } catch (err) {
-      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+      container.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
     }
   }
 
   // Views and watchers refresh on their own every 30 minutes on the server. Opening the page also
   // refreshes them quietly when they are older than 10 minutes; the button does it on demand.
   function llLastSynced() {
-    return llAll.reduce((max, l) => { const t = l.stats_synced_at ? new Date(l.stats_synced_at).getTime() : 0; return t > max ? t : max; }, 0);
+    const t = llSummary && llSummary.totals && llSummary.totals.last_synced_at;
+    return t ? new Date(t).getTime() : 0;
   }
   function llSyncedText() {
+    if (!llSummary) return 'Views & watchers: \u2026';
     const t = llLastSynced();
     if (!t) return 'Views & watchers: not synced yet';
     const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
     return 'Views & watchers synced ' + (mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : Math.round(mins / 60) + ' h ago') + ' \u00b7 auto every 30 min';
   }
   async function llAutoRefresh() {
-    if (!llAll.length) return;
+    if (llAutoRefreshed || !llSummary || !llSummary.counts.all) return;
     const t = llLastSynced();
     if (t && Date.now() - t < 10 * 60 * 1000) return;
+    llAutoRefreshed = true; // once per visit
     try {
       const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: (await getActiveStoreId()) || undefined }) });
       const data = await res.json();
@@ -10769,62 +10834,48 @@ async function autoSuggestEmptyDraftCategories() {
       const byId = new Map((data.listings || []).map((x) => [x.id, x]));
       llAll.forEach((l) => { const x = byId.get(l.id); if (x) { l.views = x.views; l.watchers = x.watchers; l.stats_synced_at = x.stats_synced_at; } });
       if (document.getElementById('page-listings').style.display !== 'none') renderListings();
+      llFetchSummary();
     } catch (_) { /* the server job will catch up */ }
   }
 
-  function llSorted(rows) {
-    // the profit the card shows (after eBay's fees when the listing was priced by the Margin rule); one without a price or cost goes last either way
-    const profitOf = (l) => { const pf = listingProfit(l); return pf ? pf.amount : null; };
-    const numOf = (v) => { const n = Number(v); return v == null || v === '' || !Number.isFinite(n) ? null : n; };
-    const dir = (get, up) => (a, b) => { const x = get(a), y = get(b); if (x === null && y === null) return 0; if (x === null) return 1; if (y === null) return -1; return up ? x - y : y - x; };
-    const by = {
-      newest: (a, b) => new Date(b.created_at || b.updated_at || 0) - new Date(a.created_at || a.updated_at || 0),
-      price: dir((l) => numOf(l.sell_price), false),
-      priceLow: dir((l) => numOf(l.sell_price), true),
-      profit: dir(profitOf, false),
-      profitLow: dir(profitOf, true),
-      views: (a, b) => (Number(b.views) || 0) - (Number(a.views) || 0),
-      watchers: (a, b) => (Number(b.watchers) || 0) - (Number(a.watchers) || 0),
-      sold: (a, b) => (Number(b.sold_count) || 0) - (Number(a.sold_count) || 0),
-    };
-    return rows.slice().sort(by[llSort] || by.newest);
+  function llTabsHtml() {
+    const c = llSummary ? llSummary.counts : null;
+    const tab = (key, label) => `<button type="button" class="${llTab === key ? 'on' : ''}" data-ll-tab="${key}">${label} <span>${c ? c[key] : '\u2026'}</span></button>`;
+    return tab('all', 'All') + tab('active', 'Active') + tab('sold', 'Sold') + tab('ended', 'Ended') + tab('issues', 'Issues');
   }
-
-  function llFiltered() {
-    return llAll.filter((l) => {
-      if (llTab !== 'all' && llListingStatus(l) !== llTab) return false;
-      if (llVeroOnly && !(l._vero && l._vero.terms.length)) return false;
-      if (llSearch) {
-        const q = llSearch.toLowerCase();
-        const hay = `${l.title || ''} ${l.sku || ''} ${l.listing_id || ''} ${l.note || ''}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
+  function llKpiHtml() {
+    const c = llSummary ? llSummary.counts : null;
+    const t = llSummary ? llSummary.totals : null;
+    const dots = '\u2026';
+    const num = (v) => (v == null ? dots : Number(v).toLocaleString());
+    const kpi = (label, value, hint, cls = '') => `<div class="lv-kpi ${cls}"><span>${label}</span><b>${value}</b><em>${hint}</em></div>`;
+    const margin = t ? t.average_margin_percent : null;
+    return [
+      kpi('Live now', c ? c.active : dots, c ? c.all + ' listings in total' : ''),
+      kpi('Units sold', t ? num(t.units_sold) : dots, 'from synced orders'),
+      kpi('Views', t ? num(t.views) : dots, 'on eBay'),
+      kpi('Watchers', t ? num(t.watchers) : dots, 'people following'),
+      kpi('Average margin', !t ? dots : margin == null ? '\u2014' : margin + '%', 'sell vs. Amazon cost', margin == null ? '' : margin >= 15 ? 'good' : margin < 5 ? 'bad' : ''),
+      kpi('Need attention', c ? c.issues : dots, c ? (c.issues ? 'open the card to fix' : 'no problems') : '', c ? (c.issues ? 'bad' : 'good') : ''),
+    ].join('');
+  }
+  /** The numbers arrived (or changed): the boxes above the list, the tab numbers and the VeRO count are drawn again, the list is left alone. */
+  function llApplySummary() {
+    const k = document.getElementById('llKpis'); if (k) k.innerHTML = llKpiHtml();
+    const t = document.getElementById('llTabs'); if (t) t.innerHTML = llTabsHtml();
+    const v = document.getElementById('llVeroCount'); if (v && llSummary) v.textContent = llSummary.counts.vero;
+    const s = document.getElementById('llSyncedLabel'); if (s) s.textContent = llSyncedText();
   }
 
   function renderListings() {
     const container = document.getElementById('listingsContent');
     const restoreNote = keepNoteEditor(container);
-    const counts = {
-      all: llAll.length,
-      active: llAll.filter((l) => llListingStatus(l) === 'active').length,
-      sold: llAll.filter((l) => llListingStatus(l) === 'sold').length,
-      ended: llAll.filter((l) => llListingStatus(l) === 'ended').length,
-      issues: llAll.filter((l) => llListingStatus(l) === 'issues').length,
-    };
-    const filtered = llSorted(llFiltered());
-    const pages = Math.max(1, Math.ceil(filtered.length / LL_PAGE_SIZE));
-    if (llPage > pages) llPage = pages;
+    const typing = document.getElementById('llSearchInput');
+    const keep = typing && document.activeElement === typing ? { value: typing.value, pos: typing.selectionStart } : null; // what is being typed is not lost by a redraw
+    const pages = Math.max(1, llPages);
     const start = (llPage - 1) * LL_PAGE_SIZE;
-    const pageRows = filtered.slice(start, start + LL_PAGE_SIZE);
-    llPageIds = pageRows.filter((l) => llListingStatus(l) === 'active').map((l) => String(l.id));
-
-    const tab = (key, label, n) => `<button type="button" class="${llTab === key ? 'on' : ''}" data-ll-tab="${key}">${label} <span>${n}</span></button>`;
-    const sum = (f) => llAll.reduce((a, l) => a + (Number(f(l)) || 0), 0);
-    const margins = llAll.filter((l) => Number(l.amazon_price) > 0 && Number(l.sell_price) > 0).map((l) => (Number(l.sell_price) - Number(l.amazon_price)) / Number(l.sell_price));
-    const avgMargin = margins.length ? Math.round((margins.reduce((a, b) => a + b, 0) / margins.length) * 100) : null;
-    const kpi = (label, value, hint, cls = '') => `<div class="lv-kpi ${cls}"><span>${label}</span><b>${value}</b><em>${hint}</em></div>`;
+    llPageIds = llAll.filter((l) => llListingStatus(l) === 'active').map((l) => String(l.id));
+    const anyFilter = !!(llSearch || llVeroOnly || llTab !== 'all');
 
     container.innerHTML = `
       <div class="lv">
@@ -10836,31 +10887,24 @@ async function autoSuggestEmptyDraftCategories() {
             <button class="dv-btn primary" id="llCreateBtn" type="button">+ Create listing</button>
           </div>
         </header>
-        <div class="lv-kpis">
-          ${kpi('Live now', counts.active, counts.all + ' listings in total')}
-          ${kpi('Units sold', sum((l) => l.sold_count).toLocaleString(), 'from synced orders')}
-          ${kpi('Views', sum((l) => l.views).toLocaleString(), 'on eBay')}
-          ${kpi('Watchers', sum((l) => l.watchers).toLocaleString(), 'people following')}
-          ${kpi('Average margin', avgMargin == null ? '\u2014' : avgMargin + '%', 'sell vs. Amazon cost', avgMargin == null ? '' : avgMargin >= 15 ? 'good' : avgMargin < 5 ? 'bad' : '')}
-          ${kpi('Need attention', counts.issues, counts.issues ? 'open the card to fix' : 'no problems', counts.issues ? 'bad' : 'good')}
-        </div>
+        <div class="lv-kpis" id="llKpis">${llKpiHtml()}</div>
         <div id="llFlagBanner">${llFlagHtml()}</div>
         <div class="dv-toolbar">
           <label class="dv-selectall"><input type="checkbox" id="llSelectAll" /> Select</label><button type="button" class="dv-selectevery" id="llSelectEvery" hidden title="Select every live listing of this view, on all pages"></button>
-          <span class="dv-seg" role="tablist">${tab('all', 'All', counts.all)}${tab('active', 'Active', counts.active)}${tab('sold', 'Sold', counts.sold)}${tab('ended', 'Ended', counts.ended)}${tab('issues', 'Issues', counts.issues)}</span>
+          <span class="dv-seg" role="tablist" id="llTabs">${llTabsHtml()}</span>
           <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search title, SKU or item ID" value="${escapeAttr(llSearch)}" /></div>
           <select id="llSortSelect" class="dv-select">
             ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
-          ${veroPattern ? `<button type="button" class="dv-btn vero-filter${llVeroOnly ? ' on' : ''}" id="llVeroFilter" title="Show only listings that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b>${llAll.filter((l) => l._vero && l._vero.terms.length).length}</b></button>` : ''}
+          ${veroPattern ? `<button type="button" class="dv-btn vero-filter${llVeroOnly ? ' on' : ''}" id="llVeroFilter" title="Show only listings that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="llVeroCount">${llSummary ? llSummary.counts.vero : '\u2026'}</b></button>` : ''}
           <button class="dv-btn" id="llExportBtn" type="button">Export CSV</button>
         </div>
-        ${filtered.length ? `
-        <div class="lv-list">${pageRows.map((l) => listingRowHtml(l)).join('')}</div>
+        ${llAll.length ? `
+        <div class="lv-list">${llAll.map((l) => listingRowHtml(l)).join('')}</div>
         <div class="dv-footer">
-          <div>Showing ${start + 1}&ndash;${Math.min(start + LL_PAGE_SIZE, filtered.length)} of ${filtered.length} listings</div>
+          <div>Showing ${start + 1}&ndash;${start + llAll.length} of ${llTotal.toLocaleString()} listings</div>
           ${llPaginationHtml(llPage, pages)}
-        </div>` : `<div class="dv-empty"><b>${llAll.length ? 'No listings in this view' : 'No live listings yet'}</b>${llAll.length ? 'Try another tab or clear the search.' : 'Publish a draft and it appears here with its price, profit and stats.'}</div>`}
+        </div>` : `<div class="dv-empty"><b>${anyFilter ? 'No listings in this view' : 'No live listings yet'}</b>${anyFilter ? 'Try another tab or clear the search.' : 'Publish a draft and it appears here with its price, profit and stats.'}</div>`}
         <div class="dv-bulk${llSelected.size ? ' has-selection' : ''}" id="llBulkBar">
           <b id="llSelectedCount">${llSelected.size} selected</b>
           <button class="dv-btn primary small" id="llChangePriceBtn" type="button" title="Change the price of all the selected live listings on eBay at once, with your Margin">Change price</button>
@@ -10872,10 +10916,11 @@ async function autoSuggestEmptyDraftCategories() {
     wireListingsPage();
     restoreNote();
     llUpdateBulkBar();
+    const box = document.getElementById('llSearchInput');
+    if (box && keep) { box.value = keep.value; box.focus(); try { box.setSelectionRange(keep.pos, keep.pos); } catch (_) { /* a search box has a caret */ } }
   }
 
   // Ticks the visible cards from the selection, and keeps the bar and "Select all" in step.
-  const llSelectableIds = () => llFiltered().filter((l) => llListingStatus(l) === 'active').map((l) => String(l.id));
   function llSyncChecks() {
     document.querySelectorAll('#listingsContent .ll-row').forEach((row) => {
       const cb = row.querySelector('.dv-check');
@@ -10886,13 +10931,11 @@ async function autoSuggestEmptyDraftCategories() {
     const bar = document.getElementById('llBulkBar');
     const all = document.getElementById('llSelectAll');
     const every = document.getElementById('llSelectEvery');
-    const ids = llSelectableIds();
-    const inView = ids.filter((id) => llSelected.has(id)).length;
     const inPage = llPageIds.filter((id) => llSelected.has(id)).length;
     if (all) { all.checked = llPageIds.length > 0 && inPage === llPageIds.length; all.indeterminate = inPage > 0 && inPage < llPageIds.length; all.disabled = !llPageIds.length; }
     if (every) {
-      every.hidden = !(llPageIds.length > 0 && inPage === llPageIds.length && inView < ids.length);
-      every.textContent = 'Select all ' + ids.length;
+      every.hidden = !(llPageIds.length > 0 && inPage === llPageIds.length && llSelected.size < llTotal);
+      every.textContent = 'Select all ' + llTotal.toLocaleString();
     }
     if (!bar) return;
     bar.classList.toggle('has-selection', llSelected.size > 0);
@@ -10990,53 +11033,69 @@ async function autoSuggestEmptyDraftCategories() {
       }
     });
     root.querySelector('#llCreateBtn')?.addEventListener('click', () => showPage('import'));
-    // Tabs
-    root.querySelectorAll('[data-ll-tab]').forEach((b) => b.addEventListener('click', () => { llTab = b.getAttribute('data-ll-tab'); llPage = 1; renderListings(); }));
-    root.querySelector('#llSortSelect')?.addEventListener('change', (e) => { llSort = e.target.value; llPage = 1; renderListings(); });
-    // Search
+    // Tabs, sort, search, "only VeRO", pages: each asks the server for the new page
+    root.querySelector('#llTabs')?.addEventListener('click', (e) => { const b = e.target.closest('[data-ll-tab]'); if (b) llGo(() => { llTab = b.getAttribute('data-ll-tab'); llPage = 1; }); });
+    root.querySelector('#llSortSelect')?.addEventListener('change', (e) => { const v = e.target.value; llGo(() => { llSort = v; llPage = 1; }); });
     const search = root.querySelector('#llSearchInput');
-    if (search) search.addEventListener('input', () => { llSearch = search.value.trim(); llPage = 1; renderListings(); const el = document.getElementById('llSearchInput'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
-    // Filter / Export controls
-    root.querySelector('#llVeroFilter')?.addEventListener('click', () => { llVeroOnly = !llVeroOnly; llPage = 1; renderListings(); });
+    if (search) search.addEventListener('input', () => {
+      clearTimeout(llSearchTimer); // a moment after the last key, not on every key
+      llSearchTimer = setTimeout(() => { const el = document.getElementById('llSearchInput'); const text = el ? el.value.trim() : ''; if (text !== llSearch) llGo(() => { llSearch = text; llPage = 1; }); }, 300);
+    });
+    root.querySelector('#llVeroFilter')?.addEventListener('click', () => llGo(() => { llVeroOnly = !llVeroOnly; llPage = 1; }));
     root.querySelector('#llExportBtn')?.addEventListener('click', () => llExportCsv());
-    // Pagination
-    root.querySelectorAll('[data-ll-page]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; llPage = Number(b.getAttribute('data-ll-page')); renderListings(); }));
+    root.querySelectorAll('[data-ll-page]').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; const p = Number(b.getAttribute('data-ll-page')); llGo(() => { llPage = p; }); }));
     // Selection + "Change price"
     root.querySelectorAll('.ll-row .dv-check').forEach((cb) => cb.addEventListener('change', () => {
       const id = String(cb.closest('.ll-row').getAttribute('data-listing-id'));
       if (cb.checked) llSelected.add(id); else llSelected.delete(id);
       llUpdateBulkBar();
     }));
-    // "Select" ticks the listings of this page; then "Select all N" appears and ticks every active listing of the view, on all pages.
+    // "Select" ticks the listings of this page; then "Select all N" appears and the server gives the ids of every listing of the view, on all pages.
     root.querySelector('#llSelectAll')?.addEventListener('change', (e) => {
-      const every = llSelectableIds();
       if (e.target.checked) llPageIds.forEach((id) => llSelected.add(id));
-      else if (every.length && every.every((id) => llSelected.has(id))) every.forEach((id) => llSelected.delete(id)); // everything was selected: untick everything
+      else if (llTotal > 0 && llSelected.size >= llTotal) llSelected.clear(); // everything was selected: untick everything
       else llPageIds.forEach((id) => llSelected.delete(id));
       llSyncChecks(); llUpdateBulkBar();
     });
-    root.querySelector('#llSelectEvery')?.addEventListener('click', () => { llSelectableIds().forEach((id) => llSelected.add(id)); llSyncChecks(); llUpdateBulkBar(); });
+    root.querySelector('#llSelectEvery')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const label = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Selecting\u2026';
+      try {
+        const res = await apiFetch('/api/listings/ids?' + llFilterParams().toString());
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not select them.');
+        data.ids.forEach((id) => llSelected.add(String(id)));
+      } catch (err) { showToast('Select all', err.message, 'error'); } finally { btn.disabled = false; btn.textContent = label; }
+      llSyncChecks(); llUpdateBulkBar();
+    });
     root.querySelector('#llClearBtn')?.addEventListener('click', () => { llSelected.clear(); llSyncChecks(); llUpdateBulkBar(); });
     root.querySelector('#llChangePriceBtn')?.addEventListener('click', () => {
-      const active = new Set(llAll.filter((l) => llListingStatus(l) === 'active').map((l) => String(l.id)));
-      const ids = [...llSelected].filter((id) => active.has(id));
+      const ids = [...llSelected];
       if (ids.length) openBulkEditModal(ids, { live: true });
     });
     // Row View (inline edit) + menu (Edit/Delete)
     wireListingRows();
   }
 
-  function llExportCsv() {
-    const rows = llFiltered();
-    if (!rows.length) { showToast('Nothing to export', 'No listings in the current view.', ''); return; }
-    const header = ['Title','SKU','Price','Qty','Category ID','Status'];
-    const csv = [header.join(',')].concat(rows.map((l) => [l.title, l.sku, l.sell_price, l.quantity, l.category_id, l.status].map((v) => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','))).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'live-listings.csv';
-    a.click();
-    URL.revokeObjectURL(a.href);
+  /** The CSV file of the current view comes from the server (title, SKU, price, quantity, category, status of EVERY listing of the view, not just the page). */
+  async function llExportCsv() {
+    if (!llTotal) { showToast('Nothing to export', 'No listings in the current view.', ''); return; }
+    const btn = document.getElementById('llExportBtn');
+    const label = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Preparing\u2026'; }
+    try {
+      const res = await apiFetch('/api/listings/export?' + llFilterParams().toString());
+      if (!res.ok) throw new Error('Could not make the file.');
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'live-listings.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    } catch (err) {
+      showToast('Export failed', err.message, 'error');
+    } finally { if (btn) { btn.disabled = false; btn.textContent = label; } }
   }
 
   function llCloseEditor() { document.getElementById('llEditModal')?.remove(); document.body.style.overflow = ''; }
@@ -11067,9 +11126,18 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (e) { /* the ELMS copy is shown */ }
   }
 
+  // A row of the list carries no description, item specifics or pictures: the listing being opened is read with everything the editor needs.
+  async function llLoadFull(l) {
+    try {
+      const res = await apiFetch(`/api/listings/${encodeURIComponent(l.id)}?full=1`);
+      const data = await res.json();
+      if (res.ok && data.success && data.listing) { Object.assign(l, data.listing); veroTag(l); }
+    } catch (_) { /* the editor opens with what the row has */ }
+  }
+
   async function llEnterEditMode(row, l) {
     document.body.style.cursor = 'progress';
-    try { await llSyncFromEbay(l); } finally { document.body.style.cursor = ''; }
+    try { await llLoadFull(l); await llSyncFromEbay(l); } finally { document.body.style.cursor = ''; }
     openListingEditor(l, { mode: 'live' });
   }
 
@@ -11280,8 +11348,8 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch(`/api/listings/${l.id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok || !data.success) { alert(data.error || 'Could not delete this listing.'); return; }
-      llAll = llAll.filter((x) => x.id !== l.id);
-      renderListings();
+      llSelected.delete(String(l.id));
+      llRefresh();
     } catch (err) { alert('Could not connect to the server: ' + err.message); }
   }
 
