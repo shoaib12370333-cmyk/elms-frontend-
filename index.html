@@ -13823,26 +13823,32 @@ async function autoSuggestEmptyDraftCategories() {
         listEl.innerHTML = '<div class="empty-state">No eBay accounts connected yet.</div>';
       } else {
         listEl.innerHTML = currentEbayAccounts.map((acc) => `
-          <div class="st-acct ${acc.isActive ? 'active' : ''}" data-account-id="${acc.id}">
+          <div class="st-acct ${acc.isActive ? 'active' : ''} ${acc.connected === false ? 'disconnected' : ''}" data-account-id="${acc.id}">
             <div class="st-acct-flag">${escapeHtml(STORE_MARKET_TAG[acc.marketplaceId] || 'eB')}</div>
             <div class="st-acct-main">
-              <div class="st-acct-name">${escapeHtml(acc.label || acc.displayName || acc.username || 'eBay store')} ${acc.isActive ? '<span class="st-pill">Selected</span>' : ''}</div>
-              <div class="st-acct-meta">${acc.storeName ? `eBay Store: ${escapeHtml(acc.storeName)} &middot; ` : (acc.storeName === '' ? 'No eBay Store &middot; ' : '')}${acc.username ? `eBay username: ${escapeHtml(acc.username)} &middot; ` : ''}${escapeHtml(acc.marketplaceId || 'EBAY_US')} <a href="#" data-action="refresh-name" title="Ask eBay for the store name again" style="margin-left:6px;">Refresh from eBay</a></div>
+              <div class="st-acct-name">${escapeHtml(acc.label || acc.displayName || acc.username || 'eBay store')} ${acc.isActive ? '<span class="st-pill">Selected</span>' : ''} ${acc.connected === false ? '<span class="st-pill" style="background:#FEE4E2;color:#B42318;">Disconnected</span>' : ''}</div>
+              ${acc.connected === false
+                ? `<div class="st-acct-meta">Hidden from Drafts, Live listings, Orders and Messages until you reconnect it. Nothing was deleted.</div>`
+                : `<div class="st-acct-meta">${acc.storeName ? `eBay Store: ${escapeHtml(acc.storeName)} &middot; ` : (acc.storeName === '' ? 'No eBay Store &middot; ' : '')}${acc.username ? `eBay username: ${escapeHtml(acc.username)} &middot; ` : ''}${escapeHtml(acc.marketplaceId || 'EBAY_US')} <a href="#" data-action="refresh-name" title="Ask eBay for the store name again" style="margin-left:6px;">Refresh from eBay</a></div>
               <div class="st-acct-name-edit">
                 <input class="st-input" data-field="displayName" maxlength="60" value="${escapeAttr(acc.displayName || '')}" placeholder="${escapeAttr(acc.storeName || acc.username || 'e.g. USA Store / UK Store')}" />
                 <button class="st-btn small" data-action="save-name" type="button">Save name</button>
               </div>
               <div class="st-acct-status" data-status><div class="elms-loader" style="width:64px;margin:6px 0 0;" role="status" aria-label="Loading"></div></div>
-              <div id="ebstIssues-${acc.id}"></div>
+              <div id="ebstIssues-${acc.id}"></div>`
+              }
             </div>
             <div class="st-acct-actions">
-              ${!acc.isActive ? `<button class="st-btn small" data-action="activate-account" type="button">Switch to this store</button>` : ''}
-              <button class="st-btn small danger" data-action="remove-account" type="button">Disconnect</button>
+              ${acc.connected === false
+                ? `<button class="st-btn small primary" data-action="reconnect-account" type="button">Reconnect</button>`
+                : `${!acc.isActive ? `<button class="st-btn small" data-action="activate-account" type="button">Switch to this store</button>` : ''}
+              <button class="st-btn small danger" data-action="remove-account" type="button">Disconnect</button>`
+              }
             </div>
           </div>
         `).join('');
         wireEbayAccountRowActions();
-        loadStoreStatuses(currentEbayAccounts);
+        loadStoreStatuses(currentEbayAccounts.filter((a) => a.connected !== false));
       }
 
       populatePoliciesAccountSelector();
@@ -13922,6 +13928,11 @@ async function autoSuggestEmptyDraftCategories() {
     document.querySelectorAll('#ebayAccountsList [data-account-id]').forEach((row) => {
       const accountId = row.getAttribute('data-account-id');
 
+      const reconnectBtn = row.querySelector('[data-action="reconnect-account"]');
+      if (reconnectBtn) {
+        reconnectBtn.addEventListener('click', () => openEbayConnectModal());
+      }
+
       const activateBtn = row.querySelector('[data-action="activate-account"]');
       if (activateBtn) {
         activateBtn.addEventListener('click', async () => {
@@ -13994,7 +14005,7 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       row.querySelector('[data-action="remove-account"]').addEventListener('click', async () => {
-        if (!(await elmsConfirm('Disconnect this eBay store? All of its drafts, live listings, orders, messages and notifications will be deleted from ELMS. Listings already live on eBay are not affected. This cannot be undone.', { danger: true }))) return;
+        if (!(await elmsConfirm('Disconnect this eBay store? Its drafts, live listings, orders and messages will be hidden until you reconnect it - nothing is deleted, and connecting the same store again brings everything back. Listings already live on eBay are not affected either way.', { danger: true }))) return;
 
         try {
           const res = await apiFetch('/api/ebay-connect/disconnect', {
