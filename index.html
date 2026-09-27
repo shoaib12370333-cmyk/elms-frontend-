@@ -2961,7 +2961,8 @@
   .np-in { width:100%; min-width:0; box-sizing:border-box; height:32px; padding:0 8px 0 24px; text-align:right; border:1.5px solid #E2E8F0; border-radius:8px; background:#fff; font:600 13px Inter,sans-serif; color:#111827; font-variant-numeric:tabular-nums; }
   .np-in::placeholder { color:#94A3B8; font-weight:500; } .np-in:hover { border-color:#CBD5E1; } .np-in:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
   .np-in.need { background:#FFFBEB; border-color:#FCD34D; } .np-in.own { background:#F5F3FF; border-color:#C4B5FD; } .np-in.saving { opacity:.55; }
-  .np-in.net { background:#F8FBFF; border-color:#BFDBFE; }
+  .np-in.net, .np-in.earn { background:#F8FBFF; border-color:#BFDBFE; }
+  .np-older { border-bottom:1px dotted #94A3B8; cursor:help; }
   .np-good { color:#3F6208; font-weight:700; } .np-bad { color:#B42318; font-weight:700; } .np-muted { color:#94A3B8; }
   .np-table .np-totals td { background:#F1F5F9; font-weight:800; color:#0F172A; border-bottom:1px solid #CBD5E1; height:46px; }
   .np-table tfoot.np-totals td { border-top:2px solid #CBD5E1; border-bottom:0; }
@@ -11315,9 +11316,9 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // ---------- Net Profit sheet ----------
-  // One line per order: TITLE, ORDER ID, AMAZON PRICE, EBAY PRICE, PROFIT, EBAY COST, NET PROFIT. AMAZON PRICE and NET PROFIT are typed (AMAZON PRICE
-  // is filled from ELMS when the cost is saved); PROFIT and EBAY COST are worked out here in whole cents with the same rule as the server:
-  // PROFIT = EBAY PRICE - AMAZON PRICE, EBAY COST = PROFIT - NET PROFIT (empty until the net profit is typed). Prices are per piece.
+  // One line per order: TITLE, ORDER ID, AMAZON PRICE, EBAY PRICE, PROFIT, ORDER EARNING, EBAY COST, NET PROFIT. The seller types AMAZON PRICE and ORDER EARNING
+  // (both start empty); the rest is worked out here in whole cents with the same rule as the server: PROFIT = EBAY PRICE - AMAZON PRICE,
+  // EBAY COST = EBAY PRICE - ORDER EARNING, NET PROFIT = ORDER EARNING - AMAZON PRICE. What cannot be worked out yet is empty. Every price is for the whole order.
   let npLines = [];
   let npInfo = { total: 0, paid: false, hasMore: false, locked: false, freeLines: 1000, pageSize: 1000 };
   let npFilters = { q: '', accountId: '', range: 'all', from: '', to: '', cancelled: false };
@@ -11339,7 +11340,7 @@ async function autoSuggestEmptyDraftCategories() {
     const by = new Map();
     for (const l of lines) {
       const key = l.currency || '';
-      if (!by.has(key)) by.set(key, { currency: l.currency || null, lines: 0, sums: { amazon_price: null, ebay_price: null, profit: null, ebay_cost: null, net_profit: null } });
+      if (!by.has(key)) by.set(key, { currency: l.currency || null, lines: 0, sums: { amazon_price: null, ebay_price: null, profit: null, order_earning: null, ebay_cost: null, net_profit: null } });
       const t = by.get(key);
       t.lines += 1;
       for (const col of Object.keys(t.sums)) { const c = npCents(l[col]); if (c !== null) t.sums[col] = (t.sums[col] || 0) + c; }
@@ -11351,23 +11352,31 @@ async function autoSuggestEmptyDraftCategories() {
     return '<div class="np-cell"><span class="np-sign">' + escapeHtml(npSign(l.currency).trim()) + '</span><input class="np-in ' + cls + '" data-np-field="' + field + '" type="text" inputmode="decimal" autocomplete="off" placeholder="Type" value="' + (value === null || value === undefined ? '' : Number(value).toFixed(2)) + '"' + (hint ? ' title="' + escapeAttr(hint) + '"' : '') + ' /></div>';
   }
   function npAmazonCell(l) {
-    const hint = l.amazon_note ? l.amazon_note : l.amazon_original ? 'Converted from ' + formatPrice(l.amazon_original.amount, l.amazon_original.currency) + ' at today\u2019s rate. Type your own figure to use it instead.' : l.amazon_manual ? 'Your own figure. Empty it to go back to the price saved with the listing.' : l.amazon_price === null ? 'No Amazon price is saved for this order: type what one piece cost.' : 'The price saved with the listing. Type another figure to use your own.';
-    return npInputCell('amazon', l, l.amazon_price, l.amazon_price === null ? 'need' : l.amazon_manual ? 'own' : '', hint);
+    return npInputCell('amazon', l, l.amazon_price, '', 'Type what this order cost you on Amazon (the whole order).');
+  }
+  function npEarningCell(l) {
+    return npInputCell('earning', l, l.order_earning, 'earn', 'Type what eBay pays you for this order (Order earnings in Seller Hub). eBay cost and net profit are then worked out for you.');
   }
   function npProfitCell(l) {
     return l.profit === null ? '' : '<span class="' + (l.profit >= 0 ? 'np-good' : 'np-bad') + '" data-np-profit>' + escapeHtml(npMoney(l.profit, l.currency)) + '</span>';
+  }
+  function npNetCell(l) {
+    if (l.net_profit === null) return '';
+    const older = l.net_profit_older ? ' np-older" title="Typed in the first version of the sheet. Type the Amazon price and the order earning and it is worked out for you.' : '';
+    return '<span class="' + (l.net_profit >= 0 ? 'np-good' : 'np-bad') + older + '">' + escapeHtml(npMoney(l.net_profit, l.currency)) + '</span>';
   }
   function npRowHtml(l) {
     const date = l.date && !isNaN(new Date(l.date)) ? new Date(l.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
     const oidTitle = [l.store, date, l.ebay_item_id ? 'Item ' + l.ebay_item_id : ''].filter(Boolean).join(' \u00b7 ');
     return '<tr data-np-id="' + escapeAttr(l.id) + '">'
-      + '<td class="np-title-td" data-label="Title"><div class="np-title-cell"><span class="np-t" title="' + escapeAttr(l.title) + '">' + escapeHtml(l.title || '\u2014') + '</span>' + (l.quantity > 1 ? '<em class="np-qty" title="This order has ' + l.quantity + ' pieces. The prices are for one piece.">\u00d7' + l.quantity + '</em>' : '') + '</div></td>'
+      + '<td class="np-title-td" data-label="Title"><div class="np-title-cell"><span class="np-t" title="' + escapeAttr(l.title) + '">' + escapeHtml(l.title || '\u2014') + '</span>' + (l.quantity > 1 ? '<em class="np-qty" title="This order has ' + l.quantity + ' pieces. The prices are for the whole order.">\u00d7' + l.quantity + '</em>' : '') + '</div></td>'
       + '<td data-label="Order ID"><span class="np-oid" title="' + escapeAttr(oidTitle) + '">' + escapeHtml(l.ebay_order_id || '\u2014') + '</span></td>'
       + '<td class="np-num" data-label="Amazon price">' + npAmazonCell(l) + '</td>'
       + '<td class="np-num" data-label="eBay price">' + escapeHtml(npMoney(l.ebay_price, l.currency)) + '</td>'
       + '<td class="np-num" data-label="Profit">' + npProfitCell(l) + '</td>'
+      + '<td class="np-num" data-label="Order earning">' + npEarningCell(l) + '</td>'
       + '<td class="np-num" data-label="eBay cost" data-np-cost>' + escapeHtml(npMoney(l.ebay_cost, l.currency)) + '</td>'
-      + '<td class="np-num" data-label="Net profit">' + npInputCell('net', l, l.net_profit, 'net', 'Type what you really made on this order. eBay cost is then worked out for you.') + '</td>'
+      + '<td class="np-num" data-label="Net profit" data-np-net>' + npNetCell(l) + '</td>'
       + '</tr>';
   }
   function npRenderTotals() {
@@ -11379,7 +11388,7 @@ async function autoSuggestEmptyDraftCategories() {
     const html = totals.map((t) => {
       const label = 'Total' + (totals.length > 1 && t.currency ? ' \u00b7 ' + t.currency : '') + ' \u00b7 ' + t.lines + ' line' + (t.lines === 1 ? '' : 's');
       const cell = (label2, v) => '<td class="np-num" data-label="' + label2 + '">' + escapeHtml(npMoney(v, t.currency)) + '</td>';
-      return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Amazon price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('eBay cost', t.ebay_cost) + cell('Net profit', t.net_profit) + '</tr>';
+      return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Amazon price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('Order earning', t.order_earning) + cell('eBay cost', t.ebay_cost) + cell('Net profit', t.net_profit) + '</tr>';
     }).join('');
     top.innerHTML = html;
     if (end) end.innerHTML = html;
@@ -11401,7 +11410,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (!body) return;
     if (!npLines.length) {
       const filtered = npFilters.q || npFilters.accountId || npFilters.range !== 'all';
-      body.innerHTML = '<tr><td colspan="7" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div></td></tr>';
+      body.innerHTML = '<tr><td colspan="8" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div></td></tr>';
     } else body.innerHTML = npLines.map(npRowHtml).join('');
     npRenderTotals();
     npRenderFoot();
@@ -11434,7 +11443,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function npFetch(append) {
     const seq = ++npSeq;
     const body = document.getElementById('npBody');
-    if (!append && body) body.innerHTML = '<tr><td colspan="7" style="padding:0;border:0;"><div class="elms-loader sm" role="status" aria-label="Loading the sheet" style="margin:40px auto;"></div></td></tr>';
+    if (!append && body) body.innerHTML = '<tr><td colspan="8" style="padding:0;border:0;"><div class="elms-loader sm" role="status" aria-label="Loading the sheet" style="margin:40px auto;"></div></td></tr>';
     const addBtn = document.getElementById('npAdd');
     if (append && addBtn) { addBtn.disabled = true; addBtn.textContent = 'Adding\u2026'; }
     try {
@@ -11447,50 +11456,90 @@ async function autoSuggestEmptyDraftCategories() {
       npRenderBody();
     } catch (err) {
       if (seq !== npSeq) return;
-      if (!append && body) body.innerHTML = '<tr><td colspan="7" style="padding:0;border:0;"><div class="np-empty"><b>Could not load the sheet</b>' + escapeHtml(err.message) + '</div></td></tr>';
+      if (!append && body) body.innerHTML = '<tr><td colspan="8" style="padding:0;border:0;"><div class="np-empty"><b>Could not load the sheet</b>' + escapeHtml(err.message) + '</div></td></tr>';
       else { showToast('Could not add lines', err.message, 'error'); npRenderFoot(); }
     }
   }
 
+  // Saving a typed cell. One save at a time per order line, in the order typed (a slower answer must never overwrite a newer one), and the
+  // line is redrawn WITHOUT losing what the seller is typing in the other box: they type the Amazon price, press Tab, and are already typing the
+  // order earning when the first answer arrives.
+  const npQueue = new Map();
   async function npSaveCell(tr, input) {
     const id = tr.getAttribute('data-np-id');
     const line = npLines.find((x) => x.id === id);
     if (!line) return;
     const field = input.getAttribute('data-np-field');
-    const current = field === 'amazon' ? line.amazon_price : line.net_profit;
-    const value = npParse(input.value);
+    const current = field === 'amazon' ? line.amazon_price : line.order_earning;
+    const text = input.value;
+    const value = npParse(text);
     if (Number.isNaN(value)) { showToast('Not a number', 'Type the amount as a number, for example 12.50.', 'error'); input.value = current === null ? '' : Number(current).toFixed(2); npPreviewRow(tr); return; }
     if (npCents(value) === npCents(current)) { input.value = value === null ? '' : value.toFixed(2); return; }
     input.classList.add('saving');
+    const job = (npQueue.get(id) || Promise.resolve()).then(() => npDoSave(id, field, value, text)).catch(() => {});
+    npQueue.set(id, job);
+    job.then(() => { if (npQueue.get(id) === job) npQueue.delete(id); });
+  }
+  const npRowOf = (id) => document.querySelector('#npBody tr[data-np-id="' + String(id).replace(/"/g, '') + '"]');
+  async function npDoSave(id, field, value, sentText) {
     try {
-      const res = await apiFetch('/api/net-profit/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(field === 'amazon' ? { amazonPrice: value } : { netProfit: value }) });
+      const res = await apiFetch('/api/net-profit/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(field === 'amazon' ? { amazonPrice: value } : { orderEarning: value }) });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not save.');
-      npLines[npLines.findIndex((x) => x.id === id)] = data.line;
-      const focusField = document.activeElement && tr.contains(document.activeElement) ? document.activeElement.getAttribute('data-np-field') : null;
-      tr.outerHTML = npRowHtml(data.line);
-      if (focusField) { const again = document.querySelector('#npBody tr[data-np-id="' + id.replace(/"/g, '') + '"] [data-np-field="' + focusField + '"]'); if (again) again.focus(); }
-      npRenderTotals();
+      npApplyLine(id, data.line, field, sentText);
     } catch (err) {
       showToast('Not saved', err.message, 'error');
-      input.classList.remove('saving');
-      input.value = current === null ? '' : Number(current).toFixed(2);
-      npPreviewRow(tr);
+      const row = npRowOf(id);
+      const line = npLines.find((x) => x.id === id);
+      const inp = row && row.querySelector('[data-np-field="' + field + '"]');
+      if (inp) { inp.classList.remove('saving'); const old = line && (field === 'amazon' ? line.amazon_price : line.order_earning); inp.value = old === null || old === undefined ? '' : Number(old).toFixed(2); npPreviewRow(row); }
     }
   }
-  /** While typing, PROFIT and EBAY COST follow at once (the saved answer from the server is the same rule). */
+  /** Puts the saved line on the sheet. Text the seller has typed since (in the other box, or more in the same one) and not saved yet is kept. */
+  function npApplyLine(id, line, savedField, sentText) {
+    const i = npLines.findIndex((x) => x.id === id);
+    const old = i >= 0 ? npLines[i] : null;
+    if (i >= 0) npLines[i] = line;
+    const row = npRowOf(id);
+    if (!row) { npRenderTotals(); return; }
+    const shown = (v) => (v === null || v === undefined ? '' : Number(v).toFixed(2));
+    const before = { amazon: shown(old && old.amazon_price), earning: shown(old && old.order_earning) };
+    const typed = {};
+    row.querySelectorAll('.np-in').forEach((inp) => {
+      const f = inp.getAttribute('data-np-field');
+      if (f === savedField ? inp.value !== sentText && inp.value !== shown(line[f === 'amazon' ? 'amazon_price' : 'order_earning']) : inp.value !== before[f]) typed[f] = inp.value;
+    });
+    const active = document.activeElement && row.contains(document.activeElement) && document.activeElement.classList.contains('np-in') ? document.activeElement : null;
+    const focus = active ? { field: active.getAttribute('data-np-field'), start: active.selectionStart, end: active.selectionEnd } : null;
+    row.outerHTML = npRowHtml(line);
+    const fresh = npRowOf(id);
+    Object.keys(typed).forEach((f) => { const el = fresh.querySelector('[data-np-field="' + f + '"]'); if (el) el.value = typed[f]; });
+    if (Object.keys(typed).length) npPreviewRow(fresh);
+    if (focus) { const el = fresh.querySelector('[data-np-field="' + focus.field + '"]'); if (el) { el.focus(); try { el.setSelectionRange(focus.start, focus.end); } catch (_) { /* a number box has no selection */ } } }
+    npRenderTotals();
+  }
+  /**
+   * The figures of an order from what is typed (money as whole cents, null = cannot be worked out yet), with the same rule as the server:
+   * PROFIT = EBAY PRICE - AMAZON PRICE, EBAY COST = EBAY PRICE - ORDER EARNING, NET PROFIT = ORDER EARNING - AMAZON PRICE (an older typed net profit is kept until both are typed).
+   */
+  function npFigures(ebayPrice, amazonText, earningText, olderNet) {
+    const ok = (c) => (c === null || Number.isNaN(c) ? null : c);
+    const e = ok(npCents(ebayPrice));
+    const a = ok(npCents(npParse(amazonText)));
+    const r = ok(npCents(npParse(earningText)));
+    return { profit: e !== null && a !== null ? e - a : null, cost: e !== null && r !== null ? e - r : null, net: a !== null && r !== null ? r - a : ok(npCents(olderNet)), older: !(a !== null && r !== null) && ok(npCents(olderNet)) !== null };
+  }
+  /** While typing, PROFIT, EBAY COST and NET PROFIT follow at once (the saved answer from the server is the same rule). */
   function npPreviewRow(tr) {
     const line = npLines.find((x) => x.id === tr.getAttribute('data-np-id'));
     if (!line) return;
-    const a = npCents(npParse(tr.querySelector('[data-np-field="amazon"]').value));
-    const n = npCents(npParse(tr.querySelector('[data-np-field="net"]').value));
-    const e = npCents(line.ebay_price);
-    const profit = e !== null && a !== null && !Number.isNaN(a) ? e - a : null;
-    const cost = profit !== null && n !== null && !Number.isNaN(n) ? profit - n : null;
+    const fig = npFigures(line.ebay_price, tr.querySelector('[data-np-field="amazon"]').value, tr.querySelector('[data-np-field="earning"]').value, line.net_profit_older ? line.net_profit : null);
     const pCell = tr.querySelector('td[data-label="Profit"]');
-    if (pCell) pCell.innerHTML = profit === null ? '' : '<span class="' + (profit >= 0 ? 'np-good' : 'np-bad') + '">' + escapeHtml(npMoney(profit / 100, line.currency)) + '</span>';
+    if (pCell) pCell.innerHTML = fig.profit === null ? '' : '<span class="' + (fig.profit >= 0 ? 'np-good' : 'np-bad') + '">' + escapeHtml(npMoney(fig.profit / 100, line.currency)) + '</span>';
     const cCell = tr.querySelector('[data-np-cost]');
-    if (cCell) cCell.textContent = cost === null ? '' : npMoney(cost / 100, line.currency);
+    if (cCell) cCell.textContent = fig.cost === null ? '' : npMoney(fig.cost / 100, line.currency);
+    const nCell = tr.querySelector('[data-np-net]');
+    if (nCell) nCell.innerHTML = fig.net === null ? '' : '<span class="' + (fig.net >= 0 ? 'np-good' : 'np-bad') + (fig.older ? ' np-older' : '') + '">' + escapeHtml(npMoney(fig.net / 100, line.currency)) + '</span>';
   }
 
   async function npExport(btn) {
@@ -11527,8 +11576,8 @@ async function autoSuggestEmptyDraftCategories() {
         </div>
         <div class="np-card">
           <table class="np-table">
-            <colgroup><col style="width:28%"><col style="width:15%"><col style="width:12%"><col style="width:12%"><col style="width:11%"><col style="width:11%"><col style="width:11%"></colgroup>
-            <thead><tr><th>Title</th><th>Order ID</th><th class="r">Amazon price</th><th class="r">eBay price</th><th class="r">Profit</th><th class="r">eBay cost</th><th class="r">Net profit</th></tr></thead>
+            <colgroup><col style="width:21%"><col style="width:12%"><col style="width:12.5%"><col style="width:10.5%"><col style="width:10%"><col style="width:12.5%"><col style="width:10.5%"><col style="width:11%"></colgroup>
+            <thead><tr><th>Title</th><th>Order ID</th><th class="r">Amazon price</th><th class="r">eBay price</th><th class="r">Profit</th><th class="r">Order earning</th><th class="r">eBay cost</th><th class="r">Net profit</th></tr></thead>
             <tbody id="npTotals" class="np-totals"></tbody>
             <tbody id="npBody"></tbody>
             <tfoot id="npFoot" class="np-totals"></tfoot>
@@ -11554,7 +11603,7 @@ async function autoSuggestEmptyDraftCategories() {
         const inp = e.target.closest('.np-in');
         if (!inp) return;
         if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
-        else if (e.key === 'Escape') { const line = npLines.find((x) => x.id === inp.closest('tr').getAttribute('data-np-id')); const v = line && (inp.getAttribute('data-np-field') === 'amazon' ? line.amazon_price : line.net_profit); inp.value = v === null || v === undefined ? '' : Number(v).toFixed(2); npPreviewRow(inp.closest('tr')); inp.blur(); }
+        else if (e.key === 'Escape') { const line = npLines.find((x) => x.id === inp.closest('tr').getAttribute('data-np-id')); const v = line && (inp.getAttribute('data-np-field') === 'amazon' ? line.amazon_price : line.order_earning); inp.value = v === null || v === undefined ? '' : Number(v).toFixed(2); npPreviewRow(inp.closest('tr')); inp.blur(); }
       });
     }
     if (!npAccountsLoaded) {
@@ -11588,11 +11637,11 @@ async function autoSuggestEmptyDraftCategories() {
       if (seq !== dashNpSeq) return;
       if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the net profit.');
       if (!d.currencies.length) {
-        box.innerHTML = '<div class="dash-np-empty">' + (d.ordersTotal ? 'No net profit typed for these ' + d.ordersTotal + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' yet. ' : 'No orders in this period. ') + 'Open the Net Profit sheet and type what each order really made you: the total appears here.</div>';
+        box.innerHTML = '<div class="dash-np-empty">' + (d.ordersTotal ? 'No net profit worked out for these ' + d.ordersTotal + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' yet. ' : 'No orders in this period. ') + 'Open the Net Profit sheet and type the Amazon price and the order earning of each order: the net profit and its total appear here.</div>';
         return;
       }
       box.innerHTML = '<div class="dash-np-nums">' + d.currencies.map((c) => '<div class="dash-np-num"><div class="lbl">Net profit' + (d.currencies.length > 1 && c.currency ? ' \u00b7 ' + escapeHtml(c.currency) : '') + '</div><div class="val ' + (c.net_profit < 0 ? 'bad' : 'good') + '">' + escapeHtml(npMoney(c.net_profit, c.currency)) + '</div><div class="hint">from ' + c.orders + ' order' + (c.orders === 1 ? '' : 's') + '</div></div>').join('') + '</div>'
-        + '<div class="dash-np-foot">' + d.orders + ' of ' + d.ordersTotal + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' have a net profit typed.</div>';
+        + '<div class="dash-np-foot">' + d.orders + ' of ' + d.ordersTotal + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' have a net profit.</div>';
     } catch (err) {
       if (seq !== dashNpSeq) return;
       box.innerHTML = '<div class="dash-np-empty">' + escapeHtml(err.message) + '</div>';
@@ -11928,8 +11977,11 @@ async function autoSuggestEmptyDraftCategories() {
           ${kv('Cost per item', `<span class="ord-cost"><input type="number" id="ordCostInput" min="0" step="0.01" inputmode="decimal" value="${o.buy_price != null ? escapeAttr(String(Number(o.buy_price))) : ''}" placeholder="e.g. 8.99" /><button class="ord-btn small" type="button" id="ordSaveCost">Save</button></span>`)}
           <div class="ord-sub">${o.buy_price_manual ? 'Set by you. Empty the box and Save to go back to the listing price.' : o.buy_price != null ? 'Taken from your listing. Type another figure to use your own.' : 'No price found for this item. Enter what it cost you to see the profit.'}${o.buy_price_original ? ` The listing price is ${escapeHtml(formatPrice(o.buy_price_original.amount, o.buy_price_original.currency))}, shown here in ${escapeHtml(o.currency || '')} at today's exchange rate.` : ''}</div>
           ${o.profit_note ? `<div class="ord-sub bad">${escapeHtml(o.profit_note)}</div>` : ''}
-          ${kv('Net profit', `<span class="ord-cost"><input type="number" id="ordNetInput" step="0.01" inputmode="decimal" value="${o.net_profit != null ? escapeAttr(String(Number(o.net_profit))) : ''}" placeholder="What you really made" /><button class="ord-btn small" type="button" id="ordSaveNet">Save</button></span>`)}
-          <div class="ord-sub">Type what you really made on this order: it goes into the <a href="#" class="ad-link" id="ordNetLink">Net Profit sheet</a> by itself. Empty the box and Save to clear it.${o.listing_id ? '' : ' This order is not from an ELMS listing, so it is not in the sheet.'}</div>
+          ${kv('Amazon price (sheet)', `<span class="ord-cost"><input type="number" id="ordSheetAmazon" min="0" step="0.01" inputmode="decimal" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" placeholder="e.g. 8.99" title="What you paid on Amazon for this order" /></span>`)}
+          ${kv('Order earning', `<span class="ord-cost"><input type="number" id="ordEarning" step="0.01" inputmode="decimal" value="${o.order_earning != null ? escapeAttr(String(Number(o.order_earning))) : ''}" placeholder="e.g. 25.00" title="What eBay pays you for this order (Order earnings in Seller Hub)" /><button class="ord-btn small" type="button" id="ordSaveNet">Save</button></span>`)}
+          ${kv('eBay cost', '<span id="ordSheetCost"></span>')}
+          ${kv('Net profit', '<b id="ordSheetNet"></b>')}
+          <div class="ord-sub">Type what you paid on Amazon and what eBay pays you for this order (Order earnings in Seller Hub): eBay cost and net profit are worked out and go into the <a href="#" class="ad-link" id="ordNetLink">Net Profit sheet</a> by themselves. Empty a box and Save to clear it. (The Cost per item above is only for the profit shown in Orders.)${o.listing_id ? '' : ' This order is not from an ELMS listing, so it is not in the sheet.'}</div>
           ${o.buy_price == null ? `<div class="ord-import">
             <div class="ord-sub"><b>Import this product from Amazon</b> and its price becomes the cost. Uses credits like a normal import; the product also appears in Drafts.</div>
             <div class="ord-cost"><input type="text" id="ordImportInput" placeholder="Amazon link or ASIN" value="${/^[A-Z0-9]{10}$/i.test(o.sku || '') ? escapeAttr(o.sku) : ''}" autocomplete="off" /><button class="ord-btn small" type="button" id="ordImportBtn">Import</button></div>
@@ -12028,15 +12080,27 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('Saved', price === '' ? 'Back to the listing price.' : 'Cost saved. Profit updated.', 'success');
       apply(data.order);
     }));
+    // eBay cost and net profit follow what is typed at once (the same rule as the sheet and the server)
+    const showSheetFigures = () => {
+      const fig = npFigures(o.sale_price, $('ordSheetAmazon').value, $('ordEarning').value, o.net_profit_typed);
+      const cost = $('ordSheetCost'); const net = $('ordSheetNet');
+      if (cost) cost.textContent = fig.cost === null ? '\u2014' : npMoney(fig.cost / 100, o.currency);
+      if (net) { net.textContent = fig.net === null ? '\u2014' : npMoney(fig.net / 100, o.currency); net.className = fig.net === null ? '' : fig.net >= 0 ? 'good' : 'bad'; }
+    };
+    ['ordSheetAmazon', 'ordEarning'].forEach((id) => $(id).addEventListener('input', showSheetFigures));
+    showSheetFigures();
     $('ordSaveNet').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
-      const raw = $('ordNetInput').value.trim();
-      const value = raw === '' ? null : Number(raw.replace(',', '.'));
-      if (value !== null && !Number.isFinite(value)) throw new Error('Type the net profit as a number, for example 12.50.');
-      const data = await json(`/api/net-profit/${encodeURIComponent(o.id)}`, { method: 'PATCH', body: JSON.stringify({ netProfit: value }) });
-      showToast('Saved', value === null ? 'Net profit cleared.' : 'Net profit saved. It is in the Net Profit sheet now.', 'success');
-      o.net_profit = data.line ? data.line.net_profit : value;
+      const read = (id) => { const raw = $(id).value.trim().replace(',', '.'); if (raw === '') return null; const n = Number(raw); if (!Number.isFinite(n)) throw new Error('Type the amounts as numbers, for example 12.50.'); return n; };
+      const amazonPrice = read('ordSheetAmazon');
+      const orderEarning = read('ordEarning');
+      if (amazonPrice !== null && amazonPrice < 0) throw new Error('The Amazon price cannot be below 0.');
+      const data = await json(`/api/net-profit/${encodeURIComponent(o.id)}`, { method: 'PATCH', body: JSON.stringify({ amazonPrice, orderEarning }) });
+      showToast('Saved', 'Saved. eBay cost and net profit are worked out, and the order is in the Net Profit sheet.', 'success');
+      const line = data.line || {};
+      Object.assign(o, { sheet_amazon_price: line.amazon_price ?? null, order_earning: line.order_earning ?? null, net_profit: line.net_profit ?? null });
       const i = ordersAll.findIndex((x) => x.id === o.id);
-      if (i >= 0) ordersAll[i] = { ...ordersAll[i], net_profit: o.net_profit };
+      if (i >= 0) ordersAll[i] = { ...ordersAll[i], sheet_amazon_price: o.sheet_amazon_price, order_earning: o.order_earning, net_profit: o.net_profit };
+      showSheetFigures();
     }));
     $('ordNetLink')?.addEventListener('click', (e) => { e.preventDefault(); closeOrderDrawer(); showPage('netprofit'); });
     $('ordImportBtn')?.addEventListener('click', (e) => run(e.currentTarget, 'Importing…', async () => {
