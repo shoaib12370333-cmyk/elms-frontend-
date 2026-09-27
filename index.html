@@ -11881,7 +11881,7 @@ async function autoSuggestEmptyDraftCategories() {
       const blob = await res.blob();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'net-profit-' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.download = 'net-profit-' + new Date().toISOString().slice(0, 10) + '.xlsx'; // the server sends a real Excel file now, not CSV
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     } catch (err) {
@@ -11902,7 +11902,7 @@ async function autoSuggestEmptyDraftCategories() {
           </select>
           <span class="np-custom" id="npCustom" hidden><input type="date" id="npFrom" aria-label="From" /><span>to</span><input type="date" id="npTo" aria-label="To" /></span>
           <label class="np-switch"><input type="checkbox" id="npCancelled" /> Show cancelled</label>
-          <button type="button" class="dv-btn np-export" id="npExport">Export CSV</button>
+          <button type="button" class="dv-btn np-export" id="npExport">Export Excel</button>
         </div>
         <div class="np-card">
           <table class="np-table">
