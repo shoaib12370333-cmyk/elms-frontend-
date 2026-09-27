@@ -3007,6 +3007,16 @@
   .ord-kv { display:flex; justify-content:space-between; gap:12px; padding:5px 0; font-size:13px; color:#566273; border-bottom:1px dashed #edf0f3; } .ord-kv:last-child { border-bottom:0; } .ord-kv b { color:#1f2937; text-align:right; }
   .ord-address { font-size:14px; line-height:1.55; color:#1f2937; margin-bottom:6px; }
   .ord-link { border:0; background:transparent; color:var(--blue); font:700 12px Inter,sans-serif; cursor:pointer; padding:0; }
+  /* "Mark as ordered": the seller's own reminder that the item was bought on Amazon (nothing is sent to eBay or Amazon) */
+  .ord-mark { margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  @media (max-width: 720px) { .ord-mark { justify-content:flex-end; } }
+  .ord-mark-btn { border:1.5px solid #BFD4F2; background:#fff; color:#0064D2; border-radius:999px; height:26px; padding:0 10px; font:700 11.5px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
+  .ord-mark-btn:hover { background:#EEF4FF; } .ord-mark-btn:disabled { opacity:.55; cursor:default; }
+  .ord-mark.on .ord-mark-btn { border-color:transparent; background:transparent; color:var(--grey); text-decoration:underline; padding:0 4px; font-weight:600; }
+  .ord-ordered { display:inline-block; padding:3px 9px; border-radius:999px; background:#EEF6DF; color:#3F6208; font-size:11.5px; font-weight:800; white-space:nowrap; }
+  .ord-orderedbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:11px 14px; border-radius:10px; border:1.5px dashed #BFD4F2; background:#F7FAFF; margin-bottom:12px; }
+  .ord-orderedbar.on { border-style:solid; border-color:#C5E08E; background:#F4FAE9; }
+  .ord-orderedbar b { display:block; font-size:13px; } .ord-orderedbar small { display:block; color:var(--grey); font-size:12px; margin-top:2px; }
   .ord-banner { padding:11px 14px; border-radius:10px; font-size:13px; line-height:1.45; } .ord-banner.red { background:#FDECEC; color:#b42318; } .ord-banner.amber { background:#FEF3DA; color:#8a6300; } .ord-banner.blue { background:#EEF4FF; color:#1d4ed8; }
   .ord-steps { list-style:none; margin:0; padding:14px 16px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
   .ord-steps li { display:grid; justify-items:center; gap:3px; text-align:center; font-size:12px; color:#94a3b8; position:relative; }
@@ -11480,6 +11490,10 @@ async function autoSuggestEmptyDraftCategories() {
   let ordersRange = '90';
   let ordersPage = 1;
   let ordersAccounts = [];
+  let ordersMarkFilter = 'all'; // on the Awaiting shipment tab: all | no (not ordered yet) | yes (ordered)
+
+  // The seller's own reminder that the item was bought on Amazon: the order's fulfillment step "ordered_from_amazon" (saving an Amazon order ID sets it too).
+  const orderIsOrdered = (o) => o.fulfillment_status === 'ordered_from_amazon';
 
   function orderStatusOf(o) {
     if (o.order_status) return o.order_status;
@@ -11508,6 +11522,7 @@ async function autoSuggestEmptyDraftCategories() {
     const cutoff = ordersRange === 'all' ? 0 : Date.now() - Number(ordersRange) * 86400000;
     return ordersAll.filter((o) => {
       if (!ignoreTab && ordersTab !== 'all' && orderStatusOf(o) !== ordersTab) return false;
+      if (!ignoreTab && ordersTab === 'awaiting_shipment' && ordersMarkFilter !== 'all' && orderIsOrdered(o) !== (ordersMarkFilter === 'yes')) return false;
       if (cutoff && new Date(orderDateOf(o)).getTime() < cutoff) return false;
       if (q) {
         const hay = `${o.ebay_order_id || ''} ${o.buyer_username || ''} ${o.shipping_address?.fullName || ''} ${orderItemTitle(o)} ${o.sku || ''} ${o.legacy_item_id || ''} ${o.tracking_number || ''} ${o.amazon_order_id || ''}`.toLowerCase();
@@ -11554,6 +11569,10 @@ async function autoSuggestEmptyDraftCategories() {
     const profit = profitRows.reduce((t, o) => t + Number(o.profit), 0);
     const cur = ordersAll.find((o) => o.currency)?.currency || 'USD';
     const lateCount = inRange.filter((o) => orderShipBy(o).late).length;
+    const awaiting = inRange.filter((o) => orderStatusOf(o) === 'awaiting_shipment');
+    const orderedCount = awaiting.filter(orderIsOrdered).length;
+    const notOrderedCount = awaiting.length - orderedCount;
+    const awaitingHint = [awaiting.length ? (notOrderedCount ? notOrderedCount + ' not ordered yet' : 'All ordered') : 'Ready to fulfil', lateCount ? `<b class="late">${lateCount} past ship-by date</b>` : ''].filter(Boolean).join(' &middot; ');
 
     const filtered = ordersFiltered();
     const pages = Math.max(1, Math.ceil(filtered.length / ORDERS_PAGE_SIZE));
@@ -11573,7 +11592,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div id="syncOrdersStatus" class="ord-sync-status"></div>
 
       <div class="ord-cards">
-        ${card('blue', 'Awaiting shipment', counts.awaiting_shipment, lateCount ? `<b class="late">${lateCount} past ship-by date</b>` : 'Ready to fulfil')}
+        ${card('blue', 'Awaiting shipment', counts.awaiting_shipment, awaitingHint)}
         ${card('green', 'Revenue', orders_money(revenue, cur), `${live.length} order${live.length === 1 ? '' : 's'}`)}
         ${card('yellow', 'Profit', profitRows.length ? orders_money(profit, cur) : '—', profitRows.length ? `From ${profitRows.length} order${profitRows.length === 1 ? '' : 's'}` : 'Needs Amazon price')}
         ${card('red', 'Cancelled', counts.cancelled, 'In the selected period')}
@@ -11583,6 +11602,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="ord-toolbar">
         <div class="ord-search"><input type="search" id="ordersSearchInput" placeholder="Search order ID, buyer, item, tracking…" value="${escapeAttr(ordersSearch)}" /></div>
         <select class="ord-select" id="ordersRangeSelect"><option value="7"${ordersRange === '7' ? ' selected' : ''}>Last 7 days</option><option value="30"${ordersRange === '30' ? ' selected' : ''}>Last 30 days</option><option value="90"${ordersRange === '90' ? ' selected' : ''}>Last 90 days</option><option value="all"${ordersRange === 'all' ? ' selected' : ''}>All time</option></select>
+        ${ordersTab === 'awaiting_shipment' ? `<select class="ord-select" id="ordersMarkSelect" title="Which awaiting orders to show"><option value="all"${ordersMarkFilter === 'all' ? ' selected' : ''}>All awaiting shipment (${awaiting.length})</option><option value="no"${ordersMarkFilter === 'no' ? ' selected' : ''}>Not ordered yet (${notOrderedCount})</option><option value="yes"${ordersMarkFilter === 'yes' ? ' selected' : ''}>Ordered (${orderedCount})</option></select>` : ''}
       </div>
 
       ${rows.length ? `
@@ -11610,6 +11630,15 @@ async function autoSuggestEmptyDraftCategories() {
     return chips.length ? `<div class="dv-chips ord-links">${chips.join('')}</div>` : '';
   }
 
+  // Under the "Awaiting shipment" pill: one click marks the order as bought on Amazon (a reminder for the seller), or takes the mark away.
+  function orderMarkHtml(o) {
+    if (orderStatusOf(o) !== 'awaiting_shipment') return '';
+    const id = escapeAttr(o.id);
+    return orderIsOrdered(o)
+      ? `<div class="ord-mark on"><span class="ord-ordered">&#10003; Ordered</span><button class="ord-mark-btn" type="button" data-order-unmark="${id}" title="Not ordered after all: take the mark away">Undo</button></div>`
+      : `<div class="ord-mark"><button class="ord-mark-btn" type="button" data-order-mark="${id}" title="You bought this on Amazon: mark it so you remember">Mark as ordered</button></div>`;
+  }
+
   function orderRowHtml(o) {
     const ship = orderShipBy(o);
     const address = o.shipping_address || {};
@@ -11624,7 +11653,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
         <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}</td>
         <td data-label="Ship by"><div class="${ship.late ? 'ord-late' : ship.soon ? 'ord-soon' : 'ord-strong'}">${escapeHtml(ship.text)}</div>${ship.note ? `<div class="ord-sub ${ship.late ? 'bad' : ''}">${escapeHtml(ship.note)}</div>` : ''}</td>
-        <td data-label="Status">${orderStatusPill(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</td>
+        <td data-label="Status"><div>${orderStatusPill(o)}${orderMarkHtml(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</div></td>
         <td class="ord-actions"><button class="ord-btn small" type="button" data-order-open="${escapeAttr(o.id)}">${orderStatusOf(o) === 'awaiting_shipment' ? 'Fulfil' : 'View'}</button></td>
       </tr>`;
   }
@@ -11636,10 +11665,33 @@ async function autoSuggestEmptyDraftCategories() {
     const search = root.querySelector('#ordersSearchInput');
     search?.addEventListener('input', () => { ordersSearch = search.value.trim(); ordersPage = 1; renderOrders(); const el = document.getElementById('ordersSearchInput'); el?.focus(); el?.setSelectionRange(el.value.length, el.value.length); });
     root.querySelector('#ordersRangeSelect')?.addEventListener('change', (e) => { ordersRange = e.target.value; ordersPage = 1; renderOrders(); });
+    root.querySelector('#ordersMarkSelect')?.addEventListener('change', (e) => { ordersMarkFilter = e.target.value; ordersPage = 1; renderOrders(); });
+    root.querySelectorAll('[data-order-mark], [data-order-unmark]').forEach((b) => b.addEventListener('click', (e) => {
+      e.stopPropagation(); // the row itself opens the order: this button only marks it
+      setOrderOrdered(b.getAttribute('data-order-mark') || b.getAttribute('data-order-unmark'), b.hasAttribute('data-order-mark'), b);
+    }));
     root.querySelector('#ordersAccountFilterSelect')?.addEventListener('change', async (e) => { ordersAccountFilter = e.target.value; ordersPage = 1; try { await fetchOrdersList(); } catch (err) { showToast('Orders', err.message, 'error'); } renderOrders(); });
     root.querySelector('#syncOrdersBtn')?.addEventListener('click', () => syncOrdersFromEbay(false));
     root.querySelector('#syncOrdersFullBtn')?.addEventListener('click', () => syncOrdersFromEbay(true));
     root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('a')) return; openOrderDetail(row.getAttribute('data-order-id')); }));
+  }
+
+  // Marks an order as bought on Amazon (or takes the mark away). Only the seller's own reminder: nothing goes to eBay or Amazon.
+  async function setOrderOrdered(id, ordered, btn) {
+    if (btn) btn.disabled = true;
+    try {
+      const res = await apiFetch(`/api/orders/${encodeURIComponent(id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fulfillmentStatus: ordered ? 'ordered_from_amazon' : 'pending' }) });
+      const data = await apiJson(res);
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this.');
+      const i = ordersAll.findIndex((x) => String(x.id) === String(id));
+      if (i >= 0) ordersAll[i] = { ...ordersAll[i], ...data.order };
+      renderOrders();
+      if (document.getElementById('ordDrawer') && i >= 0) renderOrderDrawer(ordersAll[i]);
+      showToast(ordered ? 'Marked as ordered' : 'Mark removed', ordered ? 'You will see it as ordered here until you ship it.' : 'This order is shown as not ordered yet.', 'success');
+    } catch (err) {
+      if (btn && btn.isConnected) btn.disabled = false;
+      showToast('Order', err.message, 'error');
+    }
   }
 
   async function syncOrdersFromEbay(full) {
@@ -11763,6 +11815,7 @@ async function autoSuggestEmptyDraftCategories() {
         </section>
 
         <section class="ord-sec"><h4>Fulfillment</h4>
+          ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this from Amazon' : 'Not ordered from Amazon yet'}</b><small>Only a reminder for you: nothing is sent to eBay or Amazon.</small></div><button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></div>` : ''}
           <label class="ord-field"><span>Amazon order ID <em>after you buy the item on Amazon</em></span>
             <div class="ord-row-inline"><input id="ordAmazonId" type="text" placeholder="e.g. 111-2222222-3333333" value="${escapeAttr(o.amazon_order_id || '')}" /><button class="ord-btn" type="button" id="ordSaveAmazon">Save</button></div></label>
           <label class="ord-field"><span>Tracking <em>uploaded to eBay so the buyer sees it</em></span>
@@ -11816,6 +11869,7 @@ async function autoSuggestEmptyDraftCategories() {
     $('ordCopyAddress')?.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(addressLines.join('\n')); showToast('Copied', 'Shipping address copied.', 'success'); } catch (_) { showToast('Copy failed', 'Select the address and copy it manually.', 'error'); }
     });
+    $('ordToggleOrdered')?.addEventListener('click', (e) => setOrderOrdered(o.id, !orderIsOrdered(o), e.currentTarget));
     $('ordSaveAmazon').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
       const amazonOrderId = $('ordAmazonId').value.trim();
       if (!amazonOrderId) throw new Error('Enter the Amazon order ID.');
