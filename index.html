@@ -4711,6 +4711,16 @@
           </div>
         </section>
 
+        <section class="st-card" id="aliexpressCard">
+          <div class="st-head">
+            <div class="st-ico yellow">&#128230;</div>
+            <div class="st-head-txt"><h2>AliExpress</h2><p id="aliexpressStatusLabel">A third product source, next to Amazon and CJ. Not connected.</p></div>
+            <button class="st-btn primary" id="aliexpressConnectBtn" type="button">Connect AliExpress</button>
+            <button class="st-btn danger" id="aliexpressDisconnectBtn" type="button" style="display:none;">Disconnect</button>
+          </div>
+          <div id="aliexpressConnectStatus" style="margin-top:8px;"></div>
+        </section>
+
         <section class="st-card" id="pricingCard">
           <div class="st-head">
             <div class="st-ico green">&#128176;</div>
@@ -13417,6 +13427,7 @@ async function autoSuggestEmptyDraftCategories() {
     await loadOrderSyncSettings();
     await loadExtensionKey();
     loadCjSettings();
+    loadAliexpressSettings();
   }
 
   // ---------- Settings: CJdropshipping connection (a second, separate product source next to Amazon) ----------
@@ -13489,6 +13500,80 @@ async function autoSuggestEmptyDraftCategories() {
       alert(err.message);
     }
   });
+
+  // ---------- Settings: AliExpress connection (a third product source, next to Amazon and CJ) - real OAuth, not a pasted key ----------
+  let aliexpressConnected = false;
+
+  function renderAliexpressSettings() {
+    const label = document.getElementById('aliexpressStatusLabel');
+    const connectBtn = document.getElementById('aliexpressConnectBtn');
+    const disconnectBtn = document.getElementById('aliexpressDisconnectBtn');
+    if (!label) return;
+    label.textContent = aliexpressConnected ? 'A third product source, next to Amazon and CJ. Connected.' : 'A third product source, next to Amazon and CJ. Not connected.';
+    if (connectBtn) connectBtn.style.display = aliexpressConnected ? 'none' : '';
+    if (disconnectBtn) disconnectBtn.style.display = aliexpressConnected ? '' : 'none';
+  }
+
+  async function loadAliexpressSettings() {
+    try {
+      const res = await apiFetch('/api/aliexpress-connect/status');
+      const data = await res.json();
+      aliexpressConnected = !!(res.ok && data.success && data.connected);
+      renderAliexpressSettings();
+    } catch (err) { /* Settings still renders fine with "not connected" until this loads. */ }
+  }
+
+  document.getElementById('aliexpressConnectBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('aliexpressConnectBtn');
+    const status = document.getElementById('aliexpressConnectStatus');
+    const sessionToken = localStorage.getItem('elmsSessionToken');
+    btn.disabled = true;
+    status.className = '';
+    status.textContent = 'Redirecting to AliExpress…';
+    try {
+      const res = await apiFetch(`/api/aliexpress-connect/start?token=${encodeURIComponent(sessionToken)}`);
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not start the AliExpress connection.');
+      window.location.href = data.url;
+    } catch (err) {
+      status.textContent = err.message;
+      status.className = 'error';
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('aliexpressDisconnectBtn')?.addEventListener('click', async () => {
+    if (!(await elmsConfirm('Disconnect AliExpress?', { danger: true }))) return;
+    try {
+      const res = await apiFetch('/api/aliexpress-connect/disconnect', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not disconnect AliExpress.');
+      aliexpressConnected = false;
+      renderAliexpressSettings();
+      showToast('Disconnected', 'AliExpress is disconnected.', 'success');
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+  // If AliExpress just redirected back here after OAuth consent, show a message and clean the URL.
+  (function handleAliexpressConnectRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const aliexpressConnect = params.get('aliexpressConnect');
+    if (!aliexpressConnect) return;
+
+    window.addEventListener('load', async () => {
+      showPage('settings');
+      if (aliexpressConnect === 'success') {
+        await loadAliexpressSettings();
+        alert('AliExpress account connected!');
+      } else {
+        alert('Could not connect AliExpress account: ' + (params.get('message') || 'Unknown error'));
+      }
+    });
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+  })();
 
   // ---------- Settings: VeRO words (each user's own list) ----------
   // Only the words saved here are flagged / removed. The starter list from the server is used for suggestions while typing.
