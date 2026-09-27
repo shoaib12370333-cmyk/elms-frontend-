@@ -3018,6 +3018,12 @@
   .ord-mark-btn { border:1.5px solid #BFD4F2; background:#fff; color:#0064D2; border-radius:999px; height:26px; padding:0 10px; font:700 11.5px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
   .ord-mark-btn:hover { background:#EEF4FF; } .ord-mark-btn:disabled { opacity:.55; cursor:default; }
   .ord-mark.on .ord-mark-btn { border-color:transparent; background:transparent; color:var(--grey); text-decoration:underline; padding:0 4px; font-weight:600; }
+  .mo-box { max-width:540px; } .mo-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:12px 0 4px; text-align:left; }
+  .mo-f { display:grid; gap:4px; } .mo-f > span:first-child { font:800 11px Inter,sans-serif; letter-spacing:.04em; text-transform:uppercase; color:#64748B; }
+  .mo-f input { width:100%; height:38px; box-sizing:border-box; padding:0 10px; border:1.5px solid #E2E8F0; border-radius:10px; background:#fff; font:600 14px Inter,sans-serif; color:#0F172A; } .mo-f input:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
+  .mo-money { position:relative; display:block; } .mo-money i { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94A3B8; font-style:normal; font-weight:600; pointer-events:none; } .mo-money input { padding-left:24px; text-align:right; }
+  .mo-calc { min-height:20px; margin:8px 0 2px; font:700 13px Inter,sans-serif; color:#0F172A; text-align:left; } .mo-calc .good { color:#3F6208; } .mo-calc .bad { color:#B42318; }
+  @media (max-width: 560px) { .mo-grid { grid-template-columns:1fr; } }
   .ord-ordered { display:inline-block; padding:3px 9px; border-radius:999px; background:#EEF6DF; color:#3F6208; font-size:11.5px; font-weight:800; white-space:nowrap; }
   .ord-orderedbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:11px 14px; border-radius:10px; border:1.5px dashed #BFD4F2; background:#F7FAFF; margin-bottom:12px; }
   .ord-orderedbar.on { border-style:solid; border-color:#C5E08E; background:#F4FAE9; }
@@ -11352,7 +11358,7 @@ async function autoSuggestEmptyDraftCategories() {
     return '<div class="np-cell"><span class="np-sign">' + escapeHtml(npSign(l.currency).trim()) + '</span><input class="np-in ' + cls + '" data-np-field="' + field + '" type="text" inputmode="decimal" autocomplete="off" placeholder="Type" value="' + (value === null || value === undefined ? '' : Number(value).toFixed(2)) + '"' + (hint ? ' title="' + escapeAttr(hint) + '"' : '') + ' /></div>';
   }
   function npAmazonCell(l) {
-    return npInputCell('amazon', l, l.amazon_price, '', 'Type what this order cost you on Amazon (the whole order).');
+    return npInputCell('amazon', l, l.amazon_price, '', 'Type your buying price: what this order cost you to buy (the whole order).');
   }
   function npEarningCell(l) {
     return npInputCell('earning', l, l.order_earning, 'earn', 'Type what eBay pays you for this order (Order earnings in Seller Hub). eBay cost and net profit are then worked out for you.');
@@ -11362,7 +11368,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
   function npNetCell(l) {
     if (l.net_profit === null) return '';
-    const older = l.net_profit_older ? ' np-older" title="Typed in the first version of the sheet. Type the Amazon price and the order earning and it is worked out for you.' : '';
+    const older = l.net_profit_older ? ' np-older" title="Typed in the first version of the sheet. Type the buying price and the order earning and it is worked out for you.' : '';
     return '<span class="' + (l.net_profit >= 0 ? 'np-good' : 'np-bad') + older + '">' + escapeHtml(npMoney(l.net_profit, l.currency)) + '</span>';
   }
   function npRowHtml(l) {
@@ -11371,7 +11377,7 @@ async function autoSuggestEmptyDraftCategories() {
     return '<tr data-np-id="' + escapeAttr(l.id) + '">'
       + '<td class="np-title-td" data-label="Title"><div class="np-title-cell"><span class="np-t" title="' + escapeAttr(l.title) + '">' + escapeHtml(l.title || '\u2014') + '</span>' + (l.quantity > 1 ? '<em class="np-qty" title="This order has ' + l.quantity + ' pieces. The prices are for the whole order.">\u00d7' + l.quantity + '</em>' : '') + '</div></td>'
       + '<td data-label="Order ID"><span class="np-oid" title="' + escapeAttr(oidTitle) + '">' + escapeHtml(l.ebay_order_id || '\u2014') + '</span></td>'
-      + '<td class="np-num" data-label="Amazon price">' + npAmazonCell(l) + '</td>'
+      + '<td class="np-num" data-label="Buying price">' + npAmazonCell(l) + '</td>'
       + '<td class="np-num" data-label="eBay price">' + escapeHtml(npMoney(l.ebay_price, l.currency)) + '</td>'
       + '<td class="np-num" data-label="Profit">' + npProfitCell(l) + '</td>'
       + '<td class="np-num" data-label="Order earning">' + npEarningCell(l) + '</td>'
@@ -11388,7 +11394,7 @@ async function autoSuggestEmptyDraftCategories() {
     const html = totals.map((t) => {
       const label = 'Total' + (totals.length > 1 && t.currency ? ' \u00b7 ' + t.currency : '') + ' \u00b7 ' + t.lines + ' line' + (t.lines === 1 ? '' : 's');
       const cell = (label2, v) => '<td class="np-num" data-label="' + label2 + '">' + escapeHtml(npMoney(v, t.currency)) + '</td>';
-      return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Amazon price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('Order earning', t.order_earning) + cell('eBay cost', t.ebay_cost) + cell('Net profit', t.net_profit) + '</tr>';
+      return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Buying price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('Order earning', t.order_earning) + cell('eBay cost', t.ebay_cost) + cell('Net profit', t.net_profit) + '</tr>';
     }).join('');
     top.innerHTML = html;
     if (end) end.innerHTML = html;
@@ -11577,7 +11583,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="np-card">
           <table class="np-table">
             <colgroup><col style="width:21%"><col style="width:12%"><col style="width:12.5%"><col style="width:10.5%"><col style="width:10%"><col style="width:12.5%"><col style="width:10.5%"><col style="width:11%"></colgroup>
-            <thead><tr><th>Title</th><th>Order ID</th><th class="r">Amazon price</th><th class="r">eBay price</th><th class="r">Profit</th><th class="r">Order earning</th><th class="r">eBay cost</th><th class="r">Net profit</th></tr></thead>
+            <thead><tr><th>Title</th><th>Order ID</th><th class="r">Buying price</th><th class="r">eBay price</th><th class="r">Profit</th><th class="r">Order earning</th><th class="r">eBay cost</th><th class="r">Net profit</th></tr></thead>
             <tbody id="npTotals" class="np-totals"></tbody>
             <tbody id="npBody"></tbody>
             <tfoot id="npFoot" class="np-totals"></tfoot>
@@ -11637,7 +11643,7 @@ async function autoSuggestEmptyDraftCategories() {
       if (seq !== dashNpSeq) return;
       if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the net profit.');
       if (!d.currencies.length) {
-        box.innerHTML = '<div class="dash-np-empty">' + (d.ordersTotal ? 'No net profit worked out for these ' + d.ordersTotal + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' yet. ' : 'No orders in this period. ') + 'Open the Net Profit sheet and type the Amazon price and the order earning of each order: the net profit and its total appear here.</div>';
+        box.innerHTML = '<div class="dash-np-empty">' + (d.ordersTotal ? 'No net profit worked out for these ' + d.ordersTotal + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' yet. ' : 'No orders in this period. ') + 'Open the Net Profit sheet and type the buying price and the order earning of each order: the net profit and its total appear here.</div>';
         return;
       }
       box.innerHTML = '<div class="dash-np-nums">' + d.currencies.map((c) => '<div class="dash-np-num"><div class="lbl">Net profit' + (d.currencies.length > 1 && c.currency ? ' \u00b7 ' + escapeHtml(c.currency) : '') + '</div><div class="val ' + (c.net_profit < 0 ? 'bad' : 'good') + '">' + escapeHtml(npMoney(c.net_profit, c.currency)) + '</div><div class="hint">from ' + c.orders + ' order' + (c.orders === 1 ? '' : 's') + '</div></div>').join('') + '</div>'
@@ -11825,8 +11831,9 @@ async function autoSuggestEmptyDraftCategories() {
   function orderMarkHtml(o) {
     if (orderStatusOf(o) !== 'awaiting_shipment') return '';
     const id = escapeAttr(o.id);
+    const on = o.ordered_at ? new Date(o.ordered_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' }) : '';
     return orderIsOrdered(o)
-      ? `<div class="ord-mark on"><span class="ord-ordered">&#10003; Ordered</span><button class="ord-mark-btn" type="button" data-order-unmark="${id}" title="Not ordered after all: take the mark away">Undo</button></div>`
+      ? `<div class="ord-mark on"><span class="ord-ordered">&#10003; Ordered${on ? ' ' + escapeHtml(on) : ''}</span><button class="ord-mark-btn" type="button" data-order-unmark="${id}" title="Not ordered after all: take the mark away">Undo</button></div>`
       : `<div class="ord-mark"><button class="ord-mark-btn" type="button" data-order-mark="${id}" title="You bought this on Amazon: mark it so you remember">Mark as ordered</button></div>`;
   }
 
@@ -11842,7 +11849,7 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${(o.ebay_account_label || o.ebay_account_username) ? ' · ' + escapeHtml(o.ebay_account_label || o.ebay_account_username) : ''}</div>${orderLinksHtml(o)}</div>
         </div></td>
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
-        <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}</td>
+        <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}${o.net_profit != null ? `<div class="ord-sub ${Number(o.net_profit) >= 0 ? 'good' : 'bad'}">Net profit ${escapeHtml(orderMoney(o, o.net_profit))}</div>` : ''}</td>
         <td data-label="Ship by"><div class="${ship.late ? 'ord-late' : ship.soon ? 'ord-soon' : 'ord-strong'}">${escapeHtml(ship.text)}</div>${ship.note ? `<div class="ord-sub ${ship.late ? 'bad' : ''}">${escapeHtml(ship.note)}</div>` : ''}</td>
         <td data-label="Status"><div>${orderStatusPill(o)}${orderMarkHtml(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</div></td>
         <td class="ord-actions"><button class="ord-btn small" type="button" data-order-open="${escapeAttr(o.id)}">${orderStatusOf(o) === 'awaiting_shipment' ? 'Fulfil' : 'View'}</button></td>
@@ -11885,18 +11892,90 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // Marks an order as bought on Amazon (or takes the mark away). Only the seller's own reminder: nothing goes to eBay or Amazon.
+  const todayIso = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+
+  /**
+   * The window that opens on "Mark as ordered": the date the seller bought it, and (both optional) the buying price and the order earning, which go into
+   * the Net Profit sheet by themselves. Resolves { date: 'YYYY-MM-DD', buyingPrice?, orderEarning? }, or null when it is cancelled.
+   */
+  function openMarkOrderedDialog(o) {
+    return new Promise((resolve) => {
+      const sign = npSign(o.currency).trim();
+      const money = (v) => (v == null ? '' : Number(v).toFixed(2));
+      const overlay = document.createElement('div');
+      overlay.className = 'elms-confirm-overlay';
+      overlay.innerHTML = `
+        <div class="elms-confirm-box mo-box" role="dialog" aria-modal="true" aria-label="Mark as ordered">
+          <div class="elms-confirm-title">Mark as ordered</div>
+          <div class="elms-confirm-message">You bought this item. Choose the date, and type your buying price and what eBay pays you: the eBay cost and the net profit are worked out and go into the Net Profit sheet by themselves.</div>
+          <div class="mo-grid">
+            <label class="mo-f"><span>Date ordered</span><input type="date" id="moDate" value="${todayIso()}" max="${todayIso()}" /></label>
+            <label class="mo-f"><span>Buying price</span><span class="mo-money"><i>${escapeHtml(sign)}</i><input type="text" id="moBuy" inputmode="decimal" autocomplete="off" placeholder="e.g. 8.99" value="${escapeAttr(money(o.sheet_amazon_price))}" /></span></label>
+            <label class="mo-f"><span>Order earning</span><span class="mo-money"><i>${escapeHtml(sign)}</i><input type="text" id="moEarn" inputmode="decimal" autocomplete="off" placeholder="e.g. 25.00" value="${escapeAttr(money(o.order_earning))}" /></span></label>
+          </div>
+          <div class="mo-calc" id="moCalc"></div>
+          <div class="ord-sub">\u201cELMS: ordered &lt;date&gt;\u201d is saved in the private note of this order in ELMS${ordersEbayNote ? ' and on eBay' : ' (and on eBay when you switch that on in the toolbar above the orders)'}.</div>
+          <div class="ord-sub bad" id="moError"></div>
+          <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok">Mark as ordered</button></div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const $ = (id) => overlay.querySelector('#' + id);
+      const close = (value) => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); resolve(value); };
+      const onKey = (e) => { if (e.key === 'Escape') close(null); };
+      document.addEventListener('keydown', onKey);
+      const calc = () => {
+        const fig = npFigures(o.sale_price, $('moBuy').value, $('moEarn').value, o.net_profit_typed);
+        const bits = [];
+        if (fig.cost !== null) bits.push('eBay cost ' + npMoney(fig.cost / 100, o.currency));
+        if (fig.net !== null) bits.push('<span class="' + (fig.net >= 0 ? 'good' : 'bad') + '">Net profit ' + escapeHtml(npMoney(fig.net / 100, o.currency)) + '</span>');
+        $('moCalc').innerHTML = bits.join(' &middot; ');
+      };
+      ['moBuy', 'moEarn'].forEach((id) => $(id).addEventListener('input', calc));
+      calc();
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(null); });
+      overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => close(null));
+      overlay.querySelector('[data-act="ok"]').addEventListener('click', () => {
+        const err = (m) => { $('moError').textContent = m; };
+        const date = $('moDate').value;
+        if (!date) return err('Choose the date you ordered it.');
+        if (date > todayIso()) return err('The date cannot be in the future.');
+        const buyText = $('moBuy').value.trim();
+        const earnText = $('moEarn').value.trim();
+        const buy = npParse(buyText);
+        const earn = npParse(earnText);
+        if (Number.isNaN(buy)) return err('Type the buying price as a number, for example 8.99.');
+        if (buy !== null && buy < 0) return err('The buying price cannot be below 0.');
+        if (Number.isNaN(earn)) return err('Type the order earning as a number, for example 25.00.');
+        const out = { date };
+        if (buy !== null) out.buyingPrice = buy;
+        if (earn !== null) out.orderEarning = earn;
+        close(out);
+      });
+      $('moDate').focus();
+    });
+  }
+
   async function setOrderOrdered(id, ordered, btn) {
+    const order = ordersAll.find((x) => String(x.id) === String(id));
+    let form = null;
+    if (ordered) {
+      if (!order) return;
+      form = await openMarkOrderedDialog(order);
+      if (!form) return; // cancelled: nothing changes
+    }
     if (btn) btn.disabled = true;
     try {
-      const res = await apiFetch(`/api/orders/${encodeURIComponent(id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fulfillmentStatus: ordered ? 'ordered_from_amazon' : 'pending' }) });
+      const res = await apiFetch(`/api/orders/${encodeURIComponent(id)}/ordered`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ordered ? { ordered: true, ...form } : { ordered: false }) });
       const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this.');
       const i = ordersAll.findIndex((x) => String(x.id) === String(id));
       if (i >= 0) ordersAll[i] = { ...ordersAll[i], ...data.order };
       renderOrders();
       if (document.getElementById('ordDrawer') && i >= 0) renderOrderDrawer(ordersAll[i]);
-      showToast(ordered ? 'Marked as ordered' : 'Mark removed', ordered ? 'You will see it as ordered here until you ship it.' : 'This order is shown as not ordered yet.', 'success');
-      if (ordersEbayNote) writeEbayNote(id, ordered); // in the background: the mark in ELMS does not wait for eBay
+      showToast(ordered ? 'Marked as ordered' : 'Mark removed', ordered ? 'Saved with the date. The note is in the order in ELMS, and the buying price and order earning are in the Net Profit sheet.' : 'This order is shown as not ordered yet.', 'success');
+      if (ordersEbayNote) writeEbayNote(id, ordered, ordered ? form.date : undefined); // in the background: the mark in ELMS does not wait for eBay
     } catch (err) {
       if (btn && btn.isConnected) btn.disabled = false;
       showToast('Order', err.message, 'error');
@@ -11904,9 +11983,9 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // Writes (or takes out) "ELMS: ordered <date>" in the private note of the order on eBay. Never changes the ELMS mark: it only says how it went.
-  async function writeEbayNote(id, ordered) {
+  async function writeEbayNote(id, ordered, date) {
     try {
-      const res = await apiFetch(`/api/orders/${encodeURIComponent(id)}/ebay-note`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ordered }) });
+      const res = await apiFetch(`/api/orders/${encodeURIComponent(id)}/ebay-note`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(date ? { ordered, date } : { ordered }) });
       const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not update the eBay note.');
       const i = ordersAll.findIndex((x) => String(x.id) === String(id));
@@ -12024,11 +12103,11 @@ async function autoSuggestEmptyDraftCategories() {
           ${kv('Cost per item', `<span class="ord-cost"><input type="number" id="ordCostInput" min="0" step="0.01" inputmode="decimal" value="${o.buy_price != null ? escapeAttr(String(Number(o.buy_price))) : ''}" placeholder="e.g. 8.99" /><button class="ord-btn small" type="button" id="ordSaveCost">Save</button></span>`)}
           <div class="ord-sub">${o.buy_price_manual ? 'Set by you. Empty the box and Save to go back to the listing price.' : o.buy_price != null ? 'Taken from your listing. Type another figure to use your own.' : 'No price found for this item. Enter what it cost you to see the profit.'}${o.buy_price_original ? ` The listing price is ${escapeHtml(formatPrice(o.buy_price_original.amount, o.buy_price_original.currency))}, shown here in ${escapeHtml(o.currency || '')} at today's exchange rate.` : ''}</div>
           ${o.profit_note ? `<div class="ord-sub bad">${escapeHtml(o.profit_note)}</div>` : ''}
-          ${kv('Amazon price (sheet)', `<span class="ord-cost"><input type="number" id="ordSheetAmazon" min="0" step="0.01" inputmode="decimal" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" placeholder="e.g. 8.99" title="What you paid on Amazon for this order" /></span>`)}
+          ${kv('Buying price', `<span class="ord-cost"><input type="number" id="ordSheetAmazon" min="0" step="0.01" inputmode="decimal" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" placeholder="e.g. 8.99" title="What you paid to buy this order (on Amazon)" /></span>`)}
           ${kv('Order earning', `<span class="ord-cost"><input type="number" id="ordEarning" step="0.01" inputmode="decimal" value="${o.order_earning != null ? escapeAttr(String(Number(o.order_earning))) : ''}" placeholder="e.g. 25.00" title="What eBay pays you for this order (Order earnings in Seller Hub)" /><button class="ord-btn small" type="button" id="ordSaveNet">Save</button></span>`)}
           ${kv('eBay cost', '<span id="ordSheetCost"></span>')}
           ${kv('Net profit', '<b id="ordSheetNet"></b>')}
-          <div class="ord-sub">Type what you paid on Amazon and what eBay pays you for this order (Order earnings in Seller Hub): eBay cost and net profit are worked out and go into the <a href="#" class="ad-link" id="ordNetLink">Net Profit sheet</a> by themselves. Empty a box and Save to clear it. (The Cost per item above is only for the profit shown in Orders.)${o.listing_id ? '' : ' This order is not from an ELMS listing, so it is not in the sheet.'}</div>
+          <div class="ord-sub">Type your buying price (what you paid) and what eBay pays you for this order (Order earnings in Seller Hub): eBay cost and net profit are worked out and go into the <a href="#" class="ad-link" id="ordNetLink">Net Profit sheet</a> by themselves. Empty a box and Save to clear it. (The Cost per item above is only for the profit shown in Orders.)${o.listing_id ? '' : ' This order is not from an ELMS listing, so it is not in the sheet.'}</div>
           ${o.buy_price == null ? `<div class="ord-import">
             <div class="ord-sub"><b>Import this product from Amazon</b> and its price becomes the cost. Uses credits like a normal import; the product also appears in Drafts.</div>
             <div class="ord-cost"><input type="text" id="ordImportInput" placeholder="Amazon link or ASIN" value="${/^[A-Z0-9]{10}$/i.test(o.sku || '') ? escapeAttr(o.sku) : ''}" autocomplete="off" /><button class="ord-btn small" type="button" id="ordImportBtn">Import</button></div>
@@ -12046,7 +12125,7 @@ async function autoSuggestEmptyDraftCategories() {
         </section>
 
         <section class="ord-sec"><h4>Fulfillment</h4>
-          ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this from Amazon' : 'Not ordered from Amazon yet'}</b><small>${ordersEbayNote ? 'A reminder for you. ELMS also writes \u201cELMS: ordered\u201d in the private note of this order on eBay (only you see it).' : 'Only a reminder for you: nothing is sent to eBay or Amazon.'}</small>${o.ebay_note_error ? `<small class="bad">eBay note not changed: ${escapeHtml(o.ebay_note_error)}</small>` : o.ebay_note_at ? '<small>&#10003; It is in the eBay note too.</small>' : ''}</div><button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></div>` : ''}
+          ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this' + (o.ordered_at ? ' on ' + escapeHtml(new Date(o.ordered_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })) : '') : 'Not ordered yet'}</b><small>${ordersEbayNote ? 'A reminder for you. ELMS also writes \u201cELMS: ordered\u201d in the private note of this order on eBay (only you see it).' : 'Only a reminder for you: nothing is sent to eBay or Amazon.'}</small>${o.ebay_note_error ? `<small class="bad">eBay note not changed: ${escapeHtml(o.ebay_note_error)}</small>` : o.ebay_note_at ? '<small>&#10003; It is in the eBay note too.</small>' : ''}</div><button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></div>` : ''}
           <label class="ord-field"><span>Amazon order ID <em>after you buy the item on Amazon</em></span>
             <div class="ord-row-inline"><input id="ordAmazonId" type="text" placeholder="e.g. 111-2222222-3333333" value="${escapeAttr(o.amazon_order_id || '')}" /><button class="ord-btn" type="button" id="ordSaveAmazon">Save</button></div></label>
           <label class="ord-field"><span>Tracking <em>uploaded to eBay so the buyer sees it</em></span>
@@ -12140,7 +12219,7 @@ async function autoSuggestEmptyDraftCategories() {
       const read = (id) => { const raw = $(id).value.trim().replace(',', '.'); if (raw === '') return null; const n = Number(raw); if (!Number.isFinite(n)) throw new Error('Type the amounts as numbers, for example 12.50.'); return n; };
       const amazonPrice = read('ordSheetAmazon');
       const orderEarning = read('ordEarning');
-      if (amazonPrice !== null && amazonPrice < 0) throw new Error('The Amazon price cannot be below 0.');
+      if (amazonPrice !== null && amazonPrice < 0) throw new Error('The buying price cannot be below 0.');
       const data = await json(`/api/net-profit/${encodeURIComponent(o.id)}`, { method: 'PATCH', body: JSON.stringify({ amazonPrice, orderEarning }) });
       showToast('Saved', 'Saved. eBay cost and net profit are worked out, and the order is in the Net Profit sheet.', 'success');
       const line = data.line || {};
