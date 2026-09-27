@@ -11721,6 +11721,8 @@ async function autoSuggestEmptyDraftCategories() {
           ${kv('Cost per item', `<span class="ord-cost"><input type="number" id="ordCostInput" min="0" step="0.01" inputmode="decimal" value="${o.buy_price != null ? escapeAttr(String(Number(o.buy_price))) : ''}" placeholder="e.g. 8.99" /><button class="ord-btn small" type="button" id="ordSaveCost">Save</button></span>`)}
           <div class="ord-sub">${o.buy_price_manual ? 'Set by you. Empty the box and Save to go back to the listing price.' : o.buy_price != null ? 'Taken from your listing. Type another figure to use your own.' : 'No price found for this item. Enter what it cost you to see the profit.'}${o.buy_price_original ? ` The listing price is ${escapeHtml(formatPrice(o.buy_price_original.amount, o.buy_price_original.currency))}, shown here in ${escapeHtml(o.currency || '')} at today's exchange rate.` : ''}</div>
           ${o.profit_note ? `<div class="ord-sub bad">${escapeHtml(o.profit_note)}</div>` : ''}
+          ${kv('Net profit', `<span class="ord-cost"><input type="number" id="ordNetInput" step="0.01" inputmode="decimal" value="${o.net_profit != null ? escapeAttr(String(Number(o.net_profit))) : ''}" placeholder="What you really made" /><button class="ord-btn small" type="button" id="ordSaveNet">Save</button></span>`)}
+          <div class="ord-sub">Type what you really made on this order: it goes into the <a href="#" class="ad-link" id="ordNetLink">Net Profit sheet</a> by itself. Empty the box and Save to clear it.${o.listing_id ? '' : ' This order is not from an ELMS listing, so it is not in the sheet.'}</div>
           ${o.buy_price == null ? `<div class="ord-import">
             <div class="ord-sub"><b>Import this product from Amazon</b> and its price becomes the cost. Uses credits like a normal import; the product also appears in Drafts.</div>
             <div class="ord-cost"><input type="text" id="ordImportInput" placeholder="Amazon link or ASIN" value="${/^[A-Z0-9]{10}$/i.test(o.sku || '') ? escapeAttr(o.sku) : ''}" autocomplete="off" /><button class="ord-btn small" type="button" id="ordImportBtn">Import</button></div>
@@ -11817,6 +11819,17 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('Saved', price === '' ? 'Back to the listing price.' : 'Cost saved. Profit updated.', 'success');
       apply(data.order);
     }));
+    $('ordSaveNet').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
+      const raw = $('ordNetInput').value.trim();
+      const value = raw === '' ? null : Number(raw.replace(',', '.'));
+      if (value !== null && !Number.isFinite(value)) throw new Error('Type the net profit as a number, for example 12.50.');
+      const data = await json(`/api/net-profit/${encodeURIComponent(o.id)}`, { method: 'PATCH', body: JSON.stringify({ netProfit: value }) });
+      showToast('Saved', value === null ? 'Net profit cleared.' : 'Net profit saved. It is in the Net Profit sheet now.', 'success');
+      o.net_profit = data.line ? data.line.net_profit : value;
+      const i = ordersAll.findIndex((x) => x.id === o.id);
+      if (i >= 0) ordersAll[i] = { ...ordersAll[i], net_profit: o.net_profit };
+    }));
+    $('ordNetLink')?.addEventListener('click', (e) => { e.preventDefault(); closeOrderDrawer(); showPage('netprofit'); });
     $('ordImportBtn')?.addEventListener('click', (e) => run(e.currentTarget, 'Importing…', async () => {
       const amazon = $('ordImportInput').value.trim();
       if (!amazon) throw new Error('Paste the Amazon link or the ASIN of this product.');
