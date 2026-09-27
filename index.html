@@ -2890,6 +2890,11 @@
   .ih-profit { color:#5b8f0e; }
   .ord-import { margin:8px 0 4px; padding:10px; border:1px dashed var(--line, #d9dee7); border-radius:10px; } .ord-import .ord-cost { display:flex; margin-top:8px; } .ord-import .ord-cost input { flex:1; width:auto; min-width:0; }
   .ord-cost { display:inline-flex; gap:6px; align-items:center; } .ord-cost input { width:92px; padding:5px 8px; border:1px solid var(--border, #d9dee7); border-radius:8px; font:inherit; }
+  .ord-inline-sheet { background:#F8FAFC; border:1px solid #E5E9F0; border-radius:8px; padding:3px 8px 3px 7px; gap:3px; }
+  .ord-inline-sheet .ord-sheet-currency { color:#94A3B8; font-size:12.5px; font-weight:600; }
+  .ord-inline-sheet input.ord-sheet-input { width:52px; border:none; background:transparent; padding:2px 0; font-size:12.5px; font-weight:600; color:#0F172A; -moz-appearance:textfield; }
+  .ord-inline-sheet input.ord-sheet-input:focus { outline:2px solid #0064D2; outline-offset:1px; border-radius:4px; }
+  .ord-inline-sheet input.ord-sheet-input::-webkit-outer-spin-button, .ord-inline-sheet input.ord-sheet-input::-webkit-inner-spin-button { margin:0; }
   .ih-status { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
   .ih-status.success { background:#EEF6DF; color:#5b8f0e; }
   .ih-status.failed { background:#FDECEC; color:#E53238; }
@@ -12270,30 +12275,28 @@ async function autoSuggestEmptyDraftCategories() {
     return chips.join('');
   }
 
-  /** The two Net Profit sheet cells (Buying price, Order earning), editable right on the order row/drawer - the same PATCH /api/net-profit/:id
-   * the sheet itself uses (npFigures/npApplyLine), so typing here and typing on the sheet are the same save. Saves on change (blur/Enter),
-   * no separate edit step. */
+  /** The Net Profit sheet's Buying price cell, editable right on the order row/drawer - the same PATCH /api/net-profit/:id the
+   * sheet itself uses (npFigures/npApplyLine), so typing here and typing on the sheet are the same save. Saves on change
+   * (blur/Enter), no separate edit step. Order earning is not typed here anymore - eBay's own payout figure fills it. */
   function orderSheetInputsHtml(o) {
     return `<span class="ord-cost ord-inline-sheet">
-      <input type="number" min="0" step="0.01" inputmode="decimal" class="ord-sheet-input" data-order-sheet="amazon" placeholder="Buy cost" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" title="What you paid to buy this order (on Amazon)" />
-      <input type="number" step="0.01" inputmode="decimal" class="ord-sheet-input" data-order-sheet="earning" placeholder="Earning" value="${o.order_earning != null ? escapeAttr(String(Number(o.order_earning))) : ''}" title="What eBay pays you for this order (Order earnings in Seller Hub)" />
+      <span class="ord-sheet-currency">$</span><input type="number" min="0" step="0.01" inputmode="decimal" class="ord-sheet-input" data-order-sheet="amazon" placeholder="0.00" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" title="What you paid to buy this order (on Amazon)" />
     </span>`;
   }
 
-  /** Saves the two inline Net Profit cells of one order row/drawer (see orderSheetInputsHtml). Shared by the row list and the drawer. */
-  async function saveOrderSheetInputs(id, amazonInput, earningInput) {
+  /** Saves the inline Buying price cell of one order row/drawer (see orderSheetInputsHtml). Shared by the row list and the drawer. */
+  async function saveOrderSheetInputs(id, amazonInput) {
     const read = (el) => { const raw = String(el.value || '').trim(); if (raw === '') return null; const n = Number(raw); return Number.isFinite(n) ? n : undefined; };
     const amazonPrice = read(amazonInput);
-    const orderEarning = read(earningInput);
-    if (amazonPrice === undefined || orderEarning === undefined) { showToast('Could not save', 'Type the amounts as numbers, for example 12.50.', 'error'); return; }
+    if (amazonPrice === undefined) { showToast('Could not save', 'Type the amount as a number, for example 12.50.', 'error'); return; }
     try {
-      const res = await apiFetch(`/api/net-profit/${encodeURIComponent(id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amazonPrice, orderEarning }) });
+      const res = await apiFetch(`/api/net-profit/${encodeURIComponent(id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amazonPrice }) });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not save.');
       const line = data.line || {};
       const o = ordersAll.find((x) => String(x.id) === String(id));
       if (o) Object.assign(o, { sheet_amazon_price: line.amazon_price ?? null, order_earning: line.order_earning ?? null, net_profit: line.net_profit ?? null });
-      showToast('Saved', 'Buying price and order earning saved.', 'success');
+      showToast('Saved', 'Buying price saved.', 'success');
     } catch (err) {
       showToast('Could not save', err.message, 'error');
     }
@@ -12360,15 +12363,15 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#ordersAccountFilterSelect')?.addEventListener('change', async (e) => { ordersAccountFilter = e.target.value; ordersPage = 1; try { await fetchOrdersList(); } catch (err) { showToast('Orders', err.message, 'error'); } renderOrders(); });
     root.querySelector('#syncOrdersBtn')?.addEventListener('click', () => syncOrdersFromEbay(false));
     root.querySelector('#syncOrdersFullBtn')?.addEventListener('click', () => syncOrdersFromEbay(true));
-    // The Buying price / Order earning boxes right on the row (orderSheetInputsHtml): typing in them must never open the drawer, and they
-    // save on their own (change/blur), the same PATCH /api/net-profit/:id the sheet and the drawer both use.
+    // The Buying price box right on the row (orderSheetInputsHtml): typing in it must never open the drawer, and it
+    // saves on its own (change/blur), the same PATCH /api/net-profit/:id the sheet and the drawer both use.
     root.querySelectorAll('.ord-inline-sheet').forEach((wrap) => {
       wrap.addEventListener('click', (e) => e.stopPropagation());
       const amazonInput = wrap.querySelector('[data-order-sheet="amazon"]');
-      const earningInput = wrap.querySelector('[data-order-sheet="earning"]');
-      const save = () => { const id = wrap.closest('[data-order-id]')?.getAttribute('data-order-id'); if (id) saveOrderSheetInputs(id, amazonInput, earningInput); };
-      amazonInput?.addEventListener('change', save);
-      earningInput?.addEventListener('change', save);
+      amazonInput?.addEventListener('change', () => {
+        const id = wrap.closest('[data-order-id]')?.getAttribute('data-order-id');
+        if (id) saveOrderSheetInputs(id, amazonInput);
+      });
     });
     root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('a, input, button')) return; openOrderDetail(row.getAttribute('data-order-id')); }));
   }
