@@ -4283,8 +4283,8 @@
       <div id="page-import" style="display:none;">
         <div class="imp-head">
           <div>
-            <h1>Import a product</h1>
-            <div class="sub">Paste an Amazon link, set your margin and ELMS creates the eBay draft for you.</div>
+            <h1 id="impHeading">Import a product</h1>
+            <div class="sub" id="impSub">Paste an Amazon link, set your margin and ELMS creates the eBay draft for you.</div>
           </div>
           <button type="button" class="import-history-link" data-page="history">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg>
@@ -4292,7 +4292,12 @@
           </button>
         </div>
 
-        <div class="imp-layout">
+        <div class="imp-source-tabs" role="tablist" style="display:flex;gap:8px;margin-bottom:16px;">
+          <button type="button" class="imp-tab active" id="impSourceAmazon" role="tab">Amazon</button>
+          <button type="button" class="imp-tab" id="impSourceCj" role="tab">CJdropshipping</button>
+        </div>
+
+        <div id="impAmazonSection" class="imp-layout">
           <div class="imp-card">
             <div class="imp-tabs" role="tablist">
               <button type="button" class="imp-tab active" id="impTabSingle" role="tab">Single link</button>
@@ -4382,6 +4387,61 @@
         </div>
 
         <div id="result"></div>
+
+        <div id="impCjSection" style="display:none;">
+          <div id="cjNotConnected" class="product-card" style="display:none;text-align:center;padding:32px 20px;">
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px;">CJdropshipping is not connected yet</div>
+            <div class="meta-line" style="margin-bottom:14px;">Connect your CJ account in Settings to import products from CJdropshipping.</div>
+            <button type="button" class="st-btn primary" data-page="settings">Go to Settings</button>
+          </div>
+
+          <div id="cjConnectedArea" style="display:none;">
+            <div class="imp-layout">
+              <div class="imp-card">
+                <div class="imp-tabs" role="tablist">
+                  <button type="button" class="imp-tab active" id="cjTabImport" role="tab">Import by ID/URL</button>
+                  <button type="button" class="imp-tab" id="cjTabSearch" role="tab">Find products on CJ</button>
+                </div>
+
+                <div class="imp-body">
+                  <div id="cjImportById">
+                    <label class="imp-label" for="cjProductInput">CJ product ID, product SKU or product URL</label>
+                    <div class="imp-urlbox">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                      <input type="text" id="cjProductInput" placeholder="Product ID, SKU, or a cjdropshipping.com product link" autocomplete="off" />
+                    </div>
+                    <div class="imp-cta-row" style="margin-top:14px;">
+                      <button class="primary imp-cta" id="cjImportByIdBtn">Find product</button>
+                    </div>
+                    <div id="cjVariantPicker" style="display:none;margin-top:16px;"></div>
+                    <div id="cjImportByIdStatus" style="margin-top:10px;"></div>
+                  </div>
+
+                  <div id="cjSearchBox" style="display:none;">
+                    <label class="imp-label" for="cjSearchInput">Search the CJ catalog</label>
+                    <div class="imp-urlbox">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      <input type="text" id="cjSearchInput" placeholder="e.g. wireless earbuds" autocomplete="off" />
+                    </div>
+                    <div class="imp-cta-row" style="margin-top:14px;">
+                      <button class="primary imp-cta" id="cjSearchBtn">Search</button>
+                    </div>
+                    <div id="cjSearchStatus" style="margin-top:10px;"></div>
+                    <div id="cjSearchResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:16px;"></div>
+                    <div id="cjSearchPager" style="margin-top:14px;display:none;gap:10px;align-items:center;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="imp-side">
+                <div class="imp-side-card imp-tip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+                  <div><b>Tip</b><small>CJ products import as drafts too, and show a "CJ" badge on Drafts and Live listings so you always know which supplier a listing came from.</small></div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="page-drafts" style="display:none;">
@@ -4628,6 +4688,27 @@
           </div>
           <div id="ebayAccountsList" class="st-accts"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           <div id="ebayConnectStatus" style="margin-top:10px;"></div>
+        </section>
+
+        <section class="st-card" id="cjCard">
+          <div class="st-head">
+            <div class="st-ico yellow">&#128230;</div>
+            <div class="st-head-txt"><h2>CJdropshipping</h2><p id="cjStatusLabel">A second product source, next to Amazon. Not connected.</p></div>
+            <button class="st-btn primary" id="cjConnectBtn" type="button">Connect CJdropshipping</button>
+            <button class="st-btn danger" id="cjDisconnectBtn" type="button" style="display:none;">Disconnect</button>
+          </div>
+          <div id="cjConnectForm" style="display:none;margin-top:6px;">
+            <div class="st-row">
+              <div class="st-field grow">
+                <label>CJdropshipping API key</label>
+                <input class="st-input" id="cjApiKeyInput" type="text" placeholder="Paste your CJ API key" autocomplete="off" spellcheck="false">
+              </div>
+              <button class="st-btn primary" id="cjSaveKeyBtn" type="button">Connect</button>
+            </div>
+            <div class="meta-line" style="margin-top:8px;">How to get your key: CJ account &rarr; <strong>Apps</strong> &rarr; <strong>App Store</strong> &rarr; <strong>Others</strong> &rarr; <strong>API</strong> &rarr; Install &rarr; <strong>Add API</strong> &rarr; copy the key.</div>
+            <div class="meta-line" style="margin-top:6px;color:#B45309;">&#9888; If your eBay store is also connected directly to CJdropshipping, turn off CJ's order sync for it there, or orders may be placed twice.</div>
+            <div id="cjConnectStatus" style="margin-top:8px;"></div>
+          </div>
         </section>
 
         <section class="st-card" id="pricingCard">
@@ -6315,6 +6396,160 @@
   toggleBulkImportBtn.addEventListener('click', () => setImportTab('bulk'));
   document.getElementById('impTabSingle').addEventListener('click', () => setImportTab('single'));
   document.getElementById('impTabLarge').addEventListener('click', () => setImportTab('large'));
+
+  // ---------- Import page: Amazon / CJdropshipping are two entirely separate sections (never shown at once) ----------
+  function setImportSource(source) {
+    const isCj = source === 'cj';
+    document.getElementById('impAmazonSection').style.display = isCj ? 'none' : '';
+    document.getElementById('impCjSection').style.display = isCj ? '' : 'none';
+    document.getElementById('result').style.display = isCj ? 'none' : '';
+    document.getElementById('impSourceAmazon').classList.toggle('active', !isCj);
+    document.getElementById('impSourceCj').classList.toggle('active', isCj);
+    document.getElementById('impHeading').textContent = isCj ? 'Import from CJdropshipping' : 'Import a product';
+    document.getElementById('impSub').textContent = isCj ? 'Paste a CJ product link/ID, or search the CJ catalog - ELMS creates the eBay draft for you.' : 'Paste an Amazon link, set your margin and ELMS creates the eBay draft for you.';
+    if (isCj) refreshCjImportSection();
+  }
+  document.getElementById('impSourceAmazon').addEventListener('click', () => setImportSource('amazon'));
+  document.getElementById('impSourceCj').addEventListener('click', () => setImportSource('cj'));
+
+  async function refreshCjImportSection() {
+    await loadCjSettings();
+    document.getElementById('cjNotConnected').style.display = cjConnected ? 'none' : '';
+    document.getElementById('cjConnectedArea').style.display = cjConnected ? '' : 'none';
+  }
+  document.getElementById('cjNotConnected').addEventListener('click', (e) => {
+    if (e.target.closest('[data-page="settings"]')) showPage('settings');
+  });
+
+  function setCjTab(mode) {
+    document.getElementById('cjImportById').style.display = mode === 'search' ? 'none' : '';
+    document.getElementById('cjSearchBox').style.display = mode === 'search' ? '' : 'none';
+    document.getElementById('cjTabImport').classList.toggle('active', mode !== 'search');
+    document.getElementById('cjTabSearch').classList.toggle('active', mode === 'search');
+  }
+  document.getElementById('cjTabImport').addEventListener('click', () => setCjTab('import'));
+  document.getElementById('cjTabSearch').addEventListener('click', () => setCjTab('search'));
+
+  /** Whatever the seller pasted into "CJ product ID, product SKU or product URL": a bare id/SKU is used as-is; a link has its last path segment (or an embedded CJ id, e.g. a UUID) picked out of it. */
+  function parseCjIdInput(raw) {
+    const text = String(raw || '').trim();
+    const uuid = text.match(/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/);
+    if (uuid) return uuid[0];
+    if (/^https?:\/\//i.test(text)) {
+      try { const u = new URL(text); const parts = u.pathname.split('/').filter(Boolean); return decodeURIComponent(parts[parts.length - 1] || text); }
+      catch (_) { return text; }
+    }
+    return text;
+  }
+
+  function cjVariantCardHtml(v, cjProductId) {
+    return `<div class="product-card" style="display:flex;gap:12px;align-items:center;padding:12px;">
+      <img src="${escapeAttr(v.image || '')}" alt="" style="width:56px;height:56px;border-radius:8px;object-fit:cover;background:#f1f5f9;flex:none;" onerror="this.style.visibility='hidden'">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:13px;">${escapeHtml(v.variantKey || v.variantSku || 'Variant')}</div>
+        <div class="meta-line">${v.price != null ? '$' + Number(v.price).toFixed(2) : 'Price unknown'} &middot; ${v.inventory ?? 0} in stock</div>
+      </div>
+      <button type="button" class="st-btn primary small" data-cj-import-vid="${escapeAttr(v.vid)}" data-cj-pid="${escapeAttr(cjProductId)}">Import</button>
+    </div>`;
+  }
+
+  document.getElementById('cjImportByIdBtn').addEventListener('click', async () => {
+    const input = document.getElementById('cjProductInput');
+    const status = document.getElementById('cjImportByIdStatus');
+    const picker = document.getElementById('cjVariantPicker');
+    const id = parseCjIdInput(input.value);
+    if (!id) { status.textContent = 'Enter a CJ product ID, SKU or link.'; status.className = 'error'; return; }
+    picker.style.display = 'none'; picker.innerHTML = '';
+    status.textContent = 'Looking it up…'; status.className = '';
+    try {
+      const res = await apiFetch('/api/cj/product?pid=' + encodeURIComponent(id));
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not find that CJ product.');
+      const variants = data.product.variants || [];
+      if (variants.length === 1) {
+        status.textContent = '';
+        await importCjProduct({ pid: data.product.cjProductId, vid: variants[0].vid });
+        return;
+      }
+      status.textContent = variants.length ? `${data.product.title || 'This product'} has ${variants.length} variants - pick one:` : 'This product has no orderable variants.';
+      picker.innerHTML = variants.map((v) => cjVariantCardHtml(v, data.product.cjProductId)).join('');
+      picker.style.display = variants.length ? 'grid' : 'none';
+      picker.style.gap = '10px';
+    } catch (err) {
+      status.textContent = err.message;
+      status.className = 'error';
+    }
+  });
+  document.getElementById('cjVariantPicker').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-cj-import-vid]');
+    if (!btn) return;
+    importCjProduct({ pid: btn.getAttribute('data-cj-pid'), vid: btn.getAttribute('data-cj-import-vid') });
+  });
+
+  let cjSearchPage = 1;
+  async function runCjSearch(page = 1) {
+    const keyword = document.getElementById('cjSearchInput').value.trim();
+    const status = document.getElementById('cjSearchStatus');
+    const results = document.getElementById('cjSearchResults');
+    const pager = document.getElementById('cjSearchPager');
+    status.textContent = 'Searching…'; status.className = '';
+    results.innerHTML = ''; pager.style.display = 'none';
+    try {
+      const res = await apiFetch(`/api/cj/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=20`);
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not search CJdropshipping.');
+      cjSearchPage = data.page || page;
+      status.textContent = data.products.length ? `${data.total} product${data.total === 1 ? '' : 's'}` : 'No products found.';
+      results.innerHTML = data.products.map((p) => `<div class="product-card" style="padding:10px;">
+        <img src="${escapeAttr(p.image || '')}" alt="" style="width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;background:#f1f5f9;" onerror="this.style.visibility='hidden'">
+        <div style="font-size:12.5px;font-weight:600;margin-top:8px;line-height:1.3;max-height:2.6em;overflow:hidden;">${escapeHtml(p.title || '')}</div>
+        <div class="meta-line" style="margin-top:4px;">$${p.price != null ? Number(p.price).toFixed(2) : '?'}${p.deliveryCycle ? ' &middot; ' + escapeHtml(p.deliveryCycle) + 'd' : ''}</div>
+        <button type="button" class="st-btn primary small" style="width:100%;margin-top:8px;" data-cj-search-import="${escapeAttr(p.cjProductId)}">Import</button>
+      </div>`).join('');
+      if (data.pages > 1) {
+        pager.style.display = 'flex';
+        pager.innerHTML = `<button type="button" class="st-btn small" id="cjPagerPrev" ${cjSearchPage <= 1 ? 'disabled' : ''}>&lsaquo; Prev</button><span class="meta-line">Page ${cjSearchPage} of ${data.pages}</span><button type="button" class="st-btn small" id="cjPagerNext" ${cjSearchPage >= data.pages ? 'disabled' : ''}>Next &rsaquo;</button>`;
+        document.getElementById('cjPagerPrev')?.addEventListener('click', () => runCjSearch(cjSearchPage - 1));
+        document.getElementById('cjPagerNext')?.addEventListener('click', () => runCjSearch(cjSearchPage + 1));
+      }
+    } catch (err) {
+      status.textContent = err.message;
+      status.className = 'error';
+    }
+  }
+  document.getElementById('cjSearchBtn').addEventListener('click', () => runCjSearch(1));
+  document.getElementById('cjSearchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') runCjSearch(1); });
+  document.getElementById('cjSearchResults').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-cj-search-import]');
+    if (!btn) return;
+    importCjProduct({ pid: btn.getAttribute('data-cj-search-import') });
+  });
+
+  /** Imports one CJ product (optionally one variant of it, by vid). A product with several variants and no vid given asks the server, which answers 400 with the variant list - handled the same way as the "pick a variant" step above. */
+  async function importCjProduct({ pid, vid }) {
+    try {
+      const res = await apiFetch('/api/cj/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pid, vid }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        if (data.variants && data.variants.length) {
+          const status = document.getElementById('cjImportByIdStatus');
+          const picker = document.getElementById('cjVariantPicker');
+          setCjTab('import');
+          document.getElementById('cjProductInput').value = pid;
+          status.textContent = `This product has ${data.variants.length} variants - pick one:`;
+          picker.innerHTML = data.variants.map((v) => cjVariantCardHtml(v, pid)).join('');
+          picker.style.display = 'grid'; picker.style.gap = '10px';
+          return;
+        }
+        throw new Error(data.error || 'Could not import that CJ product.');
+      }
+      refreshDraftsCountBadge();
+      refreshCreditBalanceChip();
+      showToast('Draft ready!', data.draft.title ? `"${data.draft.title.slice(0, 60)}${data.draft.title.length > 60 ? '…' : ''}" has been saved.` : 'Your CJ product has been saved.', 'success');
+    } catch (err) {
+      showToast('Import failed', err.message, 'error');
+    }
+  }
 
   // The seller's pricing rule (Settings > Pricing), as far as the Import page needs to know: is it switched on.
   let pricingRuleState = { loaded: false, enabled: false, rule: null, isSet: false };
@@ -8703,6 +8938,7 @@
             <label class="dv-selectall"><input type="checkbox" id="draftSelectAll" /> Select</label><button type="button" class="dv-selectevery" id="draftSelectEvery" hidden title="Select every product of this view, on all pages"></button>
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
             <select id="draftSort" class="dv-select"><option value="created">Newest imported</option><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
+            <select id="draftSourceFilter" class="dv-select" title="Filter by product source"><option value="">Every source</option><option value="amazon">Amazon</option><option value="cj">CJdropshipping</option></select>
             <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
             ${veroPattern ? '' : '<button type="button" class="dv-btn" id="draftVeroSetup" title="Add the brand names eBay removes listings for, and ELMS will warn you about them">&#9888; Set up VeRO words</button>'}
             ${veroPattern ? `<button type="button" class="dv-btn vero-filter" id="draftVeroFilter" title="Show only drafts that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="draftVeroCount">${veroCount()}</b></button>` : ''}
@@ -8737,13 +8973,15 @@
         const query = String(document.getElementById('draftProductSearch')?.value || '').trim().toLowerCase();
         const status = document.getElementById('draftStatusFilter')?.value || 'all';
         const sort = document.getElementById('draftSort')?.value || 'created';
+        const source = document.getElementById('draftSourceFilter')?.value || '';
         const filtered = allDrafts.filter((l) => {
           const haystack = `${l.title || ''} ${l.sku || ''} ${l.note || ''}`.toLowerCase();
           // "Ready to publish" also shows failed items (not just the "Needs attention" tab) -
           // a listing that failed to publish still needs to be published, so it stays visible
           // where the seller is already looking, with its error badge and a Retry button.
           const matchesStatus = draftVeroOnly || status === 'all' || l.status === status || (status === 'draft' && l.status === 'error');
-          return (!query || haystack.includes(query)) && matchesStatus && (!draftVeroOnly || l._vero.terms.length > 0);
+          const matchesSource = !source || (l.source_platform || 'amazon') === source;
+          return (!query || haystack.includes(query)) && matchesStatus && matchesSource && (!draftVeroOnly || l._vero.terms.length > 0);
         }).sort((a,b) => {
           if (sort === 'title') return String(a.title || a.sku || '').localeCompare(String(b.title || b.sku || ''));
           if (sort === 'price') return Number(b.sell_price || 0) - Number(a.sell_price || 0);
@@ -8786,7 +9024,7 @@
         restoreNote();
         updateBulkBar();
       };
-      ['draftProductSearch','draftStatusFilter','draftSort'].forEach((id) => document.getElementById(id)?.addEventListener(id === 'draftSort' ? 'change' : 'input', () => {
+      ['draftProductSearch','draftStatusFilter','draftSort','draftSourceFilter'].forEach((id) => document.getElementById(id)?.addEventListener(id === 'draftProductSearch' ? 'input' : 'change', () => {
         if (id === 'draftStatusFilter') {
           const value = document.getElementById(id)?.value || 'all';
           document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item.getAttribute('data-inner-status') === value));
@@ -9064,6 +9302,7 @@
   let draftFilteredIds = []; // ids the current search / stage / VeRO filter shows, across all pages
 
   function draftSupplierLabel(l) {
+    if (l.source_platform === 'cj') return 'CJdropshipping';
     const raw = String(l.supplier_country || l.supplierCountry || '').trim();
     if (raw) return /^amazon/i.test(raw) ? raw : `Amazon ${raw.toUpperCase()}`;
     const url = String(l.amazon_url || '');
@@ -9071,6 +9310,12 @@
     if (/amazon\.com\.au/i.test(url)) return 'Amazon AU';
     if (/amazon\.com(\/|$|\?)/i.test(url)) return 'Amazon US';
     return 'Amazon';
+  }
+
+  /** A small, coloured source badge ("Amazon" / "CJ") shown on every draft and listing card, so the seller always knows which supplier a product came from. */
+  function sourceBadgeHtml(l) {
+    const isCj = l.source_platform === 'cj';
+    return `<span class="dv-chip" style="background:${isCj ? '#FEF3D0' : '#E8F1FD'};font-weight:700;">${isCj ? 'CJ' : 'Amazon'}</span>`;
   }
 
   // The 18 eBay marketplace countries ELMS can generate real postal codes for.
@@ -9630,14 +9875,17 @@
     const sell = sellOverride !== undefined ? n(sellOverride) : n(l.sell_price);
     const cost = n(l.amazon_price);
     if (sell == null || cost == null) return null;
+    // A CJ listing's own shipping quote (models/listingsModel.js listingProfitAmount's extraCost) - always 0 for Amazon, so
+    // Amazon profit is worked out exactly as before.
+    const extra = n(l.cj_shipping_cost) || 0;
     const r = l.pricing_rule && typeof l.pricing_rule === 'object' ? l.pricing_rule : null;
     if (r && n(r.feePercent) != null) {
-      const costTotal = cost + (n(r.shipping) || 0);
+      const costTotal = cost + extra + (n(r.shipping) || 0);
       const amount = sell - costTotal - (sell * n(r.feePercent) / 100 + (n(r.feeFixed) || 0));
       return { amount, percent: costTotal > 0 ? (amount / costTotal) * 100 : null, afterFees: true };
     }
-    const amount = sell - cost;
-    return { amount, percent: cost > 0 ? (amount / cost) * 100 : null, afterFees: false };
+    const amount = sell - cost - extra;
+    return { amount, percent: (cost + extra) > 0 ? (amount / (cost + extra)) * 100 : null, afterFees: false };
   }
   const listingProfitHint = (pf) => (pf && pf.afterFees ? 'Profit after eBay fees (the fees of your Margin rule)' : 'Sell price minus cost, before eBay fees');
 
@@ -9723,7 +9971,8 @@
         <div class="dv-body">
           <h3 class="dv-title" data-action="toggle-row">${escapeHtml(l.title || l.sku || 'Untitled product')}</h3>
           <div class="dv-chips">
-            ${asin ? (l.amazon_url ? `<a class="dv-chip" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation" title="Open the Amazon product">${escapeHtml(asin)} &#8599;</a>` : `<span class="dv-chip">${escapeHtml(asin)}</span>`) : ''}
+            ${sourceBadgeHtml(l)}
+            ${l.source_platform === 'cj' ? `<span class="dv-chip">${escapeHtml(l.sku || '')}</span>` : (asin ? (l.amazon_url ? `<a class="dv-chip" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation" title="Open the Amazon product">${escapeHtml(asin)} &#8599;</a>` : `<span class="dv-chip">${escapeHtml(asin)}</span>`) : '')}
             <span class="dv-chip">${escapeHtml(draftSupplierLabel(l))}</span>
             ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
             ${veroChipHtml(l, status !== 'publishing')}
@@ -10702,6 +10951,7 @@ async function autoSuggestEmptyDraftCategories() {
   let llPage = 1;
   let llSort = 'newest';
   let llVeroOnly = false;
+  let llSource = ''; // '' = every source, 'amazon', 'cj'
   let llTotal = 0; // the listings of this view, on all pages
   let llPages = 1;
   let llSummary = null; // { counts, totals } from GET /api/listings/summary: the tabs' numbers and the boxes above the list
@@ -10751,6 +11001,7 @@ async function autoSuggestEmptyDraftCategories() {
     const p = new URLSearchParams({ status: LL_TAB_STATUS[llTab] || 'published' });
     if (llSearch) p.set('q', llSearch);
     if (llVeroOnly) p.set('vero', '1');
+    if (llSource) p.set('source', llSource);
     return p;
   }
   async function llFetchPage() {
@@ -10896,6 +11147,9 @@ async function autoSuggestEmptyDraftCategories() {
           <select id="llSortSelect" class="dv-select">
             ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
+          <select id="llSourceSelect" class="dv-select" title="Filter by product source">
+            ${[['', 'Every source'], ['amazon', 'Amazon'], ['cj', 'CJdropshipping']].map(([v, t]) => `<option value="${v}"${llSource === v ? ' selected' : ''}>${t}</option>`).join('')}
+          </select>
           ${veroPattern ? `<button type="button" class="dv-btn vero-filter${llVeroOnly ? ' on' : ''}" id="llVeroFilter" title="Show only listings that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="llVeroCount">${llSummary ? llSummary.counts.vero : '\u2026'}</b></button>` : ''}
           <button class="dv-btn" id="llExportBtn" type="button">Export CSV</button>
         </div>
@@ -10991,8 +11245,9 @@ async function autoSuggestEmptyDraftCategories() {
           <span class="lv-status">${escapeHtml(statusText)}</span>
           <h3 class="lv-title" data-action="view">${escapeHtml(l.title || dash)}</h3>
           <div class="dv-chips">
+            ${sourceBadgeHtml(l)}
             ${itemId ? chip(llEbayUrl(l, itemId), 'eBay ' + itemId, 'Open the live eBay listing') : ''}
-            ${asin ? chip(llAmazonUrl(l, asin), 'Amazon ' + asin, 'Open the Amazon product') : ''}
+            ${l.source_platform === 'cj' ? (l.sku ? `<span class="dv-chip">${escapeHtml(l.sku)}</span>` : '') : (asin ? chip(llAmazonUrl(l, asin), 'Amazon ' + asin, 'Open the Amazon product') : '')}
             ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
             ${uploadedText ? `<span class="dv-chip">Listed ${escapeHtml(uploadedText)}</span>` : ''}
             ${veroChipHtml(l, false)}
@@ -11036,6 +11291,7 @@ async function autoSuggestEmptyDraftCategories() {
     // Tabs, sort, search, "only VeRO", pages: each asks the server for the new page
     root.querySelector('#llTabs')?.addEventListener('click', (e) => { const b = e.target.closest('[data-ll-tab]'); if (b) llGo(() => { llTab = b.getAttribute('data-ll-tab'); llPage = 1; }); });
     root.querySelector('#llSortSelect')?.addEventListener('change', (e) => { const v = e.target.value; llGo(() => { llSort = v; llPage = 1; }); });
+    root.querySelector('#llSourceSelect')?.addEventListener('change', (e) => { const v = e.target.value; llGo(() => { llSource = v; llPage = 1; }); });
     const search = root.querySelector('#llSearchInput');
     if (search) search.addEventListener('input', () => {
       clearTimeout(llSearchTimer); // a moment after the last key, not on every key
@@ -13119,7 +13375,79 @@ async function autoSuggestEmptyDraftCategories() {
     await loadEbayAccountsList();
     await loadOrderSyncSettings();
     await loadExtensionKey();
+    loadCjSettings();
   }
+
+  // ---------- Settings: CJdropshipping connection (a second, separate product source next to Amazon) ----------
+  let cjConnected = false;
+
+  function renderCjSettings() {
+    const label = document.getElementById('cjStatusLabel');
+    const connectBtn = document.getElementById('cjConnectBtn');
+    const disconnectBtn = document.getElementById('cjDisconnectBtn');
+    const form = document.getElementById('cjConnectForm');
+    if (!label) return;
+    label.textContent = cjConnected ? 'A second product source, next to Amazon. Connected.' : 'A second product source, next to Amazon. Not connected.';
+    if (connectBtn) connectBtn.style.display = cjConnected ? 'none' : '';
+    if (disconnectBtn) disconnectBtn.style.display = cjConnected ? '' : 'none';
+    if (form) form.style.display = cjConnected ? 'none' : (form.style.display === 'none' ? 'none' : form.style.display);
+  }
+
+  async function loadCjSettings() {
+    try {
+      const res = await apiFetch('/api/cj/status');
+      const data = await res.json();
+      cjConnected = !!(res.ok && data.success && data.connected);
+      renderCjSettings();
+    } catch (err) { /* Settings still renders fine with "not connected" until this loads. */ }
+  }
+
+  document.getElementById('cjConnectBtn')?.addEventListener('click', () => {
+    const form = document.getElementById('cjConnectForm');
+    form.style.display = form.style.display === 'none' ? '' : 'none';
+    if (form.style.display !== 'none') document.getElementById('cjApiKeyInput').focus();
+  });
+
+  document.getElementById('cjSaveKeyBtn')?.addEventListener('click', async () => {
+    const input = document.getElementById('cjApiKeyInput');
+    const btn = document.getElementById('cjSaveKeyBtn');
+    const status = document.getElementById('cjConnectStatus');
+    const apiKey = input.value.trim();
+    if (!apiKey) { status.textContent = 'Enter your CJdropshipping API key.'; status.className = 'error'; return; }
+    btn.disabled = true;
+    status.textContent = 'Connecting…';
+    status.className = '';
+    try {
+      const res = await apiFetch('/api/cj/connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not connect to CJdropshipping.');
+      input.value = '';
+      status.textContent = '';
+      cjConnected = true;
+      renderCjSettings();
+      document.getElementById('cjConnectForm').style.display = 'none';
+      showToast('Connected', 'CJdropshipping is connected.', 'success');
+    } catch (err) {
+      status.textContent = err.message;
+      status.className = 'error';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('cjDisconnectBtn')?.addEventListener('click', async () => {
+    if (!(await elmsConfirm('Disconnect CJdropshipping? CJ listings you already published stay on eBay, but stock/price checks for them will stop until you reconnect.', { danger: true }))) return;
+    try {
+      const res = await apiFetch('/api/cj/disconnect', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not disconnect CJdropshipping.');
+      cjConnected = false;
+      renderCjSettings();
+      showToast('Disconnected', 'CJdropshipping is disconnected.', 'success');
+    } catch (err) {
+      alert(err.message);
+    }
+  });
 
   // ---------- Settings: VeRO words (each user's own list) ----------
   // Only the words saved here are flagged / removed. The starter list from the server is used for suggestions while typing.
