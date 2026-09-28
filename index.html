@@ -13466,9 +13466,9 @@ async function autoSuggestEmptyDraftCategories() {
       showPage('settings');
       if (aliexpressConnect === 'success') {
         await loadAliexpressSettings();
-        alert('AliExpress account connected!');
+        showToast('AliExpress connected', 'Your account is ready to use.', 'success');
       } else {
-        alert('Could not connect AliExpress account: ' + (params.get('message') || 'Unknown error'));
+        showToast('Could not connect AliExpress account', params.get('message') || 'Unknown error', 'error');
       }
     });
 
@@ -14353,13 +14353,13 @@ async function autoSuggestEmptyDraftCategories() {
       showPage('settings');
       if (ebayConnect === 'success') {
         await populateSidebarEbayWidget();
-        alert('eBay account connected! Your business policies have been loaded below - please review and Save.');
+        showToast('eBay account connected', 'Your business policies have been loaded below - please review and Save.', 'success');
       } else if (ebayConnect === 'declined') {
         // eBay's RuName sends a decline to a separate URL (routes/ebayConnect.js GET /declined) -
         // no code/state, nothing actually failed, so this is a plain "no problem" message, not an error.
-        alert('eBay connection was cancelled. You can connect your eBay account any time from Settings.');
+        showToast('eBay connection cancelled', 'You can connect your eBay account any time from Settings.');
       } else {
-        alert('Could not connect eBay account: ' + (params.get('message') || 'Unknown error'));
+        showToast('Could not connect eBay account', params.get('message') || 'Unknown error', 'error');
       }
     });
 
