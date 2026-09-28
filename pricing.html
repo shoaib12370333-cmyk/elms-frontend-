@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pricing — ELMS</title>
+<meta name="description" content="ELMS pricing: buy a credit plan and use it to import products from Amazon, write listings with AI and publish to eBay. Prices and credits are shown below." />
+<link rel="canonical" href="https://elmstool.com/pricing.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Pricing — ELMS" />
+<meta property="og:description" content="Credit plans for ELMS: import from Amazon, AI-written listings, publish to eBay, orders and profit." />
+<meta property="og:url" content="https://elmstool.com/pricing.html" />
+<meta property="og:image" content="https://elmstool.com/og-image.png" />
+<meta name="theme-color" content="#0064D2" />
+<link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2" />
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #0B1220; --ink2: #334155; --mute: #64748B; --line: #E4E9F2; --bg: #FFFFFF; --soft: #F5F8FE;
+    --red: #E53238; --blue: #0064D2; --yellow: #F5AF02; --green: #86B817; --navy: #0A1530;
+    --shadow: 0 18px 50px rgba(15, 35, 80, .12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 22px; }
+  .grad { background: linear-gradient(90deg, var(--blue), #2E8BFF 45%, var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.88); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .nav-in { display: flex; align-items: center; gap: 22px; height: 68px; }
+  .logo { display: flex; align-items: center; }
+  .logo img { display: block; height: 30px; width: auto; }
+  .links { display: flex; gap: 4px; margin-left: 18px; }
+  .links a { padding: 8px 14px; border-radius: 99px; font-weight: 600; font-size: 14.5px; color: var(--ink2); }
+  .links a:hover, .links a.on { background: var(--soft); color: var(--blue); }
+  .nav-cta { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 700 15px Inter, sans-serif; padding: 12px 22px; border-radius: 14px; border: 1.5px solid transparent; cursor: pointer; transition: transform .15s, box-shadow .2s; white-space: nowrap; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.primary { background: linear-gradient(135deg, #0064D2, #1E7CF0); color: #fff; box-shadow: 0 10px 26px rgba(0,100,210,.35); }
+  .btn.ghost { background: #fff; border-color: var(--line); color: var(--ink); }
+  .btn.ghost:hover { border-color: var(--blue); color: var(--blue); }
+  .btn.sm { padding: 9px 16px; font-size: 14px; border-radius: 12px; }
+
+  .top { padding: 64px 0 26px; text-align: center; }
+  .eyebrow { font-weight: 800; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+  h1 { font-size: clamp(34px, 5vw, 54px); line-height: 1.08; letter-spacing: -.03em; margin: 10px 0 14px; font-weight: 900; }
+  .sub { color: var(--ink2); font-size: 18px; max-width: 680px; margin: 0 auto; }
+  section { padding: 30px 0 46px; }
+
+  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; align-items: stretch; }
+  .plan { position: relative; background: #fff; border: 1.5px solid var(--line); border-radius: 24px; padding: 30px 26px; display: flex; flex-direction: column; }
+  .plan.best { border-color: var(--blue); box-shadow: 0 20px 60px rgba(0,100,210,.2); }
+  .plan .badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--blue), #2E8BFF); color: #fff; font-size: 12px; font-weight: 800; padding: 5px 14px; border-radius: 99px; letter-spacing: .04em; }
+  .plan h3 { margin: 0; font-size: 20px; }
+  .price { font-size: 46px; font-weight: 900; letter-spacing: -.03em; margin: 10px 0 2px; }
+  .price small { font-size: 16px; color: var(--mute); font-weight: 700; letter-spacing: 0; }
+  .per { color: var(--mute); font-weight: 600; font-size: 14px; margin-bottom: 16px; }
+  .plan ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; flex: 1; }
+  .plan li { display: flex; gap: 10px; color: var(--ink2); font-weight: 600; }
+  .plan li::before { content: '\2713'; color: var(--green); font-weight: 900; }
+  .skel { height: 300px; border-radius: 24px; background: linear-gradient(100deg, #EEF2F9 30%, #F8FAFE 50%, #EEF2F9 70%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .note { text-align: center; color: var(--mute); margin: 26px auto 0; font-weight: 600; max-width: 720px; }
+  .note a { color: var(--blue); font-weight: 800; }
+
+  .info { background: var(--soft); }
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .info-card { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+  .info-card h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: -.01em; }
+  .info-card p { margin: 0; color: var(--ink2); font-size: 15px; }
+  .info-card a { color: var(--blue); font-weight: 700; }
+  .info { padding: 46px 0 56px; }
+
+  footer { border-top: 1px solid var(--line); padding: 34px 0 44px; color: var(--mute); font-size: 14px; }
+  .foot { display: flex; gap: 18px 30px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+  .foot nav { display: flex; gap: 20px; flex-wrap: wrap; } .foot nav a:hover { color: var(--blue); }
+  .legal { margin-top: 14px; font-size: 12.5px; max-width: 760px; }
+  @media (max-width: 900px) { .links { display: none; } }
+  @media (max-width: 720px) { .nav-cta .ghost { display: none; } .top { padding-top: 40px; } }
+  @media (prefers-reduced-motion: reduce) { .skel { animation: none; } .btn { transition: none; } }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="logo" href="/" aria-label="ELMS home"><img src="/logo-wordmark.png" alt="ELMS" width="114" height="30"></a>
+    <nav class="links" aria-label="Main">
+      <a href="/">Home</a><a class="on" href="/pricing.html" aria-current="page">Pricing</a><a href="/user-guide.html">User guide</a><a href="mailto:support@elmstool.com">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn ghost sm" href="/signin">Sign in</a>
+      <a class="btn primary sm" href="/signup">Get started free</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="top">
+    <div class="wrap">
+      <div class="eyebrow">Pricing</div>
+      <h1>Credit plans for <span class="grad">ELMS</span></h1>
+      <p class="sub">ELMS imports products from Amazon, writes the eBay listing with AI, publishes it to eBay and tracks your orders and profit. You pay for credits, and credits are used when an action succeeds: an import, a publish or an AI touch-up.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="plans" id="plans" aria-live="polite"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+      <p class="note" id="note">Loading the latest plans…</p>
+    </div>
+  </section>
+
+  <div class="info">
+    <div class="wrap">
+      <div class="info-grid">
+        <div class="info-card"><h2>What a credit does</h2><p>Importing a product, publishing a listing and AI tools use credits. The cost of each action is listed in the <a href="/user-guide.html">User guide</a>, and the price you see when you act is the price you pay.</p></div>
+        <div class="info-card"><h2>If an action fails</h2><p>If an action fails because of a problem on our side, the credits it used are returned. Purchase refunds are described in our <a href="/terms#credits">Terms (credits and payments)</a>.</p></div>
+        <div class="info-card"><h2>How you pay</h2><p>You create a free account first, then buy a plan from inside ELMS. Checkout is handled by our payment provider, which also sends your receipt. We never see or store your full card details.</p></div>
+        <div class="info-card"><h2>Questions</h2><p>Write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> for help, or <a href="mailto:billing@elmstool.com">billing@elmstool.com</a> about a payment.</p></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <a class="logo" href="/" aria-label="ELMS home"><img src="/logo-wordmark.png" alt="ELMS" width="114" height="30"></a>
+      <nav aria-label="Footer"><a href="/">Home</a><a href="/user-guide.html">User guide</a><a href="/terms">Terms of service</a><a href="/terms#credits">Refunds</a><a href="/privacy">Privacy policy</a><a href="mailto:support@elmstool.com">Contact</a></nav>
+    </div>
+    <p class="legal">&copy; <span id="yr"></span> ELMS. ELMS is an independent tool and is not affiliated with, endorsed by or sponsored by Amazon or eBay. Amazon and eBay are trademarks of their respective owners.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var API = 'https://elms-backend-1-tr5h.onrender.com';
+  var $ = function (id) { return document.getElementById(id); };
+  $('yr').textContent = new Date().getFullYear();
+  function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function money(n) { n = Number(n); return '$' + (n % 1 ? n.toFixed(2) : String(n)); }
+
+  function render(plans) {
+    var box = $('plans');
+    if (!plans.length) {
+      box.innerHTML = '';
+      $('note').innerHTML = 'Plans are being updated. Please check back soon, or write to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.';
+      return;
+    }
+    var per = function (p) { return p.priceUsd / p.credits; };
+    var best = plans.length > 1 ? plans.reduce(function (a, b) { return per(b) < per(a) ? b : a; }) : null;
+    box.innerHTML = plans.map(function (p) {
+      var isBest = best && p === best;
+      var perCredit = per(p) < 0.1 ? (per(p) * 100).toFixed(1) + '¢' : '$' + per(p).toFixed(2);
+      return '<div class="plan' + (isBest ? ' best' : '') + '">' + (isBest ? '<span class="badge">BEST VALUE</span>' : '') +
+        '<h3>' + esc(p.name) + '</h3><div class="price">' + money(p.priceUsd) + ' <small>USD</small></div>' +
+        '<div class="per">about ' + perCredit + ' per credit</div><ul><li>' + Number(p.credits).toLocaleString('en-US') + ' credits</li>' +
+        '<li>' + (p.maxEbayAccounts ? 'Connect up to ' + p.maxEbayAccounts + ' eBay account' + (p.maxEbayAccounts === 1 ? '' : 's') : 'Connect your eBay accounts') + '</li>' +
+        '<li>Imports, publishing and AI tools</li><li>Credits back if an action fails</li></ul>' +
+        '<a class="btn ' + (isBest ? 'primary' : 'ghost') + '" href="/signup">Get started</a></div>';
+    }).join('');
+    $('note').textContent = 'Prices are in US dollars. Create a free account first, then buy the plan you want from inside ELMS.';
+  }
+
+  function fail() {
+    $('plans').innerHTML = '';
+    $('note').innerHTML = 'Plans could not be loaded right now. <a href="" onclick="location.reload();return false">Try again</a>, or <a href="/signup">create your free account</a> and see them inside ELMS.';
+  }
+
+  function load(attempt) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    var giveUp = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
+    fetch(API + '/api/payments/public-plans', ctl ? { signal: ctl.signal } : undefined)
+      .then(function (r) { return r.json(); })
+      .then(function (d) { clearTimeout(giveUp); if (!d || !d.success) throw new Error('no plans'); render(d.plans || []); })
+      .catch(function () { clearTimeout(giveUp); if (attempt < 2) load(attempt + 1); else fail(); });
+  }
+  load(1);
+})();
+</script>
+</body>
+</html>
