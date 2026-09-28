@@ -120,7 +120,7 @@
       <div class="info-grid">
         <div class="info-card"><h2>What a credit does</h2><p>Importing a product, publishing a listing and AI tools use credits. The cost of each action is listed in the <a href="/user-guide.html">User guide</a>, and the price you see when you act is the price you pay.</p></div>
         <div class="info-card"><h2>If an action fails</h2><p>If an action fails because of a problem on our side, the credits it used are returned. Purchase refunds are described in our <a href="/refund.html">Refund policy</a> and in our <a href="/terms#credits">Terms (credits and payments)</a>.</p></div>
-        <div class="info-card"><h2>How you pay</h2><p>You create a free account first, then buy a plan from inside ELMS. Checkout is handled by our payment provider, which also sends your receipt. We never see or store your full card details.</p></div>
+        <div class="info-card"><h2>How you pay</h2><p id="howPay">You create a free account first, then buy a plan from inside ELMS. Checkout is handled by our payment provider, which also sends your receipt. We never see or store your full card details.</p></div>
         <div class="info-card"><h2>Questions</h2><p>Write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> for help, or <a href="mailto:billing@elmstool.com">billing@elmstool.com</a> about a payment.</p></div>
       </div>
     </div>
@@ -145,7 +145,7 @@
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { n = Number(n); return '$' + (n % 1 ? n.toFixed(2) : String(n)); }
 
-  function render(plans) {
+  function render(plans, card) {
     var box = $('plans');
     if (!plans.length) {
       box.innerHTML = '';
@@ -164,6 +164,7 @@
         '<li>Imports, publishing and AI tools</li><li>Credits back if an action fails</li></ul>' +
         '<a class="btn ' + (isBest ? 'primary' : 'ghost') + '" href="/signup">Get started</a></div>';
     }).join('');
+    if (card) $('howPay').textContent = 'You create a free account first, then buy a plan from inside ELMS. Pay with Cash App, or with a card (Visa, Mastercard, American Express and more), PayPal, Apple Pay or Google Pay where they are offered at checkout. Checkout is handled by our payment providers, who also send your receipt. We never see or store your full card details.';
     $('note').textContent = 'Prices are in US dollars. Create a free account first, then buy the plan you want from inside ELMS.';
   }
 
@@ -177,7 +178,7 @@
     var giveUp = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
     fetch(API + '/api/payments/public-plans', ctl ? { signal: ctl.signal } : undefined)
       .then(function (r) { return r.json(); })
-      .then(function (d) { clearTimeout(giveUp); if (!d || !d.success) throw new Error('no plans'); render(d.plans || []); })
+      .then(function (d) { clearTimeout(giveUp); if (!d || !d.success) throw new Error('no plans'); render(d.plans || [], !!d.card); })
       .catch(function () { clearTimeout(giveUp); if (attempt < 2) load(attempt + 1); else fail(); });
   }
   load(1);
