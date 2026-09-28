@@ -12634,6 +12634,7 @@ async function autoSuggestEmptyDraftCategories() {
               <select id="ordCarrier">${CARRIERS.map((c) => `<option value="${escapeAttr(c)}"${c === (o.shipping_carrier || '') ? ' selected' : ''}>${c || 'Carrier (auto-detect)'}</option>`).join('')}</select>
               <input id="ordTracking" type="text" placeholder="Tracking number" value="${escapeAttr(o.tracking_number || '')}" />
             </div></label>
+          ${o.tracking_code ? `<div class="ord-sub">Buyer tracking page (no supplier name shown): <a href="https://elmstool.com/track/${encodeURIComponent(o.tracking_code)}" target="_blank" rel="noopener noreferrer">elmstool.com/track/${escapeHtml(o.tracking_code)}</a> <button class="ord-link" type="button" id="ordCopyTrackLink">Copy link</button></div>` : ''}
           <div class="ord-row-inline">
             <button class="ord-btn primary" type="button" id="ordMarkShipped"${st === 'cancelled' || st === 'awaiting_payment' ? ' disabled' : ''}>${st === 'shipped' || st === 'delivered' ? 'Update tracking' : 'Mark as shipped on eBay'}</button>
             <button class="ord-btn" type="button" id="ordMarkDelivered"${st === 'delivered' || st === 'cancelled' ? ' disabled' : ''}>Mark delivered</button>
@@ -12697,8 +12698,19 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await json(`/api/orders/${encodeURIComponent(o.id)}/tracking`, { method: 'PUT', body: JSON.stringify({ trackingNumber, shippingCarrier: $('ordCarrier').value || undefined }) });
       if (data.ebayNotified) showToast('Shipped', 'Tracking was sent to eBay.', 'success');
       else showToast('Saved in ELMS only', data.ebayError ? `eBay could not be updated: ${data.ebayError}` : 'This order is not linked to an eBay account, so eBay was not updated.', 'error');
-      apply(data.order);
+      apply({ ...data.order, tracking_code: data.trackingCode || null });
     }));
+    $('ordCopyTrackLink')?.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(`https://elmstool.com/track/${o.tracking_code}`); showToast('Copied', 'Tracking page link copied.', 'success'); }
+      catch (_) { showToast('Copy failed', 'Select the link and copy it manually.', 'error'); }
+    });
+    // The order already has a tracking number (saved earlier, maybe in an older session) but this drawer instance
+    // does not know its code yet - look it up once rather than making the seller re-save the tracking number.
+    // 'tracking_code' in o (not just its value) is the "already checked" flag, so a real "no code exists" answer
+    // (null) is not re-fetched on every redraw the same way an undetermined one correctly keeps retrying.
+    if (o.tracking_number && !('tracking_code' in o)) {
+      json(`/api/orders/${encodeURIComponent(o.id)}/tracking-link`).then((data) => apply({ id: o.id, tracking_code: data.trackingCode || null })).catch(() => {});
+    }
     $('ordMarkDelivered').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
       const data = await json(`/api/orders/${encodeURIComponent(o.id)}`, { method: 'PUT', body: JSON.stringify({ fulfillmentStatus: 'delivered' }) });
       apply(data.order);

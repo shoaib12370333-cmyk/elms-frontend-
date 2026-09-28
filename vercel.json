@@ -13,6 +13,8 @@
     },
     { "source": "/refund", "destination": "/refund.html" },
     { "source": "/plans", "destination": "/pricing.html" },
+    { "source": "/track", "destination": "/track.html" },
+    { "source": "/track/:code", "destination": "/track.html" },
     {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
