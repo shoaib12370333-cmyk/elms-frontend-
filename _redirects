@@ -1,5 +1,7 @@
 /policy          /policy.html   200
 /refund          /refund.html   200
 /plans           /pricing.html  200
+/track/*         /track.html    200
+/track           /track.html    200
 /privacy.html    /policy        301
 /*               /index.html    200
