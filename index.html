@@ -3497,6 +3497,7 @@
   .vr-suggest button { display:block; width:100%; text-align:left; border:none; background:transparent; padding:9px 14px; font:600 13.5px Inter,sans-serif; color:var(--ink); cursor:pointer; }
   .vr-suggest button:hover, .vr-suggest button.on { background:#EEF4FF; } .vr-suggest button b { color:#0064D2; }
   .vr-hint { display:block; margin-top:6px; color:var(--grey); font-size:12.5px; }
+  .vr-quickrow { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
   .vr-listhead { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:16px 0 8px; font:800 13.5px Inter,sans-serif; }
   .vr-chips { display:flex; flex-wrap:wrap; gap:8px; }
   .vr-chip { display:inline-flex; align-items:center; gap:6px; background:#FEF2F2; border:1px solid #FECACA; color:#B42318; border-radius:99px; padding:5px 6px 5px 12px; font:700 13px Inter,sans-serif; word-break:break-word; }
@@ -4943,6 +4944,11 @@
                 <div class="vr-suggest" id="veroSuggest" style="display:none;"></div>
               </div>
               <small class="vr-hint">Enter saves it and the box is ready for the next word. You can paste several separated by commas. Suggestions appear as you type; only the words you save are used.</small>
+            </div>
+            <div class="vr-quickrow">
+              <button class="st-btn small" id="veroUseAllBtn" type="button" title="Add every one of ELMS's suggested brand/character words to your list in one click">Use ELMS's words</button>
+              <button class="st-btn small" id="veroImportPdfBtn" type="button" title="Upload a PDF word list and add every usable word on it">Import from PDF</button>
+              <input type="file" id="veroImportPdfInput" accept="application/pdf,.pdf" style="display:none;" />
             </div>
             <div class="vr-listhead"><b>Your words <span id="veroCount"></span></b><button class="st-btn small danger" id="veroClearBtn" type="button" style="display:none;">Clear all</button></div>
             <div class="vr-chips" id="veroChips"></div>
@@ -13625,6 +13631,43 @@ async function autoSuggestEmptyDraftCategories() {
         veroMine = [];
         veroListChanged();
       } catch (err) { showToast('VeRO words', err.message, 'error'); }
+    });
+    document.getElementById('veroUseAllBtn').addEventListener('click', async (e) => {
+      const have = new Set(veroMine);
+      const missing = veroSuggestions.filter((w) => !have.has(w));
+      if (!missing.length) { showToast('VeRO words', 'You already have every one of ELMS’s suggested words.', 'info'); return; }
+      if (!(await elmsConfirm('Add all ' + missing.length + ' of ELMS’s suggested words (brand/character names) to your list?', { title: 'Use ELMS’s words', okText: 'Add ' + missing.length + ' words' }))) return;
+      const btn = e.currentTarget; const was = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Adding…';
+      try {
+        const res = await apiFetch('/api/vero/words', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ words: missing }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not add those words.');
+        veroMine = data.words || veroMine;
+        veroListChanged();
+        showToast('VeRO words', (data.added || []).length + ' word(s) added.', 'success');
+      } catch (err) { showToast('Could not add ELMS’s words', err.message, 'error'); }
+      btn.disabled = false; btn.textContent = was;
+    });
+    const pdfInput = document.getElementById('veroImportPdfInput');
+    document.getElementById('veroImportPdfBtn').addEventListener('click', () => pdfInput.click());
+    pdfInput.addEventListener('change', async () => {
+      const file = pdfInput.files && pdfInput.files[0];
+      if (!file) return;
+      const btn = document.getElementById('veroImportPdfBtn'); const was = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Importing…';
+      try {
+        const form = new FormData();
+        form.append('pdf', file);
+        const res = await apiFetch('/api/vero/import-pdf', { method: 'POST', body: form });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not read that PDF.');
+        veroMine = data.words || veroMine;
+        veroListChanged();
+        showToast('Imported from PDF', (data.added || []).length + ' word(s) added.' + ((data.skipped || []).length ? ' ' + data.skipped.length + ' line(s) skipped.' : ''), 'success');
+      } catch (err) { showToast('Could not import that PDF', err.message, 'error'); }
+      btn.disabled = false; btn.textContent = was;
+      pdfInput.value = '';
     });
   })();
 
