@@ -2891,10 +2891,14 @@
   .ord-import { margin:8px 0 4px; padding:10px; border:1px dashed var(--line, #d9dee7); border-radius:10px; } .ord-import .ord-cost { display:flex; margin-top:8px; } .ord-import .ord-cost input { flex:1; width:auto; min-width:0; }
   .ord-cost { display:inline-flex; gap:6px; align-items:center; } .ord-cost input { width:92px; padding:5px 8px; border:1px solid var(--border, #d9dee7); border-radius:8px; font:inherit; }
   .ord-inline-sheet { background:#F8FAFC; border:1px solid #E5E9F0; border-radius:8px; padding:3px 8px 3px 7px; gap:3px; }
+  .ord-inline-sheet .ord-sheet-label { color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; margin-right:1px; }
   .ord-inline-sheet .ord-sheet-currency { color:#94A3B8; font-size:12.5px; font-weight:600; }
   .ord-inline-sheet input.ord-sheet-input { width:52px; border:none; background:transparent; padding:2px 0; font-size:12.5px; font-weight:600; color:#0F172A; -moz-appearance:textfield; }
   .ord-inline-sheet input.ord-sheet-input:focus { outline:2px solid #0064D2; outline-offset:1px; border-radius:4px; }
   .ord-inline-sheet input.ord-sheet-input::-webkit-outer-spin-button, .ord-inline-sheet input.ord-sheet-input::-webkit-inner-spin-button { margin:0; }
+  .ord-earning-pill { background:#EEF6DF; border-color:#DCEBC2; margin-left:6px; }
+  .ord-earning-pill .ord-sheet-label { color:#5b8f0e; }
+  .ord-earning-pill .ord-sheet-value { font-size:12.5px; font-weight:700; color:#3F6208; }
   .ih-status { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
   .ih-status.success { background:#EEF6DF; color:#5b8f0e; }
   .ih-status.failed { background:#FDECEC; color:#E53238; }
@@ -12285,11 +12289,16 @@ async function autoSuggestEmptyDraftCategories() {
 
   /** The Net Profit sheet's Buying price cell, editable right on the order row/drawer - the same PATCH /api/net-profit/:id the
    * sheet itself uses (npFigures/npApplyLine), so typing here and typing on the sheet are the same save. Saves on change
-   * (blur/Enter), no separate edit step. Order earning is not typed here anymore - eBay's own payout figure fills it. */
+   * (blur/Enter), no separate edit step. Both pills are labelled so they read on their own, with no hover needed.
+   * Order earning is not typed here - it fills in by itself once eBay settles the payout (jobs/orderEarningsSync.js),
+   * so it only shows once ELMS actually has a figure; there is nothing to type or save for it on this row. */
   function orderSheetInputsHtml(o) {
+    const earning = o.order_earning != null
+      ? `<span class="ord-cost ord-inline-sheet ord-earning-pill" title="What eBay paid you for this order, fetched automatically from eBay"><span class="ord-sheet-label">Earning</span><span class="ord-sheet-currency">$</span><span class="ord-sheet-value">${escapeHtml(Number(o.order_earning).toFixed(2))}</span></span>`
+      : '';
     return `<span class="ord-cost ord-inline-sheet">
-      <span class="ord-sheet-currency">$</span><input type="number" min="0" step="0.01" inputmode="decimal" class="ord-sheet-input" data-order-sheet="amazon" placeholder="0.00" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" title="What you paid to buy this order (on Amazon)" />
-    </span>`;
+      <span class="ord-sheet-label">Buying cost</span><span class="ord-sheet-currency">$</span><input type="number" min="0" step="0.01" inputmode="decimal" class="ord-sheet-input" data-order-sheet="amazon" placeholder="0.00" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" title="What you paid to buy this order (on Amazon)" />
+    </span>${earning}`;
   }
 
   /** Saves the inline Buying price cell of one order row/drawer (see orderSheetInputsHtml). Shared by the row list and the drawer. */
