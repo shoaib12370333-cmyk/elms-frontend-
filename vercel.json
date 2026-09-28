@@ -11,6 +11,8 @@
       "source": "/policy",
       "destination": "/policy.html"
     },
+    { "source": "/refund", "destination": "/refund.html" },
+    { "source": "/plans", "destination": "/pricing.html" },
     {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
