@@ -7,60 +7,75 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--bg:#F5F7FB;--card:#fff;--blue:#0064D2;--red:#E53238;--yellow:#F5AF02;--green:#86B817}
-@media (prefers-color-scheme:dark){:root{--ink:#E5EAF3;--muted:#94A3B8;--line:#26314A;--bg:#0B1220;--card:#111A2E;--blue:#5AA7FF}}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
-a{color:var(--blue)}
-.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.top-in{max-width:1120px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.logo{display:flex;align-items:center;text-decoration:none}.logo img{display:block;height:26px;width:auto}
-.nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
-.nav a{padding:7px 14px;border-radius:99px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px}
-.nav a:hover{background:color-mix(in srgb,var(--blue) 10%,transparent);color:var(--ink)}
+:root{--ink:#0B1220;--ink2:#334155;--muted:#64748B;--line:#E4E9F2;--bg:#FFFFFF;--soft:#F5F8FE;--card:#fff;--red:#E53238;--blue:#0064D2;--yellow:#F5AF02;--green:#86B817;--shadow:0 18px 50px rgba(15,35,80,.12);--radius:20px}
+@media (prefers-color-scheme:dark){:root{--ink:#E5EAF3;--ink2:#C7D2E4;--muted:#94A3B8;--line:#26314A;--bg:#0B1220;--soft:#111A2E;--card:#111A2E;--blue:#5AA7FF;--shadow:0 18px 50px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+.grad{background:linear-gradient(90deg,var(--blue),#2E8BFF 45%,var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--card) 86%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .2s,box-shadow .2s}
+.top.stuck{border-color:var(--line);box-shadow:0 6px 24px rgba(15,35,80,.06)}
+.top-in{max-width:1160px;margin:0 auto;padding:0 20px;height:66px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:center}.logo img{display:block;height:26px;width:auto}
+.nav{display:flex;gap:4px;margin-left:8px;flex-wrap:wrap}
+.nav a{padding:8px 14px;border-radius:99px;font-weight:600;font-size:13.5px;color:var(--muted);transition:background .15s,color .15s}
+.nav a:hover{background:var(--soft);color:var(--blue)}
 .nav a.on{background:var(--blue);color:#fff}
-.back{font-weight:700;font-size:13.5px;text-decoration:none;padding:7px 14px;border:1.5px solid var(--line);border-radius:99px;color:var(--ink)}
-.hero{max-width:1120px;margin:0 auto;padding:44px 20px 10px}
-.hero h1{margin:0;font-size:clamp(28px,5vw,40px);letter-spacing:-.03em;line-height:1.15}
-.hero p{margin:10px 0 0;color:var(--muted);max-width:660px;font-size:16px}
-.stamp{display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:99px;background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--ink)}
-.wrap{max-width:1120px;margin:0 auto;padding:22px 20px 60px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}
-.toc{position:sticky;top:84px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;font-size:13.5px}
+.back{margin-left:auto;font-weight:700;font-size:13.5px;padding:9px 16px;border:1.5px solid var(--line);border-radius:99px;color:var(--ink);transition:transform .15s,border-color .15s,color .15s;white-space:nowrap}
+.back:hover{transform:translateY(-1px);border-color:var(--blue);color:var(--blue)}
+.hero{position:relative;max-width:1160px;margin:0 auto;padding:54px 20px 14px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:-40% -10% auto -10%;height:180%;z-index:-1;background:radial-gradient(480px 240px at 12% 20%,rgba(0,100,210,.12),transparent 70%),radial-gradient(420px 220px at 90% 0%,rgba(134,184,23,.12),transparent 70%)}
+.hero h1{margin:0;font-size:clamp(30px,5vw,44px);letter-spacing:-.03em;line-height:1.12;font-weight:900}
+.hero p{margin:12px 0 0;color:var(--ink2);max-width:660px;font-size:16.5px}
+.stamp{display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:12.5px;font-weight:800;padding:6px 13px;border-radius:99px;background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--ink)}
+.stamp::before{content:'✓';color:var(--green)}
+.wrap{max-width:1160px;margin:0 auto;padding:26px 20px 64px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}
+.toc{position:sticky;top:86px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;font-size:13.5px;box-shadow:0 8px 24px rgba(15,35,80,.05)}
 .toc h4{margin:0 0 8px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.toc a{display:block;padding:6px 10px;border-radius:8px;text-decoration:none;color:var(--ink)}
-.toc a:hover{background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--ink2);font-weight:600;transition:background .15s,color .15s}
+.toc a:hover{background:var(--soft);color:var(--blue)}
+.toc a.cur{background:var(--soft);color:var(--blue)}
 .doc{min-width:0}
-.sec{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:16px}
+.sec{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:18px;opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1),box-shadow .25s}
+.sec.in{opacity:1;transform:none}
+.sec:hover{box-shadow:var(--shadow)}
 .sec::before{content:'';position:absolute;left:0;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--red) 0 25%,var(--blue) 25% 50%,var(--yellow) 50% 75%,var(--green) 75%)}
-.sec h2{margin:0 0 10px;font-size:20px;letter-spacing:-.01em;display:flex;gap:10px;align-items:center}
-.sec h2 i{font-style:normal;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--blue) 14%,transparent);font-size:12px;font-weight:800;color:var(--blue);flex:none}
-.sec h3{margin:18px 0 4px;font-size:15px}
-.sec p,.sec li{color:var(--muted)}.sec p{margin:8px 0}
-.sec ul,.sec ol{padding-left:22px;margin:8px 0}.sec li{margin:4px 0}
+.sec h2{margin:0 0 12px;font-size:21px;letter-spacing:-.01em;font-weight:800;display:flex;gap:12px;align-items:center}
+.sec h2 i{font-style:normal;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:color-mix(in srgb,var(--blue) 14%,transparent);font-size:13px;font-weight:900;color:var(--blue);flex:none}
+.sec h3{margin:20px 0 6px;font-size:15.5px;font-weight:800}
+.sec p,.sec li{color:var(--ink2)}.sec p{margin:9px 0}
+.sec ul,.sec ol{padding-left:22px;margin:9px 0}.sec li{margin:5px 0}
 .sec strong{color:var(--ink)}
-.callout{margin:14px 0;padding:14px 16px;border-radius:12px;border:1px solid var(--line);border-left:4px solid var(--blue);background:color-mix(in srgb,var(--blue) 7%,transparent);color:var(--ink);font-size:14px}
+.callout{margin:16px 0;padding:14px 16px;border-radius:12px;border:1px solid var(--line);border-left:4px solid var(--blue);background:color-mix(in srgb,var(--blue) 7%,transparent);color:var(--ink);font-size:14px;font-weight:500}
 .callout.warn{border-left-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 12%,transparent)}
 .callout.ok{border-left-color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent)}
 table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
-th{text-align:left;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1.5px solid var(--line)}
-td{padding:10px;border-bottom:1px solid var(--line);color:var(--muted);vertical-align:top}td:first-child{color:var(--ink);font-weight:600}
-.tw{overflow-x:auto}
+th{text-align:left;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:9px 10px;border-bottom:1.5px solid var(--line)}
+td{padding:11px 10px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:top}td:first-child{color:var(--ink);font-weight:700}
+.tw{overflow-x:auto;border-radius:12px}
 .steps{counter-reset:s;list-style:none;padding:0}
-.steps li{counter-increment:s;position:relative;padding:4px 0 4px 42px;margin:10px 0}
-.steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center}
-details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0;background:var(--bg)}
-summary{cursor:pointer;font-weight:700;color:var(--ink)}
-code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:1px 6px;border-radius:6px;font-size:13px}
-.foot{max-width:1120px;margin:0 auto;padding:26px 20px 44px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
-.foot a{color:var(--muted);margin-right:14px}
-@media(max-width:860px){.wrap{grid-template-columns:1fr}.toc{position:static}.nav{margin-left:0;width:100%}.sec{padding:22px 18px}}
+.steps li{counter-increment:s;position:relative;padding:4px 0 4px 44px;margin:12px 0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#2E8BFF);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,100,210,.3)}
+details{border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:12px 0;background:var(--soft);transition:border-color .2s,box-shadow .2s}
+details[open]{border-color:var(--blue);box-shadow:0 8px 24px rgba(0,100,210,.08)}
+summary{cursor:pointer;font-weight:700;color:var(--ink);list-style:none}
+summary::-webkit-details-marker{display:none}
+code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:2px 7px;border-radius:6px;font-size:13px}
+.foot{border-top:1px solid var(--line)}
+.foot-in{max-width:1160px;margin:0 auto;padding:34px 20px 44px;display:flex;flex-direction:column;gap:14px}
+.foot-top{display:flex;gap:18px 26px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.foot-nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;font-weight:600;color:var(--muted)}
+.foot-nav a{color:var(--muted)}.foot-nav a:hover{color:var(--blue)}
+.foot-legal{color:var(--muted);font-size:12.5px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}.toc{position:static}.nav{display:none}.sec{padding:22px 20px}}
+@media (prefers-reduced-motion:reduce){.sec{opacity:1!important;transform:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style></head><body>
 <header class="top"><div class="top-in">
 <a class="logo" href="/" aria-label="ELMS"><img src="/logo-wordmark.png" alt="ELMS" width="99" height="26"></a>
-<nav class="nav"><a href="./user-guide.html">User Guide</a><a href="/terms">Terms of Service</a><a href="/privacy" class="on">Privacy Policy</a></nav>
+<nav class="nav"><a href="/plans">Pricing</a><a href="./user-guide.html">User Guide</a><a href="/terms">Terms of Service</a><a href="/privacy" class="on">Privacy Policy</a></nav>
 <a class="back" href="/dashboard">&larr; Back to app</a>
 </div></header>
-<div class="hero"><h1>Privacy Policy</h1><p>What we collect, why we collect it, who sees it and how you stay in control.</p><span class="stamp">Last updated September 26, 2026</span></div>
+<div class="hero"><h1>Privacy <span class="grad">Policy</span></h1><p>What we collect, why we collect it, who sees it and how you stay in control.</p><span class="stamp">Last updated September 26, 2026</span></div>
 <div class="wrap"><aside class="toc"><h4>On this page</h4><a href="#who">1. Who we are</a><a href="#collect">2. What we collect</a><a href="#use">3. How we use it</a><a href="#share">4. Who we share it with</a><a href="#retention">5. How long we keep it</a><a href="#security">6. Security</a><a href="#rights">7. Your choices and rights</a><a href="#cookies">8. Cookies and local storage</a><a href="#children">9. Children</a><a href="#changes">10. Changes and contact</a></aside><main class="doc">
 <section class="sec" id="who"><h2><i>1</i>Who we are</h2>
 <p>This policy explains what personal data ELMS collects, why, and the choices you have. ELMS is a tool for sellers that imports Amazon product information, creates eBay listings and manages related orders and messages.</p></section>
@@ -144,5 +159,24 @@ code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:1px 6px;b
 <p>Contact: <a href="mailto:support@elmstool.com">support@elmstool.com</a> for help, <a href="mailto:security@elmstool.com">security@elmstool.com</a> for account-security concerns, <a href="mailto:billing@elmstool.com">billing@elmstool.com</a> for payments and credits, and <a href="mailto:hello@elmstool.com">hello@elmstool.com</a> for anything else. Mails from <strong>noreply@elmstool.com</strong> are automatic; please do not reply to them.</p>
 <div class="callout">This document is a general template written for the ELMS service. It is not legal advice; have it reviewed for your country before relying on it.</div></section>
 </main></div>
-<footer class="foot"><div><a href="./user-guide.html">User Guide</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a></div><div>&copy; 2026 ELMS &middot; Amazon-to-eBay listing manager</div></footer>
+<footer class="foot"><div class="foot-in"><div class="foot-top"><a class="logo" href="/" aria-label="ELMS"><img src="/logo-wordmark.png" alt="ELMS" width="99" height="24"></a><nav class="foot-nav"><a href="/plans">Pricing</a><a href="./user-guide.html">User Guide</a><a href="/terms">Terms</a><a href="/refund">Refunds</a><a href="/privacy">Privacy</a></nav></div><div class="foot-legal">&copy; 2026 ELMS &middot; Amazon-to-eBay listing manager</div></div></footer>
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var top = document.querySelector('.top');
+  var onScroll = function(){ top.classList.toggle('stuck', window.scrollY > 6); };
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+  var secs = document.querySelectorAll('.sec');
+  if ('IntersectionObserver' in window && !reduce) {
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, {threshold:.08});
+    secs.forEach(function(s){ io.observe(s); });
+  } else secs.forEach(function(s){ s.classList.add('in'); });
+  var tocLinks = {}; document.querySelectorAll('.toc a').forEach(function(a){ tocLinks[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window) {
+    var cur = null;
+    var so = new IntersectionObserver(function(es){ es.forEach(function(e){ if (!e.isIntersecting) return; var id = e.target.id; if (!tocLinks[id] || cur === id) return; if (cur && tocLinks[cur]) tocLinks[cur].classList.remove('cur'); tocLinks[id].classList.add('cur'); cur = id; }); }, {rootMargin:'-20% 0px -70% 0px'});
+    Object.keys(tocLinks).forEach(function(id){ var el = document.getElementById(id); if (el) so.observe(el); });
+  }
+})();
+</script>
 </body></html>
