@@ -11301,7 +11301,7 @@ async function autoSuggestEmptyDraftCategories() {
         </div>` : `<div class="dv-empty"><b>${anyFilter ? 'No listings in this view' : 'No live listings yet'}</b>${anyFilter ? 'Try another tab or clear the search.' : 'Publish a draft and it appears here with its price, profit and stats.'}</div>`}
         <div class="dv-bulk${llSelected.size ? ' has-selection' : ''}" id="llBulkBar">
           <b id="llSelectedCount">${llSelected.size} selected</b>
-          <button class="dv-btn primary small" id="llChangePriceBtn" type="button" title="Change the price of all the selected live listings on eBay at once, with your Margin">Change price</button>
+          ${llTab === 'sold' ? '<button class="dv-btn primary small" id="llRestockBtn" type="button" title="Put a fresh available quantity on eBay for all the selected sold-out listings">Restock</button>' : '<button class="dv-btn primary small" id="llChangePriceBtn" type="button" title="Change the price of all the selected live listings on eBay at once, with your Margin">Change price</button>'}
           <button class="dv-btn small" id="llClearBtn" type="button">Clear</button>
         </div>
       </div>
@@ -11379,7 +11379,7 @@ async function autoSuggestEmptyDraftCategories() {
     const pct = (n) => Math.max(0, Math.min(100, Math.round((n / total) * 100)));
     return `
       <article class="lv-card ll-row ${escapeAttr(st)}" data-listing-id="${escapeAttr(l.id)}">
-        ${st === 'active' ? `<label class="dv-checkwrap"><input type="checkbox" class="dv-check" aria-label="Select this listing"${llSelected.has(String(l.id)) ? ' checked' : ''} /></label>` : ''}
+        ${st === 'active' || st === 'sold' ? `<label class="dv-checkwrap"><input type="checkbox" class="dv-check" aria-label="Select this listing"${llSelected.has(String(l.id)) ? ' checked' : ''} /></label>` : ''}
         ${l.main_image ? `<img class="lv-img" data-action="view" src="${escapeAttr(l.main_image)}" alt="" loading="lazy" />` : '<div class="lv-img" data-action="view"></div>'}
         <div class="lv-main">
           <span class="lv-status">${escapeHtml(statusText)}</span>
@@ -11407,6 +11407,50 @@ async function autoSuggestEmptyDraftCategories() {
           <button type="button" class="dv-btn small dv-dots" data-action="menu" title="More" aria-label="More actions">&#8942;</button>
         </div>
       </article>`;
+  }
+
+  /** "Sold" tab -> "Restock": one new available quantity, sent to POST /api/listings/bulk-restock for every selected
+   * sold-out listing. Deliberately its own small dialog (not openBulkEditModal, built for price/several-field edits) -
+   * there is only ever one number to ask for here. */
+  function openRestockDialog(ids) {
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box mo-box" role="dialog" aria-modal="true" aria-label="Restock">
+        <div class="elms-confirm-title">Restock <span class="be-count">${ids.length} listing${ids.length === 1 ? '' : 's'}</span></div>
+        <div class="elms-confirm-message">The new available quantity, put on eBay for each selected listing. A listing moves back to Active as soon as eBay takes it.</div>
+        <label class="mo-f"><span>New quantity</span><input type="number" id="rsQty" min="1" step="1" inputmode="numeric" placeholder="e.g. 1" /></label>
+        <div class="ord-sub bad" id="rsError"></div>
+        <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok">Restock</button></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const $ = (id) => overlay.querySelector('#' + id);
+    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-act="cancel"]').addEventListener('click', close);
+    overlay.querySelector('[data-act="ok"]').addEventListener('click', async () => {
+      const qty = Number($('rsQty').value);
+      if (!Number.isInteger(qty) || qty < 1) { $('rsError').textContent = 'Enter a whole number of at least 1.'; return; }
+      const btn = overlay.querySelector('[data-act="ok"]');
+      btn.disabled = true; btn.textContent = 'Restocking…';
+      try {
+        const res = await apiFetch('/api/listings/bulk-restock', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids, quantity: qty }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not restock the listings.');
+        close();
+        llSelected.clear();
+        loadListings();
+        showToast(data.summary.changed ? 'Restocked' : 'Not restocked', data.summary.changed + ' listing' + (data.summary.changed === 1 ? '' : 's') + ' restocked' + (data.summary.skipped ? ', ' + data.summary.skipped + ' skipped' : '') + '.', data.summary.skipped && !data.summary.changed ? 'error' : 'success');
+      } catch (err) {
+        $('rsError').textContent = err.message;
+        btn.disabled = false; btn.textContent = 'Restock';
+      }
+    });
+    $('rsQty').focus();
   }
 
   function wireListingsPage() {
@@ -11469,6 +11513,10 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#llChangePriceBtn')?.addEventListener('click', () => {
       const ids = [...llSelected];
       if (ids.length) openBulkEditModal(ids, { live: true });
+    });
+    root.querySelector('#llRestockBtn')?.addEventListener('click', () => {
+      const ids = [...llSelected];
+      if (ids.length) openRestockDialog(ids);
     });
     // Row View (inline edit) + menu (Edit/Delete)
     wireListingRows();
