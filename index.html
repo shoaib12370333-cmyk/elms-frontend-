@@ -367,9 +367,12 @@
       #0064D2;
     color: #fff;
     overflow: hidden;
+    clip-path: polygon(12% 0%, 100% 0%, 100% 100%, 0% 100%);
+    transition: clip-path .3s ease;
   }
   .auth-card.show-register .auth-welcome-panel {
     order: 1;
+    clip-path: polygon(0% 0%, 100% 0%, 88% 100%, 0% 100%);
   }
   .auth-welcome-panel::after {
     content: '';
