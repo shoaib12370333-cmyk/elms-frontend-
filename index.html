@@ -4998,7 +4998,6 @@
             <div class="st-ico yellow">&#128257;</div>
             <div class="st-head-txt"><h2>Auto Order</h2><p>When a paid eBay order comes in for an Amazon-sourced listing, place the matching Amazon order automatically.</p></div>
           </div>
-          <div class="rf-notice warn"><span class="rf-ni">&#9888;</span><div><b>Before you turn Full-auto on:</b> eBay's drop shipping policy does not allow fulfilling an order by buying it from another online retailer that ships directly to the buyer. Turning this on is your decision, and your eBay account stays your responsibility &mdash; ELMS only automates the click.</div></div>
           <div class="st-field">
             <label>Mode</label>
             <select class="st-input" id="autoOrderModeSelect">
@@ -14124,19 +14123,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   document.getElementById('autoOrderModeSelect').addEventListener('change', async (e) => {
-    const select = e.target;
-    if (select.value === 'full_auto' && autoOrderPrevMode !== 'full_auto') {
-      const ok = await elmsConfirm(
-        "eBay's drop shipping policy does not allow fulfilling an order by buying it from another online retailer that ships directly to the buyer. Turning Full-auto on is your decision, and your eBay account stays your responsibility - ELMS only automates the click.",
-        { title: 'Turn Full-auto on?', okText: 'Turn it on', danger: true }
-      );
-      if (!ok) {
-        select.value = autoOrderPrevMode;
-        updateAutoOrderFieldsVisibility();
-        return;
-      }
-    }
-    autoOrderPrevMode = select.value;
+    autoOrderPrevMode = e.target.value;
     updateAutoOrderFieldsVisibility();
   });
 
