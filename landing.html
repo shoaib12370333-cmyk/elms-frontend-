@@ -888,7 +888,7 @@
       var isBest = best && p === best;
       var cents = per(p) < 0.1 ? (per(p) * 100).toFixed(1) + '¢' : '$' + per(p).toFixed(2);
       return '<div class="plan' + (isBest ? ' best' : '') + '">' + (isBest ? '<span class="badge">BEST VALUE</span>' : '') +
-        '<h3>' + esc(p.name) + '</h3><div class="price">$' + (+p.priceUsd % 1 ? (+p.priceUsd).toFixed(2) : (+p.priceUsd)) + ' <small>one time</small></div>' +
+        '<h3>' + esc(p.name) + '</h3><div class="price">$' + (+p.priceUsd % 1 ? (+p.priceUsd).toFixed(2) : (+p.priceUsd)) + ' <small>one time + tax</small></div>' +
         '<div class="per">about ' + cents + ' per credit</div><ul><li>' + Number(p.credits).toLocaleString() + ' credits</li>' +
         '<li>' + (p.maxEbayAccounts ? 'Connect up to ' + p.maxEbayAccounts + ' eBay account' + (p.maxEbayAccounts === 1 ? '' : 's') : 'Connect your eBay accounts') + '</li>' +
         '<li>Imports, publishing and AI tools</li><li>Credits back if an action fails</li></ul>' +
