@@ -11345,10 +11345,10 @@ async function autoSuggestEmptyDraftCategories() {
   let llSearchTimer = null;
   let llAutoRefreshed = false;
   let llSelected = new Set(); // ids of the live listings ticked for "Change price" (they can be on any page)
-  let llPageIds = []; // the selectable (active) live listings on the page being looked at
+  let llPageIds = []; // the selectable (active or sold) live listings on the page being looked at
   const LL_PAGE_SIZE = 12;
-  // What each tab asks the server for. "Sold" and "Issues" are not statuses of a listing, so they show nothing (as before).
-  const LL_TAB_STATUS = { all: 'published', active: 'published', ended: 'ended', sold: 'sold', issues: 'issues' };
+  // What each tab asks the server for - the real DB status value each tab's listings actually have.
+  const LL_TAB_STATUS = { all: 'published', active: 'published', ended: 'ended', sold: 'sold', issues: 'error' };
 
   function llListingStatus(l) {
     const s = String(l.status || '').toLowerCase();
@@ -11511,7 +11511,9 @@ async function autoSuggestEmptyDraftCategories() {
     const keep = typing && document.activeElement === typing ? { value: typing.value, pos: typing.selectionStart } : null; // what is being typed is not lost by a redraw
     const pages = Math.max(1, llPages);
     const start = (llPage - 1) * LL_PAGE_SIZE;
-    llPageIds = llAll.filter((l) => llListingStatus(l) === 'active').map((l) => String(l.id));
+    // Checkboxes render for 'active' and 'sold' rows alike (listingRowHtml below) - this must match, or the tab whose
+    // status isn't 'active' (Sold) permanently shows a disabled "Select" checkbox and no "Select all N" (confirmed bug).
+    llPageIds = llAll.filter((l) => ['active', 'sold'].includes(llListingStatus(l))).map((l) => String(l.id));
     const anyFilter = !!(llSearch || llVeroOnly || llTab !== 'all');
 
     container.innerHTML = `
@@ -11548,6 +11550,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="dv-bulk${llSelected.size ? ' has-selection' : ''}" id="llBulkBar">
           <b id="llSelectedCount">${llSelected.size} selected</b>
           ${llTab === 'sold' ? '<button class="dv-btn primary small" id="llRestockBtn" type="button" title="Put a fresh available quantity on eBay for all the selected sold-out listings">Restock</button>' : '<button class="dv-btn primary small" id="llChangePriceBtn" type="button" title="Change the price of all the selected live listings on eBay at once, with your Margin">Change price</button>'}
+          <button class="dv-btn small" id="llBulkSettingsBtn" type="button" title="Change tags, note, shipping method or monitoring for all the selected listings at once - active or sold-out">Bulk edit</button>
           <button class="dv-btn small" id="llClearBtn" type="button">Clear</button>
         </div>
       </div>
@@ -11682,21 +11685,98 @@ async function autoSuggestEmptyDraftCategories() {
       const qty = Number($('rsQty').value);
       if (!Number.isInteger(qty) || qty < 1) { $('rsError').textContent = 'Enter a whole number of at least 1.'; return; }
       const btn = overlay.querySelector('[data-act="ok"]');
-      btn.disabled = true; btn.textContent = 'Restocking…';
+      btn.disabled = true;
+      // Each listing is now several real eBay round trips (write, verify, republish if needed), so a big "Select all"
+      // is sent RS_CHUNK at a time (matches the backend's own per-request cap) instead of one request for everything -
+      // a selection past the old single-request cap used to be refused outright with nothing restocked at all.
+      const RS_CHUNK = 20;
+      const all = []; let stop = '';
       try {
-        const res = await apiFetch('/api/listings/bulk-restock', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids, quantity: qty }) });
+        for (let i = 0; i < ids.length && !stop; i += RS_CHUNK) {
+          btn.textContent = `Restocking ${Math.min(i + RS_CHUNK, ids.length)}/${ids.length}…`;
+          const res = await apiFetch('/api/listings/bulk-restock', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: ids.slice(i, i + RS_CHUNK), quantity: qty }) });
+          const data = await res.json();
+          if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
+          all.push(...data.results);
+        }
+      } catch (err) {
+        stop = err.message || 'Could not reach the server.';
+      }
+      const changed = all.filter((r) => r.status === 'changed').length;
+      const skipped = all.filter((r) => r.status === 'skipped');
+      if (stop && !all.length) { $('rsError').textContent = stop; btn.disabled = false; btn.textContent = 'Restock'; return; }
+      close();
+      llSelected.clear();
+      loadListings();
+      const attention = stop ? [stop] : [];
+      if (skipped.length) attention.push(...skipped.slice(0, 12).map((r) => `${(r.title || r.id)}: ${r.reason}`));
+      showToast(changed ? 'Restocked' : 'Not restocked', changed + ' listing' + (changed === 1 ? '' : 's') + ' restocked' + (skipped.length ? ', ' + skipped.length + ' skipped' : '') + (attention.length ? '. ' + attention[0] : '.'), skipped.length && !changed ? 'error' : 'success');
+    });
+    $('rsQty').focus();
+  }
+
+  /** Live Listings' "Bulk edit": ELMS-side settings only (never title/price/quantity/eBay), so it works on Active
+   * and Sold listings alike, unlike Change price / Restock. Backend: PATCH /api/listings/bulk-settings. */
+  const LL_SETTINGS_FIELDS = [
+    { key: 'tags', label: 'Tags', hint: 'Replaces the tags on every selected listing' },
+    { key: 'note', label: 'Note', hint: 'Replaces your private note - leave blank to clear it' },
+    { key: 'shippingMethod', label: 'Shipping method', hint: '' },
+    { key: 'stockMonitoring', label: 'Stock monitoring', hint: '' },
+    { key: 'priceMonitoring', label: 'Price monitoring', hint: '' },
+  ];
+  function llSettingsFieldControl(key) {
+    if (key === 'tags') return `<input type="text" data-ls-val="tags" placeholder="tag1, tag2" disabled />`;
+    if (key === 'note') return `<textarea data-ls-val="note" rows="2" style="height:auto;" disabled></textarea>`;
+    if (key === 'shippingMethod') return `<select data-ls-val="shippingMethod" disabled><option value="cheapest_with_tracking">Cheapest with tracking</option><option value="standard">Standard</option><option value="express">Express</option></select>`;
+    return `<select data-ls-val="${key}" disabled><option value="1">On</option><option value="0">Off</option></select>`;
+  }
+  function openLiveSettingsDialog(ids) {
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box bk-box" role="dialog" aria-modal="true" aria-label="Bulk edit">
+        <div class="elms-confirm-title">Bulk edit <span class="be-count">${ids.length} listing${ids.length === 1 ? '' : 's'}</span></div>
+        <div class="elms-confirm-message">Tick what to change - only ticked fields are touched. Never sent to eBay: title, price, quantity and images stay exactly as they are.</div>
+        ${LL_SETTINGS_FIELDS.map((f) => `<label class="mo-f" style="display:block;margin-bottom:10px;"><span style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" data-ls-pick="${f.key}" /> ${f.label}</span>${f.hint ? `<small style="display:block;color:#667085;margin:2px 0 6px 24px;">${f.hint}</small>` : ''}${llSettingsFieldControl(f.key)}</label>`).join('')}
+        <div class="ord-sub bad" id="lsError"></div>
+        <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok">Save</button></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const $ = (sel) => overlay.querySelector(sel);
+    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-act="cancel"]').addEventListener('click', close);
+    overlay.querySelectorAll('[data-ls-pick]').forEach((cb) => cb.addEventListener('change', () => {
+      const ctrl = overlay.querySelector(`[data-ls-val="${cb.getAttribute('data-ls-pick')}"]`);
+      if (ctrl) ctrl.disabled = !cb.checked;
+    }));
+    overlay.querySelector('[data-act="ok"]').addEventListener('click', async () => {
+      const body = { ids };
+      overlay.querySelectorAll('[data-ls-pick]:checked').forEach((cb) => {
+        const key = cb.getAttribute('data-ls-pick');
+        const val = overlay.querySelector(`[data-ls-val="${key}"]`).value;
+        body[key] = (key === 'stockMonitoring' || key === 'priceMonitoring') ? val === '1' : val;
+      });
+      if (Object.keys(body).length <= 1) { $('#lsError').textContent = 'Tick at least one field to change.'; return; }
+      const btn = overlay.querySelector('[data-act="ok"]');
+      btn.disabled = true; btn.textContent = 'Saving…';
+      try {
+        const res = await apiFetch('/api/listings/bulk-settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Could not restock the listings.');
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save these changes.');
         close();
         llSelected.clear();
         loadListings();
-        showToast(data.summary.changed ? 'Restocked' : 'Not restocked', data.summary.changed + ' listing' + (data.summary.changed === 1 ? '' : 's') + ' restocked' + (data.summary.skipped ? ', ' + data.summary.skipped + ' skipped' : '') + '.', data.summary.skipped && !data.summary.changed ? 'error' : 'success');
+        showToast(data.updated ? 'Saved' : 'Not saved', data.updated + ' listing' + (data.updated === 1 ? '' : 's') + ' updated' + (data.skipped.length ? ', ' + data.skipped.length + ' skipped' : '') + '.', data.skipped.length && !data.updated ? 'error' : 'success');
       } catch (err) {
-        $('rsError').textContent = err.message;
-        btn.disabled = false; btn.textContent = 'Restock';
+        $('#lsError').textContent = err.message;
+        btn.disabled = false; btn.textContent = 'Save';
       }
     });
-    $('rsQty').focus();
   }
 
   function wireListingsPage() {
@@ -11763,6 +11843,10 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#llRestockBtn')?.addEventListener('click', () => {
       const ids = [...llSelected];
       if (ids.length) openRestockDialog(ids);
+    });
+    root.querySelector('#llBulkSettingsBtn')?.addEventListener('click', () => {
+      const ids = [...llSelected];
+      if (ids.length) openLiveSettingsDialog(ids);
     });
     // Row View (inline edit) + menu (Edit/Delete)
     wireListingRows();
