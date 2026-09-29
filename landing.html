@@ -59,8 +59,10 @@
   .nav-cta { margin-left: auto; display: flex; gap: 10px; align-items: center; }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 700 15px Inter, sans-serif; padding: 12px 22px; border-radius: 14px; border: 1.5px solid transparent; cursor: pointer; transition: transform .15s, box-shadow .2s, background .2s; white-space: nowrap; }
   .btn:hover { transform: translateY(-2px); }
-  .btn.primary { background: linear-gradient(135deg, #0064D2, #1E7CF0); color: #fff; box-shadow: 0 10px 26px rgba(0,100,210,.35); }
+  .btn.primary { position: relative; overflow: hidden; background: linear-gradient(135deg, #0064D2, #1E7CF0); color: #fff; box-shadow: 0 10px 26px rgba(0,100,210,.35); }
   .btn.primary:hover { box-shadow: 0 14px 34px rgba(0,100,210,.45); }
+  .btn.primary::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.35) 45%, transparent 60%); transform: translateX(-120%); transition: transform .7s ease; }
+  .btn.primary:hover::after { transform: translateX(120%); }
   .btn.ghost { background: #fff; border-color: var(--line); color: var(--ink); }
   .btn.ghost:hover { border-color: var(--blue); color: var(--blue); }
   .btn.sm { padding: 9px 16px; font-size: 14px; border-radius: 12px; }
@@ -76,16 +78,18 @@
   .pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px 7px 8px; border-radius: 99px; background: #fff; border: 1px solid var(--line); font-size: 13.5px; font-weight: 700; color: var(--ink2); box-shadow: 0 6px 20px rgba(15,35,80,.06); }
   .pill i { font-style: normal; background: var(--green); color: #fff; border-radius: 99px; padding: 2px 9px; font-size: 12px; }
   h1 { font-size: clamp(38px, 5.6vw, 66px); line-height: 1.04; letter-spacing: -.035em; margin: 20px 0 18px; font-weight: 900; }
-  .swap { display: inline-block; position: relative; }
+  .swap { display: inline-block; position: relative; background-size: 200% auto; animation: swapGrad 5s ease infinite; }
   .swap::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 10px; background: rgba(245,175,2,.4); z-index: -1; border-radius: 6px; }
+  @keyframes swapGrad { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
   .lead { font-size: clamp(17px, 1.6vw, 20px); color: var(--ink2); max-width: 560px; margin: 0 0 28px; }
   .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
   .fine { margin-top: 16px; display: flex; gap: 18px; flex-wrap: wrap; color: var(--mute); font-size: 14px; font-weight: 600; }
   .fine span::before { content: '✓'; color: var(--green); font-weight: 900; margin-right: 6px; }
 
   /* the animated demo window */
-  .win { background: #fff; border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); overflow: hidden; transform: rotate(1.2deg); transition: transform .4s; }
+  .win { background: #fff; border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); overflow: hidden; transform: rotate(1.2deg); transition: transform .4s; animation: winIn .8s cubic-bezier(.2,.7,.2,1) both; }
   .win:hover { transform: rotate(0deg) translateY(-4px); }
+  @keyframes winIn { from { opacity: 0; transform: rotate(1.2deg) translateY(28px) scale(.96); } to { opacity: 1; transform: rotate(1.2deg); } }
   .win-bar { display: flex; align-items: center; gap: 7px; padding: 12px 16px; background: #F3F6FC; border-bottom: 1px solid var(--line); }
   .win-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
   .win-bar i:nth-child(1) { background: #FF5F57; } .win-bar i:nth-child(2) { background: #FEBC2E; } .win-bar i:nth-child(3) { background: #28C840; }
@@ -383,7 +387,7 @@
       <div class="win">
         <div class="win-bar"><i></i><i></i><i></i><span>ELMS · Import</span></div>
         <div class="win-body">
-          <div class="field"><span class="az">amazon</span><span class="txt" id="dUrl"></span><span class="caret"></span></div>
+          <div class="field"><span class="az" id="dSrc">amazon</span><span class="txt" id="dUrl"></span><span class="caret"></span></div>
           <div class="fetch" id="dFetch"><i></i></div>
           <div class="card" id="dCard">
             <img class="pic" id="dPic" alt="" width="112" height="112" src="/demo/p1.jpg" />
@@ -410,9 +414,12 @@
 </section>
 
 <div class="strip">
-  <div class="wrap strip-in">
-    <b>Sell on</b>
-    <span class="mk">eBay US</span><span class="mk">eBay UK</span><span class="mk">eBay Germany</span><span class="mk">eBay Canada</span><span class="mk">eBay Australia</span><span class="mk">eBay France</span><span class="mk">eBay Italy</span><span class="mk">eBay Spain</span><span>and more</span>
+  <div class="wrap">
+    <div class="strip-in" style="margin-bottom:10px"><b>Import from</b><span class="mk">Amazon</span><span class="mk">AliExpress</span><span class="mk">CJdropshipping</span></div>
+    <div class="strip-in">
+      <b>Sell on</b>
+      <span class="mk">eBay US</span><span class="mk">eBay UK</span><span class="mk">eBay Germany</span><span class="mk">eBay Canada</span><span class="mk">eBay Australia</span><span class="mk">eBay France</span><span class="mk">eBay Italy</span><span class="mk">eBay Spain</span><span>and more</span>
+    </div>
   </div>
 </div>
 
@@ -695,12 +702,20 @@
 
   // ---------- the demo in the window ----------
   var FIXED = 0.30;
-  // Real products, priced the way the app does it: eBay price = Amazon cost + 10%, profit = the difference.
+  // Amazon is the priority source (shown most often); AliExpress and CJdropshipping are real, supported sources too.
+  var SOURCES = {
+    amazon: { badge: 'amazon', bg: '#FF9900', fg: '#111' },
+    aliexpress: { badge: 'AliExpress', bg: '#E62E04', fg: '#fff' },
+    cj: { badge: 'CJ', bg: '#1F7A8C', fg: '#fff' }
+  };
+  // Real products, priced the way the app does it: eBay price = source cost + 10%, profit = the difference.
   var PRODUCTS = [
-    { asin: 'B0D869GSTY', host: 'amazon.com', img: '/demo/p1.jpg', cost: 44.96, sell: 49.46, title: 'Aelfric Eden Oversized Crewneck Sweatshirts for Men Vintage Graphic Pullover' },
-    { asin: 'B0FDH7VV1H', host: 'amazon.com', img: '/demo/p2.jpg', cost: 62.95, sell: 69.25, title: "Marc Joseph New York Men's Charles Ave Sneakers (Hands Free Technology)" },
-    { asin: 'B0D4B6ZLSG', host: 'amazon.com', img: '/demo/p3.jpg', cost: 59.96, sell: 65.96, title: "New Balance Men's Numeric 272 Skateboarding Shoes" },
-    { asin: 'B0D1R5SR4V', host: 'amazon.co.uk', img: '/demo/p4.jpg', cost: 15.24, sell: 16.76, title: 'Rain-X Screen Wash with Insect Remover & Rain Repellent, Ready Mixed 5L' }
+    { source: 'amazon', url: 'amazon.com/dp/B0D869GSTY', img: '/demo/p1.jpg', cost: 44.96, sell: 49.46, title: 'Aelfric Eden Oversized Crewneck Sweatshirts for Men Vintage Graphic Pullover' },
+    { source: 'amazon', url: 'amazon.com/dp/B0FDH7VV1H', img: '/demo/p2.jpg', cost: 62.95, sell: 69.25, title: "Marc Joseph New York Men's Charles Ave Sneakers (Hands Free Technology)" },
+    { source: 'aliexpress', url: 'aliexpress.com/item/1005006346861337.html', img: '/demo/p1.jpg', cost: 8.40, sell: 9.24, title: 'Oversized Fleece Crewneck Sweatshirt, Unisex Streetwear Pullover' },
+    { source: 'amazon', url: 'amazon.com/dp/B0D4B6ZLSG', img: '/demo/p3.jpg', cost: 59.96, sell: 65.96, title: "New Balance Men's Numeric 272 Skateboarding Shoes" },
+    { source: 'cj', url: 'cjdropshipping.com/product/mens-canvas-skate-shoes-p-1084623.html', img: '/demo/p3.jpg', cost: 13.80, sell: 15.18, title: "Men's Canvas Skate Shoes, Non-Slip Rubber Sole" },
+    { source: 'amazon', url: 'amazon.co.uk/dp/B0D1R5SR4V', img: '/demo/p4.jpg', cost: 15.24, sell: 16.76, title: 'Rain-X Screen Wash with Insect Remover & Rain Repellent, Ready Mixed 5L' }
   ];
   PRODUCTS.forEach(function (p) { p.profit = Math.round((p.sell - p.cost) * 100) / 100; p.pct = Math.round(p.profit / p.cost * 100); });
   function count(el, to, ms, done) {
@@ -713,6 +728,8 @@
   function showProduct(p) {
     $('dPic').src = p.img; $('dTitle').textContent = p.title; $('mPct').textContent = p.pct + '%';
     $('fProfit').textContent = '+' + money(p.profit) + ' profit';
+    var s = SOURCES[p.source] || SOURCES.amazon;
+    var badge = $('dSrc'); badge.textContent = s.badge; badge.style.background = s.bg; badge.style.color = s.fg;
   }
   function resetDemo() {
     $('dUrl').textContent = ''; $('dFetch').classList.remove('run'); void $('dFetch').offsetWidth;
@@ -723,7 +740,7 @@
   function playDemo() {
     resetDemo();
     pi = (pi + 1) % PRODUCTS.length;
-    var p = PRODUCTS[pi], text = p.host + '/dp/' + p.asin, i = 0;
+    var p = PRODUCTS[pi], text = p.url, i = 0;
     showProduct(p);
     (function type() { $('dUrl').textContent = text.slice(0, ++i); if (i < text.length) later(type, 55); else start(); })();
     function start() {
@@ -739,7 +756,7 @@
       later(playDemo, 7500);                                                                       // ...and the next one is typed in
     }
   }
-  if (reduce) { var p0 = PRODUCTS[0]; showProduct(p0); $('dUrl').textContent = p0.host + '/dp/' + p0.asin; $('dCard').classList.add('in'); ['cAi','cVero','cSpec','dLive'].forEach(function (id) { $(id).classList.add('in'); }); $('mCost').textContent = money(p0.cost); $('mSell').textContent = money(p0.sell); $('mProfit').textContent = money(p0.profit); }
+  if (reduce) { var p0 = PRODUCTS[0]; showProduct(p0); $('dUrl').textContent = p0.url; $('dCard').classList.add('in'); ['cAi','cVero','cSpec','dLive'].forEach(function (id) { $(id).classList.add('in'); }); $('mCost').textContent = money(p0.cost); $('mSell').textContent = money(p0.sell); $('mProfit').textContent = money(p0.profit); }
   else {
     // start it when the window is on screen, pause when the tab is hidden
     var running = false;
