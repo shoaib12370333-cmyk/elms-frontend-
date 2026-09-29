@@ -19087,7 +19087,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="bc-pay">
         <div class="bc-pay-head"><span>Card &amp; other payment methods</span></div>
         <div class="bc-plan-icons">${CARD_ICONS_HTML}</div>
-        <button class="bc-buy bc-buy-alt pricing-buy-btn" data-plan-id="${p.id}" data-provider="paddle" type="button">Pay $${Number(p.priceUsd).toFixed(2)} by card</button>
+        <button class="bc-buy bc-buy-alt pricing-buy-btn" data-plan-id="${p.id}" data-provider="paddle" type="button">Pay $${Number(p.priceUsd).toFixed(2)} + tax by card</button>
         ${noDiscount}
       </div>`;
   }
@@ -19197,7 +19197,7 @@ async function autoSuggestEmptyDraftCategories() {
                 <div class="bc-plan-name">${escapeHtml(p.name)}</div>
                 ${noYear ? '<div class="bc-plan-price" style="font-size:16px;color:var(--grey);">No yearly option</div><div class="bc-plan-per">This plan is monthly only.</div>' : `
                 <div class="bc-plan-credits">${shownCredits.toLocaleString()}<small>credits for ${yr ? '1 year' : '1 month'}</small></div>
-                <div class="bc-plan-price">${hasOff ? `<s>$${listUsd.toFixed(2)}</s><span class="bc-new">$${payNow.toFixed(2)}</span>` : '$' + listUsd.toFixed(2)}<small class="bc-term">${yr ? '/year' : '/month'}</small></div>
+                <div class="bc-plan-price">${hasOff ? `<s>$${listUsd.toFixed(2)}</s><span class="bc-new">$${payNow.toFixed(2)}</span>` : '$' + listUsd.toFixed(2)}<small class="bc-term">${yr ? '/year' : '/month'} + tax</small></div>
                 ${hasOff ? `<div class="bc-save">You save $${(listUsd - payNow).toFixed(2)}</div>` : ''}
                 ${yr ? `<div class="bc-plan-per">&#8776; $${(payNow / 12).toFixed(2)} a month${yearSave > 0.005 ? ' &middot; $' + yearSave.toFixed(2) + ' less than paying monthly' : ''}</div>` : ''}
                 <div class="bc-plan-per">&#8776; ${perCredit}&cent; per credit</div>`}
