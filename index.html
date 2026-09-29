@@ -2890,6 +2890,7 @@
   .ih-profit { color:#5b8f0e; }
   .ord-import { margin:8px 0 4px; padding:10px; border:1px dashed var(--line, #d9dee7); border-radius:10px; } .ord-import .ord-cost { display:flex; margin-top:8px; } .ord-import .ord-cost input { flex:1; width:auto; min-width:0; }
   .ord-cost { display:inline-flex; gap:6px; align-items:center; } .ord-cost input { width:92px; padding:5px 8px; border:1px solid var(--border, #d9dee7); border-radius:8px; font:inherit; }
+  .ord-cost.muted { color:var(--grey); font-style:italic; }
   .ord-inline-sheet { background:#F8FAFC; border:1px solid #E5E9F0; border-radius:8px; padding:3px 8px 3px 7px; gap:3px; }
   .ord-inline-sheet .ord-sheet-label { color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; margin-right:1px; }
   .ord-inline-sheet .ord-sheet-currency { color:#94A3B8; font-size:12.5px; font-weight:600; }
@@ -2968,7 +2969,7 @@
   .np-in { width:100%; min-width:0; box-sizing:border-box; height:32px; padding:0 8px 0 24px; text-align:right; border:1.5px solid #E2E8F0; border-radius:8px; background:#fff; font:600 13px Inter,sans-serif; color:#111827; font-variant-numeric:tabular-nums; }
   .np-in::placeholder { color:#94A3B8; font-weight:500; } .np-in:hover { border-color:#CBD5E1; } .np-in:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
   .np-in.need { background:#FFFBEB; border-color:#FCD34D; } .np-in.own { background:#F5F3FF; border-color:#C4B5FD; } .np-in.saving { opacity:.55; }
-  .np-in.net, .np-in.earn { background:#F8FBFF; border-color:#BFDBFE; }
+  .np-in.net { background:#F8FBFF; border-color:#BFDBFE; }
   .np-older { border-bottom:1px dotted #94A3B8; cursor:help; }
   .np-good { color:#3F6208; font-weight:700; } .np-bad { color:#B42318; font-weight:700; } .np-muted { color:#94A3B8; }
   .np-table .np-totals td { background:#F1F5F9; font-weight:800; color:#0F172A; border-bottom:1px solid #CBD5E1; height:46px; }
@@ -3025,7 +3026,7 @@
   .ord-mark-btn { border:1.5px solid #BFD4F2; background:#fff; color:#0064D2; border-radius:999px; height:26px; padding:0 10px; font:700 11.5px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
   .ord-mark-btn:hover { background:#EEF4FF; } .ord-mark-btn:disabled { opacity:.55; cursor:default; }
   .ord-mark.on .ord-mark-btn { border-color:transparent; background:transparent; color:var(--grey); text-decoration:underline; padding:0 4px; font-weight:600; }
-  .mo-box { max-width:540px; } .mo-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:12px 0 4px; text-align:left; }
+  .mo-box { max-width:540px; } .mo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0 4px; text-align:left; }
   .mo-f { display:grid; gap:4px; } .mo-f > span:first-child { font:800 11px Inter,sans-serif; letter-spacing:.04em; text-transform:uppercase; color:#64748B; }
   .mo-f input { width:100%; height:38px; box-sizing:border-box; padding:0 10px; border:1.5px solid #E2E8F0; border-radius:10px; background:#fff; font:600 14px Inter,sans-serif; color:#0F172A; } .mo-f input:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
   .mo-money { position:relative; display:block; } .mo-money i { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94A3B8; font-style:normal; font-weight:600; pointer-events:none; } .mo-money input { padding-left:24px; text-align:right; }
@@ -11872,8 +11873,12 @@ async function autoSuggestEmptyDraftCategories() {
   function npAmazonCell(l) {
     return npInputCell('amazon', l, l.amazon_price, '', 'Type your buying price: what this order cost you to buy (the whole order).');
   }
+  // Read-only: fetched automatically from eBay once it settles (jobs/orderEarningsSync.js) - typing it here would
+  // block that fetch forever (it never overwrites a value that is already set), so there is nothing to type.
   function npEarningCell(l) {
-    return npInputCell('earning', l, l.order_earning, 'earn', 'Type what eBay pays you for this order (Order earnings in Seller Hub). eBay cost and net profit are then worked out for you.');
+    return l.order_earning === null
+      ? '<span class="np-muted" title="Not fetched yet - eBay has not settled this order\'s payout">—</span>'
+      : escapeHtml(npMoney(l.order_earning, l.currency));
   }
   function npProfitCell(l) {
     return l.profit === null ? '' : '<span class="' + (l.profit >= 0 ? 'np-good' : 'np-bad') + '" data-np-profit>' + escapeHtml(npMoney(l.profit, l.currency)) + '</span>';
@@ -12051,7 +12056,9 @@ async function autoSuggestEmptyDraftCategories() {
   function npPreviewRow(tr) {
     const line = npLines.find((x) => x.id === tr.getAttribute('data-np-id'));
     if (!line) return;
-    const fig = npFigures(line.ebay_price, tr.querySelector('[data-np-field="amazon"]').value, tr.querySelector('[data-np-field="earning"]').value, line.net_profit_older ? line.net_profit : null);
+    // Order earning has no input any more (npEarningCell) - only the typed Buying price live-previews; earning comes
+    // from the line's own fetched value, same as the figure the server itself would use.
+    const fig = npFigures(line.ebay_price, tr.querySelector('[data-np-field="amazon"]').value, line.order_earning == null ? '' : String(line.order_earning), line.net_profit_older ? line.net_profit : null);
     const pCell = tr.querySelector('td[data-label="Profit"]');
     if (pCell) pCell.innerHTML = fig.profit === null ? '' : '<span class="' + (fig.profit >= 0 ? 'np-good' : 'np-bad') + '">' + escapeHtml(npMoney(fig.profit / 100, line.currency)) + '</span>';
     const cCell = tr.querySelector('[data-np-cost]');
@@ -12463,11 +12470,10 @@ async function autoSuggestEmptyDraftCategories() {
       overlay.innerHTML = `
         <div class="elms-confirm-box mo-box" role="dialog" aria-modal="true" aria-label="Mark as ordered">
           <div class="elms-confirm-title">${orderIsOrdered(o) ? 'Order details' : 'Mark as ordered'}</div>
-          <div class="elms-confirm-message">Choose the DELIVERY date (when the parcel will arrive), and type your buying price and what eBay pays you: the eBay cost and the net profit are worked out and go into the Net Profit sheet by themselves.</div>
+          <div class="elms-confirm-message">Choose the DELIVERY date (when the parcel will arrive) and type your buying price. What eBay pays you is fetched automatically once it settles; the eBay cost and net profit are then worked out and go into the Net Profit sheet by themselves.</div>
           <div class="mo-grid">
             <label class="mo-f"><span>Delivery date</span><input type="date" id="moDate" value="${escapeAttr(o.delivery_date ? String(o.delivery_date).slice(0, 10) : '')}" /></label>
             <label class="mo-f"><span>Buying price</span><span class="mo-money"><i>${escapeHtml(sign)}</i><input type="text" id="moBuy" inputmode="decimal" autocomplete="off" placeholder="e.g. 8.99" value="${escapeAttr(money(o.sheet_amazon_price))}" /></span></label>
-            <label class="mo-f"><span>Order earning</span><span class="mo-money"><i>${escapeHtml(sign)}</i><input type="text" id="moEarn" inputmode="decimal" autocomplete="off" placeholder="e.g. 25.00" value="${escapeAttr(money(o.order_earning))}" /></span></label>
           </div>
           <div class="mo-calc" id="moCalc"></div>
           <div class="ord-sub">\u201cELMS: ordered, delivery &lt;date&gt;\u201d is saved in the private note of this order in ELMS${ordersEbayNote ? ' and on eBay' : ' (and on eBay when you switch that on in the toolbar above the orders)'}. Leave the date empty if you do not know it yet.</div>
@@ -12482,13 +12488,13 @@ async function autoSuggestEmptyDraftCategories() {
       const onKey = (e) => { if (e.key === 'Escape') close(null); };
       document.addEventListener('keydown', onKey);
       const calc = () => {
-        const fig = npFigures(o.sale_price, $('moBuy').value, $('moEarn').value, o.net_profit_typed);
+        const fig = npFigures(o.sale_price, $('moBuy').value, o.order_earning == null ? '' : String(o.order_earning), o.net_profit_typed);
         const bits = [];
         if (fig.cost !== null) bits.push('eBay cost ' + npMoney(fig.cost / 100, o.currency));
         if (fig.net !== null) bits.push('<span class="' + (fig.net >= 0 ? 'good' : 'bad') + '">Net profit ' + escapeHtml(npMoney(fig.net / 100, o.currency)) + '</span>');
         $('moCalc').innerHTML = bits.join(' &middot; ');
       };
-      ['moBuy', 'moEarn'].forEach((id) => $(id).addEventListener('input', calc));
+      $('moBuy').addEventListener('input', calc);
       calc();
       overlay.addEventListener('click', (e) => { if (e.target === overlay) close(null); });
       overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => close(null));
@@ -12497,15 +12503,11 @@ async function autoSuggestEmptyDraftCategories() {
         const date = $('moDate').value;
         if (date && date < '2020-01-01') return err('Choose a real delivery date.');
         const buyText = $('moBuy').value.trim();
-        const earnText = $('moEarn').value.trim();
         const buy = npParse(buyText);
-        const earn = npParse(earnText);
         if (Number.isNaN(buy)) return err('Type the buying price as a number, for example 8.99.');
         if (buy !== null && buy < 0) return err('The buying price cannot be below 0.');
-        if (Number.isNaN(earn)) return err('Type the order earning as a number, for example 25.00.');
         const out = { deliveryDate: date || null };
         if (buy !== null) out.buyingPrice = buy;
-        if (earn !== null) out.orderEarning = earn;
         close(out);
       });
       $('moDate').focus();
@@ -12658,11 +12660,11 @@ async function autoSuggestEmptyDraftCategories() {
           ${kv('Cost per item', `<span class="ord-cost"><input type="number" id="ordCostInput" min="0" step="0.01" inputmode="decimal" value="${o.buy_price != null ? escapeAttr(String(Number(o.buy_price))) : ''}" placeholder="e.g. 8.99" /><button class="ord-btn small" type="button" id="ordSaveCost">Save</button></span>`)}
           <div class="ord-sub">${o.buy_price_manual ? 'Set by you. Empty the box and Save to go back to the listing price.' : o.buy_price != null ? 'Taken from your listing. Type another figure to use your own.' : 'No price found for this item. Enter what it cost you to see the profit.'}${o.buy_price_original ? ` The listing price is ${escapeHtml(formatPrice(o.buy_price_original.amount, o.buy_price_original.currency))}, shown here in ${escapeHtml(o.currency || '')} at today's exchange rate.` : ''}</div>
           ${o.profit_note ? `<div class="ord-sub bad">${escapeHtml(o.profit_note)}</div>` : ''}
-          ${kv('Buying price', `<span class="ord-cost"><input type="number" id="ordSheetAmazon" min="0" step="0.01" inputmode="decimal" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" placeholder="e.g. 8.99" title="What you paid to buy this order (on Amazon)" /></span>`)}
-          ${kv('Order earning', `<span class="ord-cost"><input type="number" id="ordEarning" step="0.01" inputmode="decimal" value="${o.order_earning != null ? escapeAttr(String(Number(o.order_earning))) : ''}" placeholder="e.g. 25.00" title="What eBay pays you for this order (Order earnings in Seller Hub)" /><button class="ord-btn small" type="button" id="ordSaveNet">Save</button></span>`)}
+          ${kv('Buying price', `<span class="ord-cost"><input type="number" id="ordSheetAmazon" min="0" step="0.01" inputmode="decimal" value="${o.sheet_amazon_price != null ? escapeAttr(String(Number(o.sheet_amazon_price))) : ''}" placeholder="e.g. 8.99" title="What you paid to buy this order (on Amazon)" /><button class="ord-btn small" type="button" id="ordSaveNet">Save</button></span>`)}
+          ${kv('Order earning', o.order_earning != null ? `<span class="ord-cost">${escapeHtml(orderMoney(o, o.order_earning))}</span>` : '<span class="ord-cost muted" title="Not fetched yet - eBay has not settled this order’s payout">Pending</span>')}
           ${kv('eBay cost', '<span id="ordSheetCost"></span>')}
           ${kv('Net profit', '<b id="ordSheetNet"></b>')}
-          <div class="ord-sub">Type your buying price (what you paid) and what eBay pays you for this order (Order earnings in Seller Hub): eBay cost and net profit are worked out and go into the <a href="#" class="ad-link" id="ordNetLink">Net Profit sheet</a> by themselves. Empty a box and Save to clear it. (The Cost per item above is only for the profit shown in Orders.)${o.listing_id ? '' : ' This order is not from an ELMS listing, so it is not in the sheet.'}</div>
+          <div class="ord-sub">Type your buying price (what you paid): eBay cost and net profit are worked out once eBay pays out (fetched automatically - Order earnings in Seller Hub), and go into the <a href="#" class="ad-link" id="ordNetLink">Net Profit sheet</a> by themselves. Empty the box and Save to clear it. (The Cost per item above is only for the profit shown in Orders.)${o.listing_id ? '' : ' This order is not from an ELMS listing, so it is not in the sheet.'}</div>
           ${o.buy_price == null ? `<div class="ord-import">
             <div class="ord-sub"><b>Import this product from Amazon</b> and its price becomes the cost. Uses credits like a normal import; the product also appears in Drafts.</div>
             <div class="ord-cost"><input type="text" id="ordImportInput" placeholder="Amazon link or ASIN" value="${/^[A-Z0-9]{10}$/i.test(o.sku || '') ? escapeAttr(o.sku) : ''}" autocomplete="off" /><button class="ord-btn small" type="button" id="ordImportBtn">Import</button></div>
@@ -12775,21 +12777,21 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('Saved', price === '' ? 'Back to the listing price.' : 'Cost saved. Profit updated.', 'success');
       apply(data.order);
     }));
-    // eBay cost and net profit follow what is typed at once (the same rule as the sheet and the server)
+    // eBay cost and net profit follow the typed Buying price at once (order_earning is fetched, never typed here)
     const showSheetFigures = () => {
-      const fig = npFigures(o.sale_price, $('ordSheetAmazon').value, $('ordEarning').value, o.net_profit_typed);
+      const fig = npFigures(o.sale_price, $('ordSheetAmazon').value, o.order_earning == null ? '' : String(o.order_earning), o.net_profit_typed);
       const cost = $('ordSheetCost'); const net = $('ordSheetNet');
       if (cost) cost.textContent = fig.cost === null ? '\u2014' : npMoney(fig.cost / 100, o.currency);
       if (net) { net.textContent = fig.net === null ? '\u2014' : npMoney(fig.net / 100, o.currency); net.className = fig.net === null ? '' : fig.net >= 0 ? 'good' : 'bad'; }
     };
-    ['ordSheetAmazon', 'ordEarning'].forEach((id) => $(id).addEventListener('input', showSheetFigures));
+    $('ordSheetAmazon').addEventListener('input', showSheetFigures);
     showSheetFigures();
     $('ordSaveNet').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
-      const read = (id) => { const raw = $(id).value.trim().replace(',', '.'); if (raw === '') return null; const n = Number(raw); if (!Number.isFinite(n)) throw new Error('Type the amounts as numbers, for example 12.50.'); return n; };
-      const amazonPrice = read('ordSheetAmazon');
-      const orderEarning = read('ordEarning');
+      const raw = $('ordSheetAmazon').value.trim().replace(',', '.');
+      const amazonPrice = raw === '' ? null : Number(raw);
+      if (raw !== '' && !Number.isFinite(amazonPrice)) throw new Error('Type the amount as a number, for example 12.50.');
       if (amazonPrice !== null && amazonPrice < 0) throw new Error('The buying price cannot be below 0.');
-      const data = await json(`/api/net-profit/${encodeURIComponent(o.id)}`, { method: 'PATCH', body: JSON.stringify({ amazonPrice, orderEarning }) });
+      const data = await json(`/api/net-profit/${encodeURIComponent(o.id)}`, { method: 'PATCH', body: JSON.stringify({ amazonPrice }) });
       showToast('Saved', 'Saved. eBay cost and net profit are worked out, and the order is in the Net Profit sheet.', 'success');
       const line = data.line || {};
       Object.assign(o, { sheet_amazon_price: line.amazon_price ?? null, order_earning: line.order_earning ?? null, net_profit: line.net_profit ?? null });
