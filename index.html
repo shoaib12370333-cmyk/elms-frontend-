@@ -4564,6 +4564,7 @@
 
       <div id="page-orders" style="display:none;">
         <div id="ordersContent"><div class="elms-loader" role="status" aria-label="Loading orders"></div></div>
+        <div id="autoOrderContent"></div>
       </div>
 
       <div id="page-netprofit" style="display:none;">
@@ -4991,6 +4992,44 @@
             <div id="extensionKeyStatus" style="margin-top:10px;"></div>
           </section>
         </div>
+
+        <section class="st-card" id="autoOrderCard">
+          <div class="st-head">
+            <div class="st-ico yellow">&#128257;</div>
+            <div class="st-head-txt"><h2>Auto Order</h2><p>When a paid eBay order comes in for an Amazon-sourced listing, place the matching Amazon order automatically.</p></div>
+          </div>
+          <div class="rf-notice warn"><span class="rf-ni">&#9888;</span><div><b>Before you turn Full-auto on:</b> eBay's drop shipping policy does not allow fulfilling an order by buying it from another online retailer that ships directly to the buyer. Turning this on is your decision, and your eBay account stays your responsibility &mdash; ELMS only automates the click.</div></div>
+          <div class="st-field">
+            <label>Mode</label>
+            <select class="st-input" id="autoOrderModeSelect">
+              <option value="disabled">Off &mdash; place every Amazon order yourself</option>
+              <option value="semi_auto">Semi-auto &mdash; ELMS reminds you, you place the order by hand</option>
+              <option value="full_auto">Full-auto &mdash; the browser extension places the order for you</option>
+            </select>
+          </div>
+          <div id="autoOrderFullAutoFields" style="display:none;">
+            <div class="st-grid">
+              <div class="st-field">
+                <label>Max price increase over the saved Amazon price</label>
+                <input class="st-input" id="autoOrderMaxPctInput" type="number" min="0" max="100" step="1" placeholder="10" />
+                <small>The extension won't place an order once Amazon's price has risen more than this.</small>
+              </div>
+              <div class="st-field">
+                <label>Max cost per order (optional)</label>
+                <input class="st-input" id="autoOrderMaxCostInput" type="number" min="0" step="0.01" placeholder="No flat limit" />
+              </div>
+              <div class="st-field">
+                <label>Daily spending limit (optional)</label>
+                <input class="st-input" id="autoOrderDailyLimitInput" type="number" min="0" step="0.01" placeholder="No daily limit" />
+              </div>
+            </div>
+            <label class="sc-toggle"><input type="checkbox" id="autoOrderPrimeOnlyToggle" /><span class="toggle-slider-sm"></span><span><b>Only Prime / Amazon-fulfilled listings</b><small>Skip anything not shipped and sold by Amazon itself.</small></span></label>
+          </div>
+          <div class="st-actions">
+            <button class="st-btn primary" id="saveAutoOrderSettingsBtn" type="button">Save</button>
+            <div id="autoOrderSettingsStatus"></div>
+          </div>
+        </section>
 
         <section class="st-card" id="veroCard">
           <div class="st-head">
@@ -12322,6 +12361,7 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) {
       container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
     }
+    loadAutoOrderSection();
   }
 
   async function loadEbayNoteSetting() {
@@ -12520,6 +12560,99 @@ async function autoSuggestEmptyDraftCategories() {
       });
     });
     root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('a, input, button')) return; openOrderDetail(row.getAttribute('data-order-id')); }));
+  }
+
+  // ---------- Auto Order section (below the main Orders table): the SupplierOrders the extension places on Amazon ----------
+  const AUTO_ORDER_STATUS = {
+    pending: { label: 'Pending', cls: 'amber' },
+    ready: { label: 'Ready', cls: 'blue' },
+    checking: { label: 'Checking', cls: 'blue' },
+    placing: { label: 'Placing', cls: 'blue' },
+    placed: { label: 'Placed', cls: 'green' },
+    needs_attention: { label: 'Needs attention', cls: 'amber' },
+    failed: { label: 'Failed', cls: 'red' },
+    cancelled: { label: 'Cancelled', cls: 'red' },
+  };
+  const AUTO_ORDER_TABS = [['all', 'All'], ['needs_attention', 'Needs attention'], ['in_progress', 'In progress'], ['placed', 'Placed'], ['failed', 'Failed']];
+  let autoOrderAll = [];
+  let autoOrderTab = 'all';
+
+  const autoOrderGroupOf = (status) => (['pending', 'ready', 'checking', 'placing'].includes(status) ? 'in_progress' : status);
+  const autoOrderStatusPill = (o) => { const st = AUTO_ORDER_STATUS[o.status] || AUTO_ORDER_STATUS.pending; return `<span class="ord-pill ${st.cls}">${st.label}</span>`; };
+
+  async function loadAutoOrderSection() {
+    const box = document.getElementById('autoOrderContent');
+    if (!box) return;
+    box.innerHTML = '<div class="elms-loader sm" role="status" aria-label="Loading Auto Order"></div>';
+    try {
+      const res = await apiFetch('/api/auto-order');
+      const data = await apiJson(res);
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load Auto Order.');
+      autoOrderAll = data.orders || [];
+      renderAutoOrderSection();
+    } catch (err) {
+      box.innerHTML = `<div class="state-msg error">Could not load Auto Order: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function autoOrderRowHtml(o) {
+    return `
+      <tr class="ord-row">
+        <td data-label="eBay order"><div class="ord-id">${escapeHtml(o.ebay_order_id || '—')}</div><div class="ord-sub">${escapeHtml(orderShortDate(o.created_at))}</div></td>
+        <td data-label="ASIN"><div class="ord-strong">${escapeHtml(o.asin || '—')}</div>${o.variant_details ? `<div class="ord-sub">${escapeHtml(o.variant_details)}</div>` : ''}<div class="ord-sub">Qty ${o.quantity ?? 1}</div></td>
+        <td data-label="Status"><div>${autoOrderStatusPill(o)}</div>${o.error ? `<div class="ord-sub bad">${escapeHtml(o.error)}</div>` : ''}</td>
+        <td data-label="Amazon order">${o.amazon_order_id ? `<div class="ord-strong">${escapeHtml(o.amazon_order_id)}</div>` : '<div class="ord-sub">—</div>'}</td>
+        <td data-label="Total"><div class="ord-strong">${o.amazon_total != null ? escapeHtml(formatPrice(Number(o.amazon_total), o.currency || 'USD')) : '—'}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(formatPrice(Number(o.profit), o.currency || 'USD'))}</div>` : ''}</td>
+        <td class="ord-actions">${['needs_attention', 'failed'].includes(o.status) ? `<button class="ord-btn small" type="button" data-auto-order-retry="${escapeAttr(o.id)}">Retry</button>` : ''}</td>
+      </tr>`;
+  }
+
+  function renderAutoOrderSection() {
+    const box = document.getElementById('autoOrderContent');
+    if (!box) return;
+    if (!autoOrderAll.length) {
+      box.innerHTML = `<div class="ord-head" style="margin-top:28px;"><div><h1>Auto Order</h1><div class="sub">Amazon orders ELMS places automatically for your Amazon-sourced listings.</div></div></div><div class="empty-state">No Auto Order activity yet. Turn on Full-auto under Settings &rarr; Auto Order to get started.</div>`;
+      return;
+    }
+    const counts = { all: autoOrderAll.length };
+    AUTO_ORDER_TABS.slice(1).forEach(([k]) => { counts[k] = autoOrderAll.filter((o) => autoOrderGroupOf(o.status) === k).length; });
+    const rows = autoOrderTab === 'all' ? autoOrderAll : autoOrderAll.filter((o) => autoOrderGroupOf(o.status) === autoOrderTab);
+
+    box.innerHTML = `
+      <div class="ord-head" style="margin-top:28px;">
+        <div><h1>Auto Order</h1><div class="sub">Amazon orders ELMS places automatically for your Amazon-sourced listings.</div></div>
+      </div>
+      <div class="ord-tabs" role="tablist">${AUTO_ORDER_TABS.map(([k, t]) => `<button type="button" class="ord-tab${autoOrderTab === k ? ' active' : ''}" data-auto-order-tab="${k}">${t} <span>${counts[k] || 0}</span></button>`).join('')}</div>
+      ${rows.length ? `
+      <div class="ord-table-wrap">
+        <table class="ord-table">
+          <thead><tr><th>eBay order</th><th>ASIN</th><th>Status</th><th>Amazon order</th><th>Total</th><th></th></tr></thead>
+          <tbody>${rows.map(autoOrderRowHtml).join('')}</tbody>
+        </table>
+      </div>` : `<div class="empty-state">No orders in this filter.</div>`}
+    `;
+    wireAutoOrderSection();
+  }
+
+  function wireAutoOrderSection() {
+    const root = document.getElementById('autoOrderContent');
+    root.querySelectorAll('[data-auto-order-tab]').forEach((b) => b.addEventListener('click', () => { autoOrderTab = b.getAttribute('data-auto-order-tab'); renderAutoOrderSection(); }));
+    root.querySelectorAll('[data-auto-order-retry]').forEach((b) => b.addEventListener('click', async () => {
+      const id = b.getAttribute('data-auto-order-retry');
+      b.disabled = true;
+      try {
+        const res = await apiFetch(`/api/auto-order/${encodeURIComponent(id)}/retry`, { method: 'POST' });
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not retry this order.');
+        const idx = autoOrderAll.findIndex((x) => String(x.id) === String(id));
+        if (idx !== -1) autoOrderAll[idx] = data.order;
+        showToast('Retrying', 'The Auto Order extension will pick this order up again.', 'success');
+        renderAutoOrderSection();
+      } catch (err) {
+        showToast('Could not retry', err.message, 'error');
+        b.disabled = false;
+      }
+    }));
   }
 
   // Marks an order as bought on Amazon (or takes the mark away). Only the seller's own reminder: nothing goes to eBay or Amazon.
@@ -13474,6 +13607,7 @@ async function autoSuggestEmptyDraftCategories() {
     await loadExtensionKey();
     loadCjSettings();
     loadAliexpressSettings();
+    loadAutoOrderSettings();
   }
 
   // ---------- Settings: CJdropshipping connection (a second, separate product source next to Amazon) ----------
@@ -13971,6 +14105,94 @@ async function autoSuggestEmptyDraftCategories() {
         return;
       }
 
+      statusEl.className = 'success';
+      statusEl.textContent = 'Saved!';
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ---------- Auto Order settings ----------
+  let autoOrderPrevMode = 'disabled';
+
+  function updateAutoOrderFieldsVisibility() {
+    document.getElementById('autoOrderFullAutoFields').style.display =
+      document.getElementById('autoOrderModeSelect').value === 'full_auto' ? '' : 'none';
+  }
+
+  document.getElementById('autoOrderModeSelect').addEventListener('change', async (e) => {
+    const select = e.target;
+    if (select.value === 'full_auto' && autoOrderPrevMode !== 'full_auto') {
+      const ok = await elmsConfirm(
+        "eBay's drop shipping policy does not allow fulfilling an order by buying it from another online retailer that ships directly to the buyer. Turning Full-auto on is your decision, and your eBay account stays your responsibility - ELMS only automates the click.",
+        { title: 'Turn Full-auto on?', okText: 'Turn it on', danger: true }
+      );
+      if (!ok) {
+        select.value = autoOrderPrevMode;
+        updateAutoOrderFieldsVisibility();
+        return;
+      }
+    }
+    autoOrderPrevMode = select.value;
+    updateAutoOrderFieldsVisibility();
+  });
+
+  async function loadAutoOrderSettings() {
+    try {
+      const res = await apiFetch('/api/seller-settings/auto-order');
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      const s = data.settings || data;
+
+      autoOrderPrevMode = s.autoOrderMode || 'disabled';
+      document.getElementById('autoOrderModeSelect').value = autoOrderPrevMode;
+      document.getElementById('autoOrderMaxPctInput').value = s.autoOrderMaxPriceIncreasePercent ?? 10;
+      document.getElementById('autoOrderMaxCostInput').value = s.autoOrderMaxCost ?? '';
+      document.getElementById('autoOrderDailyLimitInput').value = s.autoOrderDailyLimit ?? '';
+      document.getElementById('autoOrderPrimeOnlyToggle').checked = s.autoOrderPrimeOnly !== false;
+      updateAutoOrderFieldsVisibility();
+    } catch (err) {
+      // Non-critical - the form just keeps its default values if this fails.
+    }
+  }
+
+  document.getElementById('saveAutoOrderSettingsBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('saveAutoOrderSettingsBtn');
+    const statusEl = document.getElementById('autoOrderSettingsStatus');
+    const autoOrderMode = document.getElementById('autoOrderModeSelect').value;
+    const maxCostRaw = document.getElementById('autoOrderMaxCostInput').value;
+    const dailyLimitRaw = document.getElementById('autoOrderDailyLimitInput').value;
+    const body = {
+      autoOrderMode,
+      autoOrderMaxPriceIncreasePercent: Number(document.getElementById('autoOrderMaxPctInput').value) || 0,
+      autoOrderMaxCost: maxCostRaw === '' ? null : Number(maxCostRaw),
+      autoOrderDailyLimit: dailyLimitRaw === '' ? null : Number(dailyLimitRaw),
+      autoOrderPrimeOnly: document.getElementById('autoOrderPrimeOnlyToggle').checked,
+    };
+    if (autoOrderMode === 'full_auto') body.confirmFullAuto = true;
+
+    btn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = 'Saving…';
+
+    try {
+      const res = await apiFetch('/api/seller-settings/auto-order', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = data.error || 'Could not save this setting.';
+        return;
+      }
+
+      autoOrderPrevMode = autoOrderMode;
       statusEl.className = 'success';
       statusEl.textContent = 'Saved!';
     } catch (err) {
