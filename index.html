@@ -2269,6 +2269,8 @@
   }
   .toast-text { flex: 1; line-height: 1.4; }
   .toast-title { font-weight: 700; margin-bottom: 2px; }
+  .toast-action { flex-shrink: 0; align-self: center; background: var(--accent); color: #fff; border: 0; border-radius: 7px; padding: 6px 11px; font: inherit; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .toast-action:hover { opacity: .9; }
   .toast.leaving { animation: toastOut 0.25s ease forwards; }
   @keyframes toastIn {
     from { opacity: 0; transform: translateX(20px); }
@@ -6347,7 +6349,7 @@
    * modern apps do for background task confirmations), auto-dismissing
    * after a few seconds.
    */
-  function showToast(title, message, type = '') {
+  function showToast(title, message, type = '', opts = {}) {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -6355,13 +6357,25 @@
     toast.innerHTML = `
       <span class="toast-icon">${icon}</span>
       <span class="toast-text"><span class="toast-title">${escapeHtml(title)}</span>${message ? escapeHtml(message) : ''}</span>
+      ${opts.actionLabel ? `<button type="button" class="toast-action">${escapeHtml(opts.actionLabel)}</button>` : ''}
     `;
     container.appendChild(toast);
 
-    setTimeout(() => {
-      toast.classList.add('leaving');
-      setTimeout(() => toast.remove(), 300);
-    }, 4500);
+    const dismiss = () => { toast.classList.add('leaving'); setTimeout(() => toast.remove(), 300); };
+    if (opts.actionLabel && opts.onAction) {
+      toast.querySelector('.toast-action').addEventListener('click', () => { opts.onAction(); dismiss(); });
+    }
+    setTimeout(dismiss, opts.actionLabel ? 8000 : 4500); // longer when there's a button to notice and press
+  }
+
+  // A shared, proactive "buy credits" nudge for every 402 apiFetch sees (see apiFetch below) - on top of whatever
+  // specific error text the calling code's own catch block already shows. A bulk action can trigger several 402s
+  // within the same beat (one per row); a short cooldown keeps that down to a single toast, not one per row.
+  let lastOutOfCreditsToastAt = 0;
+  function showOutOfCreditsToast(message) {
+    if (Date.now() - lastOutOfCreditsToastAt < 5000) return;
+    lastOutOfCreditsToastAt = Date.now();
+    showToast('Out of credits', message || 'Buy credits to continue.', 'error', { actionLabel: 'Buy credits', onAction: () => showPage('pricing') });
   }
 
   // ---------- Slow work runs in the background: start it, then watch it ----------
@@ -7769,6 +7783,13 @@
       res.clone().json().then((d) => { if (d && d.blocked) showBlockedScreen(d.blocked); }).catch(() => {});
     }
 
+    // Every credit-costing route refuses with 402 when the balance is not enough (services/creditService.js
+    // outOfCredits) - proactively offer to buy more, on top of whatever error text the caller's own catch block
+    // shows. A bulk action can fail this way many times in the same beat; one toast per short window is enough.
+    if (res.status === 402) {
+      res.clone().json().then((d) => showOutOfCreditsToast(d && d.error)).catch(() => {});
+    }
+
     // Every caller does `await res.json()`. When the server answers with something that is not JSON (a proxy
     // timeout page on a long publish, an empty body, a cold-start page) the browser's own error leaks into the
     // UI - Safari's is the baffling "The string did not match the expected pattern", Chrome's mentions
@@ -7980,6 +8001,48 @@
 
     // A brand-new account sees, once, how many free credits it was given.
     setTimeout(() => maybeShowWelcomePopup(user), 500);
+    // A plan that ended since the seller was last here - until now the only sign of this was an email.
+    setTimeout(() => maybeShowPlanExpiredNotice(user), 500);
+  }
+
+  /**
+   * The one-time "your plan ended" notice (services/planExpiryService.js sets user.planExpiredNotice the moment a
+   * paid plan's term runs out; the server stops sending it once dismissed, same lifecycle as user.welcomePopup above).
+   */
+  let planExpiredNoticeShown = false;
+  function maybeShowPlanExpiredNotice(user) {
+    const notice = user && user.planExpiredNotice;
+    if (!notice || planExpiredNoticeShown) return;
+    planExpiredNoticeShown = true;
+    const when = notice.endedAt ? new Date(notice.endedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    const overlay = document.createElement('div');
+    overlay.className = 'welcome-overlay';
+    overlay.innerHTML = `
+      <div class="welcome-box" role="dialog" aria-modal="true" aria-label="Your plan ended">
+        <div class="welcome-title">Your${notice.planName ? ' ' + escapeHtml(notice.planName) : ''} plan ended</div>
+        <div class="welcome-sub">${when ? `It ran out on ${when}. ` : ''}Its credits and the extra eBay stores it allowed ended with it - a store already connected stays connected, but you won't be able to add another beyond your free limit until you buy a new plan.</div>
+        <div class="welcome-actions">
+          <button type="button" class="ord-btn primary" data-act="buy">See plans</button>
+          <button type="button" class="ord-btn" data-act="close">Dismiss</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const done = (goPricing) => {
+      overlay.remove();
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
+      user.planExpiredNotice = null;
+      apiFetch('/api/auth/plan-expired-notice-seen', { method: 'POST' }).catch(() => {});
+      if (goPricing) showPage('pricing');
+    };
+    const onKey = (e) => { if (e.key === 'Escape') done(false); };
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) done(false); });
+    overlay.querySelector('[data-act="close"]').addEventListener('click', () => done(false));
+    overlay.querySelector('[data-act="buy"]').addEventListener('click', () => done(true));
+    overlay.querySelector('[data-act="buy"]').focus();
   }
 
   /**
@@ -8152,7 +8215,7 @@
       const accountsData = await accountsRes.json();
       const limitReached = accountsData?.limit && accountsData.limit.connected >= accountsData.limit.max;
       if (limitReached) {
-        alert(`eBay account limit reached (${accountsData.limit.connected}/${accountsData.limit.max}). Ask an admin to increase your limit.`);
+        showToast('eBay account limit reached', `${accountsData.limit.connected}/${accountsData.limit.max} connected. Ask an admin to increase your limit.`, 'error');
         return;
       }
       openEbayConnectModal();
