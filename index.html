@@ -9787,9 +9787,9 @@
 
         <div class="elms-editor-pane" data-ui-pane="description">
           <div class="elms-ed-row" style="margin-bottom:8px;justify-content:space-between;"><span style="font:600 12px Inter,sans-serif;color:#667085;">Let AI write a clean eBay description from this product's facts.</span><span><button type="button" class="elms-ed-btn" data-ui-action="generate-description">Generate Description With AI</button> <button type="button" class="elms-ed-btn" data-ui-action="beautify-description" title="Restructures what's already in the box below into your saved Description Template (Settings &gt; Description Template) - image gallery, bullets, specs table and whichever other blocks you picked.">Beautify With AI</button></span></div>
-          <div style="margin-bottom:8px;"><span class="dv-seg" role="group" aria-label="Description view"><button type="button" data-ui-desc-view="code" class="on">Code</button><button type="button" data-ui-desc-view="preview">Preview</button></span></div>
-          <label class="elms-ed-field" data-ui-desc-code><span>Description (raw HTML)</span><textarea data-ui-field="description" rows="12">${escapeHtml(desc)}</textarea></label>
-          <div data-ui-desc-preview style="display:none;"><iframe data-ui-desc-frame title="Description preview" sandbox="" style="width:100%;min-height:340px;border:1px solid var(--line);border-radius:8px;background:#fff;"></iframe></div>
+          <div style="margin-bottom:8px;"><span class="dv-seg" role="group" aria-label="Description view"><button type="button" data-ui-desc-view="code">Code</button><button type="button" data-ui-desc-view="preview" class="on">Preview</button></span></div>
+          <label class="elms-ed-field" data-ui-desc-code style="display:none;"><span>Description (raw HTML)</span><textarea data-ui-field="description" rows="12">${escapeHtml(desc)}</textarea></label>
+          <div data-ui-desc-preview><iframe data-ui-desc-frame title="Description preview" sandbox="" style="width:100%;min-height:340px;border:1px solid var(--line);border-radius:8px;background:#fff;"></iframe></div>
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="variants">
@@ -9945,6 +9945,8 @@
       }
     }
     ed.querySelectorAll('[data-ui-desc-view]').forEach((tab) => tab.addEventListener('click', () => syncDescView(tab.getAttribute('data-ui-desc-view'))));
+    syncDescView('preview'); // opening a draft that was already beautified (e.g. by the bulk bar) must show the
+    // formatted result straight away too, not just right after Beautify/Generate run inside this same editor session
 
     const titleInput = fld('title');
     titleInput?.addEventListener('input', () => { q('[data-ui-title-count]').textContent = `${titleInput.value.length}/80`; });
@@ -10029,7 +10031,11 @@
           area.value = data.text;
           area.dispatchEvent(new Event('input'));
           syncDescView('preview');
-          showToast('Description beautified', 'Read it through, then save.', 'success');
+          if (data.missingBlocks && data.missingBlocks.length) {
+            showToast('Description beautified - check it', (data.warnings || []).join(' ') || 'Some sections may have been left out.', 'error');
+          } else {
+            showToast('Description beautified', 'Read it through, then save.', 'success');
+          }
           refreshCreditBalanceChip();
         } catch (err) { showToast('AI beautify failed', err.message, 'error'); }
         finally { btn.disabled = false; btn.textContent = label; }
@@ -11211,12 +11217,14 @@ async function autoSuggestEmptyDraftCategories() {
     const count = (s) => all.filter((r) => r.status === s).length;
     const spent = all.reduce((sum, r) => sum + (r.creditsUsed || 0), 0);
     const name = (r) => String(r.title || (draftListingMap.get(String(r.id)) || {}).title || r.id).slice(0, 70);
+    const flagged = all.filter((r) => r.status === 'done' && r.missingBlocks && r.missingBlocks.length);
     const attention = [
       ...all.filter((r) => r.status === 'skipped' || r.status === 'failed').map((r) => `${name(r)}: ${r.reason}`),
+      ...flagged.map((r) => `${name(r)}: ${(r.warnings || []).join(' ') || 'some sections may have been left out'}`),
     ];
     if (stop) attention.unshift(stop);
     const lines = [
-      `${count('done')} beautified${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
+      `${count('done')} beautified${flagged.length ? `, ${flagged.length} worth a check` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
       `Credits used: ${spent}.`,
     ];
     const overlay = document.createElement('div');
