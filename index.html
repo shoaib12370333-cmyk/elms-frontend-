@@ -12638,6 +12638,15 @@ async function autoSuggestEmptyDraftCategories() {
 
   function orders_money(n, cur) { return formatPrice(n, cur); }
 
+  // Tags the Amazon link with this order's own id (?elms_order=<id>, or &elms_order= if the link already has a
+  // query string) - invisible to Amazon itself, but read back by the ELMS Order Sync extension's content script so
+  // it knows, once checkout completes in that same browser tab, which ELMS order to save the delivery date and
+  // buying cost onto. Without the extension installed this param is simply never read by anyone.
+  function amazonUrlWithOrderTag(url, orderId) {
+    if (!orderId) return url;
+    return `${url}${url.includes('?') ? '&' : '?'}elms_order=${encodeURIComponent(orderId)}`;
+  }
+
   // The same two links a live listing has: the live eBay listing and the Amazon product (the link of its import, else Amazon's page for the ASIN).
   // Short labels ("eBay", "AMAZON") - the item number / ASIN is not lost, it is only in the title (hover) now, so the line these sit on (next to
   // Qty) stays short. Bare <a> chips, no wrapping block: the caller puts them inline in the same line as other text (e.g. "Qty 2 · eBay ↗").
@@ -12645,7 +12654,10 @@ async function autoSuggestEmptyDraftCategories() {
     const chips = [];
     if (o.legacy_item_id) chips.push(`<a class="dv-chip" href="https://www.${ebayDomainFor(o)}/itm/${encodeURIComponent(o.legacy_item_id)}" target="_blank" rel="noopener noreferrer" title="Open the live eBay listing (item ${escapeAttr(o.legacy_item_id)})">eBay &#8599;</a>`);
     const asin = o.asin || '';
-    if (o.amazon_url || asin) chips.push(`<a class="dv-chip" href="${escapeAttr(o.amazon_url || 'https://www.amazon.com/dp/' + encodeURIComponent(asin))}" target="_blank" rel="noopener noreferrer" title="Open the Amazon product${asin ? ' (' + escapeAttr(asin) + ')' : ''}">AMAZON &#8599;</a>`);
+    if (o.amazon_url || asin) {
+      const amazonUrl = amazonUrlWithOrderTag(o.amazon_url || 'https://www.amazon.com/dp/' + encodeURIComponent(asin), o.id);
+      chips.push(`<a class="dv-chip" href="${escapeAttr(amazonUrl)}" target="_blank" rel="noopener noreferrer" title="Open the Amazon product${asin ? ' (' + escapeAttr(asin) + ')' : ''}">AMAZON &#8599;</a>`);
+    }
     return chips.join('');
   }
 
