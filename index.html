@@ -5092,27 +5092,49 @@
       <div id="page-pricing" style="display:none;">
         <div class="st-top">
           <div>
-            <h1>Buy credits</h1>
-            <div class="sub">Credits pay for imports, publishing and order syncing. Pick a pack and check out securely.</div>
+            <h1 id="pricingTitle">Buy credits</h1>
+            <div class="sub" id="pricingSub">Credits pay for imports, publishing and order syncing. Pick a pack and check out securely.</div>
           </div>
           <div class="bc-balance"><span>Your balance</span><b id="pricingBalance">0</b><em>credits</em></div>
         </div>
 
-        <div id="pricingContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+        <div class="bc-billing" id="pricingTabs"><span class="dv-seg" role="group" aria-label="Buy Credits or Buy Listings"><button type="button" data-pricing-tab="credits" class="on">Credits</button><button type="button" data-pricing-tab="listings">Buy Listings</button></span></div>
 
-        <div class="bc-trust">
-          <div><b>&#128274; Secure checkout</b><span>Payments are handled by our payment partner. ELMS never sees your card or wallet details.</span></div>
-          <div><b>&#9889; Instant credits</b><span>Credits land in your balance within a minute of payment.</span></div>
-          <div><b>&#128179; Cards, PayPal &amp; more</b><span>Pay the way you prefer.</span></div>
+        <div data-pricing-panel="credits">
+          <div id="pricingContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+
+          <div class="bc-trust">
+            <div><b>&#128274; Secure checkout</b><span>Payments are handled by our payment partner. ELMS never sees your card or wallet details.</span></div>
+            <div><b>&#9889; Instant credits</b><span>Credits land in your balance within a minute of payment.</span></div>
+            <div><b>&#128179; Cards, PayPal &amp; more</b><span>Pay the way you prefer.</span></div>
+          </div>
+
+          <section class="st-card" style="margin-top:20px;">
+            <div class="st-head">
+              <div class="st-ico blue">&#129534;</div>
+              <div class="st-head-txt"><h2>Purchase history</h2><p>Every credit pack you have bought.</p></div>
+            </div>
+            <div id="purchaseHistoryContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
         </div>
 
-        <section class="st-card" style="margin-top:20px;">
-          <div class="st-head">
-            <div class="st-ico blue">&#129534;</div>
-            <div class="st-head-txt"><h2>Purchase history</h2><p>Every credit pack you have bought.</p></div>
+        <div data-pricing-panel="listings" style="display:none;">
+          <div id="listingPacksContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+
+          <div class="bc-trust">
+            <div><b>&#9889; Instant delivery</b><span>Your drafts land the moment the payment is confirmed.</span></div>
+            <div><b>&#127760; Ready to list</b><span>Every draft already has a real eBay category and the Amazon link.</span></div>
+            <div><b>&#128260; No repeats</b><span>You never get a product you already have.</span></div>
           </div>
-          <div id="purchaseHistoryContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
-        </section>
+
+          <section class="st-card" style="margin-top:20px;">
+            <div class="st-head">
+              <div class="st-ico blue">&#129534;</div>
+              <div class="st-head-txt"><h2>Purchase history</h2><p>Every listing pack you have bought.</p></div>
+            </div>
+            <div id="listingPackHistoryContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
+        </div>
       </div>
 
       <div id="page-calculator" style="display:none;">
@@ -5496,6 +5518,23 @@
                 <div class="st-field"><label>Paddle Price ID (optional)</label><input class="st-input mono" type="text" id="newPlanPaddleId" placeholder="pri_01..." /></div>
               </div>
               <div class="st-actions"><button class="st-btn primary" id="addPlanBtn" type="button">Add plan</button><div id="addPlanStatus"></div></div>
+            </div>
+          </section>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico green">&#128230;</div>
+              <div class="st-head-txt"><h2>Buy Listings</h2><p>Tiers shown on Buy Credits &gt; Buy Listings. A buyer pays once and instantly gets that many random, ready-to-list drafts - each already carrying a real eBay category and the clickable Amazon link, cloned from other sellers' own listings across ELMS. CashTap only (like the custom plan, there is no Paddle price for this).</p></div>
+            </div>
+            <div id="adminListingPackTiersContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+            <div class="st-custom">
+              <div class="st-custom-title">Add a tier</div>
+              <div class="st-grid">
+                <div class="st-field"><label>Tier name</label><input class="st-input" type="text" id="newTierName" placeholder="e.g. 1,000 listings" /></div>
+                <div class="st-field"><label>Price (USD)</label><input class="st-input" type="number" id="newTierPrice" step="0.01" min="0.5" placeholder="10" /></div>
+                <div class="st-field"><label>Number of listings</label><input class="st-input" type="number" id="newTierCount" min="1" step="1" placeholder="1000" /></div>
+              </div>
+              <div class="st-actions"><button class="st-btn primary" id="addTierBtn" type="button">Add tier</button><div id="addTierStatus"></div></div>
             </div>
           </section>
         </div>
@@ -18652,7 +18691,7 @@ async function autoSuggestEmptyDraftCategories() {
                 <td><input class="editable-input" data-field="creditBalance" type="number" value="${u.creditBalance}" style="width:100px;" /></td>
                 <td><input class="editable-input" data-field="stockCheckIntervalDays" type="number" min="1" value="${u.stockCheckIntervalDays}" style="width:80px;" /></td>
                 <td><input class="editable-input" data-field="maxEbayAccounts" type="number" min="0" value="${u.maxEbayAccounts ?? 1}" style="width:80px;" /></td>
-                <td style="white-space:nowrap;"><button class="btn-small save" data-action="save-user">Save</button> <button class="btn-small" data-action="user-security" style="background:var(--grey-light);color:var(--ink);">Security</button> <button class="btn-small" data-action="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told." style="background:var(--grey-light);color:var(--ink);">Draft links</button></td>
+                <td style="white-space:nowrap;"><button class="btn-small save" data-action="save-user">Save</button> <button class="btn-small" data-action="user-security" style="background:var(--grey-light);color:var(--ink);">Security</button> <button class="btn-small" data-action="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told." style="background:var(--grey-light);color:var(--ink);">Draft links</button> <button class="btn-small" data-action="push-listings" title="Push random ready-to-list drafts (with a real eBay category, Amazon link included) straight into this user's Drafts. Free, no credit is used." style="background:var(--grey-light);color:var(--ink);">Push listings</button></td>
               </tr>
             `).join('')}
           </tbody>
@@ -18993,6 +19032,13 @@ async function autoSuggestEmptyDraftCategories() {
         }
       });
 
+      // Pushes N random ready-to-list drafts (a real eBay category + the clickable Amazon link, exactly like a normal
+      // draft) straight into this user's Drafts. Free, and never anything the user already has an ASIN for.
+      row.querySelector('[data-action="push-listings"]')?.addEventListener('click', () => {
+        const user = adminUsersData.find((u) => u.id === userId);
+        if (user) openPushListingsModal(user);
+      });
+
       saveBtn.addEventListener('click', async () => {
         const creditBalance = Number(row.querySelector('[data-field="creditBalance"]').value);
         const stockCheckIntervalDays = Number(row.querySelector('[data-field="stockCheckIntervalDays"]').value);
@@ -19043,6 +19089,35 @@ async function autoSuggestEmptyDraftCategories() {
           saveBtn.disabled = false;
         }
       });
+    });
+  }
+
+  // Admin -> Users -> "Push listings": pick a count, push that many random ready-to-list drafts (real eBay category,
+  // clickable Amazon link) straight into this user's Drafts. Free - the admin's own counterpart to the paid Buy Listings tab.
+  function openPushListingsModal(user) {
+    const m = adminModal(`
+      <div class="draft-title">Push listings to ${escapeHtml(user.name || user.email)}</div>
+      <div class="meta-line">${escapeHtml(user.email)}</div>
+      <p class="meta-line" style="margin:10px 0 0;">Clones that many random, ready-to-list products (already carrying a real eBay category and the clickable Amazon link) from across ELMS straight into their Drafts. Free - no credit is used, and a product they already have is never pushed again.</p>
+      <div class="st-field" style="margin-top:14px;"><label>Number of listings</label><input class="st-input" type="number" id="plCount" min="1" max="5000" step="1" value="100" /></div>
+      <div class="st-actions"><button class="st-btn primary" id="plGo" type="button">Push</button><div id="plStatus"></div></div>
+    `);
+    m.querySelector('#plGo').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const status = m.querySelector('#plStatus');
+      const count = Math.round(Number(m.querySelector('#plCount').value));
+      if (!Number.isInteger(count) || count < 1 || count > 5000) { status.textContent = 'Enter a whole number from 1 to 5,000.'; return; }
+      btn.disabled = true;
+      status.textContent = 'Pushing… this can take a little while for a large count.';
+      try {
+        const out = await adminPost('/api/admin/users/' + encodeURIComponent(user.id) + '/push-listings', { count });
+        status.textContent = `Pushed ${out.pushed.toLocaleString()} of ${out.requested.toLocaleString()} requested (pool had ${out.poolSize.toLocaleString()}).`;
+        showToast('Listings pushed', `${out.pushed.toLocaleString()} draft${out.pushed === 1 ? '' : 's'} added for ${user.name || user.email}.`, 'success');
+      } catch (err) {
+        status.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+      }
     });
   }
 
@@ -19418,6 +19493,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   async function loadAdminPlans() {
     loadCustomPlanSettings();
+    loadAdminListingPackTiers();
     const container = document.getElementById('adminPlansContent');
     container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
 
@@ -19583,6 +19659,150 @@ async function autoSuggestEmptyDraftCategories() {
     }
   });
 
+  // ---------- Admin: Buy Listings tiers (same Plans tab) ----------
+  async function loadAdminListingPackTiers() {
+    const container = document.getElementById('adminListingPackTiersContent');
+    if (!container) return;
+    container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
+
+    try {
+      const res = await apiFetch('/api/admin/listing-pack-tiers');
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load tiers.')}</div>`;
+        return;
+      }
+
+      if (!data.tiers.length) {
+        container.innerHTML = '<div class="empty-state">No tiers yet. Add one below.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Price (USD)</th><th>Listings</th><th>Active</th><th></th></tr></thead>
+          <tbody>
+            ${data.tiers.map((t) => `
+              <tr data-tier-id="${t.id}">
+                <td><input class="editable-input" data-field="name" value="${escapeAttr(t.name)}" style="width:160px;" /></td>
+                <td><input class="editable-input" data-field="priceUsd" type="number" step="0.01" min="0.5" value="${t.priceUsd}" style="width:90px;" /></td>
+                <td><input class="editable-input" data-field="listingCount" type="number" min="1" value="${t.listingCount}" style="width:100px;" /></td>
+                <td>
+                  <select class="editable-input" data-field="active" style="width:90px;">
+                    <option value="true" ${t.active ? 'selected' : ''}>Active</option>
+                    <option value="false" ${!t.active ? 'selected' : ''}>Hidden</option>
+                  </select>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button class="btn-small save" data-action="save-tier">Save</button>
+                    <button class="btn-small delete" data-action="delete-tier">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      wireAdminTierRows();
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function wireAdminTierRows() {
+    document.querySelectorAll('#adminListingPackTiersContent tr[data-tier-id]').forEach((row) => {
+      const tierId = row.getAttribute('data-tier-id');
+      const saveBtn = row.querySelector('[data-action="save-tier"]');
+      const deleteBtn = row.querySelector('[data-action="delete-tier"]');
+
+      saveBtn.addEventListener('click', async () => {
+        const name = row.querySelector('[data-field="name"]').value.trim();
+        const priceUsd = Number(row.querySelector('[data-field="priceUsd"]').value);
+        const listingCount = Number(row.querySelector('[data-field="listingCount"]').value);
+        const active = row.querySelector('[data-field="active"]').value === 'true';
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving…';
+        try {
+          const res = await apiFetch(`/api/admin/listing-pack-tiers/${tierId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, priceUsd, listingCount, active }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            alert(data.error || 'Could not save this tier.');
+          } else {
+            saveBtn.textContent = 'Saved';
+            setTimeout(() => { saveBtn.textContent = 'Save'; }, 1200);
+          }
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      deleteBtn.addEventListener('click', async () => {
+        if (!(await elmsConfirm('Delete this tier? Buyers who already bought it keep their purchase history.', { danger: true }))) return;
+        try {
+          const res = await apiFetch(`/api/admin/listing-pack-tiers/${tierId}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (!res.ok || !data.success) { alert(data.error || 'Could not delete this tier.'); return; }
+          row.remove();
+        } catch (err) {
+          alert('Could not connect to the server: ' + err.message);
+        }
+      });
+    });
+  }
+
+  document.getElementById('addTierBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('addTierBtn');
+    const statusEl = document.getElementById('addTierStatus');
+    const name = document.getElementById('newTierName').value.trim();
+    const priceUsd = Number(document.getElementById('newTierPrice').value);
+    const listingCount = Number(document.getElementById('newTierCount').value);
+
+    if (!name || !priceUsd || !listingCount) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Please fill in the name, price and number of listings.';
+      return;
+    }
+
+    btn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = 'Adding…';
+    try {
+      const res = await apiFetch('/api/admin/listing-pack-tiers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, priceUsd, listingCount }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        statusEl.className = 'error';
+        statusEl.textContent = data.error || 'Could not add this tier.';
+        return;
+      }
+      statusEl.className = 'success';
+      statusEl.textContent = 'Tier added!';
+      document.getElementById('newTierName').value = '';
+      document.getElementById('newTierPrice').value = '';
+      document.getElementById('newTierCount').value = '';
+      loadAdminListingPackTiers();
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Could not connect to the server: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   // ---------- Pricing page (Buy Credits) ----------
   let paddleInitialized = false;
 
@@ -19599,13 +19819,34 @@ async function autoSuggestEmptyDraftCategories() {
     paddleInitialized = true;
   }
 
+  let pricingTab = 'credits';
+  function setPricingTab(name) {
+    pricingTab = name;
+    document.querySelectorAll('#pricingTabs [data-pricing-tab]').forEach((b) => b.classList.toggle('on', b.dataset.pricingTab === name));
+    document.querySelectorAll('[data-pricing-panel]').forEach((p) => { p.style.display = p.dataset.pricingPanel === name ? '' : 'none'; });
+    const title = document.getElementById('pricingTitle');
+    const sub = document.getElementById('pricingSub');
+    if (name === 'listings') {
+      if (title) title.textContent = 'Buy Listings';
+      if (sub) sub.textContent = 'Pay once, get that many random, ready-to-list drafts instantly - each already has a real eBay category and the Amazon link.';
+      loadListingPackCards();
+      loadListingPackHistory();
+    } else {
+      if (title) title.textContent = 'Buy credits';
+      if (sub) sub.textContent = 'Credits pay for imports, publishing and order syncing. Pick a pack and check out securely.';
+    }
+  }
+  document.querySelectorAll('#pricingTabs [data-pricing-tab]').forEach((b) => b.addEventListener('click', () => setPricingTab(b.dataset.pricingTab)));
+
   async function loadPricingPage() {
     const bal = document.getElementById('pricingBalance');
     if (bal) bal.textContent = document.getElementById('creditBalanceAmount')?.textContent || '0';
     ensurePaddleInitialized();
+    setPricingTab(pricingTab === 'listings' ? 'listings' : 'credits');
     await loadPlanCards();
     await loadPurchaseHistory();
     confirmCashtapPayment(true); // a payment started earlier (tab closed before coming back) is picked up here
+    confirmListingPackPayment(true);
   }
 
   // Payment brand marks: the icons come from Simple Icons (CC0 licence), drawn inline so nothing loads from another site.
@@ -19939,6 +20180,98 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
+  // ---------- Buy Listings tab ----------
+  async function loadListingPackCards() {
+    const container = document.getElementById('listingPacksContent');
+    if (!container) return;
+    container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading listing packs"></div>';
+    try {
+      const res = await apiFetch('/api/listing-packs');
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        container.innerHTML = data.error === 'Buy Listings is not available right now.'
+          ? '<div class="empty-state">Buy Listings pays by Cash App (CashTap) only, and is not available on this checkout right now.</div>'
+          : `<div class="state-msg error">${escapeHtml(data.error || 'Could not load listing packs.')}</div>`;
+        return;
+      }
+      if (!data.tiers.length) {
+        container.innerHTML = '<div class="empty-state">No listing packs are available right now. Please check back later.</div>';
+        return;
+      }
+      container.innerHTML = `
+        <div class="bc-plans">
+          ${data.tiers.map((t) => `
+            <div class="bc-plan">
+              <div class="bc-plan-name">${escapeHtml(t.name)}</div>
+              <div class="bc-plan-credits">${t.listingCount.toLocaleString()}<small>ready-to-list drafts</small></div>
+              <div class="bc-plan-price">$${Number(t.priceUsd).toFixed(2)}<small class="bc-term">one time + tax</small></div>
+              <div class="bc-plan-per">&#8776; ${(t.priceUsd / t.listingCount * 100).toFixed(2)}&cent; per listing</div>
+              <div class="bc-plan-label">Wallet, CashApp, card &amp; more &middot; secure checkout by CashTap</div>
+              <button class="bc-buy listing-pack-buy-btn" data-tier-id="${t.id}" type="button">Buy ${t.listingCount.toLocaleString()} listings</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      document.querySelectorAll('.listing-pack-buy-btn').forEach((btn) => {
+        btn.addEventListener('click', () => startListingPackCheckout(btn.getAttribute('data-tier-id'), btn));
+      });
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  async function startListingPackCheckout(tierId, btn) {
+    const idleLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Starting checkout…';
+    try {
+      const res = await apiFetch('/api/listing-packs/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tierId }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) { alert(data.error || 'Could not start checkout.'); return; }
+      try { localStorage.setItem('elmsPendingListingPack', JSON.stringify({ sessionId: data.sessionId, at: Date.now() })); } catch (_) { /* the webhook still pushes the listings */ }
+      window.location.href = data.url;
+    } catch (err) {
+      alert('Could not connect to the server: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = idleLabel;
+    }
+  }
+
+  async function loadListingPackHistory() {
+    const container = document.getElementById('listingPackHistoryContent');
+    if (!container) return;
+    container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
+    try {
+      const res = await apiFetch('/api/listing-packs/history');
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load purchase history.')}</div>`;
+        return;
+      }
+      if (!data.purchases.length) {
+        container.innerHTML = '<div class="empty-state">No purchases yet.</div>';
+        return;
+      }
+      container.innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Amount</th><th>Listings</th><th>Pushed</th></tr></thead>
+          <tbody>
+            ${data.purchases.map((p) => `
+              <tr>
+                <td>${escapeHtml(new Date(p.createdAt).toLocaleString())}</td>
+                <td>$${p.priceUsd.toFixed(2)}</td>
+                <td>${p.listingCount.toLocaleString()}</td>
+                <td>${p.pushed.toLocaleString()}${p.pushed < p.listingCount ? ' <small style="color:var(--grey);">(the pool was a little short)</small>' : ''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
   // If the user just returned from a successful Paddle checkout, refresh
   // their credit balance display and show a friendly confirmation.
   (function handlePaymentCompleteRedirect() {
@@ -20006,17 +20339,62 @@ async function autoSuggestEmptyDraftCategories() {
     };
     attempt();
   }
+  // ---------- Buy Listings: back from checkout (same shape as the CashTap plan flow above, its own pending key + endpoint) ----------
+  function clearPendingListingPack() { try { localStorage.removeItem('elmsPendingListingPack'); } catch (_) { /* nothing stored */ } }
+  let listingPackConfirming = false;
+  async function confirmListingPackPayment(silent) {
+    let pending = null;
+    try { pending = JSON.parse(localStorage.getItem('elmsPendingListingPack') || 'null'); } catch (_) { /* none */ }
+    if (!pending || !pending.sessionId || Date.now() - pending.at > 6 * 60 * 60 * 1000) { clearPendingListingPack(); return; }
+    if (listingPackConfirming || !localStorage.getItem('elmsSessionToken')) return;
+    listingPackConfirming = true;
+    let waited = 0;
+    const attempt = async () => {
+      let finished = false;
+      try {
+        const res = await apiFetch('/api/listing-packs/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: pending.sessionId }) });
+        const data = await res.json();
+        if (res.status === 404) { finished = true; clearPendingListingPack(); }
+        else if (res.ok && data.success) {
+          if (data.granted || data.duplicate) {
+            finished = true; clearPendingListingPack();
+            loadListingPackHistory().catch(() => {});
+            const extra = data.granted ? ` ${Number(data.pushed).toLocaleString()} draft${data.pushed === 1 ? '' : 's'} added to your Drafts.` : '';
+            showToast('Payment confirmed', ('Your listings are ready.' + extra).trim(), 'success');
+          } else if (data.status === 'expired' || data.status === 'failed') {
+            finished = true; clearPendingListingPack();
+            if (!silent) showToast('Payment', data.status === 'expired' ? 'The checkout expired without a payment.' : 'The payment could not be completed. Contact support if money left your account.', 'error');
+          } else if (['underpaid', 'amount_mismatch', 'no_tier', 'no_user'].includes(data.reason)) {
+            finished = true; clearPendingListingPack();
+            showToast('Payment', 'Your payment arrived but needs a quick check by our team. They have been told and will sort it out.', 'error');
+          }
+        }
+      } catch (_) { /* try again */ }
+      if (finished) { listingPackConfirming = false; return; }
+      waited += 5;
+      if (waited < 120) setTimeout(attempt, 5000);
+      else { listingPackConfirming = false; if (!silent) showToast('Payment', 'CashTap is still confirming. Your listings are added automatically as soon as it is confirmed.', 'info'); }
+    };
+    attempt();
+  }
+
   (function handleCashtapRedirect() {
     const params = new URLSearchParams(window.location.search);
     const outcome = params.get('payment');
+    const isListingPack = params.get('kind') === 'listing_pack';
     if (outcome !== 'cashtap' && outcome !== 'cancelled') return;
     window.history.replaceState({}, document.title, window.location.pathname);
     window.addEventListener('load', () => {
       setTimeout(() => {
         showPage('pricing');
-        if (outcome === 'cancelled') { clearPendingCashtap(); showToast('Payment cancelled', 'No money was taken.', 'info'); return; }
+        if (isListingPack) setPricingTab('listings');
+        if (outcome === 'cancelled') {
+          clearPendingCashtap(); clearPendingListingPack();
+          showToast('Payment cancelled', 'No money was taken.', 'info');
+          return;
+        }
         showToast('Checking your payment…', 'This takes a few seconds.', 'info');
-        confirmCashtapPayment(false);
+        if (isListingPack) confirmListingPackPayment(false); else confirmCashtapPayment(false);
       }, 900);
     });
   })();
