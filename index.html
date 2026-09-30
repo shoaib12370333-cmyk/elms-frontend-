@@ -9787,7 +9787,9 @@
 
         <div class="elms-editor-pane" data-ui-pane="description">
           <div class="elms-ed-row" style="margin-bottom:8px;justify-content:space-between;"><span style="font:600 12px Inter,sans-serif;color:#667085;">Let AI write a clean eBay description from this product's facts.</span><span><button type="button" class="elms-ed-btn" data-ui-action="generate-description">Generate Description With AI</button> <button type="button" class="elms-ed-btn" data-ui-action="beautify-description" title="Restructures what's already in the box below into your saved Description Template (Settings &gt; Description Template) - image gallery, bullets, specs table and whichever other blocks you picked.">Beautify With AI</button></span></div>
-          <label class="elms-ed-field"><span>Description</span><textarea data-ui-field="description" rows="12">${escapeHtml(desc)}</textarea></label>
+          <div style="margin-bottom:8px;"><span class="dv-seg" role="group" aria-label="Description view"><button type="button" data-ui-desc-view="code" class="on">Code</button><button type="button" data-ui-desc-view="preview">Preview</button></span></div>
+          <label class="elms-ed-field" data-ui-desc-code><span>Description (raw HTML)</span><textarea data-ui-field="description" rows="12">${escapeHtml(desc)}</textarea></label>
+          <div data-ui-desc-preview style="display:none;"><iframe data-ui-desc-frame title="Description preview" sandbox="" style="width:100%;min-height:340px;border:1px solid var(--line);border-radius:8px;background:#fff;"></iframe></div>
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="variants">
@@ -9922,6 +9924,28 @@
       ed.querySelectorAll('[data-ui-pane]').forEach((p) => p.classList.toggle('active', p.getAttribute('data-ui-pane') === name));
     }));
 
+    // The description box holds raw HTML (tables, bullet lists, inline styles) - "Code" shows that as text to edit,
+    // "Preview" renders it (in a sandboxed iframe: no scripts, so nothing in a description can ever touch the app)
+    // so the seller can actually read the formatted result instead of markup. Beautify/Generate switch to it themselves,
+    // since "read it through, then save" only means something once there is something readable to read.
+    function syncDescView(view) {
+      ed.querySelectorAll('[data-ui-desc-view]').forEach((b) => b.classList.toggle('on', b.getAttribute('data-ui-desc-view') === view));
+      const code = q('[data-ui-desc-code]');
+      const preview = q('[data-ui-desc-preview]');
+      if (!code || !preview) return;
+      if (view === 'preview') {
+        const html = fld('description')?.value || '';
+        const frame = q('[data-ui-desc-frame]');
+        if (frame) frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;padding:14px;font:14px/1.5 Arial,sans-serif;color:#222;word-wrap:break-word;}img{max-width:100%;height:auto;}table{max-width:100%;}</style></head><body>${html || '<p style="color:#98A2B3;">Nothing to preview yet.</p>'}</body></html>`;
+        code.style.display = 'none';
+        preview.style.display = '';
+      } else {
+        code.style.display = '';
+        preview.style.display = 'none';
+      }
+    }
+    ed.querySelectorAll('[data-ui-desc-view]').forEach((tab) => tab.addEventListener('click', () => syncDescView(tab.getAttribute('data-ui-desc-view'))));
+
     const titleInput = fld('title');
     titleInput?.addEventListener('input', () => { q('[data-ui-title-count]').textContent = `${titleInput.value.length}/80`; });
     fld('category')?.addEventListener('change', (e) => opts.onCategoryChange?.(e.target.value));
@@ -9984,6 +10008,7 @@
           const area = fld('description');
           area.value = data.description;
           area.dispatchEvent(new Event('input'));
+          syncDescView('preview');
           showToast('Description written', 'Read it through, then save.', 'success');
           refreshCreditBalanceChip();
         } catch (err) { showToast('AI description failed', err.message, 'error'); }
@@ -10003,6 +10028,7 @@
           const area = fld('description');
           area.value = data.text;
           area.dispatchEvent(new Event('input'));
+          syncDescView('preview');
           showToast('Description beautified', 'Read it through, then save.', 'success');
           refreshCreditBalanceChip();
         } catch (err) { showToast('AI beautify failed', err.message, 'error'); }
