@@ -5028,6 +5028,16 @@
           </div>
         </section>
 
+        <section class="st-card" id="autoMessagesCard">
+          <div class="st-head">
+            <div class="st-ico blue">&#128172;</div>
+            <div class="st-head-txt"><h2>Auto buyer messages</h2><p>Sent straight away through eBay's own messaging - never a draft, only when switched on here.</p></div>
+          </div>
+          <label class="sc-toggle"><input type="checkbox" id="autoThankYouToggle" /><span class="toggle-slider-sm"></span><span><b>Thank-you message</b><small>Sent once, the moment an order is first seen as paid.</small></span></label>
+          <label class="sc-toggle" style="margin-top:10px;"><input type="checkbox" id="autoReviewRequestToggle" /><span class="toggle-slider-sm"></span><span><b>"Shipped" + review request</b><small>Sent once, the moment tracking is first saved (any carrier).</small></span></label>
+          <div id="autoMessagesStatus" style="margin-top:10px;"></div>
+        </section>
+
         <section class="st-card" id="veroCard">
           <div class="st-head">
             <div class="st-ico" style="background:#FEF2F2;color:#B42318;">&#9888;</div>
@@ -13698,6 +13708,7 @@ async function autoSuggestEmptyDraftCategories() {
     loadCjSettings();
     loadAliexpressSettings();
     loadDescriptionTemplate();
+    loadAutoMessageSettings();
   }
 
   // ---------- Settings: CJdropshipping connection (a second, separate product source next to Amazon) ----------
@@ -14059,6 +14070,40 @@ async function autoSuggestEmptyDraftCategories() {
   document.getElementById('secNotifyToggle')?.addEventListener('change', async (e) => {
     try { await apiFetch('/api/security/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notifyNewDevice: e.target.checked }) }); showToast('Saved', e.target.checked ? 'You will be emailed about new devices.' : 'New-device emails are off.', 'success'); }
     catch (_) { e.target.checked = !e.target.checked; }
+  });
+
+  // ---------- Settings: Auto buyer messages (sent through eBay's own messaging, never a draft) ----------
+  async function loadAutoMessageSettings() {
+    try {
+      const res = await apiFetch('/api/orders/auto-message-settings');
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      document.getElementById('autoThankYouToggle').checked = !!data.thankYou;
+      document.getElementById('autoReviewRequestToggle').checked = !!data.reviewRequest;
+    } catch (_) {
+      // Non-critical - the toggles just keep their default (off) values if this fails.
+    }
+  }
+  async function saveAutoMessageSetting(field, value) {
+    const statusEl = document.getElementById('autoMessagesStatus');
+    try {
+      const res = await apiFetch('/api/orders/auto-message-settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this setting.');
+      statusEl.className = 'success';
+      statusEl.textContent = 'Saved!';
+      return true;
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = err.message;
+      return false;
+    }
+  }
+  document.getElementById('autoThankYouToggle')?.addEventListener('change', async (e) => {
+    if (!(await saveAutoMessageSetting('thankYou', e.target.checked))) e.target.checked = !e.target.checked;
+  });
+  document.getElementById('autoReviewRequestToggle')?.addEventListener('change', async (e) => {
+    if (!(await saveAutoMessageSetting('reviewRequest', e.target.checked))) e.target.checked = !e.target.checked;
   });
   document.getElementById('secLogoutOthersBtn')?.addEventListener('click', async (e) => {
     if (!(await elmsConfirm('Log out every other device? This device stays signed in.'))) return;
