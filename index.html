@@ -12526,6 +12526,7 @@ async function autoSuggestEmptyDraftCategories() {
   let ordersPage = 1;
   let ordersAccounts = [];
   let ordersMarkFilter = 'all'; // on the Awaiting shipment tab: all | no (not ordered yet) | yes (ordered)
+  let ordersSelected = new Set(); // ids ticked for "Send to Auto Order"
   let ordersEbayNote = false; // the seller's switch: "Mark as ordered" also writes "ELMS: ordered <date>" in the private note of the eBay order (off until they switch it on)
 
   // The seller's own reminder that the item was bought on Amazon: the order's fulfillment step "ordered_from_amazon" (saving an Amazon order ID sets it too).
@@ -12654,16 +12655,26 @@ async function autoSuggestEmptyDraftCategories() {
       ${rows.length ? `
       <div class="ord-table-wrap">
         <table class="ord-table">
-          <thead><tr><th>Order</th><th>Item</th><th>Buyer</th><th>Total</th><th>Ship by</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Order</th><th>Item</th><th>Buyer</th><th>Total</th><th>Ship by</th><th>Status</th><th></th></tr></thead>
           <tbody>${rows.map(orderRowHtml).join('')}</tbody>
         </table>
       </div>
       <div class="ord-footer"><span>Showing ${start + 1}–${Math.min(start + ORDERS_PAGE_SIZE, filtered.length)} of ${filtered.length} orders</span>
-        <div class="ord-pager"><button class="ord-btn" data-order-page="${ordersPage - 1}"${ordersPage === 1 ? ' disabled' : ''}>&lsaquo; Prev</button><span>Page ${ordersPage} of ${pages}</span><button class="ord-btn" data-order-page="${ordersPage + 1}"${ordersPage === pages ? ' disabled' : ''}>Next &rsaquo;</button></div></div>`
+        <div class="ord-pager"><button class="ord-btn" data-order-page="${ordersPage - 1}"${ordersPage === 1 ? ' disabled' : ''}>&lsaquo; Prev</button><span>Page ${ordersPage} of ${pages}</span><button class="ord-btn" data-order-page="${ordersPage + 1}"${ordersPage === pages ? ' disabled' : ''}>Next &rsaquo;</button></div></div>
+      <div class="dv-bulk${ordersSelected.size ? ' has-selection' : ''}" id="ordersBulkBar">
+        <b id="ordersSelectedCount">${ordersSelected.size} selected</b>
+        <button class="dv-btn primary small" id="sendToAutoOrderBtn" type="button" title="Queue the selected paid, Amazon-sourced orders for Auto Order - they will not start until you press Start Auto Order below">Send to Auto Order</button>
+        <button class="dv-btn small" id="ordersBulkClearBtn" type="button">Clear</button>
+      </div>`
       : `<div class="empty-state">${ordersAll.length ? 'No orders match these filters.' : 'No orders yet. Click "Sync from eBay" to load your orders (the last 90 days are imported the first time).'}</div>`}
     `;
     wireOrdersPage();
   }
+
+  /** Whether this order can be sent to Auto Order at all - the real eligibility (paid, Amazon-sourced, Full-auto
+   * mode) is only known server-side (services/autoOrderService.js queueSupplierOrder); this is just enough of a
+   * frontend heuristic to decide whether the checkbox is worth showing. */
+  const orderCanQueueAutoOrder = (o) => orderStatusOf(o) === 'awaiting_shipment' && !orderIsOrdered(o) && !!(o.asin || o.amazon_url);
 
   function orders_money(n, cur) { return formatPrice(n, cur); }
 
@@ -12726,6 +12737,7 @@ async function autoSuggestEmptyDraftCategories() {
     const total = o.line_total ?? o.sale_price;
     return `
       <tr class="ord-row" data-order-id="${escapeAttr(o.id)}">
+        <td class="ord-check-cell">${orderCanQueueAutoOrder(o) ? `<input type="checkbox" class="dv-check ord-check" aria-label="Select this order"${ordersSelected.has(String(o.id)) ? ' checked' : ''} />` : ''}</td>
         <td data-label="Order"><div class="ord-id">${escapeHtml(o.ebay_order_id || '—')}</div><div class="ord-sub">${escapeHtml(orderShortDate(orderDateOf(o)))}</div></td>
         <td data-label="Item"><div class="ord-item">
           ${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
@@ -12782,11 +12794,38 @@ async function autoSuggestEmptyDraftCategories() {
       });
     });
     root.querySelectorAll('.ord-row').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('a, input, button')) return; openOrderDetail(row.getAttribute('data-order-id')); }));
+    root.querySelectorAll('.ord-row .ord-check').forEach((cb) => cb.addEventListener('change', () => {
+      const id = String(cb.closest('.ord-row').getAttribute('data-order-id'));
+      if (cb.checked) ordersSelected.add(id); else ordersSelected.delete(id);
+      const bar = document.getElementById('ordersBulkBar');
+      if (bar) { bar.classList.toggle('has-selection', ordersSelected.size > 0); document.getElementById('ordersSelectedCount').textContent = ordersSelected.size + ' selected'; }
+    }));
+    root.querySelector('#ordersBulkClearBtn')?.addEventListener('click', () => { ordersSelected.clear(); renderOrders(); });
+    root.querySelector('#sendToAutoOrderBtn')?.addEventListener('click', () => sendToAutoOrder([...ordersSelected]));
+  }
+
+  async function sendToAutoOrder(orderIds) {
+    if (!orderIds.length) return;
+    const btn = document.getElementById('sendToAutoOrderBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    try {
+      const res = await apiFetch('/api/auto-order/queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderIds }) });
+      const data = await apiJson(res);
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not send these orders to Auto Order.');
+      const skipped = data.results.filter((r) => r.status === 'skipped');
+      ordersSelected.clear();
+      showToast(data.queued ? 'Sent to Auto Order' : 'Not sent', data.queued + ' order' + (data.queued === 1 ? '' : 's') + ' queued' + (skipped.length ? ', ' + skipped.length + ' skipped (' + skipped[0].reason + (skipped.length > 1 ? ', +' + (skipped.length - 1) + ' more' : '') + ')' : '') + '. Press Start Auto Order below when you are ready.', skipped.length && !data.queued ? 'error' : 'success');
+      loadAutoOrderSection();
+      renderOrders();
+    } catch (err) {
+      showToast('Could not send to Auto Order', err.message, 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Send to Auto Order'; }
+    }
   }
 
   // ---------- Auto Order section (below the main Orders table): the SupplierOrders the extension places on Amazon ----------
   const AUTO_ORDER_STATUS = {
-    pending: { label: 'Pending', cls: 'amber' },
+    pending: { label: 'Queued', cls: 'purple' },
     ready: { label: 'Ready', cls: 'blue' },
     checking: { label: 'Checking', cls: 'blue' },
     placing: { label: 'Placing', cls: 'blue' },
@@ -12795,11 +12834,13 @@ async function autoSuggestEmptyDraftCategories() {
     failed: { label: 'Failed', cls: 'red' },
     cancelled: { label: 'Cancelled', cls: 'red' },
   };
-  const AUTO_ORDER_TABS = [['all', 'All'], ['needs_attention', 'Needs attention'], ['in_progress', 'In progress'], ['placed', 'Placed'], ['failed', 'Failed']];
+  const AUTO_ORDER_TABS = [['all', 'All'], ['pending', 'Queued'], ['needs_attention', 'Needs attention'], ['in_progress', 'In progress'], ['placed', 'Placed'], ['failed', 'Failed']];
   let autoOrderAll = [];
   let autoOrderTab = 'all';
 
-  const autoOrderGroupOf = (status) => (['pending', 'ready', 'checking', 'placing'].includes(status) ? 'in_progress' : status);
+  // 'pending' (queued, waiting on "Start Auto Order") is its own group now - it is NOT "in progress" yet, the
+  // extension's poll only ever claims 'ready', never 'pending'.
+  const autoOrderGroupOf = (status) => (status === 'pending' ? 'pending' : ['ready', 'checking', 'placing'].includes(status) ? 'in_progress' : status);
   const autoOrderStatusPill = (o) => { const st = AUTO_ORDER_STATUS[o.status] || AUTO_ORDER_STATUS.pending; return `<span class="ord-pill ${st.cls}">${st.label}</span>`; };
 
   async function loadAutoOrderSection() {
@@ -12839,10 +12880,12 @@ async function autoSuggestEmptyDraftCategories() {
     const counts = { all: autoOrderAll.length };
     AUTO_ORDER_TABS.slice(1).forEach(([k]) => { counts[k] = autoOrderAll.filter((o) => autoOrderGroupOf(o.status) === k).length; });
     const rows = autoOrderTab === 'all' ? autoOrderAll : autoOrderAll.filter((o) => autoOrderGroupOf(o.status) === autoOrderTab);
+    const queuedCount = counts.pending || 0;
 
     box.innerHTML = `
       <div class="ord-head" style="margin-top:28px;">
         <div><h1>Auto Order</h1><div class="sub">Amazon orders ELMS places automatically for your Amazon-sourced listings.</div></div>
+        ${queuedCount ? `<div class="ord-head-actions"><button class="ord-btn primary" id="startAutoOrderBtn" type="button" title="Places the ${queuedCount} currently queued order${queuedCount === 1 ? '' : 's'} one at a time on Amazon, through the browser extension. Anything sent to Auto Order after this needs its own Start.">Start Auto Order (${queuedCount})</button></div>` : ''}
       </div>
       <div class="ord-tabs" role="tablist">${AUTO_ORDER_TABS.map(([k, t]) => `<button type="button" class="ord-tab${autoOrderTab === k ? ' active' : ''}" data-auto-order-tab="${k}">${t} <span>${counts[k] || 0}</span></button>`).join('')}</div>
       ${rows.length ? `
@@ -12859,6 +12902,21 @@ async function autoSuggestEmptyDraftCategories() {
   function wireAutoOrderSection() {
     const root = document.getElementById('autoOrderContent');
     root.querySelectorAll('[data-auto-order-tab]').forEach((b) => b.addEventListener('click', () => { autoOrderTab = b.getAttribute('data-auto-order-tab'); renderAutoOrderSection(); }));
+    root.querySelector('#startAutoOrderBtn')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const label = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Starting…';
+      try {
+        const res = await apiFetch('/api/auto-order/start', { method: 'POST' });
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not start Auto Order.');
+        showToast(data.started ? 'Auto Order started' : 'Nothing to start', data.started ? data.started + ' order' + (data.started === 1 ? '' : 's') + ' will now be placed on Amazon, one at a time, by the browser extension.' : 'There was nothing queued any more.', 'success');
+        loadAutoOrderSection();
+      } catch (err) {
+        showToast('Could not start Auto Order', err.message, 'error');
+        btn.disabled = false; btn.textContent = label;
+      }
+    });
     root.querySelectorAll('[data-auto-order-retry]').forEach((b) => b.addEventListener('click', async () => {
       const id = b.getAttribute('data-auto-order-retry');
       b.disabled = true;
