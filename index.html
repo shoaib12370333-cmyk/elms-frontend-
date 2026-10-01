@@ -3082,6 +3082,8 @@
   .ord-table th:last-child, .ord-table td.ord-actions { position:sticky; right:0; background:#fff; z-index:2; box-shadow:-8px 0 8px -8px rgba(15,23,42,.15); }
   .ord-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; flex-wrap:wrap; font-size:13px; color:var(--grey); }
   .ord-pager { display:flex; align-items:center; gap:10px; }
+  .ord-footer-right { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .ord-pagesize { display:inline-flex; align-items:center; gap:6px; } .ord-pagesize select { padding:5px 8px; }
 
   /* order detail drawer */
   .ord-drawer-overlay { position:fixed; inset:0; z-index:320; background:rgba(15,27,45,.45); display:flex; justify-content:flex-end; animation:modalOverlayIn .2s ease; }
@@ -3849,6 +3851,8 @@
   .dv-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:18px; font:600 13px Inter,sans-serif; color:var(--dv-mute); }
   .dv-pager { display:inline-flex; gap:6px; align-items:center; }
   .dv-pager button { min-width:34px; height:34px; border:1.5px solid var(--dv-line); border-radius:9px; background:#fff; font:700 13px Inter,sans-serif; cursor:pointer; } .dv-pager button.active { background:#0064D2; border-color:#0064D2; color:#fff; } .dv-pager button:disabled { opacity:.4; cursor:not-allowed; }
+  .dv-footer-right { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .dv-pagesize { display:inline-flex; align-items:center; gap:6px; } .dv-pagesize select { padding:5px 8px; }
 
   /* live listing cards */
   .lv-list { display:grid; gap:12px; }
@@ -9398,7 +9402,9 @@
       }));
       document.getElementById('bulkClearBtn')?.addEventListener('click', () => { draftSelected.clear(); syncDraftChecks(); updateBulkBar(); });
 
-      const DRAFTS_PAGE_SIZE = 20;
+      const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 150, 200];
+      let draftPageSize = 20;
+      try { const saved = Number(localStorage.getItem('elmsDraftsPageSize')); if (PAGE_SIZE_OPTIONS.includes(saved)) draftPageSize = saved; } catch (_) {}
       let draftPage = 1;
       const renderDraftProductList = () => {
         const query = String(document.getElementById('draftProductSearch')?.value || '').trim().toLowerCase();
@@ -9427,10 +9433,10 @@
         // A draft the current search / stage hides is no longer selected, so a bulk action never touches something that is not on screen.
         const shown = new Set(draftFilteredIds);
         draftSelected.forEach((id) => { if (!shown.has(id)) draftSelected.delete(id); });
-        const pages = Math.max(1, Math.ceil(filtered.length / DRAFTS_PAGE_SIZE));
+        const pages = Math.max(1, Math.ceil(filtered.length / draftPageSize));
         if (draftPage > pages) draftPage = pages;
-        const startIdx = (draftPage - 1) * DRAFTS_PAGE_SIZE;
-        const pageItems = filtered.slice(startIdx, startIdx + DRAFTS_PAGE_SIZE);
+        const startIdx = (draftPage - 1) * draftPageSize;
+        const pageItems = filtered.slice(startIdx, startIdx + draftPageSize);
         draftPageIds = pageItems.map((l) => String(l.id));
         const list = document.getElementById('draftProductList');
         const restoreNote = keepNoteEditor(list);
@@ -9449,8 +9455,15 @@
               btns.push(`<button data-draft-page="${draftPage+1}"${draftPage===pages?' disabled':''}>&rsaquo;</button>`);
               pag = `<div class="dv-pager">${btns.join('')}</div>`;
             }
-            footer.innerHTML = `<div>Showing ${startIdx+1}&ndash;${Math.min(startIdx+DRAFTS_PAGE_SIZE, filtered.length)} of ${filtered.length}</div>${pag}`;
+            const sizeSelect = `<label class="dv-pagesize">Show <select id="draftPageSizeSelect" class="dv-select">${PAGE_SIZE_OPTIONS.map((n) => `<option value="${n}"${n === draftPageSize ? ' selected' : ''}>${n}</option>`).join('')}</select> per page</label>`;
+            footer.innerHTML = `<div>Showing ${startIdx+1}&ndash;${Math.min(startIdx+draftPageSize, filtered.length)} of ${filtered.length}</div><div class="dv-footer-right">${pag}${sizeSelect}</div>`;
             footer.querySelectorAll('[data-draft-page]').forEach((btn) => btn.addEventListener('click', () => { if (btn.disabled) return; draftPage = Number(btn.getAttribute('data-draft-page')); renderDraftProductList(); scrollPageTop(true); }));
+            footer.querySelector('#draftPageSizeSelect')?.addEventListener('change', (e) => {
+              draftPageSize = Number(e.target.value) || 20;
+              try { localStorage.setItem('elmsDraftsPageSize', String(draftPageSize)); } catch (_) {}
+              draftPage = 1;
+              renderDraftProductList();
+            });
           }
         }
         wireDraftRows();
@@ -11595,7 +11608,9 @@ async function autoSuggestEmptyDraftCategories() {
   let llAutoRefreshed = false;
   let llSelected = new Set(); // ids of the live listings ticked for "Change price" (they can be on any page)
   let llPageIds = []; // the selectable (active or sold) live listings on the page being looked at
-  const LL_PAGE_SIZE = 12;
+  const LL_PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 150, 200];
+  let llPageSize = 20; // one of LL_PAGE_SIZE_OPTIONS, so the page-size <select> always has a matching option selected
+  try { const saved = Number(localStorage.getItem('elmsLiveListingsPageSize')); if (LL_PAGE_SIZE_OPTIONS.includes(saved)) llPageSize = saved; } catch (_) {}
   // What each tab asks the server for - the real DB status value each tab's listings actually have.
   const LL_TAB_STATUS = { all: 'published', active: 'published', ended: 'ended', sold: 'sold', issues: 'error' };
 
@@ -11642,7 +11657,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function llFetchPage() {
     const seq = ++llSeq;
     const p = llFilterParams();
-    p.set('page', String(llPage)); p.set('limit', String(LL_PAGE_SIZE)); p.set('sort', llSort);
+    p.set('page', String(llPage)); p.set('limit', String(llPageSize)); p.set('sort', llSort);
     const res = await apiFetch('/api/listings?' + p.toString());
     const data = await res.json();
     if (seq !== llSeq) return false; // a newer request took over
@@ -11759,7 +11774,7 @@ async function autoSuggestEmptyDraftCategories() {
     const typing = document.getElementById('llSearchInput');
     const keep = typing && document.activeElement === typing ? { value: typing.value, pos: typing.selectionStart } : null; // what is being typed is not lost by a redraw
     const pages = Math.max(1, llPages);
-    const start = (llPage - 1) * LL_PAGE_SIZE;
+    const start = (llPage - 1) * llPageSize;
     // Checkboxes render for 'active' and 'sold' rows alike (listingRowHtml below) - this must match, or the tab whose
     // status isn't 'active' (Sold) permanently shows a disabled "Select" checkbox and no "Select all N" (confirmed bug).
     llPageIds = llAll.filter((l) => ['active', 'sold'].includes(llListingStatus(l))).map((l) => String(l.id));
@@ -11794,7 +11809,10 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="lv-list">${llAll.map((l) => listingRowHtml(l)).join('')}</div>
         <div class="dv-footer">
           <div>Showing ${start + 1}&ndash;${start + llAll.length} of ${llTotal.toLocaleString()} listings</div>
-          ${llPaginationHtml(llPage, pages)}
+          <div class="dv-footer-right">
+            ${llPaginationHtml(llPage, pages)}
+            <label class="dv-pagesize">Show <select id="llPageSizeSelect" class="dv-select">${LL_PAGE_SIZE_OPTIONS.map((n) => `<option value="${n}"${n === llPageSize ? ' selected' : ''}>${n}</option>`).join('')}</select> per page</label>
+          </div>
         </div>` : `<div class="dv-empty"><b>${anyFilter ? 'No listings in this view' : 'No live listings yet'}</b>${anyFilter ? 'Try another tab or clear the search.' : 'Publish a draft and it appears here with its price, profit and stats.'}</div>`}
         <div class="dv-bulk${llSelected.size ? ' has-selection' : ''}" id="llBulkBar">
           <b id="llSelectedCount">${llSelected.size} selected</b>
@@ -12052,6 +12070,11 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#llTabs')?.addEventListener('click', (e) => { const b = e.target.closest('[data-ll-tab]'); if (b) llGo(() => { llTab = b.getAttribute('data-ll-tab'); llPage = 1; }); });
     root.querySelector('#llSortSelect')?.addEventListener('change', (e) => { const v = e.target.value; llGo(() => { llSort = v; llPage = 1; }); });
     root.querySelector('#llSourceSelect')?.addEventListener('change', (e) => { const v = e.target.value; llGo(() => { llSource = v; llPage = 1; }); });
+    root.querySelector('#llPageSizeSelect')?.addEventListener('change', (e) => {
+      const v = Number(e.target.value) || 20;
+      try { localStorage.setItem('elmsLiveListingsPageSize', String(v)); } catch (_) {}
+      llGo(() => { llPageSize = v; llPage = 1; });
+    });
     const search = root.querySelector('#llSearchInput');
     if (search) search.addEventListener('input', () => {
       clearTimeout(llSearchTimer); // a moment after the last key, not on every key
@@ -12770,7 +12793,7 @@ async function autoSuggestEmptyDraftCategories() {
   };
   const ORDER_TABS = [['all', 'All'], ['awaiting_shipment', 'Awaiting shipment'], ['awaiting_payment', 'Awaiting payment'], ['shipped', 'Shipped'], ['delivered', 'Delivered'], ['cancelled', 'Cancelled']];
   const CARRIERS = ['', 'USPS', 'UPS', 'FedEx', 'DHL', 'Royal Mail', 'Australia Post', 'Canada Post', 'Other'];
-  const ORDERS_PAGE_SIZE = 25;
+  const ORDERS_PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 150, 200];
 
   let ordersAll = [];
   let ordersAccountFilter = '';
@@ -12778,6 +12801,8 @@ async function autoSuggestEmptyDraftCategories() {
   let ordersSearch = '';
   let ordersRange = '90';
   let ordersPage = 1;
+  let ordersPageSize = 25;
+  try { const saved = Number(localStorage.getItem('elmsOrdersPageSize')); if (ORDERS_PAGE_SIZE_OPTIONS.includes(saved)) ordersPageSize = saved; } catch (_) {}
   let ordersAccounts = [];
   let ordersMarkFilter = 'all'; // on the Awaiting shipment tab: all | no (not ordered yet) | yes (ordered)
   let ordersEbayNote = false; // the seller's switch: "Mark as ordered" also writes "ELMS: ordered <date>" in the private note of the eBay order (off until they switch it on)
@@ -12873,10 +12898,10 @@ async function autoSuggestEmptyDraftCategories() {
     const awaitingHint = [awaiting.length ? (notOrderedCount ? notOrderedCount + ' not ordered yet' : 'All ordered') : 'Ready to fulfil', lateCount ? `<b class="late">${lateCount} past ship-by date</b>` : ''].filter(Boolean).join(' &middot; ');
 
     const filtered = ordersFiltered();
-    const pages = Math.max(1, Math.ceil(filtered.length / ORDERS_PAGE_SIZE));
+    const pages = Math.max(1, Math.ceil(filtered.length / ordersPageSize));
     if (ordersPage > pages) ordersPage = pages;
-    const start = (ordersPage - 1) * ORDERS_PAGE_SIZE;
-    const rows = filtered.slice(start, start + ORDERS_PAGE_SIZE);
+    const start = (ordersPage - 1) * ordersPageSize;
+    const rows = filtered.slice(start, start + ordersPageSize);
 
     const card = (cls, label, value, hint) => `<div class="ord-card ${cls}"><div class="ord-card-label">${label}</div><div class="ord-card-value${valueSizeClass(value)}">${value}</div><div class="ord-card-hint">${hint}</div></div>`;
     container.innerHTML = `
@@ -12912,8 +12937,12 @@ async function autoSuggestEmptyDraftCategories() {
           <tbody>${rows.map(orderRowHtml).join('')}</tbody>
         </table>
       </div>
-      <div class="ord-footer"><span>Showing ${start + 1}–${Math.min(start + ORDERS_PAGE_SIZE, filtered.length)} of ${filtered.length} orders</span>
-        <div class="ord-pager"><button class="ord-btn" data-order-page="${ordersPage - 1}"${ordersPage === 1 ? ' disabled' : ''}>&lsaquo; Prev</button><span>Page ${ordersPage} of ${pages}</span><button class="ord-btn" data-order-page="${ordersPage + 1}"${ordersPage === pages ? ' disabled' : ''}>Next &rsaquo;</button></div></div>`
+      <div class="ord-footer"><span>Showing ${start + 1}–${Math.min(start + ordersPageSize, filtered.length)} of ${filtered.length} orders</span>
+        <div class="ord-footer-right">
+          <div class="ord-pager"><button class="ord-btn" data-order-page="${ordersPage - 1}"${ordersPage === 1 ? ' disabled' : ''}>&lsaquo; Prev</button><span>Page ${ordersPage} of ${pages}</span><button class="ord-btn" data-order-page="${ordersPage + 1}"${ordersPage === pages ? ' disabled' : ''}>Next &rsaquo;</button></div>
+          <label class="ord-pagesize">Show <select class="ord-select" id="ordersPageSizeSelect">${ORDERS_PAGE_SIZE_OPTIONS.map((n) => `<option value="${n}"${n === ordersPageSize ? ' selected' : ''}>${n}</option>`).join('')}</select> per page</label>
+        </div>
+      </div>`
       : `<div class="empty-state">${ordersAll.length ? 'No orders match these filters.' : 'No orders yet. Click "Sync from eBay" to load your orders (the last 90 days are imported the first time).'}</div>`}
     `;
     wireOrdersPage();
@@ -13078,6 +13107,12 @@ async function autoSuggestEmptyDraftCategories() {
     search?.addEventListener('input', () => { ordersSearch = search.value.trim(); ordersPage = 1; renderOrders(); const el = document.getElementById('ordersSearchInput'); el?.focus(); el?.setSelectionRange(el.value.length, el.value.length); });
     root.querySelector('#ordersRangeSelect')?.addEventListener('change', (e) => { ordersRange = e.target.value; ordersPage = 1; renderOrders(); });
     root.querySelector('#ordersMarkSelect')?.addEventListener('change', (e) => { ordersMarkFilter = e.target.value; ordersPage = 1; renderOrders(); });
+    root.querySelector('#ordersPageSizeSelect')?.addEventListener('change', (e) => {
+      ordersPageSize = Number(e.target.value) || 25;
+      try { localStorage.setItem('elmsOrdersPageSize', String(ordersPageSize)); } catch (_) {}
+      ordersPage = 1;
+      renderOrders();
+    });
     root.querySelector('#ordersEbayNoteSwitch')?.addEventListener('change', async (e) => {
       const box = e.target;
       const on = box.checked;
