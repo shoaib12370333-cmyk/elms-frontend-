@@ -12786,7 +12786,7 @@ async function autoSuggestEmptyDraftCategories() {
       if (!ignoreTab && ordersTab === 'awaiting_shipment' && ordersMarkFilter !== 'all' && orderIsOrdered(o) !== (ordersMarkFilter === 'yes')) return false;
       if (cutoff && new Date(orderDateOf(o)).getTime() < cutoff) return false;
       if (q) {
-        const hay = `${o.ebay_order_id || ''} ${o.buyer_username || ''} ${o.shipping_address?.fullName || ''} ${orderItemTitle(o)} ${o.sku || ''} ${o.legacy_item_id || ''} ${o.tracking_number || ''} ${o.amazon_order_id || ''}`.toLowerCase();
+        const hay = `${o.ebay_order_id || ''} ${o.buyer_username || ''} ${o.shipping_address?.fullName || ''} ${orderItemTitle(o)} ${o.sku || ''} ${o.legacy_item_id || ''} ${o.tracking_number || ''} ${o.amazon_order_id || ''} ${o.seller_note || ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -12956,6 +12956,55 @@ async function autoSuggestEmptyDraftCategories() {
       : `<div class="ord-mark"><button class="ord-mark-btn" type="button" data-order-mark="${id}" title="You bought this on Amazon: mark it so you remember">Mark as ordered</button></div>`;
   }
 
+  // The seller's private note, right on the order row itself: click it (or "+ Add note") to write, Save keeps it with
+  // the order. Mirrors Drafts' per-product note (noteBlockHtml) so a note is visible at a glance without opening the
+  // order drawer; PUT /:id/note is the same endpoint the drawer's own "Private note" box already uses. Never sent to
+  // eBay or Amazon.
+  function orderNoteBlockHtml(o) {
+    const note = String(o.seller_note || '');
+    return '<div class="dv-note-wrap" data-order-note-wrap>' + (note
+      ? '<button type="button" class="dv-note" data-order-note-edit title="' + escapeAttr(note + '\n(click to edit)') + '">&#128221; ' + escapeHtml(note.split('\n')[0]) + '</button>'
+      : '<button type="button" class="dv-note add" data-order-note-edit>+ Add note</button>') + '</div>';
+  }
+  function openOrderNoteEditor(wrap) {
+    const row = wrap.closest('[data-order-id]');
+    const id = row && row.getAttribute('data-order-id');
+    const o = id && ordersAll.find((x) => String(x.id) === String(id));
+    if (!o) return;
+    wrap.innerHTML = '<textarea class="dv-note-edit" rows="3" maxlength="2000" placeholder="A note for yourself (buyer, supplier, reminder)…">' + escapeHtml(o.seller_note || '') + '</textarea>'
+      + '<div class="dv-note-actions"><button type="button" class="dv-btn small primary" data-order-note-save>Save</button><button type="button" class="dv-btn small" data-order-note-cancel>Cancel</button><small>Only for you. Never sent to eBay or Amazon.</small></div>';
+    wrap.addEventListener('click', (e) => e.stopPropagation()); // the row itself opens the order on click: editing the note must not trigger that
+    const ta = wrap.querySelector('textarea');
+    ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+    const close = () => { wrap.outerHTML = orderNoteBlockHtml(o); };
+    const save = async () => {
+      const saveBtn = wrap.querySelector('[data-order-note-save]');
+      if (saveBtn) saveBtn.disabled = true;
+      try {
+        const res = await apiFetch('/api/orders/' + encodeURIComponent(o.id) + '/note', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ note: ta.value.trim() }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save the note.');
+        o.seller_note = (data.order && data.order.seller_note) || '';
+        close();
+      } catch (err) {
+        showToast('Could not save the note', err.message, 'error');
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    };
+    wrap.querySelector('[data-order-note-save]').addEventListener('click', save);
+    wrap.querySelector('[data-order-note-cancel]').addEventListener('click', close);
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.stopPropagation(); close(); }
+      else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); }
+    });
+  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-order-note-edit]');
+    if (!btn) return;
+    e.stopPropagation();
+    openOrderNoteEditor(btn.closest('[data-order-note-wrap]'));
+  });
+
   function orderRowHtml(o) {
     const ship = orderShipBy(o);
     const address = o.shipping_address || {};
@@ -12965,7 +13014,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td data-label="Order"><div class="ord-id">${escapeHtml(o.ebay_order_id || '—')}</div><div class="ord-sub">${escapeHtml(orderShortDate(orderDateOf(o)))}</div></td>
         <td data-label="Item"><div class="ord-item">
           ${o.main_image ? `<img class="ord-thumb" src="${escapeAttr(o.main_image)}" alt="" />` : '<div class="ord-thumb"></div>'}
-          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${(o.ebay_account_label || o.ebay_account_username) ? ' · ' + escapeHtml(o.ebay_account_label || o.ebay_account_username) : ''}${orderLinksHtml(o) ? ' · ' + orderLinksHtml(o) : ''}</div>${orderSheetInputsHtml(o)}</div>
+          <div class="ord-item-txt"><div class="ord-title">${escapeHtml(orderItemTitle(o))}</div><div class="ord-sub">Qty ${o.quantity ?? 1}${o.variant_details ? ' · ' + escapeHtml(o.variant_details) : ''}${(o.ebay_account_label || o.ebay_account_username) ? ' · ' + escapeHtml(o.ebay_account_label || o.ebay_account_username) : ''}${orderLinksHtml(o) ? ' · ' + orderLinksHtml(o) : ''}</div>${orderSheetInputsHtml(o)}${orderNoteBlockHtml(o)}</div>
         </div></td>
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
         <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}${o.net_profit != null ? `<div class="ord-sub ${Number(o.net_profit) >= 0 ? 'good' : 'bad'}">Net profit ${escapeHtml(orderMoney(o, o.net_profit))}</div>` : ''}</td>
@@ -13259,6 +13308,7 @@ async function autoSuggestEmptyDraftCategories() {
           ${o.tracking_code ? `<div class="ord-sub">Buyer tracking page (no supplier name shown): <a href="https://elmstool.com/track/${encodeURIComponent(o.tracking_code)}" target="_blank" rel="noopener noreferrer">elmstool.com/track/${escapeHtml(o.tracking_code)}</a> <button class="ord-link" type="button" id="ordCopyTrackLink">Copy link</button></div>` : ''}
           <div class="ord-row-inline">
             <button class="ord-btn primary" type="button" id="ordMarkShipped"${st === 'cancelled' || st === 'awaiting_payment' ? ' disabled' : ''}>${st === 'shipped' || st === 'delivered' ? 'Update tracking' : 'Mark as shipped on eBay'}</button>
+            ${st !== 'shipped' && st !== 'delivered' ? `<button class="ord-btn" type="button" id="ordMarkShippedNoTracking"${st === 'cancelled' || st === 'awaiting_payment' ? ' disabled' : ''} title="Marks it shipped on eBay with no tracking number at all - add one later if you get one">Mark as shipped (no tracking)</button>` : ''}
             <button class="ord-btn" type="button" id="ordMarkDelivered"${st === 'delivered' || st === 'cancelled' ? ' disabled' : ''}>Mark delivered</button>
           </div>
           <div class="ord-sub" id="ordActionStatus"></div>
@@ -13321,6 +13371,12 @@ async function autoSuggestEmptyDraftCategories() {
       if (data.ebayNotified) showToast('Shipped', 'Tracking was sent to eBay.', 'success');
       else showToast('Saved in ELMS only', data.ebayError ? `eBay could not be updated: ${data.ebayError}` : 'This order is not linked to an eBay account, so eBay was not updated.', 'error');
       apply({ ...data.order, tracking_code: data.trackingCode || null });
+    }));
+    $('ordMarkShippedNoTracking')?.addEventListener('click', (e) => run(e.currentTarget, 'Sending to eBay…', async () => {
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/mark-shipped`, { method: 'POST' });
+      if (data.ebayNotified) showToast('Shipped', 'Marked as shipped on eBay - no tracking number.', 'success');
+      else showToast('Saved in ELMS only', data.ebayError ? `eBay could not be updated: ${data.ebayError}` : 'This order is not linked to an eBay account, so eBay was not updated.', 'error');
+      apply(data.order);
     }));
     $('ordCopyTrackLink')?.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(`https://elmstool.com/track/${o.tracking_code}`); showToast('Copied', 'Tracking page link copied.', 'success'); }
