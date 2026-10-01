@@ -3073,6 +3073,10 @@
   .ord-pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap; }
   .ord-pill.blue { background:#E7F0FD; color:#0064D2; } .ord-pill.amber { background:#FEF3DA; color:#b7830a; } .ord-pill.purple { background:#F1EBFC; color:#7C3AED; } .ord-pill.green { background:#EEF6DF; color:#5b8f0e; } .ord-pill.red { background:#FDECEC; color:#E53238; }
   .ord-actions { text-align:right; white-space:nowrap; }
+  /* The actions button (View/Fulfil) stays visible even when the table needs to scroll horizontally to fit the
+     other columns - pinned to the right edge of .ord-table-wrap instead of being scrolled off along with everything
+     else. A plain opaque background is needed so the columns scrolling underneath don't show through it. */
+  .ord-table th:last-child, .ord-table td.ord-actions { position:sticky; right:0; background:#fff; z-index:2; box-shadow:-8px 0 8px -8px rgba(15,23,42,.15); }
   .ord-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; flex-wrap:wrap; font-size:13px; color:var(--grey); }
   .ord-pager { display:flex; align-items:center; gap:10px; }
 
@@ -3126,7 +3130,7 @@
     .ord-table td > div { min-width:0; overflow-wrap:anywhere; }
     .ord-table td::before { content:attr(data-label); flex:0 0 72px; text-align:left; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; }
     .ord-table td[data-label="Item"] { display:block; text-align:left; } .ord-table td[data-label="Item"]::before { display:none; }
-    .ord-table td.ord-actions { display:block; text-align:left; } .ord-table td.ord-actions::before { display:none; } .ord-actions .ord-btn { width:100%; }
+    .ord-table td.ord-actions { display:block; text-align:left; position:static; box-shadow:none; } .ord-table td.ord-actions::before { display:none; } .ord-actions .ord-btn { width:100%; }
     .ord-head-actions { width:100%; } .ord-head-actions .ord-btn, .ord-head-actions .ord-select { flex:1 1 140px; }
     .ord-drawer { width:100%; } .ord-steps { grid-template-columns:repeat(2,1fr); }
   }
