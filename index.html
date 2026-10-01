@@ -9343,6 +9343,7 @@
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
             <select id="draftSort" class="dv-select"><option value="created">Newest imported</option><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
             <select id="draftSourceFilter" class="dv-select" title="Filter by product source"><option value="">Every source</option><option value="amazon">Amazon</option><option value="cj">CJdropshipping</option><option value="aliexpress">AliExpress</option></select>
+            <select id="draftCountryFilter" class="dv-select" title="Filter by the Amazon site the product came from"><option value="">Every Amazon site</option><option value="UK">Amazon UK</option><option value="US">Amazon US</option><option value="AU">Amazon AU</option><option value="CA">Amazon CA</option><option value="DE">Amazon DE</option><option value="FR">Amazon FR</option><option value="IT">Amazon IT</option><option value="ES">Amazon ES</option></select>
             <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
             ${veroPattern ? '' : '<button type="button" class="dv-btn" id="draftVeroSetup" title="Add the brand names eBay removes listings for, and ELMS will warn you about them">&#9888; Set up VeRO words</button>'}
             ${veroPattern ? `<button type="button" class="dv-btn vero-filter" id="draftVeroFilter" title="Show only drafts that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="draftVeroCount">${veroCount()}</b></button>` : ''}
@@ -9379,6 +9380,7 @@
         const status = document.getElementById('draftStatusFilter')?.value || 'all';
         const sort = document.getElementById('draftSort')?.value || 'created';
         const source = document.getElementById('draftSourceFilter')?.value || '';
+        const sourceCountry = document.getElementById('draftCountryFilter')?.value || '';
         const filtered = allDrafts.filter((l) => {
           const haystack = `${l.title || ''} ${l.sku || ''} ${l.note || ''}`.toLowerCase();
           // "Ready to publish" also shows failed items (not just the "Needs attention" tab) -
@@ -9386,7 +9388,8 @@
           // where the seller is already looking, with its error badge and a Retry button.
           const matchesStatus = draftVeroOnly || status === 'all' || l.status === status || (status === 'draft' && l.status === 'error');
           const matchesSource = !source || (l.source_platform || 'amazon') === source;
-          return (!query || haystack.includes(query)) && matchesStatus && matchesSource && (!draftVeroOnly || l._vero.terms.length > 0);
+          const matchesCountry = !sourceCountry || l.supplier_country === sourceCountry;
+          return (!query || haystack.includes(query)) && matchesStatus && matchesSource && matchesCountry && (!draftVeroOnly || l._vero.terms.length > 0);
         }).sort((a,b) => {
           if (sort === 'title') return String(a.title || a.sku || '').localeCompare(String(b.title || b.sku || ''));
           if (sort === 'price') return Number(b.sell_price || 0) - Number(a.sell_price || 0);
@@ -9429,7 +9432,7 @@
         restoreNote();
         updateBulkBar();
       };
-      ['draftProductSearch','draftStatusFilter','draftSort','draftSourceFilter'].forEach((id) => document.getElementById(id)?.addEventListener(id === 'draftProductSearch' ? 'input' : 'change', () => {
+      ['draftProductSearch','draftStatusFilter','draftSort','draftSourceFilter','draftCountryFilter'].forEach((id) => document.getElementById(id)?.addEventListener(id === 'draftProductSearch' ? 'input' : 'change', () => {
         if (id === 'draftStatusFilter') {
           const value = document.getElementById(id)?.value || 'all';
           document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item.getAttribute('data-inner-status') === value));
@@ -19235,17 +19238,19 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="meta-line">${escapeHtml(user.email)}</div>
       <p class="meta-line" style="margin:10px 0 0;">Clones that many random, ready-to-list products (already carrying a real eBay category and the clickable Amazon link) from across ELMS straight into their Drafts. Free - no credit is used, and a product they already have is never pushed again.</p>
       <div class="st-field" style="margin-top:14px;"><label>Number of listings</label><input class="st-input" type="number" id="plCount" min="1" max="5000" step="1" value="100" /></div>
+      <div class="st-field"><label>Amazon site (optional)</label><select class="st-input" id="plCountry"><option value="">Any site</option><option value="UK">Amazon UK</option><option value="US">Amazon US</option><option value="AU">Amazon AU</option><option value="CA">Amazon CA</option><option value="DE">Amazon DE</option><option value="FR">Amazon FR</option><option value="IT">Amazon IT</option><option value="ES">Amazon ES</option></select></div>
       <div class="st-actions"><button class="st-btn primary" id="plGo" type="button">Push</button><div id="plStatus"></div></div>
     `);
     m.querySelector('#plGo').addEventListener('click', async (e) => {
       const btn = e.currentTarget;
       const status = m.querySelector('#plStatus');
       const count = Math.round(Number(m.querySelector('#plCount').value));
+      const sourceCountry = m.querySelector('#plCountry').value || undefined;
       if (!Number.isInteger(count) || count < 1 || count > 5000) { status.textContent = 'Enter a whole number from 1 to 5,000.'; return; }
       btn.disabled = true;
       status.textContent = 'Pushing… this can take a little while for a large count.';
       try {
-        const out = await adminPost('/api/admin/users/' + encodeURIComponent(user.id) + '/push-listings', { count });
+        const out = await adminPost('/api/admin/users/' + encodeURIComponent(user.id) + '/push-listings', { count, sourceCountry });
         status.textContent = `Pushed ${out.pushed.toLocaleString()} of ${out.requested.toLocaleString()} requested (pool had ${out.poolSize.toLocaleString()}).`;
         showToast('Listings pushed', `${out.pushed.toLocaleString()} draft${out.pushed === 1 ? '' : 's'} added for ${user.name || user.email}.`, 'success');
       } catch (err) {
