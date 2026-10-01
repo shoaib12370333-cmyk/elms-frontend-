@@ -11244,24 +11244,28 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Live Listings: AI removes VeRO words from the selected live (or sold-out) listings AND pushes the
   // change to eBay (unlike the Drafts bulk VeRO button, which only ever saves ELMS's own copy - a draft has nothing
-  // live on eBay yet to update). services/liveBulkVeroService.js does the check + clean + eBay revise server-side,
-  // in one request for the whole selection (the server caps a single request at 20, same batch size as Restock).
+  // live on eBay yet to update). services/liveBulkVeroService.js does the check + clean + eBay revise server-side.
+  // A big "Select all" is sent VERO_CHUNK at a time (the server's own per-request cap, same as Restock's RS_CHUNK)
+  // instead of being refused outright - the button's own label shows progress across the whole selection.
   async function bulkRemoveLiveVero(ids, btn) {
     const n = ids.length;
-    if (n > 20) { showToast('Remove VeRO words', 'Please select at most 20 listings at a time.', 'error'); return; }
-    const ok = await elmsConfirm(`AI will check ${n} selected live listing${n === 1 ? '' : 's'} for VeRO words (brand names eBay removes listings for), take them out of the title, description and item specifics, and push the change to eBay.\n\nOnly a listing that actually has VeRO words is changed and costs a credit; the rest are left alone at no cost.`, { title: 'Remove VeRO words', okText: 'Check and clean' });
+    const ok = await elmsConfirm(`AI will check ${n} selected live listing${n === 1 ? '' : 's'} for VeRO words (brand names eBay removes listings for), take them out of the title, description, bullet points and item specifics, and push the change to eBay.\n\nOnly a listing that actually has VeRO words is changed and costs a credit; the rest are left alone at no cost.${n > 20 ? ' A selection this size is sent in batches of 20, so this can take a while - leave this tab open until it finishes.' : ''}`, { title: 'Remove VeRO words', okText: 'Check and clean' });
     if (!ok) return;
 
+    const VERO_CHUNK = 20;
     const label = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Cleaning…';
     let all = [];
     let stop = '';
     try {
-      const res = await apiFetch('/api/listings/bulk-vero-clean', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
-      const data = await res.json();
-      if (!res.ok || !data.success) stop = data.error || 'That did not work. Please try again.';
-      else all = data.results;
+      for (let i = 0; i < ids.length && !stop; i += VERO_CHUNK) {
+        if (n > VERO_CHUNK) btn.textContent = `Cleaning ${Math.min(i + VERO_CHUNK, n)}/${n}…`;
+        const res = await apiFetch('/api/listings/bulk-vero-clean', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: ids.slice(i, i + VERO_CHUNK) }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
+        all.push(...data.results);
+      }
     } catch (err) {
       stop = err.message || 'Could not reach the server.';
     } finally {
