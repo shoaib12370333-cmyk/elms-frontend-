@@ -10891,6 +10891,7 @@ async function autoSuggestEmptyDraftCategories() {
   // live: true = the Live listings page's "Change price": only the price, for live listings, put on eBay at once.
   async function openBulkEditModal(ids, opts = {}) {
     const live = opts.live === true;
+    const liveEdit = live && opts.liveEdit === true; // live + liveEdit = "Bulk edit" (everything but price); live alone = "Change price"
     const noun = live ? 'live listing' : 'draft';
     let liveRows = [];
     if (live) {
@@ -10922,15 +10923,15 @@ async function autoSuggestEmptyDraftCategories() {
     const val = (v) => escapeAttr(v === null || v === undefined ? '' : String(v));
     const numField = (id, label, v, extra = '') => '<label class="be-f"><span>' + label + '</span><input type="number" id="' + id + '" step="0.01" min="0" inputmode="decimal" value="' + val(v) + '" ' + extra + ' /></label>';
     overlay.innerHTML = `
-      <div class="elms-confirm-box bk-box be-box${live ? ' be-live' : ''}" role="dialog" aria-modal="true" aria-label="${live ? 'Change price' : 'Bulk edit'}">
-        <div class="elms-confirm-title">${live ? 'Change price' : 'Bulk edit'} <span class="be-count">${n} ${noun}${n === 1 ? '' : 's'}</span></div>
+      <div class="elms-confirm-box bk-box be-box${live ? ' be-live' : ''}" role="dialog" aria-modal="true" aria-label="${live && !liveEdit ? 'Change price' : 'Bulk edit'}">
+        <div class="elms-confirm-title">${live && !liveEdit ? 'Change price' : 'Bulk edit'} <span class="be-count">${n} ${noun}${n === 1 ? '' : 's'}</span></div>
         <div class="be-layout">
           <nav class="be-pick" aria-label="What to change">
             <div class="be-pick-h">What do you want to change?</div>
-            ${(live ? BE_FIELDS.filter((f) => f.key === 'price') : BE_FIELDS).map((f) => `<label class="be-pick-i"><input type="checkbox" data-be-pick="${f.key}" /><span><b>${f.label}</b><small>${f.hint}</small></span></label>`).join('')}
+            ${(!live ? BE_FIELDS : liveEdit ? BE_FIELDS.filter((f) => f.key !== 'price') : BE_FIELDS.filter((f) => f.key === 'price')).map((f) => `<label class="be-pick-i"><input type="checkbox" data-be-pick="${f.key}" /><span><b>${f.label}</b><small>${f.hint}</small></span></label>`).join('')}
           </nav>
           <div class="be-edit" id="bkeEdit">
-            <div class="be-empty" id="bkeEmpty">Tick what you want to change. Each one opens here, and what you set is applied to all ${n} selected draft${n === 1 ? '' : 's'}.</div>
+            <div class="be-empty" id="bkeEmpty">Tick what you want to change. Each one opens here, and what you set is applied to all ${n} selected ${noun}${n === 1 ? '' : 's'}.</div>
 
             <section class="be-sec" data-be-sec="price" hidden>
               <h4>Price</h4>
@@ -10954,13 +10955,13 @@ async function autoSuggestEmptyDraftCategories() {
               <div id="bkeTitleReplace" class="be-grid"><label class="be-f"><span>Find</span><input type="text" id="bkeTitleFind" maxlength="80" /></label><label class="be-f"><span>Replace with (empty removes it)</span><input type="text" id="bkeTitleWith" maxlength="80" /></label><label class="bk-radio"><input type="checkbox" id="bkeTitleCase" /> Match capitals exactly</label></div>
               <label class="be-f" id="bkeTitleTextWrap" style="display:none;"><span>Text</span><input type="text" id="bkeTitleText" maxlength="80" /></label>
               <label class="be-f" id="bkeTitleCaseWrap" style="display:none;"><span>Capitals</span><select id="bkeTitleCaseSel"><option value="title">Title Case</option><option value="upper">UPPER CASE</option><option value="lower">lower case</option></select></label>
-              <small>eBay allows 80 characters. A title that would go over is not cut: that draft is skipped and says so.</small>
+              <small>eBay allows 80 characters. A title that would go over is not cut: that ${noun} is skipped and says so.</small>
             </section>
 
             <section class="be-sec" data-be-sec="brand" hidden>
               <h4>Brand</h4>
               <label class="be-f"><span>Brand</span><input type="text" id="bkeBrand" maxlength="65" /></label>
-              <small>Sets the Brand item specific of each draft. Its other item specifics stay as they are.</small>
+              <small>Sets the Brand item specific of each ${noun}. Its other item specifics stay as they are.</small>
             </section>
 
             <section class="be-sec" data-be-sec="quantity" hidden>
@@ -11041,7 +11042,7 @@ async function autoSuggestEmptyDraftCategories() {
     }));
     overlay.querySelector('#bkeEdit').addEventListener('input', resetResult);
     overlay.querySelector('#bkeEdit').addEventListener('change', resetResult);
-    if (live) { const price = $('[data-be-pick="price"]'); price.checked = true; price.dispatchEvent(new Event('change')); }
+    if (live && !liveEdit) { const price = $('[data-be-pick="price"]'); price.checked = true; price.dispatchEvent(new Event('change')); }
 
     // ---- small show / hide rules inside the editors ----
     overlay.querySelectorAll('input[name="bkePriceMode"]').forEach((r) => r.addEventListener('change', () => { $('#bkePriceCustom').style.display = $('input[name="bkePriceMode"]:checked').value === 'custom' ? '' : 'none'; }));
@@ -11113,12 +11114,13 @@ async function autoSuggestEmptyDraftCategories() {
     async function runAll(changes, onProgress) {
       const all = { results: [], summary: { changed: 0, unchanged: 0, skipped: 0 } };
       const chunks = [];
-      const chunkSize = live ? 100 : BE_CHUNK; // a live request is sent to eBay 25 prices per call, four calls at once
+      const chunkSize = !live ? BE_CHUNK : liveEdit ? 20 : 100; // Bulk edit: a changed live listing is a full eBay revise (several round trips) - small chunks, same cap as the server. Change price: eBay takes 25 prices per call, four calls at once.
       for (let i = 0; i < ids.length; i += chunkSize) chunks.push(ids.slice(i, i + chunkSize));
       let finished = 0;
       for (let w = 0; w < chunks.length; w += 3) {
         const wave = chunks.slice(w, w + 3);
-        const outs = await Promise.allSettled(wave.map((chunk) => bulkJson(live ? '/api/listings/bulk-live-price' : '/api/listings/bulk-edit', 'POST', live ? { ids: chunk, changes } : { ids: chunk, dryRun: false, changes })));
+        const endpoint = !live ? '/api/listings/bulk-edit' : liveEdit ? '/api/listings/bulk-live-edit' : '/api/listings/bulk-live-price';
+        const outs = await Promise.allSettled(wave.map((chunk) => bulkJson(endpoint, 'POST', live ? { ids: chunk, changes } : { ids: chunk, dryRun: false, changes })));
         for (const out of outs) {
           if (out.status !== 'fulfilled') continue;
           all.results.push(...out.value.results);
@@ -11150,15 +11152,17 @@ async function autoSuggestEmptyDraftCategories() {
     applyBtn.addEventListener('click', async () => {
       let changes;
       try { changes = readChanges(); } catch (err) { resultBox.innerHTML = '<div class="be-err">' + escapeHtml(err.message) + '</div>'; return; }
-      if (live) { // it changes real listings on eBay: one clear question first
+      if (live && !liveEdit) { // it changes real listings on eBay: one clear question first
         const r = changes.price.mode === 'saved' ? saved : changes.price.rule;
         if (!(await elmsConfirm('Change the price of ' + ids.length + ' live listing' + (ids.length === 1 ? '' : 's') + ' on eBay now?\n\nEach price is worked out from its Amazon price with:\n' + bkeRuleSummary(r || {}), { title: 'Change prices on eBay', okText: 'Change prices' }))) return;
+      } else if (liveEdit) { // not a price change, but still real listings on eBay
+        if (!(await elmsConfirm('Apply these changes to ' + ids.length + ' live listing' + (ids.length === 1 ? '' : 's') + ' on eBay now?', { title: 'Change live listings', okText: 'Apply changes' }))) return;
       }
       applyBtn.disabled = true; resultBox.innerHTML = '';
       try {
         const out = await runAll(changes, (upTo) => { applyBtn.textContent = 'Applying ' + upTo + '/' + ids.length + '…'; });
         const s2 = out.summary;
-        showToast(live ? 'Prices changed' : 'Bulk edit', s2.changed + ' ' + noun + (s2.changed === 1 ? '' : 's') + ' changed' + (s2.unchanged ? ', ' + s2.unchanged + ' already like this' : '') + (s2.skipped ? ', ' + s2.skipped + ' skipped' : '') + '.', s2.skipped && !s2.changed ? 'error' : 'success');
+        showToast(live && !liveEdit ? 'Prices changed' : 'Bulk edit', s2.changed + ' ' + noun + (s2.changed === 1 ? '' : 's') + ' changed' + (s2.unchanged ? ', ' + s2.unchanged + ' already like this' : '') + (s2.skipped ? ', ' + s2.skipped + ' skipped' : '') + '.', s2.skipped && !s2.changed ? 'error' : 'success');
         if (live) { llSelected.clear(); loadListings(); } else loadDrafts();
         if (s2.skipped) { // keep the window open so the reasons can be read
           renderSkipped(out);
@@ -11860,7 +11864,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="dv-bulk${llSelected.size ? ' has-selection' : ''}" id="llBulkBar">
           <b id="llSelectedCount">${llSelected.size} selected</b>
           ${llTab === 'sold' ? '<button class="dv-btn primary small" id="llRestockBtn" type="button" title="Put a fresh available quantity on eBay for all the selected sold-out listings">Restock</button>' : '<button class="dv-btn primary small" id="llChangePriceBtn" type="button" title="Change the price of all the selected live listings on eBay at once, with your Margin">Change price</button>'}
-          <button class="dv-btn small" id="llBulkSettingsBtn" type="button" title="Change tags, note, shipping method or monitoring for all the selected listings at once - active or sold-out">Bulk edit</button>
+          <button class="dv-btn small" id="llBulkSettingsBtn" type="button" title="Change title, brand, quantity, item location, policies, tags, note or monitoring for all the selected listings at once - pushed to eBay where it applies">Bulk edit</button>
           <button class="dv-btn small" id="llBulkVeroBtn" type="button" title="AI checks the selected listings for VeRO words (brand names eBay removes listings for), takes them out of the title, description and item specifics, and pushes the change to eBay">Remove VeRO words</button>
           <button class="dv-btn small" id="llClearBtn" type="button">Clear</button>
         </div>
@@ -12026,70 +12030,6 @@ async function autoSuggestEmptyDraftCategories() {
     $('rsQty').focus();
   }
 
-  /** Live Listings' "Bulk edit": ELMS-side settings only (never title/price/quantity/eBay), so it works on Active
-   * and Sold listings alike, unlike Change price / Restock. Backend: PATCH /api/listings/bulk-settings. */
-  const LL_SETTINGS_FIELDS = [
-    { key: 'tags', label: 'Tags', hint: 'Replaces the tags on every selected listing' },
-    { key: 'note', label: 'Note', hint: 'Replaces your private note - leave blank to clear it' },
-    { key: 'shippingMethod', label: 'Shipping method', hint: '' },
-    { key: 'stockMonitoring', label: 'Stock monitoring', hint: '' },
-    { key: 'priceMonitoring', label: 'Price monitoring', hint: '' },
-  ];
-  function llSettingsFieldControl(key) {
-    if (key === 'tags') return `<input type="text" data-ls-val="tags" placeholder="tag1, tag2" disabled />`;
-    if (key === 'note') return `<textarea data-ls-val="note" rows="2" style="height:auto;" disabled></textarea>`;
-    if (key === 'shippingMethod') return `<select data-ls-val="shippingMethod" disabled><option value="cheapest_with_tracking">Cheapest with tracking</option><option value="standard">Standard</option><option value="express">Express</option></select>`;
-    return `<select data-ls-val="${key}" disabled><option value="1">On</option><option value="0">Off</option></select>`;
-  }
-  function openLiveSettingsDialog(ids) {
-    const overlay = document.createElement('div');
-    overlay.className = 'elms-confirm-overlay';
-    overlay.innerHTML = `
-      <div class="elms-confirm-box bk-box" role="dialog" aria-modal="true" aria-label="Bulk edit">
-        <div class="elms-confirm-title">Bulk edit <span class="be-count">${ids.length} listing${ids.length === 1 ? '' : 's'}</span></div>
-        <div class="elms-confirm-message">Tick what to change - only ticked fields are touched. Never sent to eBay: title, price, quantity and images stay exactly as they are.</div>
-        ${LL_SETTINGS_FIELDS.map((f) => `<label class="mo-f" style="display:block;margin-bottom:10px;"><span style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" data-ls-pick="${f.key}" /> ${f.label}</span>${f.hint ? `<small style="display:block;color:#667085;margin:2px 0 6px 24px;">${f.hint}</small>` : ''}${llSettingsFieldControl(f.key)}</label>`).join('')}
-        <div class="ord-sub bad" id="lsError"></div>
-        <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok">Save</button></div>
-      </div>`;
-    document.body.appendChild(overlay);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const $ = (sel) => overlay.querySelector(sel);
-    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
-    const onKey = (e) => { if (e.key === 'Escape') close(); };
-    document.addEventListener('keydown', onKey);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-    overlay.querySelector('[data-act="cancel"]').addEventListener('click', close);
-    overlay.querySelectorAll('[data-ls-pick]').forEach((cb) => cb.addEventListener('change', () => {
-      const ctrl = overlay.querySelector(`[data-ls-val="${cb.getAttribute('data-ls-pick')}"]`);
-      if (ctrl) ctrl.disabled = !cb.checked;
-    }));
-    overlay.querySelector('[data-act="ok"]').addEventListener('click', async () => {
-      const body = { ids };
-      overlay.querySelectorAll('[data-ls-pick]:checked').forEach((cb) => {
-        const key = cb.getAttribute('data-ls-pick');
-        const val = overlay.querySelector(`[data-ls-val="${key}"]`).value;
-        body[key] = (key === 'stockMonitoring' || key === 'priceMonitoring') ? val === '1' : val;
-      });
-      if (Object.keys(body).length <= 1) { $('#lsError').textContent = 'Tick at least one field to change.'; return; }
-      const btn = overlay.querySelector('[data-act="ok"]');
-      btn.disabled = true; btn.textContent = 'Saving…';
-      try {
-        const res = await apiFetch('/api/listings/bulk-settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save these changes.');
-        close();
-        llSelected.clear();
-        loadListings();
-        showToast(data.updated ? 'Saved' : 'Not saved', data.updated + ' listing' + (data.updated === 1 ? '' : 's') + ' updated' + (data.skipped.length ? ', ' + data.skipped.length + ' skipped' : '') + '.', data.skipped.length && !data.updated ? 'error' : 'success');
-      } catch (err) {
-        $('#lsError').textContent = err.message;
-        btn.disabled = false; btn.textContent = 'Save';
-      }
-    });
-  }
-
   function wireListingsPage() {
     const root = document.getElementById('listingsContent');
     // Header buttons
@@ -12162,7 +12102,7 @@ async function autoSuggestEmptyDraftCategories() {
     });
     root.querySelector('#llBulkSettingsBtn')?.addEventListener('click', () => {
       const ids = [...llSelected];
-      if (ids.length) openLiveSettingsDialog(ids);
+      if (ids.length) openBulkEditModal(ids, { live: true, liveEdit: true });
     });
     root.querySelector('#llBulkVeroBtn')?.addEventListener('click', (e) => {
       const ids = [...llSelected];
