@@ -3059,9 +3059,12 @@
     .np-table .np-totals tr { background:#F1F5F9; } .np-table .np-totals td { background:transparent; border:0; }
   }
   .ord-table-wrap { background:#fff; border:1px solid var(--line); border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; overflow-x:auto; }
-  .ord-table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; color:#4b5563; min-width:900px; }
-  .ord-table th { text-align:left; padding:0 14px; height:44px; font-size:12px; font-weight:700; color:#687180; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
-  .ord-table td { padding:14px; border-bottom:1px solid #edf0f3; vertical-align:middle; }
+  /* table-layout:fixed (not auto + min-width) so the table always stays within its wrapper's actual width - columns
+     keep to the percentages in the <colgroup> and their content wraps/shrinks to fit, instead of the table growing
+     wider than the page and needing a horizontal scroll. */
+  .ord-table { width:100%; table-layout:fixed; border-collapse:separate; border-spacing:0; font-size:13.5px; color:#4b5563; }
+  .ord-table th { text-align:left; padding:0 10px; height:44px; font-size:11.5px; font-weight:700; color:#687180; border-bottom:1px solid #e5e7eb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ord-table td { padding:12px 10px; border-bottom:1px solid #edf0f3; vertical-align:middle; overflow-wrap:anywhere; }
   .ord-row { cursor:pointer; } .ord-row:hover td { background:#f6faff; }
   .ord-id { font-weight:700; color:#374151; word-break:break-all; }
   @media (min-width:721px) { .ord-id { white-space:nowrap; word-break:normal; } }
@@ -3100,9 +3103,9 @@
   .ord-mark-btn { border:1.5px solid #BFD4F2; background:#fff; color:#0064D2; border-radius:999px; height:26px; padding:0 10px; font:700 11.5px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
   .ord-mark-btn:hover { background:#EEF4FF; } .ord-mark-btn:disabled { opacity:.55; cursor:default; }
   .ord-mark.on .ord-mark-btn { border-color:transparent; background:transparent; color:var(--grey); text-decoration:underline; padding:0 4px; font-weight:600; }
-  .ord-status-group { position:relative; display:inline-flex; align-items:stretch; vertical-align:middle; }
-  .ord-status-seg { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; background:#E7F0FD; color:#0064D2; font:700 12px Inter,sans-serif; white-space:nowrap; border:1px solid #BFD4F2; border-right:0; border-radius:999px 0 0 999px; }
-  .ord-status-group .ord-menu-toggle { border:1px solid #BFD4F2; border-left:0; border-radius:0 999px 999px 0; background:#fff; color:#0064D2; font-size:12px; padding:4px 9px; cursor:pointer; }
+  .ord-status-group { position:relative; display:inline-flex; align-items:stretch; vertical-align:middle; max-width:100%; }
+  .ord-status-seg { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; background:#E7F0FD; color:#0064D2; font:700 12px Inter,sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1 1 auto; border:1px solid #BFD4F2; border-right:0; border-radius:999px 0 0 999px; }
+  .ord-status-group .ord-menu-toggle { flex:0 0 auto; border:1px solid #BFD4F2; border-left:0; border-radius:0 999px 999px 0; background:#fff; color:#0064D2; font-size:12px; padding:4px 9px; cursor:pointer; }
   .ord-status-group .ord-menu-toggle:hover { background:#F3F8FF; }
   .ord-status-group .dv-menu { bottom:auto; top:calc(100% + 6px); right:auto; left:0; }
   .mo-box { max-width:540px; } .mo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0 4px; text-align:left; }
@@ -12887,6 +12890,7 @@ async function autoSuggestEmptyDraftCategories() {
       ${rows.length ? `
       <div class="ord-table-wrap">
         <table class="ord-table">
+          <colgroup><col style="width:10%"><col style="width:27%"><col style="width:15%"><col style="width:10%"><col style="width:9%"><col style="width:17%"><col style="width:8%"></colgroup>
           <thead><tr><th>Order</th><th>Item</th><th>Buyer</th><th>Total</th><th>Ship by</th><th>Status</th><th></th></tr></thead>
           <tbody>${rows.map(orderRowHtml).join('')}</tbody>
         </table>
