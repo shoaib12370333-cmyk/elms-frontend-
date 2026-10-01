@@ -5062,6 +5062,19 @@
           </div>
           <label class="sc-toggle"><input type="checkbox" id="autoThankYouToggle" /><span class="toggle-slider-sm"></span><span><b>Thank-you message</b><small>Sent once, the moment an order is first seen as paid.</small></span></label>
           <label class="sc-toggle" style="margin-top:10px;"><input type="checkbox" id="autoReviewRequestToggle" /><span class="toggle-slider-sm"></span><span><b>"Shipped" + review request</b><small>Sent once, the moment tracking is first saved (any carrier).</small></span></label>
+          <label class="sc-toggle" style="margin-top:10px;"><input type="checkbox" id="autoOrderedToggle" /><span class="toggle-slider-sm"></span><span><b>"Ordered" update</b><small>Sent once, the moment you mark an order as ordered.</small></span></label>
+          <div class="st-field" style="margin-top:6px;">
+            <label>Your own wording (optional)</label>
+            <textarea class="st-input" id="orderedTextInput" rows="2" maxlength="1000" style="height:auto;padding:10px 12px;" placeholder="Hi {{buyer_name}}, quick update on your order of {{product_name}}... (leave blank to use the default message)"></textarea>
+            <div class="st-actions"><button class="st-btn" type="button" id="orderedTextSaveBtn">Save wording</button></div>
+          </div>
+          <label class="sc-toggle" style="margin-top:10px;"><input type="checkbox" id="autoShippedToggle" /><span class="toggle-slider-sm"></span><span><b>"Shipped" update</b><small>Sent once, the moment an order is marked shipped (with or without tracking) - separate from the review request above.</small></span></label>
+          <div class="st-field" style="margin-top:6px;">
+            <label>Your own wording (optional)</label>
+            <textarea class="st-input" id="shippedTextInput" rows="2" maxlength="1000" style="height:auto;padding:10px 12px;" placeholder="Hi {{buyer_name}}, good news - your order of {{product_name}} has shipped... (leave blank to use the default message)"></textarea>
+            <div class="st-actions"><button class="st-btn" type="button" id="shippedTextSaveBtn">Save wording</button></div>
+          </div>
+          <p class="meta-line" style="margin-top:4px;">Variables for your own wording: <code>{{buyer_name}}</code>, <code>{{product_name}}</code>.</p>
           <div id="autoMessagesStatus" style="margin-top:10px;"></div>
         </section>
 
@@ -14491,6 +14504,10 @@ async function autoSuggestEmptyDraftCategories() {
       if (!res.ok || !data.success) return;
       document.getElementById('autoThankYouToggle').checked = !!data.thankYou;
       document.getElementById('autoReviewRequestToggle').checked = !!data.reviewRequest;
+      document.getElementById('autoOrderedToggle').checked = !!data.ordered;
+      document.getElementById('orderedTextInput').value = data.orderedText || '';
+      document.getElementById('autoShippedToggle').checked = !!data.shipped;
+      document.getElementById('shippedTextInput').value = data.shippedText || '';
     } catch (_) {
       // Non-critical - the toggles just keep their default (off) values if this fails.
     }
@@ -14516,6 +14533,14 @@ async function autoSuggestEmptyDraftCategories() {
   document.getElementById('autoReviewRequestToggle')?.addEventListener('change', async (e) => {
     if (!(await saveAutoMessageSetting('reviewRequest', e.target.checked))) e.target.checked = !e.target.checked;
   });
+  document.getElementById('autoOrderedToggle')?.addEventListener('change', async (e) => {
+    if (!(await saveAutoMessageSetting('ordered', e.target.checked))) e.target.checked = !e.target.checked;
+  });
+  document.getElementById('autoShippedToggle')?.addEventListener('change', async (e) => {
+    if (!(await saveAutoMessageSetting('shipped', e.target.checked))) e.target.checked = !e.target.checked;
+  });
+  document.getElementById('orderedTextSaveBtn')?.addEventListener('click', () => saveAutoMessageSetting('orderedText', document.getElementById('orderedTextInput').value));
+  document.getElementById('shippedTextSaveBtn')?.addEventListener('click', () => saveAutoMessageSetting('shippedText', document.getElementById('shippedTextInput').value));
   document.getElementById('secLogoutOthersBtn')?.addEventListener('click', async (e) => {
     if (!(await elmsConfirm('Log out every other device? This device stays signed in.'))) return;
     const btn = e.currentTarget; btn.disabled = true;
