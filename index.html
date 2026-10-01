@@ -5565,7 +5565,6 @@ B0EXAMPLE2"></textarea></div>
             </div>
             <div id="catalogListStatus" class="st-status"></div>
             <div id="catalogList"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
-            <div id="catalogPager" style="margin-top:12px;"></div>
           </section>
         </div>
 
@@ -18204,7 +18203,7 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await res.json();
       if (data.success) document.getElementById('catalogRetentionInput').value = data.limits.catalogRetentionDays;
     } catch (_) { /* the fetch/list tools below still work without this */ }
-    await loadCatalogList(1);
+    await loadCatalogSections();
   }
 
   document.getElementById('catalogRetentionSaveBtn')?.addEventListener('click', async (e) => {
@@ -18259,47 +18258,102 @@ async function autoSuggestEmptyDraftCategories() {
       const job = data.job;
       const finished = job.status === 'done' || job.status === 'cancelled';
       progressEl.innerHTML = `<div class="meta-line">${finished ? 'Finished: ' : 'Fetching: '}${job.done + job.failed} of ${job.total} done${job.failed ? `, ${job.failed} failed` : ''}.</div>`;
-      if (finished) { loadCatalogList(1); return; }
+      if (finished) { loadCatalogSections(); return; }
     } catch (_) { /* try again on the next tick */ }
     catalogJobPollTimer = setTimeout(() => pollCatalogJob(jobId), 4000);
   }
 
-  let catalogPage = 1;
-  async function loadCatalogList(page) {
-    catalogPage = page || catalogPage;
+  // Per-marketplace state: { page, selected: Set<string> } - the table is split into one section per eBay
+  // marketplace a row was fetched for, since a pushed category only ever carries over within that same one.
+  let catalogSections = {};
+  const CATALOG_MARKETPLACE_LABELS = { EBAY_US: 'eBay US', EBAY_GB: 'eBay UK', EBAY_DE: 'eBay Germany', EBAY_FR: 'eBay France', EBAY_IT: 'eBay Italy', EBAY_ES: 'eBay Spain', EBAY_CA: 'eBay Canada', EBAY_AU: 'eBay Australia' };
+
+  async function loadCatalogSections() {
     const listEl = document.getElementById('catalogList');
     const statusEl = document.getElementById('catalogListStatus');
     listEl.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
     statusEl.innerHTML = '';
     try {
-      const res = await apiFetch('/api/admin/product-catalog?page=' + catalogPage + '&limit=25');
+      const res = await apiFetch('/api/admin/product-catalog/marketplaces');
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the catalog.');
-      if (!data.items.length) {
+      if (!data.marketplaces.length) {
         listEl.innerHTML = '<div class="empty-state">No fetched products yet. Paste some Amazon links above and press Fetch.</div>';
-        document.getElementById('catalogPager').innerHTML = '';
         return;
       }
-      listEl.innerHTML = data.items.map(catalogRowHtml).join('');
-      document.getElementById('catalogPager').innerHTML = catalogPagerHtml(data.page, data.pages);
-      wireCatalogRows();
+      listEl.innerHTML = data.marketplaces.map((m) => catalogSectionShellHtml(m.marketplaceId, m.count)).join('');
+      data.marketplaces.forEach((m) => {
+        const id = m.marketplaceId;
+        if (!catalogSections[id]) catalogSections[id] = { page: 1, selected: new Set() };
+        else catalogSections[id].selected.clear(); // the section was just rebuilt - any old selection points at DOM that no longer exists
+        const section = document.querySelector(`[data-catalog-section="${id}"]`);
+        section?.querySelector('[data-catalog-select-all]')?.addEventListener('change', (e) => {
+          document.querySelector(`[data-catalog-items="${id}"]`)?.querySelectorAll('[data-catalog-check]').forEach((cb) => {
+            cb.checked = e.target.checked;
+            if (e.target.checked) catalogSections[id].selected.add(cb.getAttribute('data-catalog-check'));
+            else catalogSections[id].selected.delete(cb.getAttribute('data-catalog-check'));
+          });
+          updateCatalogSelectedCount(id);
+        });
+        section?.querySelector('[data-catalog-push-selected]')?.addEventListener('click', () => openCatalogBulkPushModal(id));
+        loadCatalogSectionItems(id, catalogSections[id].page);
+      });
     } catch (err) {
       listEl.innerHTML = '';
       statusEl.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
     }
   }
 
-  function catalogRowHtml(item) {
+  function catalogSectionShellHtml(marketplaceId, count) {
+    const label = CATALOG_MARKETPLACE_LABELS[marketplaceId] || marketplaceId;
+    return `<div class="st-custom" data-catalog-section="${escapeAttr(marketplaceId)}" style="margin-bottom:16px;">
+      <div class="st-custom-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <span>${escapeHtml(label)} <span class="meta-line" style="display:inline;">(${count.toLocaleString()})</span></span>
+        <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:13px;"><input type="checkbox" data-catalog-select-all /> Select all on this page</label>
+      </div>
+      <div data-catalog-items="${escapeAttr(marketplaceId)}"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;flex-wrap:wrap;">
+        <div data-catalog-section-pager="${escapeAttr(marketplaceId)}"></div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="meta-line" data-catalog-selected-count>0 selected</span>
+          <button class="st-btn primary" type="button" data-catalog-push-selected disabled>Push selected to user</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  async function loadCatalogSectionItems(marketplaceId, page) {
+    const state = catalogSections[marketplaceId];
+    if (!state) return;
+    state.page = page || state.page;
+    const itemsEl = document.querySelector(`[data-catalog-items="${marketplaceId}"]`);
+    const pagerEl = document.querySelector(`[data-catalog-section-pager="${marketplaceId}"]`);
+    if (!itemsEl) return;
+    itemsEl.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
+    try {
+      const res = await apiFetch('/api/admin/product-catalog?marketplaceId=' + encodeURIComponent(marketplaceId) + '&page=' + state.page + '&limit=25');
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load this section.');
+      itemsEl.innerHTML = data.items.length ? data.items.map((item) => catalogRowHtml(marketplaceId, item)).join('') : '<div class="empty-state">No products here.</div>';
+      if (pagerEl) pagerEl.innerHTML = catalogPagerHtml(data.page, data.pages);
+      wireCatalogSection(marketplaceId);
+    } catch (err) {
+      itemsEl.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function catalogRowHtml(marketplaceId, item) {
     const img = item.mainImage ? `<img src="${escapeAttr(item.mainImage)}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;" />` : '<div style="width:44px;height:44px;flex-shrink:0;"></div>';
     const price = item.price != null ? escapeHtml(String(item.price)) + ' ' + escapeHtml(item.currency || '') : '—';
-    const cat = item.categoryId ? escapeHtml(item.categoryName || item.categoryId) : (item.categoryError ? `<span class="late">No category</span>` : 'No category');
-    return `<div class="ad-row" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);">
+    const cat = item.categoryId ? escapeHtml(item.categoryName || item.categoryId) : 'No category';
+    const checked = catalogSections[marketplaceId]?.selected.has(item.id) ? ' checked' : '';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);">
+      <input type="checkbox" data-catalog-check="${item.id}"${checked} />
       ${img}
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;">${escapeHtml(item.title || item.asin)}</div>
-        <div class="meta-line">${escapeHtml(item.asin)} &middot; ${price} &middot; ${cat} &middot; ${escapeHtml(item.marketplaceId || '')}</div>
+        <div class="meta-line">${escapeHtml(item.asin)} &middot; ${price} &middot; ${cat}</div>
       </div>
-      <button class="st-btn" type="button" data-catalog-push="${item.id}">Push to user</button>
       <button class="st-btn" type="button" data-catalog-delete="${item.id}">Remove</button>
     </div>`;
   }
@@ -18309,38 +18363,66 @@ async function autoSuggestEmptyDraftCategories() {
     return `<div class="dv-pager"><button data-catalog-page="${page - 1}"${page === 1 ? ' disabled' : ''}>&lsaquo;</button><span style="padding:0 8px;">Page ${page} of ${pages}</span><button data-catalog-page="${page + 1}"${page === pages ? ' disabled' : ''}>&rsaquo;</button></div>`;
   }
 
-  function wireCatalogRows() {
-    document.querySelectorAll('#catalogList [data-catalog-push]').forEach((btn) => btn.addEventListener('click', () => openCatalogPushModal(btn.getAttribute('data-catalog-push'))));
-    document.querySelectorAll('#catalogList [data-catalog-delete]').forEach((btn) => btn.addEventListener('click', async () => {
-      if (!(await elmsConfirm('Remove this product from the catalog?', { danger: true }))) return;
-      try {
-        const res = await apiFetch('/api/admin/product-catalog/' + btn.getAttribute('data-catalog-delete'), { method: 'DELETE' });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Could not remove it.');
-        loadCatalogList(catalogPage);
-      } catch (err) { showToast('Product Catalog', err.message, 'error'); }
-    }));
-    document.querySelectorAll('#catalogPager [data-catalog-page]').forEach((btn) => btn.addEventListener('click', () => { if (!btn.disabled) loadCatalogList(Number(btn.getAttribute('data-catalog-page'))); }));
+  function updateCatalogSelectedCount(marketplaceId) {
+    const section = document.querySelector(`[data-catalog-section="${marketplaceId}"]`);
+    if (!section) return;
+    const n = catalogSections[marketplaceId]?.selected.size || 0;
+    const countEl = section.querySelector('[data-catalog-selected-count]');
+    if (countEl) countEl.textContent = n + ' selected';
+    const btn = section.querySelector('[data-catalog-push-selected]');
+    if (btn) btn.disabled = n === 0;
   }
 
-  function openCatalogPushModal(id) {
+  function wireCatalogSection(marketplaceId) {
+    const state = catalogSections[marketplaceId];
+    const itemsEl = document.querySelector(`[data-catalog-items="${marketplaceId}"]`);
+    itemsEl?.querySelectorAll('[data-catalog-check]').forEach((cb) => cb.addEventListener('change', () => {
+      const id = cb.getAttribute('data-catalog-check');
+      if (cb.checked) state.selected.add(id); else state.selected.delete(id);
+      updateCatalogSelectedCount(marketplaceId);
+    }));
+    itemsEl?.querySelectorAll('[data-catalog-delete]').forEach((btn) => btn.addEventListener('click', async () => {
+      if (!(await elmsConfirm('Remove this product from the catalog?', { danger: true }))) return;
+      try {
+        const id = btn.getAttribute('data-catalog-delete');
+        const res = await apiFetch('/api/admin/product-catalog/' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not remove it.');
+        state.selected.delete(id);
+        loadCatalogSectionItems(marketplaceId, state.page);
+      } catch (err) { showToast('Product Catalog', err.message, 'error'); }
+    }));
+    document.querySelector(`[data-catalog-section-pager="${marketplaceId}"]`)?.querySelectorAll('[data-catalog-page]').forEach((btn) => btn.addEventListener('click', () => { if (!btn.disabled) loadCatalogSectionItems(marketplaceId, Number(btn.getAttribute('data-catalog-page'))); }));
+    updateCatalogSelectedCount(marketplaceId);
+  }
+
+  function openCatalogBulkPushModal(marketplaceId) {
+    const ids = [...(catalogSections[marketplaceId]?.selected || [])];
+    if (!ids.length) return;
     const m = adminModal(`
-      <div class="draft-title">Push to a seller's Drafts</div>
-      <p class="meta-line" style="margin:10px 0 0;">Free - no credit is used. The category only carries over when that seller's active eBay store is on the same marketplace this was fetched for; otherwise it is pushed uncategorized, same as a fresh import.</p>
-      <div class="st-field" style="margin-top:14px;"><label>Seller's email</label><input class="st-input" type="email" id="catalogPushEmail" placeholder="seller@example.com" /></div>
-      <div class="st-actions"><button class="st-btn primary" id="catalogPushGo" type="button">Push</button><div id="catalogPushStatus" class="meta-line"></div></div>
+      <div class="draft-title">Push ${ids.length} product${ids.length === 1 ? '' : 's'} to a seller's Drafts</div>
+      <p class="meta-line" style="margin:10px 0 0;">Free - no credit is used. A product the seller already has is skipped and reported, not treated as a failure - the rest still go through. The category only carries over when that seller's active eBay store is on the same marketplace these were fetched for.</p>
+      <div class="st-field" style="margin-top:14px;"><label>Seller's email</label><input class="st-input" type="email" id="catalogBulkPushEmail" placeholder="seller@example.com" /></div>
+      <div class="st-actions"><button class="st-btn primary" id="catalogBulkPushGo" type="button">Push</button><div id="catalogBulkPushStatus" class="meta-line"></div></div>
+      <div id="catalogBulkPushResult"></div>
     `);
-    m.querySelector('#catalogPushGo').addEventListener('click', async (e) => {
+    m.querySelector('#catalogBulkPushGo').addEventListener('click', async (e) => {
       const btn = e.currentTarget;
-      const status = m.querySelector('#catalogPushStatus');
-      const email = m.querySelector('#catalogPushEmail').value.trim();
+      const status = m.querySelector('#catalogBulkPushStatus');
+      const resultEl = m.querySelector('#catalogBulkPushResult');
+      const email = m.querySelector('#catalogBulkPushEmail').value.trim();
       if (!email) { status.textContent = 'Enter an email address.'; return; }
       btn.disabled = true;
       status.textContent = 'Pushing…';
       try {
-        const out = await adminPost('/api/admin/product-catalog/' + id + '/push', { email });
-        status.textContent = out.categoryCarried ? 'Pushed, with its category.' : 'Pushed (no category - different marketplace).';
-        showToast('Pushed to Drafts', `Added to ${email}'s Drafts.`, 'success');
+        const out = await adminPost('/api/admin/product-catalog/push-bulk', { ids, email });
+        status.textContent = '';
+        const s = out.summary;
+        resultEl.innerHTML = `<div class="meta-line">${s.pushed} pushed${s.alreadyHave ? `, ${s.alreadyHave} already had it` : ''}${s.failed ? `, ${s.failed} failed` : ''}${s.notFound ? `, ${s.notFound} not found` : ''}.</div>`;
+        showToast('Pushed to Drafts', `${s.pushed} product${s.pushed === 1 ? '' : 's'} added to ${email}'s Drafts.`, 'success');
+        catalogSections[marketplaceId].selected.clear();
+        updateCatalogSelectedCount(marketplaceId);
+        loadCatalogSectionItems(marketplaceId, catalogSections[marketplaceId].page);
       } catch (err) {
         status.textContent = err.message;
       } finally {
