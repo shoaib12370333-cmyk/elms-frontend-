@@ -3254,6 +3254,8 @@
   .st-actions > div:empty { display:none; }
   .st-custom { margin-top:18px; padding:16px; border:1.5px dashed #BFD6F3; border-radius:12px; background:#F5F9FE; }
   .st-custom-title { font-weight:800; font-size:13px; margin-bottom:12px; color:#0B4FA0; }
+  .st-period { margin-top:14px; padding-top:14px; border-top:1px dashed #BFD6F3; }
+  .st-period-label { font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#0B4FA0; margin-bottom:10px; }
   .st-hint { margin-top:12px; font-size:12.5px; color:#475569; line-height:1.5; }
   .st-accts { display:grid; gap:12px; }
   .st-acct { display:flex; gap:14px; align-items:center; flex-wrap:wrap; padding:14px 16px; border:1.5px solid var(--line); border-radius:14px; background:#FBFCFE; }
@@ -5488,7 +5490,7 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico green">&#128179;</div>
-              <div class="st-head-txt"><h2>Credit plans</h2><p>The plans shown on Buy credits (the price is for one month; a yearly price switches the yearly option on). A monthly or yearly plan runs one term from the payment; when it ends the credits and the extra eBay-account limit end with it. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Paddle is optional and off unless PAYMENT_PROVIDER=paddle.</p></div>
+              <div class="st-head-txt"><h2>Credit plans</h2><p>The plans shown on Buy credits (the price is for one month; a yearly price switches the yearly option on). A monthly or yearly plan runs one term from the payment; when it ends the credits and the extra eBay-account limit end with it. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Paddle is optional and off unless PAYMENT_PROVIDER=paddle. Paddle needs its OWN price for the yearly term - it cannot reuse the monthly Paddle Price ID - so Monthly and Yearly each have their own Paddle ID field below.</p></div>
             </div>
             <div id="adminPlansContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
             <div class="st-custom" id="customPlanCard">
@@ -5511,11 +5513,22 @@
               <div class="st-custom-title">Add a plan</div>
               <div class="st-grid">
                 <div class="st-field"><label>Plan name</label><input class="st-input" type="text" id="newPlanName" placeholder="e.g. Starter" /></div>
-                <div class="st-field"><label>Price a month (USD)</label><input class="st-input" type="number" id="newPlanPrice" step="0.01" placeholder="120" /></div>
-                <div class="st-field"><label>Yearly price (USD, optional)</label><input class="st-input" type="number" id="newPlanYearly" step="0.01" min="0" placeholder="1200 - switches the yearly option on" /></div>
-                <div class="st-field"><label>Credits</label><input class="st-input" type="number" id="newPlanCredits" placeholder="300" /></div>
+                <div class="st-field"><label>Credits a month</label><input class="st-input" type="number" id="newPlanCredits" placeholder="300" /></div>
                 <div class="st-field"><label>eBay accounts they can connect</label><input class="st-input" type="number" id="newPlanEbayAccounts" min="1" placeholder="1" /></div>
-                <div class="st-field"><label>Paddle Price ID (optional)</label><input class="st-input mono" type="text" id="newPlanPaddleId" placeholder="pri_01..." /></div>
+              </div>
+              <div class="st-period">
+                <div class="st-period-label">Monthly</div>
+                <div class="st-grid">
+                  <div class="st-field"><label>Price a month (USD)</label><input class="st-input" type="number" id="newPlanPrice" step="0.01" placeholder="120" /></div>
+                  <div class="st-field"><label>Paddle Price ID (optional)</label><input class="st-input mono" type="text" id="newPlanPaddleId" placeholder="pri_01..." /></div>
+                </div>
+              </div>
+              <div class="st-period">
+                <div class="st-period-label">Yearly</div>
+                <div class="st-grid">
+                  <div class="st-field"><label>Yearly price (USD, optional)</label><input class="st-input" type="number" id="newPlanYearly" step="0.01" min="0" placeholder="1200 - switches the yearly option on" /></div>
+                  <div class="st-field"><label>Yearly Paddle Price ID (optional)</label><input class="st-input mono" type="text" id="newPlanYearlyPaddleId" placeholder="pri_01..." title="Paddle needs its own price for a yearly term - it cannot be the same id as the monthly one." /></div>
+                </div>
               </div>
               <div class="st-actions"><button class="st-btn primary" id="addPlanBtn" type="button">Add plan</button><div id="addPlanStatus"></div></div>
             </div>
@@ -19552,17 +19565,32 @@ async function autoSuggestEmptyDraftCategories() {
 
         <table class="data-table">
           <thead>
-            <tr><th>Name</th><th>Price a month (USD)</th><th>Yearly price (USD)</th><th>Credits a month</th><th>eBay accounts</th><th>Paddle ID (optional)</th><th>Active</th><th></th></tr>
+            <tr>
+              <th rowspan="2">Name</th>
+              <th colspan="2" style="text-align:center;">Monthly</th>
+              <th colspan="2" style="text-align:center;">Yearly</th>
+              <th rowspan="2">Credits a month</th>
+              <th rowspan="2">eBay accounts</th>
+              <th rowspan="2">Active</th>
+              <th rowspan="2"></th>
+            </tr>
+            <tr>
+              <th>Price (USD)</th>
+              <th>Paddle ID (optional)</th>
+              <th>Price (USD)</th>
+              <th>Paddle ID (optional)</th>
+            </tr>
           </thead>
           <tbody>
             ${data.plans.map((p) => `
               <tr data-plan-id="${p.id}">
                 <td><input class="editable-input" data-field="name" value="${escapeAttr(p.name)}" style="width:120px;" /></td>
                 <td><input class="editable-input" data-field="priceUsd" type="number" step="0.01" value="${p.priceUsd}" style="width:90px;" /></td>
+                <td><input class="editable-input" data-field="paddlePriceId" value="${escapeAttr(p.paddlePriceId || '')}" style="width:140px;" /></td>
                 <td><input class="editable-input" data-field="yearlyPriceUsd" type="number" step="0.01" min="0" value="${p.yearlyPriceUsd || ''}" placeholder="off" title="A price here switches the yearly option on (12 months of credits at once). Empty = no yearly option." style="width:90px;" /></td>
+                <td><input class="editable-input" data-field="paddleYearlyPriceId" value="${escapeAttr(p.paddleYearlyPriceId || '')}" placeholder="—" title="Paddle needs its own price for the yearly term - it cannot be the same id as the monthly one." style="width:140px;" /></td>
                 <td><input class="editable-input" data-field="credits" type="number" value="${p.credits}" style="width:90px;" /></td>
                 <td><input class="editable-input" data-field="maxEbayAccounts" type="number" min="1" value="${p.maxEbayAccounts || ''}" placeholder="—" style="width:80px;" /></td>
-                <td><input class="editable-input" data-field="paddlePriceId" value="${escapeAttr(p.paddlePriceId || '')}" style="width:140px;" /></td>
                 <td>
                   <select class="editable-input" data-field="active" style="width:90px;">
                     <option value="true" ${p.active ? 'selected' : ''}>Active</option>
@@ -19600,6 +19628,7 @@ async function autoSuggestEmptyDraftCategories() {
         const paddlePriceId = row.querySelector('[data-field="paddlePriceId"]').value.trim();
         const maxEbayAccounts = Number(row.querySelector('[data-field="maxEbayAccounts"]').value) || null;
         const yearlyPriceUsd = row.querySelector('[data-field="yearlyPriceUsd"]').value.trim();
+        const paddleYearlyPriceId = row.querySelector('[data-field="paddleYearlyPriceId"]').value.trim();
         const active = row.querySelector('[data-field="active"]').value === 'true';
 
         saveBtn.disabled = true;
@@ -19609,7 +19638,7 @@ async function autoSuggestEmptyDraftCategories() {
           const res = await apiFetch(`/api/admin/plans/${planId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts, yearlyPriceUsd, active }),
+            body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts, yearlyPriceUsd, paddleYearlyPriceId, active }),
           });
           const data = await res.json();
 
@@ -19654,6 +19683,7 @@ async function autoSuggestEmptyDraftCategories() {
     const paddlePriceId = document.getElementById('newPlanPaddleId').value.trim();
     const maxEbayAccounts = Number(document.getElementById('newPlanEbayAccounts').value) || null;
     const yearlyPriceUsd = document.getElementById('newPlanYearly').value.trim();
+    const paddleYearlyPriceId = document.getElementById('newPlanYearlyPaddleId').value.trim();
 
     if (!name || !priceUsd || !credits) {
       statusEl.className = 'error';
@@ -19669,7 +19699,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/admin/plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts, yearlyPriceUsd }),
+        body: JSON.stringify({ name, priceUsd, credits, paddlePriceId, maxEbayAccounts, yearlyPriceUsd, paddleYearlyPriceId }),
       });
       const data = await res.json();
 
@@ -19687,6 +19717,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('newPlanPaddleId').value = '';
       document.getElementById('newPlanEbayAccounts').value = '';
       document.getElementById('newPlanYearly').value = '';
+      document.getElementById('newPlanYearlyPaddleId').value = '';
       loadAdminPlans();
     } catch (err) {
       statusEl.className = 'error';
@@ -19907,10 +19938,14 @@ async function autoSuggestEmptyDraftCategories() {
   // charge the plan's list price. Each way has its own box, so the buyer sees which one is for what.
   function payBlocks(p, { shownCredits, hasOff, yr }) {
     const credits = shownCredits.toLocaleString();
+    const cardPriceUsd = yr ? p.yearlyPriceUsd : p.priceUsd;
     if (currentPaymentProvider !== 'cashtap') {
       return `<div class="bc-plan-icons">${CARD_ICONS_HTML}</div><div class="bc-plan-label">Card, PayPal &amp; more</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${credits} credits</button>`;
     }
-    if (!(p.paddleAvailable && !yr && paddleTokenSet())) {
+    // Monthly and yearly are two separate Paddle prices, so whether the card option shows up for yearly depends on
+    // paddleYearlyAvailable, not paddleAvailable (that one is the monthly term's own flag).
+    const cardAvailable = yr ? p.paddleYearlyAvailable : p.paddleAvailable;
+    if (!(cardAvailable && paddleTokenSet())) {
       return `<div class="bc-plan-label">Wallet, CashApp, card &amp; more &middot; secure checkout by CashTap</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${credits} credits</button>`;
     }
     const noDiscount = hasOff || pricingVoucherId ? '<div class="bc-pay-note">Discounts and vouchers only work with Cash App.</div>' : '';
@@ -19922,7 +19957,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="bc-pay">
         <div class="bc-pay-head"><span>Card &amp; other payment methods</span></div>
         <div class="bc-plan-icons">${CARD_ICONS_HTML}</div>
-        <button class="bc-buy bc-buy-alt pricing-buy-btn" data-plan-id="${p.id}" data-provider="paddle" type="button">Pay $${Number(p.priceUsd).toFixed(2)} + tax by card</button>
+        <button class="bc-buy bc-buy-alt pricing-buy-btn" data-plan-id="${p.id}" data-provider="paddle" type="button">Pay $${Number(cardPriceUsd).toFixed(2)} + tax by card</button>
         ${noDiscount}
       </div>`;
   }
@@ -20112,7 +20147,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(custom ? { custom, billing: pricingBilling } : provider === 'paddle' ? { planId, provider: 'paddle' } : { planId, billing: pricingBilling, ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
+        body: JSON.stringify(custom ? { custom, billing: pricingBilling } : provider === 'paddle' ? { planId, provider: 'paddle', billing: pricingBilling } : { planId, billing: pricingBilling, ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
       });
       const data = await res.json();
 
