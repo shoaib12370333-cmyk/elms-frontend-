@@ -3096,6 +3096,10 @@
   .ord-mark-btn { border:1.5px solid #BFD4F2; background:#fff; color:#0064D2; border-radius:999px; height:26px; padding:0 10px; font:700 11.5px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
   .ord-mark-btn:hover { background:#EEF4FF; } .ord-mark-btn:disabled { opacity:.55; cursor:default; }
   .ord-mark.on .ord-mark-btn { border-color:transparent; background:transparent; color:var(--grey); text-decoration:underline; padding:0 4px; font-weight:600; }
+  .ord-menuwrap { position:relative; display:inline-block; margin-left:6px; }
+  .ord-menu-toggle { border:1.5px solid #BFD4F2; background:#fff; color:#0064D2; border-radius:999px; width:24px; height:24px; line-height:1; font-size:11px; cursor:pointer; }
+  .ord-menu-toggle:hover { background:#EEF4FF; }
+  .ord-menuwrap .dv-menu { bottom:auto; top:calc(100% + 6px); right:auto; left:0; }
   .mo-box { max-width:540px; } .mo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0 4px; text-align:left; }
   .mo-f { display:grid; gap:4px; } .mo-f > span:first-child { font:800 11px Inter,sans-serif; letter-spacing:.04em; text-transform:uppercase; color:#64748B; }
   .mo-f input { width:100%; height:38px; box-sizing:border-box; padding:0 10px; border:1.5px solid #E2E8F0; border-radius:10px; background:#fff; font:600 14px Inter,sans-serif; color:#0F172A; } .mo-f input:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
@@ -12946,14 +12950,27 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
-  // Under the "Awaiting shipment" pill: one click marks the order as bought on Amazon (a reminder for the seller), or takes the mark away.
+  // Under the "Awaiting shipment" pill: shows the "ordered on Amazon" reminder once it is set (arrival date if given).
+  // The actions themselves (mark/undo it, mark as shipped) live in the dropdown next to the status - orderActionsMenuHtml.
   function orderMarkHtml(o) {
+    if (orderStatusOf(o) !== 'awaiting_shipment' || !orderIsOrdered(o)) return '';
+    const on = o.delivery_date ? new Date(o.delivery_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' }) : '';
+    return `<div class="ord-mark on"><span class="ord-ordered" title="${on ? 'It should arrive on ' + escapeAttr(on) : 'No delivery date was given'}">&#10003; Ordered${on ? ' &middot; arrives ' + escapeHtml(on) : ''}</span></div>`;
+  }
+
+  // Everything the seller can DO about an order not yet shipped - mark/undo "ordered on Amazon", mark as shipped
+  // (with or without a tracking number) - lives behind this one small arrow next to the status pill, instead of a
+  // separate always-visible button per action. Nothing to do here once eBay itself says shipped/delivered/cancelled.
+  function orderActionsMenuHtml(o) {
     if (orderStatusOf(o) !== 'awaiting_shipment') return '';
     const id = escapeAttr(o.id);
-    const on = o.delivery_date ? new Date(o.delivery_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' }) : '';
-    return orderIsOrdered(o)
-      ? `<div class="ord-mark on"><span class="ord-ordered" title="${on ? 'It should arrive on ' + escapeAttr(on) : 'No delivery date was given'}">&#10003; Ordered${on ? ' &middot; arrives ' + escapeHtml(on) : ''}</span><button class="ord-mark-btn" type="button" data-order-unmark="${id}" title="Not ordered after all: take the mark away">Undo</button></div>`
-      : `<div class="ord-mark"><button class="ord-mark-btn" type="button" data-order-mark="${id}" title="You bought this on Amazon: mark it so you remember">Mark as ordered</button></div>`;
+    return `<div class="ord-menuwrap" data-order-menuwrap>
+      <button type="button" class="ord-menu-toggle" data-order-menu-toggle="${id}" title="Order actions" aria-label="Order actions">&#9662;</button>
+      <div class="dv-menu" data-order-menu="${id}">
+        <button type="button" data-order-toggle-ordered="${id}">${orderIsOrdered(o) ? 'Undo “ordered” mark' : 'Mark as ordered'}</button>
+        <button type="button" data-order-ship="${id}">Mark as shipped…</button>
+      </div>
+    </div>`;
   }
 
   // The seller's private note, right on the order row itself: click it (or "+ Add note") to write, Save keeps it with
@@ -13019,7 +13036,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
         <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}${o.net_profit != null ? `<div class="ord-sub ${Number(o.net_profit) >= 0 ? 'good' : 'bad'}">Net profit ${escapeHtml(orderMoney(o, o.net_profit))}</div>` : ''}</td>
         <td data-label="Ship by"><div class="${ship.late ? 'ord-late' : ship.soon ? 'ord-soon' : 'ord-strong'}">${escapeHtml(ship.text)}</div>${ship.note ? `<div class="ord-sub ${ship.late ? 'bad' : ''}">${escapeHtml(ship.note)}</div>` : ''}</td>
-        <td data-label="Status"><div>${orderStatusPill(o)}${orderMarkHtml(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</div></td>
+        <td data-label="Status"><div>${orderStatusPill(o)}${orderActionsMenuHtml(o)}${orderMarkHtml(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</div></td>
         <td class="ord-actions"><button class="ord-btn small" type="button" data-order-open="${escapeAttr(o.id)}">${orderStatusOf(o) === 'awaiting_shipment' ? 'Fulfil' : 'View'}</button></td>
       </tr>`;
   }
@@ -13049,10 +13066,29 @@ async function autoSuggestEmptyDraftCategories() {
       }
       box.disabled = false;
     });
-    root.querySelectorAll('[data-order-mark], [data-order-unmark]').forEach((b) => b.addEventListener('click', (e) => {
-      e.stopPropagation(); // the row itself opens the order: this button only marks it
-      setOrderOrdered(b.getAttribute('data-order-mark') || b.getAttribute('data-order-unmark'), b.hasAttribute('data-order-mark'), b);
+    root.querySelectorAll('[data-order-menu-toggle]').forEach((btn) => btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // the row itself opens the order: this only opens the menu
+      const menu = btn.parentElement.querySelector('[data-order-menu]');
+      if (!menu) return;
+      root.querySelectorAll('.dv-menu.open').forEach((m) => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
     }));
+    root.querySelectorAll('[data-order-toggle-ordered]').forEach((btn) => btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      btn.closest('.dv-menu')?.classList.remove('open');
+      const id = btn.getAttribute('data-order-toggle-ordered');
+      const o = ordersAll.find((x) => String(x.id) === String(id));
+      setOrderOrdered(id, !(o && orderIsOrdered(o)), btn);
+    }));
+    root.querySelectorAll('[data-order-ship]').forEach((btn) => btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      btn.closest('.dv-menu')?.classList.remove('open');
+      markOrderShipped(btn.getAttribute('data-order-ship'), btn);
+    }));
+    // Close any open order-actions menu when clicking elsewhere on the page (same pattern as the Drafts "more actions" menu).
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.dv-menu.open').forEach((m) => m.classList.remove('open'));
+    }, { once: true });
     root.querySelector('#ordersAccountFilterSelect')?.addEventListener('change', async (e) => { ordersAccountFilter = e.target.value; ordersPage = 1; try { await fetchOrdersList(); } catch (err) { showToast('Orders', err.message, 'error'); } renderOrders(); });
     root.querySelector('#syncOrdersBtn')?.addEventListener('click', () => syncOrdersFromEbay(false));
     root.querySelector('#syncOrdersFullBtn')?.addEventListener('click', () => syncOrdersFromEbay(true));
@@ -13148,6 +13184,63 @@ async function autoSuggestEmptyDraftCategories() {
       if (document.getElementById('ordDrawer') && i >= 0) renderOrderDrawer(ordersAll[i]);
       showToast(ordered ? 'Marked as ordered' : 'Mark removed', ordered ? 'Saved. The note is in the order in ELMS, and the buying price and order earning are in the Net Profit sheet.' : 'This order is shown as not ordered yet.', 'success');
       if (ordersEbayNote) writeEbayNote(id, ordered, ordered ? form.deliveryDate : undefined); // in the background: the mark in ELMS does not wait for eBay
+    } catch (err) {
+      if (btn && btn.isConnected) btn.disabled = false;
+      showToast('Order', err.message, 'error');
+    }
+  }
+
+  // One dialog for both "mark as shipped" and "update tracking" - the tracking number is OPTIONAL: filled in, it goes
+  // through PUT /:id/tracking exactly as before; left blank, it goes through POST /:id/mark-shipped (eBay accepts a
+  // shipping fulfillment with no tracking number at all). Shared by the order row's dropdown and the drawer's button,
+  // same as openMarkOrderedDialog is shared by the row and the drawer for "Mark as ordered".
+  function openMarkShippedDialog(o) {
+    return new Promise((resolve) => {
+      const already = orderStatusOf(o) === 'shipped' || orderStatusOf(o) === 'delivered';
+      const overlay = document.createElement('div');
+      overlay.className = 'elms-confirm-overlay';
+      overlay.innerHTML = `
+        <div class="elms-confirm-box mo-box" role="dialog" aria-modal="true" aria-label="Mark as shipped">
+          <div class="elms-confirm-title">${already ? 'Update tracking' : 'Mark as shipped'}</div>
+          <div class="elms-confirm-message">Add a tracking number so the buyer sees it on eBay, or leave it blank to mark the order shipped with no tracking number at all - you can still add one later.</div>
+          <div class="mo-grid">
+            <label class="mo-f"><span>Carrier</span><select id="msCarrier">${CARRIERS.map((c) => `<option value="${escapeAttr(c)}"${c === (o.shipping_carrier || '') ? ' selected' : ''}>${c || 'Carrier (auto-detect)'}</option>`).join('')}</select></label>
+            <label class="mo-f"><span>Tracking number</span><input type="text" id="msTracking" inputmode="text" autocomplete="off" placeholder="Leave blank for no tracking" value="${escapeAttr(o.tracking_number || '')}" /></label>
+          </div>
+          <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok">${already ? 'Update tracking' : 'Mark as shipped'}</button></div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const $ = (id) => overlay.querySelector('#' + id);
+      const close = (value) => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); resolve(value); };
+      const onKey = (e) => { if (e.key === 'Escape') close(null); };
+      document.addEventListener('keydown', onKey);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(null); });
+      overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => close(null));
+      overlay.querySelector('[data-act="ok"]').addEventListener('click', () => close({ trackingNumber: $('msTracking').value.trim(), carrier: $('msCarrier').value || undefined }));
+      $('msTracking').focus();
+    });
+  }
+
+  async function markOrderShipped(id, btn) {
+    const order = ordersAll.find((x) => String(x.id) === String(id));
+    if (!order) return;
+    const form = await openMarkShippedDialog(order);
+    if (!form) return; // cancelled: nothing changes
+    if (btn) btn.disabled = true;
+    try {
+      const res = form.trackingNumber
+        ? await apiFetch(`/api/orders/${encodeURIComponent(id)}/tracking`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trackingNumber: form.trackingNumber, shippingCarrier: form.carrier }) })
+        : await apiFetch(`/api/orders/${encodeURIComponent(id)}/mark-shipped`, { method: 'POST' });
+      const data = await apiJson(res);
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this.');
+      const i = ordersAll.findIndex((x) => String(x.id) === String(id));
+      if (i >= 0) ordersAll[i] = { ...ordersAll[i], ...data.order, ...('trackingCode' in data ? { tracking_code: data.trackingCode || null } : {}) };
+      renderOrders();
+      if (document.getElementById('ordDrawer') && i >= 0) renderOrderDrawer(ordersAll[i]);
+      if (data.ebayNotified) showToast('Shipped', form.trackingNumber ? 'Tracking was sent to eBay.' : 'Marked as shipped on eBay — no tracking number.', 'success');
+      else showToast('Saved in ELMS only', data.ebayError ? `eBay could not be updated: ${data.ebayError}` : 'This order is not linked to an eBay account, so eBay was not updated.', 'error');
     } catch (err) {
       if (btn && btn.isConnected) btn.disabled = false;
       showToast('Order', err.message, 'error');
@@ -13300,15 +13393,10 @@ async function autoSuggestEmptyDraftCategories() {
           ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this' + (o.delivery_date ? ' \u00b7 delivery ' + escapeHtml(new Date(o.delivery_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })) : ' \u00b7 no delivery date') : 'Not ordered yet'}</b><small>${ordersEbayNote ? 'A reminder for you. ELMS also writes \u201cELMS: ordered\u201d in the private note of this order on eBay (only you see it).' : 'Only a reminder for you: nothing is sent to eBay or Amazon.'}</small>${o.ebay_note_error ? `<small class="bad">eBay note not changed: ${escapeHtml(o.ebay_note_error)}</small>` : o.ebay_note_at ? '<small>&#10003; It is in the eBay note too.</small>' : ''}${orderIsOrdered(o) && ordersEbayNote && !o.ebay_note_at ? '<small><button class="ord-link" type="button" id="ordRetryEbayNote">Write the eBay note now</button></small>' : ''}</div><span style="display:flex;gap:8px;flex-wrap:wrap;">${orderIsOrdered(o) ? '<button class="ord-btn small" type="button" id="ordEditOrdered">Edit</button>' : ''}<button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></span></div>` : ''}
           <label class="ord-field"><span>Amazon order ID <em>after you buy the item on Amazon</em></span>
             <div class="ord-row-inline"><input id="ordAmazonId" type="text" placeholder="e.g. 111-2222222-3333333" value="${escapeAttr(o.amazon_order_id || '')}" /><button class="ord-btn" type="button" id="ordSaveAmazon">Save</button></div></label>
-          <label class="ord-field"><span>Tracking <em>uploaded to eBay so the buyer sees it</em></span>
-            <div class="ord-row-inline">
-              <select id="ordCarrier">${CARRIERS.map((c) => `<option value="${escapeAttr(c)}"${c === (o.shipping_carrier || '') ? ' selected' : ''}>${c || 'Carrier (auto-detect)'}</option>`).join('')}</select>
-              <input id="ordTracking" type="text" placeholder="Tracking number" value="${escapeAttr(o.tracking_number || '')}" />
-            </div></label>
+          ${o.tracking_number ? `<div class="ord-sub">Tracking: ${escapeHtml(o.shipping_carrier || 'Carrier not given')} ${escapeHtml(o.tracking_number)}</div>` : ''}
           ${o.tracking_code ? `<div class="ord-sub">Buyer tracking page (no supplier name shown): <a href="https://elmstool.com/track/${encodeURIComponent(o.tracking_code)}" target="_blank" rel="noopener noreferrer">elmstool.com/track/${escapeHtml(o.tracking_code)}</a> <button class="ord-link" type="button" id="ordCopyTrackLink">Copy link</button></div>` : ''}
           <div class="ord-row-inline">
-            <button class="ord-btn primary" type="button" id="ordMarkShipped"${st === 'cancelled' || st === 'awaiting_payment' ? ' disabled' : ''}>${st === 'shipped' || st === 'delivered' ? 'Update tracking' : 'Mark as shipped on eBay'}</button>
-            ${st !== 'shipped' && st !== 'delivered' ? `<button class="ord-btn" type="button" id="ordMarkShippedNoTracking"${st === 'cancelled' || st === 'awaiting_payment' ? ' disabled' : ''} title="Marks it shipped on eBay with no tracking number at all - add one later if you get one">Mark as shipped (no tracking)</button>` : ''}
+            <button class="ord-btn primary" type="button" id="ordMarkShipped"${st === 'cancelled' || st === 'awaiting_payment' ? ' disabled' : ''}>${st === 'shipped' || st === 'delivered' ? 'Update tracking' : 'Mark as shipped…'}</button>
             <button class="ord-btn" type="button" id="ordMarkDelivered"${st === 'delivered' || st === 'cancelled' ? ' disabled' : ''}>Mark delivered</button>
           </div>
           <div class="ord-sub" id="ordActionStatus"></div>
@@ -13364,20 +13452,7 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('Saved', 'Amazon order ID saved.', 'success');
       apply(data.order);
     }));
-    $('ordMarkShipped').addEventListener('click', (e) => run(e.currentTarget, 'Sending to eBay…', async () => {
-      const trackingNumber = $('ordTracking').value.trim();
-      if (!trackingNumber) throw new Error('Enter the tracking number first.');
-      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/tracking`, { method: 'PUT', body: JSON.stringify({ trackingNumber, shippingCarrier: $('ordCarrier').value || undefined }) });
-      if (data.ebayNotified) showToast('Shipped', 'Tracking was sent to eBay.', 'success');
-      else showToast('Saved in ELMS only', data.ebayError ? `eBay could not be updated: ${data.ebayError}` : 'This order is not linked to an eBay account, so eBay was not updated.', 'error');
-      apply({ ...data.order, tracking_code: data.trackingCode || null });
-    }));
-    $('ordMarkShippedNoTracking')?.addEventListener('click', (e) => run(e.currentTarget, 'Sending to eBay…', async () => {
-      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/mark-shipped`, { method: 'POST' });
-      if (data.ebayNotified) showToast('Shipped', 'Marked as shipped on eBay - no tracking number.', 'success');
-      else showToast('Saved in ELMS only', data.ebayError ? `eBay could not be updated: ${data.ebayError}` : 'This order is not linked to an eBay account, so eBay was not updated.', 'error');
-      apply(data.order);
-    }));
+    $('ordMarkShipped').addEventListener('click', (e) => markOrderShipped(o.id, e.currentTarget));
     $('ordCopyTrackLink')?.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(`https://elmstool.com/track/${o.tracking_code}`); showToast('Copied', 'Tracking page link copied.', 'success'); }
       catch (_) { showToast('Copy failed', 'Select the link and copy it manually.', 'error'); }
