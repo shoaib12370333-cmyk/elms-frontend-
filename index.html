@@ -3096,9 +3096,10 @@
   .ord-mark-btn { border:1.5px solid #BFD4F2; background:#fff; color:#0064D2; border-radius:999px; height:26px; padding:0 10px; font:700 11.5px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
   .ord-mark-btn:hover { background:#EEF4FF; } .ord-mark-btn:disabled { opacity:.55; cursor:default; }
   .ord-mark.on .ord-mark-btn { border-color:transparent; background:transparent; color:var(--grey); text-decoration:underline; padding:0 4px; font-weight:600; }
-  .ord-menuwrap { position:relative; display:inline-block; vertical-align:middle; margin-left:4px; }
-  .ord-menu-toggle { border:0; background:transparent; color:#687180; line-height:1; font-size:11px; padding:0 2px; cursor:pointer; vertical-align:middle; }
-  .ord-menu-toggle:hover { color:#0064D2; }
+  .ord-status-line { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+  .ord-menuwrap { position:relative; display:inline-block; vertical-align:middle; }
+  .ord-menu-toggle { border:1px solid #CBD5E1; background:#fff; color:#475569; border-radius:6px; line-height:1; font-size:13px; padding:3px 7px; cursor:pointer; vertical-align:middle; }
+  .ord-menu-toggle:hover { border-color:#0064D2; color:#0064D2; background:#F3F8FF; }
   .ord-menuwrap .dv-menu { bottom:auto; top:calc(100% + 6px); right:auto; left:0; }
   .mo-box { max-width:540px; } .mo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0 4px; text-align:left; }
   .mo-f { display:grid; gap:4px; } .mo-f > span:first-child { font:800 11px Inter,sans-serif; letter-spacing:.04em; text-transform:uppercase; color:#64748B; }
@@ -13036,7 +13037,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
         <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}${o.net_profit != null ? `<div class="ord-sub ${Number(o.net_profit) >= 0 ? 'good' : 'bad'}">Net profit ${escapeHtml(orderMoney(o, o.net_profit))}</div>` : ''}</td>
         <td data-label="Ship by"><div class="${ship.late ? 'ord-late' : ship.soon ? 'ord-soon' : 'ord-strong'}">${escapeHtml(ship.text)}</div>${ship.note ? `<div class="ord-sub ${ship.late ? 'bad' : ''}">${escapeHtml(ship.note)}</div>` : ''}</td>
-        <td data-label="Status"><div>${orderStatusPill(o)}${orderActionsMenuHtml(o)}${orderMarkHtml(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</div></td>
+        <td data-label="Status"><div><div class="ord-status-line">${orderStatusPill(o)}${orderActionsMenuHtml(o)}</div>${orderMarkHtml(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</div></td>
         <td class="ord-actions"><button class="ord-btn small" type="button" data-order-open="${escapeAttr(o.id)}">${orderStatusOf(o) === 'awaiting_shipment' ? 'Fulfil' : 'View'}</button></td>
       </tr>`;
   }
