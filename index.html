@@ -19976,7 +19976,7 @@ async function autoSuggestEmptyDraftCategories() {
   document.getElementById('lookupBtn')?.addEventListener('click', searchUserLookup);
   document.getElementById('lookupEmail')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchUserLookup(); });
 
-  function renderUserLookup({ user: u, listings, orders, netProfit }) {
+  function renderUserLookup({ user: u, listings, orders, netProfit, stores, tickets }) {
     const container = document.getElementById('userLookupContent');
     const cSign = (currency) => CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '$');
     const money = (amount, currency) => cSign(currency) + Number(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -19989,6 +19989,22 @@ async function autoSuggestEmptyDraftCategories() {
       ? netProfit.currencies.map((c) => `<tr><td>${escapeHtml(c.currency || '—')}</td><td>${c.orders.toLocaleString()}</td><td>${money(c.net_profit, c.currency)}</td></tr>`).join('')
       : '<tr><td colspan="3" style="color:var(--grey);">No net profit figures typed in yet.</td></tr>';
 
+    const storeRows = (stores || []).length
+      ? stores.map((s) => {
+          const best = (s.orders && s.orders.currencies[0]) || null;
+          return `<tr>
+            <td><b>${escapeHtml(s.label || s.displayName || s.username || 'eBay store')}</b>${s.isActive ? ' <span class="ad-tag free">SELECTED</span>' : ''}${s.financesSyncError ? ` <span class="ad-tag bad" title="${escapeAttr(s.financesSyncError)}">EARNINGS STUCK</span>` : ''}<br /><small style="color:var(--grey);">${escapeHtml(s.username || s.ebayUserId || '—')}</small></td>
+            <td>${escapeHtml(String(s.marketplaceId || 'EBAY_US').replace('EBAY_', ''))}</td>
+            <td>${s.connected === false ? '<span class="ad-tag bad">DISCONNECTED</span>' : '<span class="ad-tag paid">CONNECTED</span>'}</td>
+            <td>${escapeHtml(new Date(s.createdAt).toLocaleDateString())}</td>
+            <td>${(s.liveListings || 0).toLocaleString()}</td>
+            <td>${(s.orders ? s.orders.orders : 0).toLocaleString()}</td>
+            <td>${best ? money(best.revenue, best.currency) : '—'}</td>
+            <td>${best && best.profit != null ? money(best.profit, best.currency) : '—'}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="8" style="color:var(--grey);">No eBay stores connected yet.</td></tr>';
+
     container.innerHTML = `
       <div class="draft-title">${escapeHtml(u.name || u.email)}${u.banned ? ' <span class="ad-tag bad">BANNED</span>' : u.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}</div>
       <div class="meta-line">${escapeHtml(u.email)} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}${u.planName ? ' (' + escapeHtml(u.planName) + (u.planExpiresAt ? ', until ' + escapeHtml(new Date(u.planExpiresAt).toLocaleDateString()) + ')' : ')') : ''} &middot; Signed up ${escapeHtml(new Date(u.createdAt).toLocaleDateString())}</div>
@@ -19999,9 +20015,26 @@ async function autoSuggestEmptyDraftCategories() {
         <span class="ad-chipbtn on">eBay stores<b>${u.ebay.stores}</b></span>
         <span class="ad-chipbtn on">Max eBay accounts<b>${u.maxEbayAccounts}</b></span>
         <span class="ad-chipbtn on">Live listings<b>${live.toLocaleString()}</b></span>
+        <span class="ad-chipbtn on">Lifetime spend<b>${u.plan && u.plan.paid ? '$' + Number(u.plan.totalUsd || 0).toLocaleString() + ' (' + u.plan.purchases + ')' : '$0'}</b></span>
+        <span class="ad-chipbtn on">Support tickets<b>${(tickets ? tickets.total : 0).toLocaleString()}${tickets && tickets.open ? ' (' + tickets.open + ' open)' : ''}</b></span>
       </div>
 
       <div class="st-custom" style="margin-top:16px;">
+        <div class="st-custom-title">Last seen</div>
+        <p class="meta-line" style="margin:0;">${adminUserStatusHtml(u)}</p>
+        <p class="meta-line" style="margin:6px 0 0;">Last sign-in: ${adminUserLoginHtml(u)}</p>
+      </div>
+
+      <div class="st-custom">
+        <div class="st-custom-title">eBay stores (${(stores || []).length})</div>
+        <p class="meta-line" style="margin:0 0 10px;">Every eBay account this user has ever connected, even one they later disconnected. Orders/Revenue/Profit are for that store's most common currency only - see the Orders table below for every currency combined.</p>
+        <table class="data-table">
+          <thead><tr><th>Store</th><th>Marketplace</th><th>Status</th><th>Connected since</th><th>Live listings</th><th>Orders</th><th>Revenue</th><th>Profit</th></tr></thead>
+          <tbody>${storeRows}</tbody>
+        </table>
+      </div>
+
+      <div class="st-custom">
         <div class="st-custom-title">Listings by status</div>
         <table class="data-table">
           <thead><tr>${Object.keys(LISTING_STATUS_LABELS).map((k) => `<th>${LISTING_STATUS_LABELS[k]}</th>`).join('')}</tr></thead>
