@@ -13385,6 +13385,10 @@ async function autoSuggestEmptyDraftCategories() {
       btn.closest('.dv-menu')?.classList.remove('open');
       markOrderShipped(btn.getAttribute('data-order-ship'), btn);
     }));
+    root.querySelectorAll('[data-order-open]').forEach((btn) => btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openOrderDetail(btn.getAttribute('data-order-open'));
+    }));
     // Close any open order-actions menu when clicking elsewhere on the page (same pattern as the Drafts "more actions" menu).
     document.addEventListener('click', () => {
       document.querySelectorAll('.dv-menu.open').forEach((m) => m.classList.remove('open'));
