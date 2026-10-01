@@ -3752,6 +3752,8 @@
   .dv-selectall input, .dv-check { width:18px; height:18px; accent-color:#0064D2; cursor:pointer; }
   .dv-selectevery { border:none; background:none; padding:0; color:#0064D2; font:700 13px Inter,sans-serif; cursor:pointer; text-decoration:underline; }
   .dv-selectevery[hidden] { display:none; }
+  .dv-selectn { display:inline-flex; align-items:center; gap:6px; }
+  .dv-selectn input { width:64px; height:32px; padding:0 8px; border:1.5px solid var(--dv-line); border-radius:9px; background:#fff; font:600 13px Inter,sans-serif; color:var(--dv-ink); }
 
   /* draft cards */
   .dv-list { display:grid; gap:16px; }
@@ -9337,6 +9339,7 @@
           </div>
           <div class="dv-toolbar">
             <label class="dv-selectall"><input type="checkbox" id="draftSelectAll" /> Select</label><button type="button" class="dv-selectevery" id="draftSelectEvery" hidden title="Select every product of this view, on all pages"></button>
+            <span class="dv-selectn"><input type="number" min="1" id="draftSelectFirstN" placeholder="N" aria-label="Number of products to select" /><button type="button" class="dv-btn small" id="draftSelectFirstNBtn" title="Select the first N products of this view, in the current sort order">Select first N</button></span>
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
             <select id="draftSort" class="dv-select"><option value="created">Newest imported</option><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
             <select id="draftSourceFilter" class="dv-select" title="Filter by product source"><option value="">Every source</option><option value="amazon">Amazon</option><option value="cj">CJdropshipping</option><option value="aliexpress">AliExpress</option></select>
@@ -9478,6 +9481,18 @@
         syncDraftChecks();
         updateBulkBar();
       });
+      // Typing a number and picking "Select first N" replaces whatever was selected with exactly the first N products
+      // of this view (in the current sort order), across pages - same source list draftSelectEvery uses for "select all".
+      const selectFirstN = () => {
+        const input = document.getElementById('draftSelectFirstN');
+        const n = Math.floor(Number(input.value));
+        if (!(n > 0)) { input.focus(); return; }
+        draftSelected = new Set(draftFilteredIds.slice(0, n));
+        syncDraftChecks();
+        updateBulkBar();
+      };
+      document.getElementById('draftSelectFirstNBtn')?.addEventListener('click', selectFirstN);
+      document.getElementById('draftSelectFirstN')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); selectFirstN(); } });
       document.getElementById('draftAddProductBtn')?.addEventListener('click', () => {
         showPage('import');
         setTimeout(() => document.getElementById('amazonUrl')?.focus(), 50);
