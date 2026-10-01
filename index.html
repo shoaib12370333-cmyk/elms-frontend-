@@ -3096,11 +3096,11 @@
   .ord-mark-btn { border:1.5px solid #BFD4F2; background:#fff; color:#0064D2; border-radius:999px; height:26px; padding:0 10px; font:700 11.5px Inter,sans-serif; cursor:pointer; white-space:nowrap; }
   .ord-mark-btn:hover { background:#EEF4FF; } .ord-mark-btn:disabled { opacity:.55; cursor:default; }
   .ord-mark.on .ord-mark-btn { border-color:transparent; background:transparent; color:var(--grey); text-decoration:underline; padding:0 4px; font-weight:600; }
-  .ord-status-line { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
-  .ord-menuwrap { position:relative; display:inline-block; vertical-align:middle; }
-  .ord-menu-toggle { border:1px solid #CBD5E1; background:#fff; color:#475569; border-radius:6px; line-height:1; font-size:13px; padding:3px 7px; cursor:pointer; vertical-align:middle; }
-  .ord-menu-toggle:hover { border-color:#0064D2; color:#0064D2; background:#F3F8FF; }
-  .ord-menuwrap .dv-menu { bottom:auto; top:calc(100% + 6px); right:auto; left:0; }
+  .ord-status-group { position:relative; display:inline-flex; align-items:stretch; vertical-align:middle; }
+  .ord-status-seg { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; background:#E7F0FD; color:#0064D2; font:700 12px Inter,sans-serif; white-space:nowrap; border:1px solid #BFD4F2; border-right:0; border-radius:999px 0 0 999px; }
+  .ord-status-group .ord-menu-toggle { border:1px solid #BFD4F2; border-left:0; border-radius:0 999px 999px 0; background:#fff; color:#0064D2; font-size:12px; padding:4px 9px; cursor:pointer; }
+  .ord-status-group .ord-menu-toggle:hover { background:#F3F8FF; }
+  .ord-status-group .dv-menu { bottom:auto; top:calc(100% + 6px); right:auto; left:0; }
   .mo-box { max-width:540px; } .mo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0 4px; text-align:left; }
   .mo-f { display:grid; gap:4px; } .mo-f > span:first-child { font:800 11px Inter,sans-serif; letter-spacing:.04em; text-transform:uppercase; color:#64748B; }
   .mo-f input { width:100%; height:38px; box-sizing:border-box; padding:0 10px; border:1.5px solid #E2E8F0; border-radius:10px; background:#fff; font:600 14px Inter,sans-serif; color:#0F172A; } .mo-f input:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
@@ -12951,21 +12951,24 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
-  // Under the "Awaiting shipment" pill: shows the "ordered on Amazon" reminder once it is set (arrival date if given).
-  // The actions themselves (mark/undo it, mark as shipped) live in the dropdown next to the status - orderActionsMenuHtml.
+  // Under the status: shows the "ordered on Amazon" reminder once it is set (arrival date if given).
+  // The actions themselves (mark/undo it, mark as shipped) live in the dropdown next to the status - orderStatusWithActionsHtml.
   function orderMarkHtml(o) {
     if (orderStatusOf(o) !== 'awaiting_shipment' || !orderIsOrdered(o)) return '';
     const on = o.delivery_date ? new Date(o.delivery_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' }) : '';
     return `<div class="ord-mark on"><span class="ord-ordered" title="${on ? 'It should arrive on ' + escapeAttr(on) : 'No delivery date was given'}">&#10003; Ordered${on ? ' &middot; arrives ' + escapeHtml(on) : ''}</span></div>`;
   }
 
-  // Everything the seller can DO about an order not yet shipped - mark/undo "ordered on Amazon", mark as shipped
-  // (with or without a tracking number) - lives behind this one small arrow next to the status pill, instead of a
-  // separate always-visible button per action. Nothing to do here once eBay itself says shipped/delivered/cancelled.
-  function orderActionsMenuHtml(o) {
-    if (orderStatusOf(o) !== 'awaiting_shipment') return '';
+  // The status pill itself: plain once there is nothing left to do (shipped/delivered/cancelled/awaiting payment).
+  // While awaiting shipment, it grows a small truck icon and an attached arrow - one grouped, bordered control, not a
+  // separate floating button - opening everything the seller can DO about it (mark/undo "ordered on Amazon", mark as
+  // shipped with or without a tracking number) instead of a separate always-visible button per action.
+  function orderStatusWithActionsHtml(o) {
+    if (orderStatusOf(o) !== 'awaiting_shipment') return orderStatusPill(o);
     const id = escapeAttr(o.id);
-    return `<div class="ord-menuwrap" data-order-menuwrap>
+    const label = ORDER_STATUS.awaiting_shipment.label;
+    return `<div class="ord-status-group" data-order-menuwrap>
+      <span class="ord-status-seg">&#128666; ${escapeHtml(label)}</span>
       <button type="button" class="ord-menu-toggle" data-order-menu-toggle="${id}" title="Order actions" aria-label="Order actions">&#9662;</button>
       <div class="dv-menu" data-order-menu="${id}">
         <button type="button" data-order-toggle-ordered="${id}">${orderIsOrdered(o) ? 'Undo “ordered” mark' : 'Mark as ordered'}</button>
@@ -13037,7 +13040,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td data-label="Buyer"><div class="ord-strong">${escapeHtml(address.fullName || o.buyer_username || '—')}</div><div class="ord-sub">${escapeHtml(o.buyer_username || '')}${address.country ? ' · ' + escapeHtml(address.country) : ''}</div></td>
         <td data-label="Total"><div class="ord-strong">${escapeHtml(orderMoney(o, total))}</div>${o.profit != null ? `<div class="ord-sub ${Number(o.profit) >= 0 ? 'good' : 'bad'}">Profit ${escapeHtml(orderMoney(o, o.profit))}</div>` : ''}${o.net_profit != null ? `<div class="ord-sub ${Number(o.net_profit) >= 0 ? 'good' : 'bad'}">Net profit ${escapeHtml(orderMoney(o, o.net_profit))}</div>` : ''}</td>
         <td data-label="Ship by"><div class="${ship.late ? 'ord-late' : ship.soon ? 'ord-soon' : 'ord-strong'}">${escapeHtml(ship.text)}</div>${ship.note ? `<div class="ord-sub ${ship.late ? 'bad' : ''}">${escapeHtml(ship.note)}</div>` : ''}</td>
-        <td data-label="Status"><div><div class="ord-status-line">${orderStatusPill(o)}${orderActionsMenuHtml(o)}</div>${orderMarkHtml(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</div></td>
+        <td data-label="Status"><div>${orderStatusWithActionsHtml(o)}${orderMarkHtml(o)}${o.tracking_number ? `<div class="ord-sub">${escapeHtml(o.shipping_carrier || 'Tracking')}: ${escapeHtml(o.tracking_number)}</div>` : ''}</div></td>
         <td class="ord-actions"><button class="ord-btn small" type="button" data-order-open="${escapeAttr(o.id)}">${orderStatusOf(o) === 'awaiting_shipment' ? 'Fulfil' : 'View'}</button></td>
       </tr>`;
   }
