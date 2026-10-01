@@ -18523,14 +18523,15 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('aiCustomInstructions').value = d.settings.aiCustomInstructions || '';
       banner.className = 'ad-banner ' + (d.apiKeyConfigured ? 'ok' : 'bad');
       banner.textContent = d.apiKeyConfigured ? 'AI is connected. Users are charged the credit cost below each time they use an AI button.' : 'ANTHROPIC_API_KEY is not set on the server, so every AI button will fail. Add it in Render \u2192 Environment.';
-      const u = d.usage; const uc = u.category || { calls: 0, failed: 0, credits: 0 }; const ub = u.beautify || { calls: 0, failed: 0, credits: 0 };
+      const u = d.usage; const uc = u.category || { calls: 0, failed: 0, credits: 0 }; const ub = u.beautify || { calls: 0, failed: 0, credits: 0 }; const us = u.support || { calls: 0, failed: 0, credits: 0 };
       document.getElementById('adminAiUsage').innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Feature</th><th>Successful</th><th>Failed</th><th>Credits spent</th></tr></thead><tbody>
         <tr><td>AI title</td><td>${u.title.calls}</td><td>${u.title.failed}</td><td>${u.title.credits}</td></tr>
         <tr><td>AI description</td><td>${u.description.calls}</td><td>${u.description.failed}</td><td>${u.description.credits}</td></tr>
         <tr><td>AI item specifics</td><td>${u.aspects.calls}</td><td>${u.aspects.failed}</td><td>${u.aspects.credits}</td></tr>
         <tr><td>AI category</td><td>${uc.calls}</td><td>${uc.failed}</td><td>${uc.credits}</td></tr>
         <tr><td>AI description beautifier</td><td>${ub.calls}</td><td>${ub.failed}</td><td>${ub.credits}</td></tr>
-        <tr><td>AI message replies</td><td>${u.reply.calls}</td><td>${u.reply.failed}</td><td>${u.reply.credits}</td></tr></tbody></table></div>
+        <tr><td>AI message replies</td><td>${u.reply.calls}</td><td>${u.reply.failed}</td><td>${u.reply.credits}</td></tr>
+        <tr><td>AI support assistant</td><td>${us.calls}</td><td>${us.failed}</td><td>${us.credits}</td></tr></tbody></table></div>
         <p class="st-hint">Tokens used: ${u.inputTokens.toLocaleString()} in / ${u.outputTokens.toLocaleString()} out. Failed calls are refunded to the user.</p>`;
     } catch (err) { banner.className = 'ad-banner bad'; banner.textContent = err.message; }
   }
