@@ -14150,11 +14150,14 @@ async function autoSuggestEmptyDraftCategories() {
       } catch (err) { showToast('VeRO words', err.message, 'error'); }
     });
     document.getElementById('veroUseAllBtn').addEventListener('click', async (e) => {
+      // Captured before any await: the browser resets e.currentTarget to null once the click event finishes
+      // dispatching, which happens long before the (awaited) confirm dialog below ever resolves.
+      const btn = e.currentTarget;
       const have = new Set(veroMine);
       const missing = veroSuggestions.filter((w) => !have.has(w));
       if (!missing.length) { showToast('VeRO words', 'You already have every one of ELMS’s suggested words.', 'info'); return; }
       if (!(await elmsConfirm('Add all ' + missing.length + ' of ELMS’s suggested words (brand/character names) to your list?', { title: 'Use ELMS’s words', okText: 'Add ' + missing.length + ' words' }))) return;
-      const btn = e.currentTarget; const was = btn.textContent;
+      const was = btn.textContent;
       btn.disabled = true; btn.textContent = 'Adding…';
       try {
         const res = await apiFetch('/api/vero/words', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ words: missing }) });
