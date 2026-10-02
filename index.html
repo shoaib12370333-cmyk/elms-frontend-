@@ -9770,6 +9770,15 @@ B0EXAMPLE2"></textarea></div>
   }
   const veroScan = (l) => veroScanValues({ title: l.title, description: l.description, bulletPoints: l.bullet_points, specifications: l.specifications, aspects: l.ebay_aspects, brand: l.brand });
   const veroTag = (l) => { l._vero = veroScan(l); return l; };
+  // A heads-up (never a block) that this listing's own text names something from eBay's "Illegal drugs and drug
+  // paraphernalia" policy - services/prohibitedItemsService.js, computed server-side (it's a fixed, built-in list,
+  // not a per-user one like VeRO, so there's no need to scan it again client-side the way veroChipHtml does).
+  function policyWarningChipHtml(l) {
+    const terms = l.policy_warning_terms || [];
+    if (!terms.length) return '';
+    const shown = terms.slice(0, 3).join(', ') + (terms.length > 3 ? ` +${terms.length - 3}` : '');
+    return `<span class="dv-chip vero" title="${escapeAttr("eBay's Illegal drugs and drug paraphernalia policy may apply, because of: " + terms.join(', ') + '. eBay has removed real listings like this before - double check it before publishing.')}">&#9888; Policy risk: ${escapeHtml(shown)}</span>`;
+  }
   function veroChipHtml(l, withFix) {
     const terms = (l._vero && l._vero.terms) || [];
     if (!terms.length) return '';
@@ -10553,6 +10562,7 @@ B0EXAMPLE2"></textarea></div>
             <span class="dv-chip">${escapeHtml(draftSupplierLabel(l))}</span>
             ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
             ${veroChipHtml(l, status !== 'publishing')}
+            ${policyWarningChipHtml(l)}
           </div>
           ${noteBlockHtml(l)}
           ${status === 'error' && l.error_message ? `<div class="dv-error"><span>!</span><span>${escapeHtml(l.error_message)}</span></div>` : ''}
@@ -12194,6 +12204,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
             ${uploadedText ? `<span class="dv-chip">Listed ${escapeHtml(uploadedText)}</span>` : ''}
             ${veroChipHtml(l, false)}
+            ${policyWarningChipHtml(l)}
           </div>
           ${noteBlockHtml(l)}
           ${st === 'issues' ? `<div class="lv-issue"><span>!</span><span>${escapeHtml(l.error_message || 'This listing has an issue.')}</span></div>` : ''}
