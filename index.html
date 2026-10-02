@@ -9800,6 +9800,10 @@ B0EXAMPLE2"></textarea></div>
     { title: 'VeRO words found', okText: 'Publish anyway', cancelText: 'Go back', danger: true }
   );
 
+  // How many listings the Drafts bulk "Remove with AI" cleans at once. They are independent (one request each, nothing shared), and one at
+  // a time meant the wait was the sum of every listing's AI call.
+  const VERO_BULK_PARALLEL = 4;
+
   // Asks the server (AI) to take every VeRO word out of one listing, saves the result and refreshes the listing object.
   async function veroCleanAndSave(l) {
     const res = await apiFetch('/api/list-on-ebay/vero-clean', {
@@ -11873,10 +11877,16 @@ async function autoSuggestEmptyDraftCategories() {
       const label = bulkVeroBtn.textContent;
       bulkVeroBtn.disabled = true;
       let done = 0; let failed = 0; let firstError = '';
-      for (const l of chosen) {
-        bulkVeroBtn.textContent = `Cleaning ${done + failed + 1}/${chosen.length}\u2026`;
-        try { await veroCleanAndSave(l); done += 1; } catch (err) { failed += 1; firstError = firstError || err.message; }
-      }
+      const queue = chosen.slice();
+      bulkVeroBtn.textContent = `Cleaning 0/${chosen.length}\u2026`;
+      const worker = async () => {
+        while (queue.length) {
+          const l = queue.shift();
+          try { await veroCleanAndSave(l); done += 1; } catch (err) { failed += 1; firstError = firstError || err.message; }
+          bulkVeroBtn.textContent = `Cleaning ${done + failed}/${chosen.length}\u2026`;
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(VERO_BULK_PARALLEL, chosen.length) }, worker));
       refreshCreditBalanceChip();
       showToast(failed ? `${done} cleaned, ${failed} failed` : 'VeRO words removed', failed ? firstError : `${done} draft(s) are clean now.`, failed ? 'error' : 'success');
       bulkVeroBtn.disabled = false;
