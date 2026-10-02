@@ -15074,7 +15074,7 @@ async function autoSuggestEmptyDraftCategories() {
       } else {
         listEl.innerHTML = currentEbayAccounts.map((acc) => `
           <div class="st-acct ${acc.isActive ? 'active' : ''} ${acc.connected === false ? 'disconnected' : ''}" data-account-id="${acc.id}">
-            <div class="st-acct-flag">${escapeHtml(STORE_MARKET_TAG[acc.marketplaceId] || 'eB')}</div>
+            <div class="st-acct-flag" style="${acc.storeLogoUrl ? 'background:#fff;border:1px solid var(--line);padding:3px;' : ''}">${acc.storeLogoUrl ? `<img src="${escapeAttr(acc.storeLogoUrl)}" alt="" style="width:100%;height:100%;object-fit:contain;" onerror="this.closest('.st-acct-flag').style.cssText='';this.closest('.st-acct-flag').textContent='${escapeAttr(STORE_MARKET_TAG[acc.marketplaceId] || 'eB')}';" />` : escapeHtml(STORE_MARKET_TAG[acc.marketplaceId] || 'eB')}</div>
             <div class="st-acct-main">
               <div class="st-acct-name">${escapeHtml(acc.label || acc.displayName || acc.username || 'eBay store')} ${acc.isActive ? '<span class="st-pill">Selected</span>' : ''} ${acc.connected === false ? '<span class="st-pill" style="background:#FEE4E2;color:#B42318;">Disconnected</span>' : ''}</div>
               ${acc.connected === false
@@ -19993,7 +19993,7 @@ async function autoSuggestEmptyDraftCategories() {
       ? stores.map((s) => {
           const best = (s.orders && s.orders.currencies[0]) || null;
           return `<tr>
-            <td><b>${escapeHtml(s.label || s.displayName || s.username || 'eBay store')}</b>${s.isActive ? ' <span class="ad-tag free">SELECTED</span>' : ''}${s.financesSyncError ? ' <span class="ad-tag bad">EARNINGS STUCK</span>' : ''}<br /><small style="color:var(--grey);">${escapeHtml(s.username || s.ebayUserId || '—')}</small>${s.financesSyncError ? `<br /><small class="bad" style="word-break:break-word;">${escapeHtml(s.financesSyncError)}</small>` : ''}</td>
+            <td><div style="display:flex;align-items:center;gap:8px;">${s.storeLogoUrl ? `<img src="${escapeAttr(s.storeLogoUrl)}" alt="" style="width:28px;height:28px;border-radius:6px;object-fit:contain;background:#fff;border:1px solid var(--line);flex:none;" onerror="this.remove();" />` : ''}<div><b>${escapeHtml(s.label || s.displayName || s.username || 'eBay store')}</b>${s.isActive ? ' <span class="ad-tag free">SELECTED</span>' : ''}${s.financesSyncError ? ' <span class="ad-tag bad">EARNINGS STUCK</span>' : ''}<br /><small style="color:var(--grey);">${escapeHtml(s.username || s.ebayUserId || '—')}</small>${s.financesSyncError ? `<br /><small class="bad" style="word-break:break-word;">${escapeHtml(s.financesSyncError)}</small>` : ''}</div></div></td>
             <td>${escapeHtml(String(s.marketplaceId || 'EBAY_US').replace('EBAY_', ''))}</td>
             <td>${s.connected === false ? '<span class="ad-tag bad">DISCONNECTED</span>' : '<span class="ad-tag paid">CONNECTED</span>'}</td>
             <td>${escapeHtml(new Date(s.createdAt).toLocaleDateString())}</td>
