@@ -4972,10 +4972,13 @@
               </div>
               <div class="st-field">
                 <label>&nbsp;</label>
-                <button class="st-btn" id="generatePostalCodeBtn" type="button">Generate valid code</button>
+                <div style="display:flex;gap:8px;">
+                  <button class="st-btn" id="generatePostalCodeBtn" type="button">Generate valid code</button>
+                  <button class="st-btn" id="lookupPostalCodeBtn" type="button">Use my own code</button>
+                </div>
               </div>
             </div>
-            <div class="st-hint">UK and other countries need the <b>full</b> postal code, not just the first part. Generate finds a real one for the city and saves it as your inventory location.</div>
+            <div class="st-hint">UK and other countries need the <b>full</b> postal code, not just the first part. "Generate" finds a real one for the city; if you already have your own, type it in and press "Use my own code" to check and save it instead.</div>
             <div id="postalLookupResult" style="margin-top:10px;"></div>
           </div>
 
@@ -9848,6 +9851,17 @@ B0EXAMPLE2"></textarea></div>
   function describePostalLocation(loc) {
     if (loc.notRequired) return `${loc.countryName} does not use postal codes.`;
     return `${loc.postalCode} · ${[loc.city, loc.state, loc.countryName].filter(Boolean).join(', ')}`;
+  }
+
+  // Checks a postal code the seller TYPED themselves (not generated) through the backend - the same resolver Save
+  // itself uses, so what this reports is exactly what Save will accept. Throws if it could not be resolved.
+  async function requestPostalLookup(country, postalCodeText) {
+    const params = new URLSearchParams({ country, postalCode: postalCodeText });
+    const res = await apiFetch(`/api/seller-settings/postal-lookup?${params.toString()}`);
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Could not look up that postal code.');
+    if (!data.location.complete) throw new Error(`"${postalCodeText}" is not a full postal code for ${data.location.countryName}. Use the full code, or press Generate instead.`);
+    return data.location;
   }
 
   // One colour / size variant of the imported product: its own picture, title, what makes it different, and its price.
@@ -15504,6 +15518,37 @@ async function autoSuggestEmptyDraftCategories() {
         resultEl.textContent = describePostalLocation(loc) + ' \u2014 saving as your inventory location\u2026';
         document.getElementById('saveSellerSettingsBtn').click();
       }
+    } catch (err) {
+      resultEl.className = 'error';
+      resultEl.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Use my own code: the seller already has a postal code (no city needed) - look it up, show what it resolves to,
+  // and save it the same way a generated one is, once it checks out.
+  document.getElementById('lookupPostalCodeBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('lookupPostalCodeBtn');
+    const resultEl = document.getElementById('postalLookupResult');
+    const country = document.getElementById('customLocationCountry').value;
+    const postalCode = document.getElementById('customLocationPostalCode').value.trim();
+    if (!postalCode) {
+      resultEl.className = 'error';
+      resultEl.textContent = 'Type your postal code first.';
+      return;
+    }
+    btn.disabled = true;
+    resultEl.className = '';
+    resultEl.textContent = 'Checking that postal code…';
+    try {
+      const loc = await requestPostalLookup(country, postalCode);
+      document.getElementById('customLocationPostalCode').value = loc.postalCode || postalCode;
+      const locSelect = document.getElementById('settingMerchantLocationKey');
+      if (locSelect.value !== '__custom__') { locSelect.value = '__custom__'; locSelect.dispatchEvent(new Event('change')); }
+      resultEl.className = 'success';
+      resultEl.textContent = describePostalLocation(loc) + ' — saving as your inventory location…';
+      document.getElementById('saveSellerSettingsBtn').click();
     } catch (err) {
       resultEl.className = 'error';
       resultEl.textContent = err.message;
