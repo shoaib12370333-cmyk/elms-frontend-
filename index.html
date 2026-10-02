@@ -2596,6 +2596,7 @@
   #draftsContent .elms-ed-field.full { grid-column:1 / -1; }
   #draftsContent .elms-ed-field > span, #draftsContent .elms-ed-label { font-size:12px; font-weight:700; color:#4b5563; }
   #draftsContent .elms-ed-field > span em { font-style:normal; font-weight:500; color:#94a3b8; margin-left:6px; }
+  #draftsContent .elms-ed-field > span em.over { color:#E53238; font-weight:700; }
   #draftsContent .elms-ed-field input[type="text"], #draftsContent .elms-ed-field input[type="number"], #draftsContent .elms-ed-field select, #draftsContent .elms-ed-field textarea { width:100%; box-sizing:border-box; border:1px solid #dfe3e8; border-radius:8px; padding:0 11px; height:38px; font:500 13px Inter,sans-serif; color:#1f2937; background:#fff; }
   #draftsContent .elms-ed-field textarea { height:auto; min-height:160px; padding:10px 11px; line-height:1.55; resize:vertical; }
   #draftsContent .elms-ed-field input:focus, #draftsContent .elms-ed-field select:focus, #draftsContent .elms-ed-field textarea:focus { outline:none; border-color:#9db7e8; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
@@ -2778,6 +2779,7 @@
   #llEditModal .elms-ed-field.full { grid-column:1 / -1; }
   #llEditModal .elms-ed-field > span, #llEditModal .elms-ed-label { font-size:12px; font-weight:700; color:#4b5563; }
   #llEditModal .elms-ed-field > span em { font-style:normal; font-weight:500; color:#94a3b8; margin-left:6px; }
+  #llEditModal .elms-ed-field > span em.over { color:#E53238; font-weight:700; }
   #llEditModal .elms-ed-field input[type="text"], #llEditModal .elms-ed-field input[type="number"], #llEditModal .elms-ed-field select, #llEditModal .elms-ed-field textarea { width:100%; box-sizing:border-box; border:1px solid #dfe3e8; border-radius:8px; padding:0 11px; height:38px; font:500 13px Inter,sans-serif; color:#1f2937; background:#fff; }
   #llEditModal .elms-ed-field textarea { height:auto; min-height:160px; padding:10px 11px; line-height:1.55; resize:vertical; }
   #llEditModal .elms-ed-field input:focus, #llEditModal .elms-ed-field select:focus, #llEditModal .elms-ed-field textarea:focus { outline:none; border-color:#9db7e8; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
@@ -9883,6 +9885,15 @@ B0EXAMPLE2"></textarea></div>
     return `<div class="elms-ed-variant rich">${thumb}<div class="v-txt"><b>${escapeHtml(label)}</b>${dims ? `<div class="v-dims">${dims}</div>` : ''}${note ? `<small>${note}</small>` : ''}</div><span class="v-price">${price}</span></div>`;
   }
 
+  // Counts words in the readable text of a description, not its HTML markup (so a table's own tags/attributes never
+  // inflate the count) - strips tags and entities first, same way for the initial render and every later keystroke.
+  const DESC_WORD_LIMIT = 4000;
+  function descWordCount(html) {
+    const text = String(html || '').replace(/<[^>]*>/g, ' ').replace(/&[a-zA-Z#0-9]+;/g, ' ');
+    const words = text.trim().split(/\s+/).filter(Boolean);
+    return words.length;
+  }
+
   function draftEditorHtml(l, opts = {}) {
     const title = l.title || l.sku || '';
     const desc = l.description || l.product_description || '';
@@ -9940,9 +9951,8 @@ B0EXAMPLE2"></textarea></div>
 
         <div class="elms-editor-pane" data-ui-pane="description">
           <div class="elms-ed-row" style="margin-bottom:8px;justify-content:space-between;"><span style="font:600 12px Inter,sans-serif;color:#667085;">Let AI write a clean eBay description from this product's facts.</span><span><button type="button" class="elms-ed-btn" data-ui-action="generate-description">Generate Description With AI</button> <button type="button" class="elms-ed-btn" data-ui-action="beautify-description" title="Restructures what's already in the box below into your saved Description Template (Settings &gt; Description Template) - image gallery, bullets, specs table and whichever other blocks you picked.">Beautify With AI</button></span></div>
-          <div style="margin-bottom:8px;"><span class="dv-seg" role="group" aria-label="Description view"><button type="button" data-ui-desc-view="code">Code</button><button type="button" data-ui-desc-view="preview" class="on">Preview</button></span></div>
-          <label class="elms-ed-field" data-ui-desc-code style="display:none;"><span>Description (raw HTML)</span><textarea data-ui-field="description" rows="12">${escapeHtml(desc)}</textarea></label>
-          <div data-ui-desc-preview><iframe data-ui-desc-frame title="Description preview" sandbox="" style="width:100%;min-height:340px;border:1px solid var(--line);border-radius:8px;background:#fff;"></iframe></div>
+          <label class="elms-ed-field"><span>Description<em data-ui-desc-count class="${descWordCount(desc) > DESC_WORD_LIMIT ? 'over' : ''}">${descWordCount(desc)}/${DESC_WORD_LIMIT} words</em></span><textarea data-ui-field="description" rows="10">${escapeHtml(desc)}</textarea></label>
+          <label class="elms-ed-field"><span>Preview</span><iframe data-ui-desc-frame title="Description preview" sandbox="" style="width:100%;min-height:340px;border:1px solid var(--line);border-radius:8px;background:#fff;"></iframe></label>
         </div>
 
         <div class="elms-editor-pane" data-ui-pane="variants">
@@ -10077,28 +10087,22 @@ B0EXAMPLE2"></textarea></div>
       ed.querySelectorAll('[data-ui-pane]').forEach((p) => p.classList.toggle('active', p.getAttribute('data-ui-pane') === name));
     }));
 
-    // The description box holds raw HTML (tables, bullet lists, inline styles) - "Code" shows that as text to edit,
-    // "Preview" renders it (in a sandboxed iframe: no scripts, so nothing in a description can ever touch the app)
-    // so the seller can actually read the formatted result instead of markup. Beautify/Generate switch to it themselves,
-    // since "read it through, then save" only means something once there is something readable to read.
-    function syncDescView(view) {
-      ed.querySelectorAll('[data-ui-desc-view]').forEach((b) => b.classList.toggle('on', b.getAttribute('data-ui-desc-view') === view));
-      const code = q('[data-ui-desc-code]');
-      const preview = q('[data-ui-desc-preview]');
-      if (!code || !preview) return;
-      if (view === 'preview') {
-        const html = fld('description')?.value || '';
-        const frame = q('[data-ui-desc-frame]');
-        if (frame) frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;padding:14px;font:14px/1.5 Arial,sans-serif;color:#222;word-wrap:break-word;}img{max-width:100%;height:auto;}table{max-width:100%;}</style></head><body>${html || '<p style="color:#98A2B3;">Nothing to preview yet.</p>'}</body></html>`;
-        code.style.display = 'none';
-        preview.style.display = '';
-      } else {
-        code.style.display = '';
-        preview.style.display = 'none';
+    // The description box holds raw HTML (tables, bullet lists, inline styles) - both the editable text and its
+    // rendered Preview (a sandboxed iframe: no scripts, so nothing in a description can ever touch the app) are
+    // always visible together, kept in sync on every keystroke, rather than a separate "Code" view to switch to.
+    function syncDescView() {
+      const html = fld('description')?.value || '';
+      const frame = q('[data-ui-desc-frame]');
+      if (frame) frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;padding:14px;font:14px/1.5 Arial,sans-serif;color:#222;word-wrap:break-word;}img{max-width:100%;height:auto;}table{max-width:100%;}</style></head><body>${html || '<p style="color:#98A2B3;">Nothing to preview yet.</p>'}</body></html>`;
+      const count = q('[data-ui-desc-count]');
+      if (count) {
+        const n = descWordCount(html);
+        count.textContent = `${n}/${DESC_WORD_LIMIT} words`;
+        count.classList.toggle('over', n > DESC_WORD_LIMIT);
       }
     }
-    ed.querySelectorAll('[data-ui-desc-view]').forEach((tab) => tab.addEventListener('click', () => syncDescView(tab.getAttribute('data-ui-desc-view'))));
-    syncDescView('preview'); // opening a draft that was already beautified (e.g. by the bulk bar) must show the
+    fld('description')?.addEventListener('input', syncDescView);
+    syncDescView(); // opening a draft that was already beautified (e.g. by the bulk bar) must show the
     // formatted result straight away too, not just right after Beautify/Generate run inside this same editor session
 
     const titleInput = fld('title');
@@ -10163,7 +10167,6 @@ B0EXAMPLE2"></textarea></div>
           const area = fld('description');
           area.value = data.description;
           area.dispatchEvent(new Event('input'));
-          syncDescView('preview');
           showToast('Description written', 'Read it through, then save.', 'success');
           refreshCreditBalanceChip();
         } catch (err) { showToast('AI description failed', err.message, 'error'); }
@@ -10183,7 +10186,6 @@ B0EXAMPLE2"></textarea></div>
           const area = fld('description');
           area.value = data.text;
           area.dispatchEvent(new Event('input'));
-          syncDescView('preview');
           if (data.missingBlocks && data.missingBlocks.length) {
             showToast('Description beautified - check it', (data.warnings || []).join(' ') || 'Some sections may have been left out.', 'error');
           } else {
@@ -10432,6 +10434,7 @@ B0EXAMPLE2"></textarea></div>
     btn.disabled = true; btn.textContent = 'Saving…'; if (status) status.textContent = '';
     try {
       if (now.title !== before.title && now.title.length < 3) throw new Error('The title is too short.');
+      if (changed('description') && descWordCount(now.description) > DESC_WORD_LIMIT) throw new Error(`The description is ${descWordCount(now.description)} words - keep it to ${DESC_WORD_LIMIT} or fewer.`);
       const hasContent = ['title', 'categoryId', 'description', 'specifications', 'ebayAspects', 'bulletPoints', 'images'].some((k) => k in body);
       const res = hasContent
         ? await apiFetch(`/api/list-on-ebay/${encodeURIComponent(l.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
