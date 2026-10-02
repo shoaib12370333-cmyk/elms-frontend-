@@ -6985,10 +6985,18 @@ B0EXAMPLE2"></textarea></div>
       }
       refreshDraftsCountBadge();
       refreshCreditBalanceChip();
-      showToast('Draft ready!', data.draft.title ? `"${data.draft.title.slice(0, 60)}${data.draft.title.length > 60 ? '…' : ''}" has been saved.` : 'Your AliExpress product has been saved.', 'success');
+      showToast('Draft ready!', (data.draft.title ? `"${data.draft.title.slice(0, 60)}${data.draft.title.length > 60 ? '…' : ''}" has been saved.` : 'Your AliExpress product has been saved.') + aliexpressShippingNote(data.aliexpressShipping), 'success');
     } catch (err) {
       showToast('Import failed', err.message, 'error');
     }
+  }
+
+  /** One short sentence about what AliExpress said shipping this product costs and how long it takes ('' when it gave no quote). The profit on the card already has the cost taken off. */
+  function aliexpressShippingNote(q) {
+    if (!q || !Number.isFinite(Number(q.cost))) return '';
+    const cost = Number(q.cost) === 0 ? 'free' : `${(CURRENCY_SYMBOLS[q.currency] || (q.currency ? q.currency + ' ' : ''))}${Number(q.cost).toFixed(2)}`;
+    const days = q.minDays && q.maxDays ? (q.minDays === q.maxDays ? q.minDays : q.minDays + '\u2013' + q.maxDays) + ' days' : (q.maxDays ? 'up to ' + q.maxDays + ' days' : '');
+    return ` AliExpress shipping to your store's country: ${cost}${days ? ', ' + days : ''}${q.carrier ? ' (' + q.carrier + ')' : ''}.`;
   }
 
   // The seller's pricing rule (Settings > Pricing), as far as the Import page needs to know: is it switched on.
@@ -10464,19 +10472,22 @@ B0EXAMPLE2"></textarea></div>
     const sell = sellOverride !== undefined ? n(sellOverride) : n(l.sell_price);
     const cost = n(l.amazon_price);
     if (sell == null || cost == null) return null;
-    // A CJ listing's own shipping quote (models/listingsModel.js listingProfitAmount's extraCost) - always 0 for Amazon, so
-    // Amazon profit is worked out exactly as before.
-    const extra = n(l.cj_shipping_cost) || 0;
+    // The listing's own source shipping quote (models/listingsModel.js listingProfitAmount's extraCost): CJ's freight, or what
+    // AliExpress's shipping quote said - always 0 for Amazon, so Amazon profit is worked out exactly as before.
+    const extra = n(l.cj_shipping_cost) || n(l.aliexpress_shipping_cost) || 0;
+    // A REAL AliExpress shipping quote (a free 0 included) stands in for the delivery cost the Margin rule only guessed ("Delivery you
+    // pay"): both are what the seller pays to send the item, so counting both would charge the same shipping twice.
+    const quoted = l.source_platform === 'aliexpress' && n(l.aliexpress_shipping_cost) != null;
     const r = l.pricing_rule && typeof l.pricing_rule === 'object' ? l.pricing_rule : null;
     if (r && n(r.feePercent) != null) {
-      const costTotal = cost + extra + (n(r.shipping) || 0);
+      const costTotal = cost + extra + (quoted ? 0 : (n(r.shipping) || 0));
       const amount = sell - costTotal - (sell * n(r.feePercent) / 100 + (n(r.feeFixed) || 0));
-      return { amount, percent: costTotal > 0 ? (amount / costTotal) * 100 : null, afterFees: true };
+      return { amount, percent: costTotal > 0 ? (amount / costTotal) * 100 : null, afterFees: true, shipping: extra, quoted };
     }
     const amount = sell - cost - extra;
-    return { amount, percent: (cost + extra) > 0 ? (amount / (cost + extra)) * 100 : null, afterFees: false };
+    return { amount, percent: (cost + extra) > 0 ? (amount / (cost + extra)) * 100 : null, afterFees: false, shipping: extra };
   }
-  const listingProfitHint = (pf) => (pf && pf.afterFees ? 'Profit after eBay fees (the fees of your Margin rule)' : 'Sell price minus cost, before eBay fees');
+  const listingProfitHint = (pf) => (pf && pf.afterFees ? 'Profit after eBay fees (the fees of your Margin rule)' : 'Sell price minus cost, before eBay fees') + (pf && pf.shipping > 0 ? ' \u00b7 supplier shipping ' + pf.shipping.toFixed(2) + ' is already taken off' + (pf.quoted && pf.afterFees ? ' (instead of the delivery cost in your Margin rule)' : '') : '');
 
   // The seller's private note, on the card itself: click it (or "+ Add note") to write, Save keeps it with the product. It is never sent to eBay or Amazon.
   function noteBlockHtml(l) {
