@@ -12705,9 +12705,11 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // ---------- Net Profit sheet ----------
-  // One line per order: TITLE, ORDER ID, AMAZON PRICE, EBAY PRICE, PROFIT, ORDER EARNING, EBAY COST, NET PROFIT. The seller types AMAZON PRICE and ORDER EARNING
+  // One line per order: TITLE, ORDER ID, AMAZON PRICE, EBAY PRICE, PROFIT, ORDER EARNING, EBAY COST, AD FEE, NET PROFIT. The seller types AMAZON PRICE and ORDER EARNING
   // (both start empty); the rest is worked out here in whole cents with the same rule as the server: PROFIT = EBAY PRICE - AMAZON PRICE,
   // EBAY COST = EBAY PRICE - ORDER EARNING, NET PROFIT = ORDER EARNING - AMAZON PRICE. What cannot be worked out yet is empty. Every price is for the whole order.
+  // AD FEE is fetched from eBay (the Promoted Listings fee, feeType AD_FEE) and is shown only: eBay already took it off before payout, so it is part of EBAY COST
+  // and ORDER EARNING already has it taken off - it is never subtracted from the NET PROFIT again.
   let npLines = [];
   let npInfo = { total: 0, paid: false, hasMore: false, locked: false, freeLines: 1000, pageSize: 1000 };
   let npFilters = { q: '', accountId: '', range: 'all', from: '', to: '', cancelled: false };
@@ -12729,7 +12731,7 @@ async function autoSuggestEmptyDraftCategories() {
     const by = new Map();
     for (const l of lines) {
       const key = l.currency || '';
-      if (!by.has(key)) by.set(key, { currency: l.currency || null, lines: 0, sums: { amazon_price: null, ebay_price: null, profit: null, order_earning: null, ebay_cost: null, net_profit: null } });
+      if (!by.has(key)) by.set(key, { currency: l.currency || null, lines: 0, sums: { amazon_price: null, ebay_price: null, profit: null, order_earning: null, ebay_cost: null, ad_fee: null, net_profit: null } });
       const t = by.get(key);
       t.lines += 1;
       for (const col of Object.keys(t.sums)) { const c = npCents(l[col]); if (c !== null) t.sums[col] = (t.sums[col] || 0) + c; }
@@ -12750,6 +12752,13 @@ async function autoSuggestEmptyDraftCategories() {
       ? '<span class="np-muted" title="Not fetched yet - eBay has not settled this order\'s payout">—</span>'
       : escapeHtml(npMoney(l.order_earning, l.currency));
   }
+  // Read-only: eBay's own Promoted Listings fee for the order, fetched together with the earning. Dash = not fetched yet; 0.00 = eBay took none.
+  function npAdFeeCell(l) {
+    if (l.ad_fee === null || l.ad_fee === undefined) return '<span class="np-muted" title="Not fetched from eBay yet">—</span>';
+    return l.ad_fee === 0
+      ? '<span class="np-muted" title="eBay took no Promoted Listings ad fee on this order">' + escapeHtml(npMoney(0, l.currency)) + '</span>'
+      : '<span title="The Promoted Listings ad fee eBay took off this order. It is already part of the eBay cost - not taken off the net profit again.">' + escapeHtml(npMoney(l.ad_fee, l.currency)) + '</span>';
+  }
   function npProfitCell(l) {
     return l.profit === null ? '' : '<span class="' + (l.profit >= 0 ? 'np-good' : 'np-bad') + '" data-np-profit>' + escapeHtml(npMoney(l.profit, l.currency)) + '</span>';
   }
@@ -12769,6 +12778,7 @@ async function autoSuggestEmptyDraftCategories() {
       + '<td class="np-num" data-label="Profit">' + npProfitCell(l) + '</td>'
       + '<td class="np-num" data-label="Order earning">' + npEarningCell(l) + '</td>'
       + '<td class="np-num" data-label="eBay cost" data-np-cost>' + escapeHtml(npMoney(l.ebay_cost, l.currency)) + '</td>'
+      + '<td class="np-num" data-label="Ad fee" data-np-adfee>' + npAdFeeCell(l) + '</td>'
       + '<td class="np-num" data-label="Net profit" data-np-net>' + npNetCell(l) + '</td>'
       + '</tr>';
   }
@@ -12781,7 +12791,7 @@ async function autoSuggestEmptyDraftCategories() {
     const html = totals.map((t) => {
       const label = 'Total' + (totals.length > 1 && t.currency ? ' \u00b7 ' + t.currency : '') + ' \u00b7 ' + t.lines + ' line' + (t.lines === 1 ? '' : 's');
       const cell = (label2, v) => '<td class="np-num" data-label="' + label2 + '">' + escapeHtml(npMoney(v, t.currency)) + '</td>';
-      return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Buying price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('Order earning', t.order_earning) + cell('eBay cost', t.ebay_cost) + cell('Net profit', t.net_profit) + '</tr>';
+      return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Buying price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('Order earning', t.order_earning) + cell('eBay cost', t.ebay_cost) + cell('Ad fee', t.ad_fee) + cell('Net profit', t.net_profit) + '</tr>';
     }).join('');
     top.innerHTML = html;
     if (end) end.innerHTML = html;
@@ -12803,7 +12813,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (!body) return;
     if (!npLines.length) {
       const filtered = npFilters.q || npFilters.accountId || npFilters.range !== 'all';
-      body.innerHTML = '<tr><td colspan="8" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div></td></tr>';
+      body.innerHTML = '<tr><td colspan="9" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div></td></tr>';
     } else body.innerHTML = npLines.map(npRowHtml).join('');
     npRenderTotals();
     npRenderFoot();
@@ -12836,7 +12846,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function npFetch(append) {
     const seq = ++npSeq;
     const body = document.getElementById('npBody');
-    if (!append && body) body.innerHTML = '<tr><td colspan="8" style="padding:0;border:0;"><div class="elms-loader sm" role="status" aria-label="Loading the sheet" style="margin:40px auto;"></div></td></tr>';
+    if (!append && body) body.innerHTML = '<tr><td colspan="9" style="padding:0;border:0;"><div class="elms-loader sm" role="status" aria-label="Loading the sheet" style="margin:40px auto;"></div></td></tr>';
     const addBtn = document.getElementById('npAdd');
     if (append && addBtn) { addBtn.disabled = true; addBtn.textContent = 'Adding\u2026'; }
     try {
@@ -12849,7 +12859,7 @@ async function autoSuggestEmptyDraftCategories() {
       npRenderBody();
     } catch (err) {
       if (seq !== npSeq) return;
-      if (!append && body) body.innerHTML = '<tr><td colspan="8" style="padding:0;border:0;"><div class="np-empty"><b>Could not load the sheet</b>' + escapeHtml(err.message) + '</div></td></tr>';
+      if (!append && body) body.innerHTML = '<tr><td colspan="9" style="padding:0;border:0;"><div class="np-empty"><b>Could not load the sheet</b>' + escapeHtml(err.message) + '</div></td></tr>';
       else { showToast('Could not add lines', err.message, 'error'); npRenderFoot(); }
     }
   }
@@ -12971,8 +12981,8 @@ async function autoSuggestEmptyDraftCategories() {
         </div>
         <div class="np-card">
           <table class="np-table">
-            <colgroup><col style="width:21%"><col style="width:12%"><col style="width:12.5%"><col style="width:10.5%"><col style="width:10%"><col style="width:12.5%"><col style="width:10.5%"><col style="width:11%"></colgroup>
-            <thead><tr><th>Title</th><th>Order ID</th><th class="r">Buying price</th><th class="r">eBay price</th><th class="r">Profit</th><th class="r">Order earning</th><th class="r">eBay cost</th><th class="r">Net profit</th></tr></thead>
+            <colgroup><col style="width:16.4%"><col style="width:12.1%"><col style="width:12.3%"><col style="width:10.4%"><col style="width:7.3%"><col style="width:13.8%"><col style="width:10%"><col style="width:7.2%"><col style="width:10.5%"></colgroup>
+            <thead><tr><th>Title</th><th>Order ID</th><th class="r">Buying price</th><th class="r">eBay price</th><th class="r">Profit</th><th class="r">Order earning</th><th class="r">eBay cost</th><th class="r" title="The Promoted Listings ad fee eBay took off the order. Already part of the eBay cost - not taken off the net profit again.">Ad fee</th><th class="r">Net profit</th></tr></thead>
             <tbody id="npTotals" class="np-totals"></tbody>
             <tbody id="npBody"></tbody>
             <tfoot id="npFoot" class="np-totals"></tfoot>
