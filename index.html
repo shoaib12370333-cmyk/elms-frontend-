@@ -532,6 +532,43 @@
   }
   .auth-field-error-msg.show { display: block; }
 
+  /* Phone number: country picker + number (the sign-up form and the "add your phone number" screen). No SMS / code - the number is only kept for the admins. */
+  /* z-index: the list opens over the rows that follow (they are animated, so each paints on its own layer) */
+  .ph-row { display:flex; gap:8px; align-items:stretch; margin-top:5px; position:relative; z-index:3; }
+  .auth-form > .ph-row { animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .ph-row .auth-field-wrap { flex:1 1 auto; min-width:0; }
+  .ph-row .editable-input { margin-top:0 !important; }
+  .ph-pick { position:relative; flex:0 0 auto; }
+  .ph-pick-btn { height:100%; min-height:44px; min-width:112px; padding:0 10px; display:flex; align-items:center; gap:8px; background:var(--paper); border:1.5px solid var(--grey-light); border-radius:10px; font:inherit; font-size:14px; color:var(--ink); cursor:pointer; white-space:nowrap; transition:border-color .15s ease, box-shadow .15s ease; }
+  .ph-pick-btn:hover { border-color:#c9d3e3; }
+  .ph-pick-btn:focus-visible, .ph-pick.open .ph-pick-btn { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.12); outline:none; }
+  .ph-pick-btn.field-error { border-color:var(--red); animation:shakeField .4s ease; }
+  .ph-pick-btn .ph-code { font-weight:700; } .ph-pick-btn .ph-none { color:#A8A8A8; }
+  .ph-pick-btn .ph-caret { margin-left:auto; color:var(--grey); font-size:9px; }
+  .ph-pop { position:absolute; z-index:70; top:calc(100% + 6px); left:0; width:min(310px, 84vw); background:#fff; border:1px solid var(--grey-light); border-radius:12px; box-shadow:0 16px 40px rgba(15,23,42,.18); display:none; overflow:hidden; }
+  .ph-pick.open .ph-pop { display:block; }
+  .ph-search { display:block; width:100%; box-sizing:border-box; padding:11px 12px; border:0; border-bottom:1px solid var(--grey-light); font:inherit; font-size:14px; outline:none; background:#fff; color:var(--ink); }
+  .ph-list { max-height:236px; overflow-y:auto; padding:4px; margin:0; list-style:none; text-align:left; }
+  .ph-opt { display:flex; justify-content:space-between; gap:10px; padding:8px 10px; border-radius:8px; font-size:13.5px; color:var(--ink); cursor:pointer; }
+  .ph-opt:hover, .ph-opt.on { background:#F3F7FF; }
+  .ph-opt .ph-dial { color:var(--grey); font-variant-numeric:tabular-nums; flex:none; }
+  .ph-empty { padding:12px; color:var(--grey); font-size:13px; text-align:left; }
+  .ph-note { font-size:11.5px; color:var(--grey); margin-top:6px; line-height:1.45; }
+  .ph-dialog .editable-input { width:100%; box-sizing:border-box; padding:11px 14px; background:var(--paper); border:1.5px solid var(--grey-light); color:var(--ink); }
+  .ph-dialog .editable-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.12); outline:none; }
+  .ph-dialog .editable-input.field-error { border-color:var(--red); animation:shakeField .4s ease; }
+  .ph-dialog .auth-field-wrap { position:relative; }
+  .ph-dialog .auth-field-icon { position:absolute; right:12px; top:50%; transform:translateY(-50%); }
+  .ph-dialog .editable-input { padding-right:36px; }
+  .welcome-box.ph-dialog { overflow:visible; } /* the country list opens over the window, not inside its scroll box */
+  .ph-dialog .ph-list { max-height:min(236px, 32vh); }
+  @media (max-width: 420px) { /* a phone: the country on its own line, so the number gets the full width */
+    .ph-row { flex-wrap:wrap; }
+    .ph-row .ph-pick, .ph-row .auth-field-wrap { flex:1 1 100%; }
+    .ph-row .ph-pick-btn { width:100%; }
+    .ph-row .ph-pop { width:100%; }
+  }
+
   .auth-submit-btn {
     position: relative;
     overflow: hidden;
@@ -4199,6 +4236,17 @@
         </div>
         <div class="auth-field-error-msg" id="registerConfirmPasswordError">Passwords do not match.</div>
 
+        <label class="edit-label" style="margin-top:12px;" for="registerPhone">Phone number</label>
+        <div class="ph-row">
+          <div id="registerPhonePick"></div>
+          <div class="auth-field-wrap">
+            <input type="tel" class="editable-input" id="registerPhone" placeholder="300 1234567" autocomplete="tel-national" inputmode="tel" maxlength="40" />
+            <span class="auth-field-icon">&#9742;</span>
+          </div>
+        </div>
+        <div class="auth-field-error-msg" id="registerPhoneError">Please enter your phone number.</div>
+        <div class="ph-note">Choose your country, then type your number. Used for account contact and security; never shown to other users. We do not send you a code.</div>
+
         <label class="edit-label" style="margin-top:12px;" for="registerReferral">Referral code <span class="rf-opt">(optional - only at sign-up)</span></label>
         <div class="auth-field-wrap">
           <input type="text" class="editable-input" id="registerReferral" placeholder="Invited by a friend? Enter their code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;" />
@@ -4836,6 +4884,14 @@
           </div>
         </div>
 
+        <section class="st-card" id="phoneCard">
+          <div class="st-head">
+            <div class="st-ico blue">&#9742;</div>
+            <div class="st-head-txt"><h2>Phone number</h2><p id="phoneSettingsLabel">&hellip;</p></div>
+            <button class="st-btn primary" id="phoneChangeBtn" type="button">Change</button>
+          </div>
+        </section>
+
         <section class="st-card">
           <div class="st-head">
             <div class="st-ico blue">&#127978;</div>
@@ -5405,7 +5461,7 @@
             <div class="st-head">
               <div class="st-ico blue">&#128101;</div>
               <div class="st-head-txt"><h2>Users</h2><p>Who is online, who bought a plan, last sign-in IP. Adjust credits, stock-check interval and eBay stores; open Security to suspend or block.</p></div>
-              <input class="st-input ad-search" id="adminUserSearch" type="search" placeholder="Search name, email or IP&hellip;" />
+              <input class="st-input ad-search" id="adminUserSearch" type="search" placeholder="Search name, email, phone or IP&hellip;" />
             </div>
             <div class="ad-chips" id="adminUserChips"></div>
             <div id="adminUsersContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
@@ -8147,6 +8203,7 @@ B0EXAMPLE2"></textarea></div>
 
   function showApp(user) {
     window.currentUser = user;
+    renderPhoneSettings();
     document.getElementById('authPage').style.display = 'none';
     document.getElementById('appShell').style.display = 'flex';
 
@@ -8186,10 +8243,14 @@ B0EXAMPLE2"></textarea></div>
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // A brand-new account sees, once, how many free credits it was given.
-    setTimeout(() => maybeShowWelcomePopup(user), 500);
-    // A plan that ended since the seller was last here - until now the only sign of this was an email.
-    setTimeout(() => maybeShowPlanExpiredNotice(user), 500);
+    // An account with no phone number is asked for one first (one made with "Continue with Google" must add it; an older account may skip); the notices follow.
+    const showNotices = () => {
+      // A brand-new account sees, once, how many free credits it was given.
+      setTimeout(() => maybeShowWelcomePopup(user), 500);
+      // A plan that ended since the seller was last here - until now the only sign of this was an email.
+      setTimeout(() => maybeShowPlanExpiredNotice(user), 500);
+    };
+    setTimeout(() => { if (!maybeShowPhoneScreen(user, showNotices)) showNotices(); }, 400);
   }
 
   /**
@@ -8501,6 +8562,241 @@ B0EXAMPLE2"></textarea></div>
     document.getElementById(errorId).classList.remove('show');
   }
 
+  // ---------- Phone number: the country picker, shared by the sign-up form, the "add your phone number" screen and Settings ----------
+  // There is no SMS and no code: the number is only checked by the server (a real number of the chosen country) and kept for the admins.
+  // ISO country : calling code, from the same table the server checks with (libphonenumber-js). The names come from the browser (Intl.DisplayNames).
+  const PH_DIAL = 'AC:247,AD:376,AE:971,AF:93,AG:1,AI:1,AL:355,AM:374,AO:244,AR:54,AS:1,AT:43,AU:61,AW:297,AX:358,AZ:994,BA:387,BB:1,BD:880,BE:32,BF:226,BG:359,BH:973,BI:257,BJ:229,BL:590,BM:1,BN:673,BO:591,BQ:599,BR:55,BS:1,BT:975,BW:267,BY:375,BZ:501,CA:1,CC:61,CD:243,CF:236,CG:242,CH:41,CI:225,CK:682,CL:56,CM:237,CN:86,CO:57,CR:506,CU:53,CV:238,CW:599,CX:61,CY:357,CZ:420,DE:49,DJ:253,DK:45,DM:1,DO:1,DZ:213,EC:593,EE:372,EG:20,EH:212,ER:291,ES:34,ET:251,FI:358,FJ:679,FK:500,FM:691,FO:298,FR:33,GA:241,GB:44,GD:1,GE:995,GF:594,GG:44,GH:233,GI:350,GL:299,GM:220,GN:224,GP:590,GQ:240,GR:30,GT:502,GU:1,GW:245,GY:592,HK:852,HN:504,HR:385,HT:509,HU:36,ID:62,IE:353,IL:972,IM:44,IN:91,IO:246,IQ:964,IR:98,IS:354,IT:39,JE:44,JM:1,JO:962,JP:81,KE:254,KG:996,KH:855,KI:686,KM:269,KN:1,KP:850,KR:82,KW:965,KY:1,KZ:7,LA:856,LB:961,LC:1,LI:423,LK:94,LR:231,LS:266,LT:370,LU:352,LV:371,LY:218,MA:212,MC:377,MD:373,ME:382,MF:590,MG:261,MH:692,MK:389,ML:223,MM:95,MN:976,MO:853,MP:1,MQ:596,MR:222,MS:1,MT:356,MU:230,MV:960,MW:265,MX:52,MY:60,MZ:258,NA:264,NC:687,NE:227,NF:672,NG:234,NI:505,NL:31,NO:47,NP:977,NR:674,NU:683,NZ:64,OM:968,PA:507,PE:51,PF:689,PG:675,PH:63,PK:92,PL:48,PM:508,PR:1,PS:970,PT:351,PW:680,PY:595,QA:974,RE:262,RO:40,RS:381,RU:7,RW:250,SA:966,SB:677,SC:248,SD:249,SE:46,SG:65,SH:290,SI:386,SJ:47,SK:421,SL:232,SM:378,SN:221,SO:252,SR:597,SS:211,ST:239,SV:503,SX:1,SY:963,SZ:268,TA:290,TC:1,TD:235,TG:228,TH:66,TJ:992,TK:690,TL:670,TM:993,TN:216,TO:676,TR:90,TT:1,TV:688,TW:886,TZ:255,UA:380,UG:256,US:1,UY:598,UZ:998,VA:39,VC:1,VE:58,VG:1,VI:1,VN:84,VU:678,WF:681,WS:685,XK:383,YE:967,YT:262,ZA:27,ZM:260,ZW:263';
+  // Words people type that are not the browser's name for the country ("uk", "usa", "uae", "holland"...), by ISO code.
+  const PH_ALIASES = {
+    GB: 'uk britain england scotland wales northern ireland great britain', US: 'usa america united states of america', AE: 'uae emirates', TR: 'turkey turkiye',
+    CI: 'ivory coast', CZ: 'czech republic czechia', NL: 'holland', KR: 'south korea korea', KP: 'north korea korea', RU: 'russia', MM: 'burma', SZ: 'swaziland eswatini',
+    MK: 'macedonia', CD: 'congo drc', CG: 'congo', HK: 'hong kong', VN: 'vietnam', IR: 'persia', BA: 'bosnia', LA: 'laos', SY: 'syria', TW: 'taiwan', PS: 'palestine',
+    MO: 'macau', VA: 'vatican', CV: 'cape verde cabo verde', TL: 'east timor timor leste', BN: 'brunei', FM: 'micronesia', MD: 'moldova', VE: 'venezuela',
+    BO: 'bolivia', TZ: 'tanzania', GM: 'gambia', BS: 'bahamas', PK: 'pakistan', SA: 'ksa saudi', IN: 'bharat', MY: 'malaysia', SG: 'singapore',
+  };
+  // Calling codes that several countries share: the main country (listed first when someone types the code).
+  const PH_MAIN = { 1: 'US', 7: 'RU', 39: 'IT', 44: 'GB', 47: 'NO', 61: 'AU', 212: 'MA', 262: 'RE', 290: 'SH', 358: 'FI', 590: 'GP', 599: 'CW' };
+  // lower case, accents removed ("Türkiye" -> "turkiye", "Côte d'Ivoire" -> "cote d'ivoire")
+  const phNorm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const phCountries = (() => {
+    let names = null;
+    try { names = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (_) { names = null; }
+    return PH_DIAL.split(',').map((pair) => {
+      const [iso, dial] = pair.split(':');
+      let name = iso;
+      try { name = (names && names.of(iso)) || iso; } catch (_) { name = iso; }
+      const alias = PH_ALIASES[iso] || '';
+      return { iso, dial, name, nameN: phNorm(name), hay: phNorm(name + ' ' + iso + ' +' + dial + ' ' + alias), words: new Set(phNorm(iso + ' ' + alias).split(/\s+/).filter(Boolean)) };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  })();
+  const phCountry = (iso) => phCountries.find((c) => c.iso === iso) || null;
+  /** The countries that match what was typed: a calling code ("+44", "92") matches the START of the code; words match names, ISO codes and aliases ("uk" puts the United Kingdom before Ukraine). */
+  function phSearch(raw) {
+    const q = phNorm(raw).trim();
+    if (!q) return phCountries;
+    if (/^\+?\d+$/.test(q)) { // a calling code: the countries that share it list the main one first (+44 -> United Kingdom, then Guernsey...)
+      const digits = q.replace(/^\+/, '');
+      const main = (c) => (PH_MAIN[c.dial] === c.iso ? 0 : 1);
+      return phCountries.filter((c) => c.dial.startsWith(digits)).sort((a, b) => main(a) - main(b));
+    }
+    const rank = (c) => (c.words.has(q) ? 0 : c.nameN.startsWith(q) ? 1 : 2);
+    return phCountries.filter((c) => c.hay.includes(q)).sort((a, b) => rank(a) - rank(b)); // sort is stable: same rank stays A-Z
+  }
+  /** How many digits (of any script) a typed number has: a number typed in Urdu / Arabic digits still counts. */
+  const phDigitCount = (text) => String(text || '').replace(/[^\p{Nd}]/gu, '').length;
+
+  let phPickerSeq = 0;
+  /** A searchable country list in `host`. Returns { get() -> 'PK' | '', set(iso), markError(bool) }. Flags are not drawn: Windows shows two letters instead of a flag. */
+  function createPhonePicker(host, { onChange } = {}) {
+    let value = '';
+    let active = 0;
+    let shown = phCountries;
+    const uid = 'phpick' + (++phPickerSeq);
+    host.classList.add('ph-pick');
+    host.innerHTML = '<button type="button" class="ph-pick-btn" aria-haspopup="listbox" aria-expanded="false"></button>'
+      + `<div class="ph-pop"><input type="text" class="ph-search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${uid}-list" placeholder="Search country or code" aria-label="Search country" autocomplete="off" spellcheck="false" /><ul class="ph-list" role="listbox" id="${uid}-list"></ul></div>`;
+    const btn = host.querySelector('.ph-pick-btn');
+    const search = host.querySelector('.ph-search');
+    const list = host.querySelector('.ph-list');
+    const paintButton = () => {
+      const c = phCountry(value);
+      btn.innerHTML = (c ? `<span class="ph-code">${escapeHtml(c.iso)} +${escapeHtml(c.dial)}</span>` : '<span class="ph-none">Country</span>') + '<span class="ph-caret">&#9660;</span>';
+      btn.title = c ? c.name : 'Choose the country of your phone number';
+    };
+    const paintList = () => {
+      list.innerHTML = shown.length
+        ? shown.map((c, i) => `<li class="ph-opt${i === active ? ' on' : ''}" role="option" id="${uid}-${i}" data-iso="${escapeAttr(c.iso)}" aria-selected="${c.iso === value}"><span>${escapeHtml(c.name)}</span><span class="ph-dial">+${escapeHtml(c.dial)}</span></li>`).join('')
+        : '<li class="ph-empty">No country matches.</li>';
+      if (shown.length) search.setAttribute('aria-activedescendant', `${uid}-${active}`); else search.removeAttribute('aria-activedescendant');
+      const on = list.querySelector('.ph-opt.on');
+      if (on) on.scrollIntoView({ block: 'nearest' });
+    };
+    const isOpen = () => host.classList.contains('open');
+    const onOutside = (e) => { if (!host.contains(e.target)) close(false); };
+    function close(focusButton) {
+      host.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      search.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('mousedown', onOutside, true);
+      if (focusButton) btn.focus();
+    }
+    function open() {
+      host.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      search.setAttribute('aria-expanded', 'true');
+      search.value = '';
+      shown = phCountries;
+      active = Math.max(0, shown.findIndex((c) => c.iso === value));
+      paintList();
+      document.addEventListener('mousedown', onOutside, true);
+      search.focus();
+    }
+    const choose = (iso) => {
+      value = iso;
+      paintButton();
+      btn.classList.remove('field-error');
+      close(true);
+      if (onChange) onChange(iso);
+    };
+    btn.addEventListener('click', () => (isOpen() ? close(false) : open()));
+    // Tab (or any other way focus leaves the list) closes it, so it never stays open over the next field
+    host.addEventListener('focusout', (e) => { if (isOpen() && e.relatedTarget && !host.contains(e.relatedTarget)) close(false); });
+    search.addEventListener('input', () => {
+      shown = phSearch(search.value);
+      active = 0;
+      paintList();
+    });
+    search.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(shown.length - 1, active + 1); paintList(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(0, active - 1); paintList(); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (shown[active]) choose(shown[active].iso); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); } // closes the list, not the window it is in
+      else if (e.key === 'Tab') close(false);
+    });
+    list.addEventListener('mousedown', (e) => {
+      const li = e.target.closest('.ph-opt');
+      if (li) { e.preventDefault(); choose(li.dataset.iso); }
+    });
+    paintButton();
+    return {
+      get: () => value,
+      set: (iso) => { value = phCountry(iso) ? iso : ''; btn.classList.remove('field-error'); paintButton(); },
+      markError: (on) => { btn.classList.remove('field-error'); if (on) { void btn.offsetWidth; btn.classList.add('field-error'); } },
+    };
+  }
+
+  // ---------- Phone number: the window to add or change it (after sign-in, and Settings -> Phone number) ----------
+  // An account made with "Continue with Google" (the sign-up form is skipped) must add one before using the app ('required': Save or Sign out).
+  // An account from before phone numbers existed, and an admin, is asked too but may "Skip for now" ('skippable': not asked again on this device
+  // for a day). In Settings anyone can add or change theirs ('change': Save or Cancel). No SMS, no code.
+  let phoneScreenOpen = false;
+  const PHONE_SKIP_HOURS = 24;
+  const phoneSkipKey = (user) => 'elmsPhoneSkip:' + (user && user.id);
+  const phoneRecentlySkipped = (user) => {
+    try { const at = Number(localStorage.getItem(phoneSkipKey(user))); return at > 0 && Date.now() - at < PHONE_SKIP_HOURS * 3600 * 1000; } catch (_) { return false; }
+  };
+  /** Settings -> Phone number: shows the person's own number (or that none was added) and the button to add / change it. */
+  function renderPhoneSettings() {
+    const user = window.currentUser;
+    const label = document.getElementById('phoneSettingsLabel');
+    const button = document.getElementById('phoneChangeBtn');
+    if (!user || !label || !button) return;
+    const country = user.phoneCountry && phCountry(user.phoneCountry);
+    label.textContent = user.phone
+      ? `${user.phoneDisplay || user.phone}${country ? ' (' + country.name + ')' : ''}. Used for account contact and security; never shown to other users.`
+      : 'No phone number added yet. It is used for account contact and security and is never shown to other users.';
+    button.textContent = user.phone ? 'Change' : 'Add phone number';
+  }
+  /** Opens the window. mode: 'required' | 'skippable' | 'change'. `done` runs when it closes by saving or skipping (not on Cancel / Sign out). */
+  function openPhoneDialog(user, { mode, done } = {}) {
+    if (!user || phoneScreenOpen) return false;
+    phoneScreenOpen = true;
+    const changing = mode === 'change';
+    const required = mode === 'required';
+    const lead = changing
+      ? (user.phone ? 'Your number is used for account contact and security and is never shown to other users.' : 'Add a phone number to your account.')
+      : (required ? 'One last step: your account needs a phone number.' : 'Please add a phone number to your account.');
+    const overlay = document.createElement('div');
+    overlay.className = 'welcome-overlay';
+    overlay.innerHTML = `
+      <div class="welcome-box ph-dialog" role="dialog" aria-modal="true" aria-label="${changing && user.phone ? 'Your phone number' : 'Add your phone number'}" style="text-align:left;">
+        <div class="welcome-title" style="text-align:center;">${changing && user.phone ? 'Your phone number' : 'Add your phone number'}</div>
+        <div class="welcome-sub" style="text-align:center;">${escapeHtml(lead)}${changing && user.phone ? '' : ' It is used for account contact and security and is never shown to other users.'} We do not send you a code.</div>
+        <div class="ph-row" style="margin-top:16px;">
+          <div id="phScreenPick"></div>
+          <div class="auth-field-wrap"><input type="tel" class="editable-input" id="phScreenInput" placeholder="300 1234567" autocomplete="tel-national" inputmode="tel" maxlength="40" aria-label="Phone number" /><span class="auth-field-icon">&#9742;</span></div>
+        </div>
+        <div class="auth-field-error-msg" id="phScreenError"></div>
+        <div class="welcome-actions" style="margin-top:16px;">
+          <button type="button" class="ord-btn primary" data-act="save">Save</button>
+          ${required ? '<button type="button" class="ord-btn" data-act="out">Sign out</button>' : changing ? '<button type="button" class="ord-btn" data-act="cancel">Cancel</button>' : '<button type="button" class="ord-btn" data-act="skip">Skip for now</button>'}
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const input = overlay.querySelector('#phScreenInput');
+    const errEl = overlay.querySelector('#phScreenError');
+    const picker = createPhonePicker(overlay.querySelector('#phScreenPick'), { onChange: () => { errEl.classList.remove('show'); input.classList.remove('field-error'); } });
+    const saveBtn = overlay.querySelector('[data-act="save"]');
+    if (changing && user.phone) { // the number as saved, in the form it is typed: the country, then the part after the calling code
+      picker.set(user.phoneCountry);
+      input.value = String(user.phoneDisplay || '').replace(/^\+\d+\s*/, '');
+    }
+    const showError = (message, field) => {
+      errEl.textContent = message;
+      errEl.classList.add('show');
+      if (field === 'phoneCountry') picker.markError(true);
+      else { input.classList.remove('field-error'); void input.offsetWidth; input.classList.add('field-error'); }
+    };
+    const remove = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); phoneScreenOpen = false; };
+    const skip = () => { try { localStorage.setItem(phoneSkipKey(user), String(Date.now())); } catch (_) { /* asked again next time */ } remove(); if (done) done(); };
+    const onKey = (e) => { if (e.key !== 'Escape') return; if (mode === 'skippable') skip(); else if (changing) remove(); };
+    document.addEventListener('keydown', onKey);
+    input.addEventListener('input', () => { input.classList.remove('field-error'); errEl.classList.remove('show'); });
+    saveBtn.addEventListener('click', async () => {
+      const phoneCountry = picker.get();
+      const phone = input.value.trim();
+      if (!phoneCountry) return showError('Please choose the country of your phone number.', 'phoneCountry');
+      if (phDigitCount(phone) < 5) return showError('Please enter your phone number.', 'phone');
+      saveBtn.disabled = true;
+      const label = saveBtn.textContent;
+      saveBtn.textContent = 'Saving…';
+      try {
+        const res = await apiFetch('/api/auth/phone', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phoneCountry, phone }) });
+        if (res.status === 401) { remove(); return; } // signed out meanwhile: apiFetch already shows the sign-in page, this window must not stay on top of it
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) { showError(data.error || 'Could not save your phone number.', data.field); return; }
+        Object.assign(user, data.user);
+        renderPhoneSettings();
+        showToast('Saved', 'Your phone number was saved.', 'success');
+        remove();
+        if (done) done();
+      } catch (err) {
+        showError('Could not connect to the server: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = label;
+      }
+    });
+    const secondary = overlay.querySelector('[data-act="skip"]');
+    if (secondary) secondary.addEventListener('click', skip);
+    const cancel = overlay.querySelector('[data-act="cancel"]');
+    if (cancel) cancel.addEventListener('click', remove);
+    const signOut = overlay.querySelector('[data-act="out"]');
+    if (signOut) signOut.addEventListener('click', () => { remove(); const out = document.getElementById('signOutBtn'); if (out) out.click(); });
+    overlay.querySelector('.ph-pick-btn').focus();
+    return true;
+  }
+  /** After sign-in: opens the window when this account has no number. `done` runs when it closes (saved or skipped). Returns true when it was opened. */
+  function maybeShowPhoneScreen(user, done) {
+    if (!user || !user.needsPhone || phoneScreenOpen) return false;
+    const canSkip = !user.phoneRequired || user.role === 'admin';
+    if (canSkip && phoneRecentlySkipped(user)) return false;
+    return openPhoneDialog(user, { mode: canSkip ? 'skippable' : 'required', done });
+  }
+  document.getElementById('phoneChangeBtn')?.addEventListener('click', () => { if (window.currentUser) openPhoneDialog(window.currentUser, { mode: 'change' }); });
+
   // Clear a field's error as soon as the user starts fixing it.
   ['loginEmail', 'loginPassword', 'registerUsername', 'registerEmail', 'registerPassword', 'registerConfirmPassword']
     .forEach((id) => {
@@ -8523,6 +8819,8 @@ B0EXAMPLE2"></textarea></div>
   wirePasswordToggle('loginPasswordToggle', 'loginPassword');
   wirePasswordToggle('registerPasswordToggle', 'registerPassword');
   wirePasswordToggle('registerConfirmPasswordToggle', 'registerConfirmPassword');
+  const registerPhonePicker = createPhonePicker(document.getElementById('registerPhonePick'), { onChange: () => clearFieldError('registerPhone', 'registerPhoneError') });
+  document.getElementById('registerPhone').addEventListener('input', () => clearFieldError('registerPhone', 'registerPhoneError'));
 
 
   // ---------- Auth Page: forgot password / email OTP ----------
@@ -8656,6 +8954,23 @@ B0EXAMPLE2"></textarea></div>
     if (!email || !emailPattern.test(email)) { showFieldError('registerEmail', 'registerEmailError'); hasError = true; }
     if (!password || password.length < 8) { showFieldError('registerPassword', 'registerPasswordError'); hasError = true; }
     if (!confirmPassword || confirmPassword !== password) { showFieldError('registerConfirmPassword', 'registerConfirmPasswordError'); hasError = true; }
+    // The phone number: a country AND a number (the server checks that it is a real number of that country; there is no SMS / code).
+    const phoneCountry = registerPhonePicker.get();
+    const phone = document.getElementById('registerPhone').value.trim();
+    const phoneMsg = document.getElementById('registerPhoneError');
+    phoneMsg.classList.remove('show');
+    document.getElementById('registerPhone').classList.remove('field-error');
+    registerPhonePicker.markError(false);
+    if (!phoneCountry) {
+      phoneMsg.textContent = 'Please choose the country of your phone number.';
+      phoneMsg.classList.add('show');
+      registerPhonePicker.markError(true);
+      hasError = true;
+    } else if (phDigitCount(phone) < 5) {
+      phoneMsg.textContent = 'Please enter your phone number.';
+      showFieldError('registerPhone', 'registerPhoneError');
+      hasError = true;
+    }
 
     const termsError = document.getElementById('registerTermsError');
     if (!document.getElementById('registerTermsCheckbox').checked) {
@@ -8675,13 +8990,22 @@ B0EXAMPLE2"></textarea></div>
       const res = await fetchWaitingForServer(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password, referralCode: signupReferralCode(), affiliateCode: storedAffCode() || undefined }),
+        body: JSON.stringify({ username, email, password, phoneCountry, phone, referralCode: signupReferralCode(), affiliateCode: storedAffCode() || undefined }),
       }, () => { statusEl.className = 'auth-status'; statusEl.textContent = SERVER_WAKE_MESSAGE; });
       const data = await res.json();
 
       if (data.blocked) { showBlockedScreen(data.blocked); return; }
       if (!res.ok || !data.success) {
         statusEl.className = 'auth-status error';
+        // a problem with the phone number is shown under the phone field, not in the general status line
+        if (data.field === 'phone' || data.field === 'phoneCountry') {
+          statusEl.textContent = '';
+          const phoneMsg = document.getElementById('registerPhoneError');
+          phoneMsg.textContent = data.error;
+          if (data.field === 'phone') showFieldError('registerPhone', 'registerPhoneError');
+          else { phoneMsg.classList.add('show'); registerPhonePicker.markError(true); }
+          return;
+        }
         statusEl.textContent = data.error || 'Could not create your account.';
         return;
       }
@@ -19823,12 +20147,13 @@ async function autoSuggestEmptyDraftCategories() {
 
         <table class="data-table" id="adminUsersTable">
           <thead>
-            <tr><th>User</th><th>Status</th><th>Plan</th><th>eBay</th><th>Last sign-in</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
+            <tr><th>User</th><th title="Typed by the user at sign-up. Not verified: no SMS or code.">Phone</th><th>Status</th><th>Plan</th><th>eBay</th><th>Last sign-in</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
           </thead>
           <tbody>
             ${adminUsersData.map((u) => `
               <tr data-user-id="${u.id}" ${adminUserRowAttrs(u)}>
                 <td class="row-title">${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">' + (u.banned ? 'BANNED' : 'SUSPENDED') + '</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span></td>
+                <td data-cell="phone" style="font-size:12.5px;">${adminUserPhoneHtml(u)}</td>
                 <td data-cell="status" style="white-space:nowrap;">${adminUserStatusHtml(u)}</td>
                 <td data-cell="plan">${adminUserPlanHtml(u)}</td>
                 <td data-cell="ebay" style="font-size:12.5px;">${adminUserEbayHtml(u)}</td>
@@ -19855,11 +20180,15 @@ async function autoSuggestEmptyDraftCategories() {
   let adminUsersData = [];
   let adminUserFilter = 'all';
   const adminUserAgo = (min) => (min == null ? 'never' : min < 1 ? 'just now' : min < 60 ? `${min} min ago` : min < 1440 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} d ago`);
-  const adminUserRowAttrs = (u) => `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended && !u.banned ? 1 : 0}" data-banned="${u.banned ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}"`;
+  const adminUserRowAttrs = (u) => `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended && !u.banned ? 1 : 0}" data-banned="${u.banned ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}" data-phone="${escapeAttr(String(u.phone || '').replace(/\D/g, ''))}"`;
   // Has this person connected an eBay store (and how many, on which eBay sites)?
   const adminUserEbayHtml = (u) => (u.ebay && u.ebay.connected
     ? `<span class="ad-tag paid">CONNECTED</span><br /><small style="color:var(--grey);">${u.ebay.stores} store${u.ebay.stores === 1 ? '' : 's'}${u.ebay.marketplaces && u.ebay.marketplaces.length ? ' &middot; ' + escapeHtml(u.ebay.marketplaces.map((m) => String(m).replace('EBAY_', '')).join(', ')) : ''}</small>`
     : '<span class="ad-tag free">NOT CONNECTED</span>');
+  // The phone number the user typed at sign-up (NOT verified). The plain +number is in the row too (hidden), so the search finds it with or without spaces.
+  const adminUserPhoneHtml = (u) => (u.phone
+    ? `<span style="white-space:nowrap;">${escapeHtml(u.phoneDisplay || u.phone)}</span><span style="display:none;"> ${escapeHtml(u.phone)}</span><br /><small style="color:var(--grey);">${escapeHtml(u.phoneCountry || '')}</small>`
+    : (u.phoneRequired ? '<span class="ad-tag bad" title="This account was made without a phone number and has to add one before it can use the app.">MUST ADD</span>' : '<span style="color:var(--grey);">\u2014</span>'));
   const adminUserStatusHtml = (u) => (u.online
     ? '<span class="ad-dot on"></span><b style="color:#15803D;">Online</b>'
     : `<span class="ad-dot"></span>${u.minutesAgo == null ? 'Never seen' : 'Left ' + adminUserAgo(u.minutesAgo)}`);
@@ -19890,11 +20219,12 @@ async function autoSuggestEmptyDraftCategories() {
       adminUsersData.forEach((u) => {
         const row = document.querySelector(`#adminUsersContent tr[data-user-id="${u.id}"]`);
         if (!row) return;
-        row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended && !u.banned ? 1 : 0); row.setAttribute('data-banned', u.banned ? 1 : 0); row.setAttribute('data-ebay', u.ebay && u.ebay.connected ? 1 : 0);
+        row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended && !u.banned ? 1 : 0); row.setAttribute('data-banned', u.banned ? 1 : 0); row.setAttribute('data-ebay', u.ebay && u.ebay.connected ? 1 : 0); row.setAttribute('data-phone', String(u.phone || '').replace(/\D/g, ''));
         row.querySelector('[data-cell="status"]').innerHTML = adminUserStatusHtml(u);
         row.querySelector('[data-cell="ebay"]').innerHTML = adminUserEbayHtml(u);
         row.querySelector('[data-cell="plan"]').innerHTML = adminUserPlanHtml(u);
         row.querySelector('[data-cell="login"]').innerHTML = adminUserLoginHtml(u);
+        row.querySelector('[data-cell="phone"]').innerHTML = adminUserPhoneHtml(u);
       });
       renderAdminUserChips(data.summary);
       applyAdminUserSearch();
@@ -19913,7 +20243,10 @@ async function autoSuggestEmptyDraftCategories() {
         || (adminUserFilter === 'banned' && row.dataset.banned === '1')
         || (adminUserFilter === 'ebay' && row.dataset.ebay === '1')
         || (adminUserFilter === 'noebay' && row.dataset.ebay !== '1');
-      row.style.display = matchesFilter && (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
+      // a number typed the local way (03001234567) finds +92 300 1234567: compare digits only, without the leading 0
+      const typedDigits = q.replace(/\D/g, '');
+      const phoneHit = typedDigits.length >= 5 && !!row.dataset.phone && (row.dataset.phone.includes(typedDigits) || row.dataset.phone.includes(typedDigits.replace(/^0+/, '')));
+      row.style.display = matchesFilter && (!q || row.textContent.toLowerCase().includes(q) || phoneHit) ? '' : 'none';
     });
   }
   document.getElementById('adminUserSearch')?.addEventListener('input', applyAdminUserSearch);
@@ -19940,7 +20273,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function openUserSecurityModal(u) {
     const m = adminModal(`
       <div class="draft-title">${escapeHtml(u.name || u.email)}${u.banned ? ' <span class="ad-tag bad">BANNED</span>' : u.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}</div>
-      <div class="meta-line">${escapeHtml(u.email)} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}</div>
+      <div class="meta-line">${escapeHtml(u.email)}${u.phone ? ' &middot; ' + escapeHtml(u.phoneDisplay || u.phone) : ''} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}</div>
       ${u.suspended ? `<div class="elms-blocked-reason" style="margin-top:12px;">${u.banned ? 'Permanently banned (no appeal)' : 'Suspended'}: ${escapeHtml(u.suspendedReason || '')}</div>` : ''}
       <div class="ad-chips" style="margin-top:14px;">
         <button class="btn-small" data-sec="message">Send a message</button>
@@ -20325,7 +20658,7 @@ async function autoSuggestEmptyDraftCategories() {
 
     container.innerHTML = `
       <div class="draft-title">${escapeHtml(u.name || u.email)}${u.banned ? ' <span class="ad-tag bad">BANNED</span>' : u.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}</div>
-      <div class="meta-line">${escapeHtml(u.email)} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}${u.planName ? ' (' + escapeHtml(u.planName) + (u.planExpiresAt ? ', until ' + escapeHtml(new Date(u.planExpiresAt).toLocaleDateString()) + ')' : ')') : ''} &middot; Signed up ${escapeHtml(new Date(u.createdAt).toLocaleDateString())}</div>
+      <div class="meta-line">${escapeHtml(u.email)}${u.phone ? ' &middot; ' + escapeHtml(u.phoneDisplay || u.phone) : ''} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}${u.planName ? ' (' + escapeHtml(u.planName) + (u.planExpiresAt ? ', until ' + escapeHtml(new Date(u.planExpiresAt).toLocaleDateString()) + ')' : ')') : ''} &middot; Signed up ${escapeHtml(new Date(u.createdAt).toLocaleDateString())}</div>
       ${u.suspended ? `<div class="elms-blocked-reason" style="margin-top:10px;">${u.banned ? 'Permanently banned (no appeal)' : 'Suspended'}: ${escapeHtml(u.suspendedReason || '')}</div>` : ''}
 
       <div class="ad-chips" style="margin-top:16px;">
