@@ -3855,6 +3855,16 @@
   /* VeRO words: chip on cards, filter button, banner in the editor */
   .dv-chip.vero { background:#FEF2F2; color:#B42318; border:1px solid #FECACA; }
   button.dv-chip.vero { cursor:pointer; font-family:inherit; } button.dv-chip.vero:hover { background:#FEE4E2; }
+  .er-area { border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px; background:#fff; }
+  .er-area.off { background:#F8FAFC; } .er-area.off .er-body { opacity:.55; }
+  .er-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .er-txt { flex:1; min-width:200px; } .er-txt small { display:block; color:var(--grey); margin-top:2px; line-height:1.45; font-size:12.5px; }
+  .er-txt a { font-size:12px; margin-left:6px; }
+  .er-body { margin-top:8px; } .er-body summary { cursor:pointer; font-size:12.5px; color:#475569; font-weight:600; }
+  .er-words { display:flex; flex-wrap:wrap; gap:5px; margin:8px 0; } .er-words span { font-size:11.5px; background:#F1F5F9; border-radius:99px; padding:2px 8px; color:#334155; }
+  .er-note { font-size:12px; color:var(--grey); margin:6px 0; line-height:1.45; }
+  .er-test-out { margin-top:12px; padding:12px 14px; border-radius:12px; font-size:13.5px; line-height:1.5; white-space:pre-wrap; }
+  .er-test-out.ok { background:#EDF7DC; color:#2F5D0A; } .er-test-out.bad { background:#FEF2F2; color:#B42318; border:1px solid #FECACA; }
   .dv-btn.vero-filter { color:#B42318; border-color:#FECACA; background:#FFF5F5; } .dv-btn.vero-filter b { margin-left:4px; }
   .dv-btn.vero-filter.on { background:#B42318; border-color:#B42318; color:#fff; }
   .elms-vero { display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap; padding:11px 13px; margin:0 0 12px; border-radius:12px; background:#FEF2F2; border:1px solid #FECACA; color:#7A271A; }
@@ -5439,6 +5449,7 @@
           <button class="ad-tab" data-admin-tab="ai" type="button">AI</button>
           <button class="ad-tab" data-admin-tab="costs" type="button">Credit costs</button>
           <button class="ad-tab" data-admin-tab="categories" type="button">Categories</button>
+          <button class="ad-tab" data-admin-tab="ebayrules" type="button">eBay rules</button>
           <button class="ad-tab" data-admin-tab="catalog" type="button">Product Catalog</button>
           <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
           <button class="ad-tab" data-admin-tab="referrals" type="button">Referrals</button>
@@ -5609,6 +5620,29 @@
             <input type="file" id="catListFile" accept=".csv,text/csv" hidden />
             <div id="adminCategoryLists"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
             <p class="st-hint">Uploading again replaces that country's list at once. The AI is used only when eBay says its daily category limit is reached; it costs the seller the "AI category" credits set in the AI tab (nothing when the AI finds no category).</p>
+          </section>
+        </div>
+
+        <!-- eBay rules -->
+        <div class="ad-panel" data-admin-panel="ebayrules" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#9940;</div>
+              <div class="st-head-txt"><h2>eBay rules</h2><p>What ELMS refuses to list because eBay does not allow it. A product whose title, description, bullet points, specifications or item specifics name one of these words is never sent to eBay: nothing is charged, and the seller sees the reason in Drafts. Books, films, music and games are exempt (they may be about the subject), except for counterfeit and pirated goods.</p></div>
+            </div>
+            <div id="ebayRulesStatus" class="st-status"></div>
+            <div id="ebayRulesBody"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128269;</div>
+              <div class="st-head-txt"><h2>Try a text</h2><p>Checks a title (and optionally a description) with the rules as they are in the form above, saved or not.</p></div>
+            </div>
+            <div class="st-field"><label for="erTestTitle">Title</label><input class="st-input" type="text" id="erTestTitle" maxlength="500" placeholder="e.g. Disposable Vape Pen 5000 Puffs" /></div>
+            <div class="st-field"><label for="erTestDesc">Description (optional)</label><textarea class="st-input" id="erTestDesc" rows="2"></textarea></div>
+            <div class="st-field"><label for="erTestCats">Amazon categories (optional, comma separated; a book is exempt)</label><input class="st-input" type="text" id="erTestCats" placeholder="e.g. Books, Literature" /></div>
+            <button class="st-btn primary" type="button" id="erTestBtn">Check</button>
+            <div id="erTestOut" class="er-test-out" style="display:none;"></div>
           </section>
         </div>
 
@@ -10123,11 +10157,27 @@ B0EXAMPLE2"></textarea></div>
   // A heads-up (never a block) that this listing's own text names something from eBay's "Illegal drugs and drug
   // paraphernalia" policy - services/prohibitedItemsService.js, computed server-side (it's a fixed, built-in list,
   // not a per-user one like VeRO, so there's no need to scan it again client-side the way veroChipHtml does).
+  // Now for every policy of eBay's prohibited-items list (config/ebayPolicyRules.js): policy_warnings = one entry per policy (label, reason, words). A draft
+  // that has one is never published by ELMS (the server stops it before any credit or eBay call); on a live listing it is only a warning.
   function policyWarningChipHtml(l) {
+    const warnings = Array.isArray(l.policy_warnings) ? l.policy_warnings : [];
     const terms = l.policy_warning_terms || [];
-    if (!terms.length) return '';
-    const shown = terms.slice(0, 3).join(', ') + (terms.length > 3 ? ` +${terms.length - 3}` : '');
-    return `<span class="dv-chip vero" title="${escapeAttr("eBay's Illegal drugs and drug paraphernalia policy may apply, because of: " + terms.join(', ') + '. eBay has removed real listings like this before - double check it before publishing.')}">&#9888; Policy risk: ${escapeHtml(shown)}</span>`;
+    if (!warnings.length && !terms.length) return '';
+    if (!warnings.length) { // a server from before the policy list: only the words
+      const shown = terms.slice(0, 3).join(', ') + (terms.length > 3 ? ` +${terms.length - 3}` : '');
+      return `<span class="dv-chip vero" title="${escapeAttr("eBay's prohibited items policy may apply, because of: " + terms.join(', ') + '. eBay has removed real listings like this before - double check it before publishing.')}">&#9888; Policy risk: ${escapeHtml(shown)}</span>`;
+    }
+    const live = l.status === 'published' || l.status === 'sold';
+    const label = warnings[0].label + (warnings.length > 1 ? ` +${warnings.length - 1}` : '');
+    const tip = warnings.map((w) => `${w.label}: ${(w.terms || []).slice(0, 4).join(', ')}. ${w.reason}`).join('\n') + (live ? '\neBay may remove this listing.' : '\nELMS will not list this product.');
+    return `<span class="dv-chip vero" title="${escapeAttr(tip)}">${live ? '&#9888; Policy risk' : '&#9940; Not allowed on eBay'}: ${escapeHtml(label)}</span>`;
+  }
+  // The words of the window that says why drafts are not published (a few titles, each with its policy).
+  function policyBlockedText(listings) {
+    const lines = listings.slice(0, 5).map((l) => '\u2022 ' + String(l.title || l.sku || 'A draft').slice(0, 70) + ' \u2013 ' + (l.policy_warnings || []).map((w) => w.label + ' (' + (w.terms || []).slice(0, 3).join(', ') + ')').join('; '));
+    const more = listings.length > 5 ? `\n\u2026 and ${listings.length - 5} more` : '';
+    const reason = (listings[0].policy_warnings || [])[0];
+    return `eBay does not allow ${listings.length === 1 ? 'this product' : 'these products'}, so ELMS will not list ${listings.length === 1 ? 'it' : 'them'}:\n\n${lines.join('\n')}${more}\n\n${reason && reason.reason ? reason.reason + ' ' : ''}Change the title or description if this is a mistake, or contact support.`;
   }
   function veroChipHtml(l, withFix) {
     const terms = (l._vero && l._vero.terms) || [];
@@ -11152,6 +11202,12 @@ async function autoSuggestEmptyDraftCategories() {
           return;
         }
 
+        const policyListing = draftListingMap.get(String(id));
+        if (policyListing && (policyListing.policy_warnings || []).length) {
+          await elmsConfirm(policyBlockedText([policyListing]), { title: 'Not allowed on eBay', info: true });
+          return;
+        }
+
         const sellPrice = Number(row.querySelector('[data-field="sellPrice"]').value) || null;
         const quantity = Number(row.querySelector('[data-field="quantity"]').value) || 1;
         const categoryId = row.querySelector('[data-field="categoryId"]').value;
@@ -12164,8 +12220,15 @@ async function autoSuggestEmptyDraftCategories() {
     }
 
     bulkPublishBtn.addEventListener('click', async () => {
-      const ids = getSelectedIds();
+      let ids = getSelectedIds();
       if (!ids.length) return;
+      const notAllowed = ids.map((id) => draftListingMap.get(String(id))).filter((l) => l && (l.policy_warnings || []).length);
+      if (notAllowed.length) {
+        const rest = ids.filter((id) => { const l = draftListingMap.get(String(id)); return !(l && (l.policy_warnings || []).length); });
+        if (!rest.length) { await elmsConfirm(policyBlockedText(notAllowed), { title: 'Not allowed on eBay', info: true }); return; }
+        if (!(await elmsConfirm(policyBlockedText(notAllowed) + `\n\nPublish the other ${rest.length}?`, { title: 'Some are not allowed on eBay', okText: `Publish ${rest.length}` }))) return;
+        ids = rest;
+      }
       const flagged = ids.map((id) => draftListingMap.get(String(id))).filter((l) => l && l._vero && l._vero.terms.length);
       const okToGo = flagged.length
         ? await veroConfirmPublish([...new Set(flagged.flatMap((l) => l._vero.terms))], flagged.length)
@@ -19049,7 +19112,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadAdminPage() {
     loadAdminAdmins();
     loadAdminAffiliates();
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadAdminEbayRules(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -19980,6 +20043,75 @@ async function autoSuggestEmptyDraftCategories() {
       status.textContent = marketplaceId + ': ' + Number(d.count).toLocaleString('en-US') + ' categories saved' + (d.skipped ? ' (' + d.skipped + ' unreadable rows left out)' : '') + '.';
       loadAdminCategories();
     } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
+  });
+
+  // ---------- Admin Panel: eBay rules (what ELMS refuses to list because eBay does not allow it) ----------
+  // The built-in areas and words come from the server (config/ebayPolicyRules.js); what the admin changes is saved as: areas switched off, words added to an
+  // area (or of their own, area "custom") and phrases that are always fine. The "Try a text" box uses the form as it is, saved or not.
+  const erLines = (text) => String(text || '').split(/[\n,;]/).map((s) => s.trim()).filter(Boolean);
+  async function loadAdminEbayRules() {
+    const el = document.getElementById('ebayRulesBody'); if (!el) return;
+    try {
+      const res = await apiFetch('/api/admin/ebay-policy'); const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the eBay rules.');
+      const off = new Set(d.settings.disabledAreas);
+      const extra = (id) => d.settings.extraTerms.filter((e) => e.area === id).map((e) => e.term).join('\n');
+      const area = (a) => `<div class="er-area${off.has(a.id) ? ' off' : ''}" data-er-area="${escapeAttr(a.id)}">
+        <div class="er-head">
+          <label class="toggle-switch" title="Stop products of this policy"><input type="checkbox" data-er-on="${escapeAttr(a.id)}"${off.has(a.id) ? '' : ' checked'} /><span class="toggle-slider"></span></label>
+          <div class="er-txt"><b>${escapeHtml(a.label)}</b>${a.url ? `<a href="${escapeAttr(a.url)}" target="_blank" rel="noopener noreferrer">eBay policy &#8599;</a>` : ''}<small>${escapeHtml(a.reason)}${a.mediaExempt ? '' : ' Applies to books, films and music too.'}</small></div>
+          <span class="status-badge draft">${a.terms.length} words</span>
+        </div>
+        <div class="er-body">
+          <details><summary>Words stopped by default</summary>
+            <div class="er-words">${a.terms.map((t) => `<span>${escapeHtml(t)}</span>`).join('')}</div>
+            ${(a.contextRules || []).map((r) => `<div class="er-note">Not stopped when the same text also has <b>${escapeHtml(r.unless.join(', '))}</b>: ${escapeHtml(r.terms.join(', '))}.</div>`).join('')}
+          </details>
+          <div class="st-field" style="margin:8px 0 0;"><label>Extra words for this policy (one per line)</label><textarea class="st-input" rows="2" data-er-extra="${escapeAttr(a.id)}">${escapeHtml(extra(a.id))}</textarea></div>
+        </div>
+      </div>`;
+      el.innerHTML = d.areas.map(area).join('') + `
+        <div class="er-area"><div class="er-txt"><b>Your own words</b><small>Words you do not want listed, whatever the policy. Up to ${d.limits.extraTerms} in all.</small></div>
+          <div class="st-field" style="margin:8px 0 0;"><label>One per line</label><textarea class="st-input" rows="2" data-er-extra="custom">${escapeHtml(extra('custom'))}</textarea></div></div>
+        <div class="er-area"><div class="er-txt"><b>Always fine</b><small>Phrases that are cut out of the text before it is checked, so a harmless product that contains a stopped word is let through (e.g. <i>practice taser prop</i>). One per line, up to ${d.limits.allowPhrases}.</small></div>
+          <details><summary>Built in</summary><div class="er-words">${d.allowPhrases.map((t) => `<span>${escapeHtml(t)}</span>`).join('')}</div></details>
+          <div class="st-field" style="margin:8px 0 0;"><label>Your own phrases</label><textarea class="st-input" rows="3" id="erAllow">${escapeHtml(d.settings.allowPhrases.join('\n'))}</textarea></div></div>
+        <button class="st-btn primary" type="button" id="erSave">Save eBay rules</button>`;
+    } catch (err) { el.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
+  }
+  function erCollect() {
+    const panel = document.getElementById('ebayRulesBody');
+    const disabledAreas = [...panel.querySelectorAll('[data-er-on]')].filter((c) => !c.checked).map((c) => c.dataset.erOn);
+    const extraTerms = [];
+    panel.querySelectorAll('[data-er-extra]').forEach((t) => erLines(t.value).forEach((term) => extraTerms.push({ area: t.dataset.erExtra, term })));
+    return { disabledAreas, extraTerms, allowPhrases: erLines(document.getElementById('erAllow')?.value) };
+  }
+  document.querySelector('[data-admin-panel="ebayrules"]')?.addEventListener('change', (e) => {
+    const on = e.target.closest('[data-er-on]');
+    if (on) on.closest('.er-area').classList.toggle('off', !on.checked);
+  });
+  document.querySelector('[data-admin-panel="ebayrules"]')?.addEventListener('click', async (e) => {
+    const status = document.getElementById('ebayRulesStatus');
+    if (e.target.closest('#erSave')) {
+      const btn = e.target.closest('#erSave'); btn.disabled = true;
+      try {
+        const res = await apiFetch('/api/admin/ebay-policy', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(erCollect()) }); const d = await res.json();
+        if (!res.ok || !d.success) throw new Error(d.error || 'Could not save the eBay rules.');
+        const left = (d.ignored.extraTerms || 0) + (d.ignored.allowPhrases || 0);
+        status.className = 'st-status success'; status.textContent = 'Saved. It applies at once.' + (left ? ' ' + left + ' entr' + (left === 1 ? 'y' : 'ies') + ' could not be used (too short, too long, repeated or unknown) and ' + (left === 1 ? 'was' : 'were') + ' left out.' : '');
+        await loadAdminEbayRules();
+      } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
+      btn.disabled = false;
+    } else if (e.target.closest('#erTestBtn')) {
+      const btn = e.target.closest('#erTestBtn'); const out = document.getElementById('erTestOut'); btn.disabled = true;
+      try {
+        const res = await apiFetch('/api/admin/ebay-policy/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: document.getElementById('erTestTitle').value, description: document.getElementById('erTestDesc').value, categories: erLines(document.getElementById('erTestCats').value), settings: erCollect() }) }); const d = await res.json();
+        if (!res.ok || !d.success) throw new Error(d.error || 'Could not run the test.');
+        out.style.display = 'block'; out.className = 'er-test-out ' + (d.blocked ? 'bad' : 'ok');
+        out.textContent = d.blocked ? d.message + (d.hits.length > 1 ? '\n\nAll: ' + d.hits.map((h) => h.label + ' \u2013 "' + h.term + '" (' + h.field + ')').join('; ') : '') : 'Nothing found. ELMS would list this product.';
+      } catch (err) { out.style.display = 'block'; out.className = 'er-test-out bad'; out.textContent = err.message; }
+      btn.disabled = false;
+    }
   });
 
   // ---------- Admin Panel: Chrome Extension ID ----------
