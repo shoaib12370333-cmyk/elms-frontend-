@@ -20243,7 +20243,7 @@ async function autoSuggestEmptyDraftCategories() {
         || (adminUserFilter === 'banned' && row.dataset.banned === '1')
         || (adminUserFilter === 'ebay' && row.dataset.ebay === '1')
         || (adminUserFilter === 'noebay' && row.dataset.ebay !== '1');
-      // a number typed the local way (03001234567) finds +92 300 1234567: compare digits only, without the leading 0
+      // a number typed the local way (xxxxxxxxx) finds +92 xxxxxxxxx: compare digits only, without the leading 0
       const typedDigits = q.replace(/\D/g, '');
       const phoneHit = typedDigits.length >= 5 && !!row.dataset.phone && (row.dataset.phone.includes(typedDigits) || row.dataset.phone.includes(typedDigits.replace(/^0+/, '')));
       row.style.display = matchesFilter && (!q || row.textContent.toLowerCase().includes(q) || phoneHit) ? '' : 'none';
