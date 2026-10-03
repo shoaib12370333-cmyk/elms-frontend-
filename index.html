@@ -12656,7 +12656,10 @@ async function autoSuggestEmptyDraftCategories() {
       loadListings();
       const attention = stop ? [stop] : [];
       if (skipped.length) attention.push(...skipped.slice(0, 12).map((r) => `${(r.title || r.id)}: ${r.reason}`));
-      showToast(changed ? 'Restocked' : 'Not restocked', changed + ' listing' + (changed === 1 ? '' : 's') + ' restocked' + (skipped.length ? ', ' + skipped.length + ' skipped' : '') + (attention.length ? '. ' + attention[0] : '.'), skipped.length && !changed ? 'error' : 'success');
+      if (attention.length) {
+        // a toast is gone in seconds and showed only the first reason: this window lists the reason of each listing and stays until OK
+        await elmsConfirm(`${changed} of ${ids.length} restocked. ${skipped.length ? skipped.length + ' could not be restocked.' : ''}${stop ? ' The rest was not tried.' : ''} The reason for each:\n\n` + attention.map((a) => '\u2022 ' + String(a).slice(0, 240)).join('\n'), { title: 'Not everything was restocked', info: true });
+      } else showToast('Restocked', changed + ' listing' + (changed === 1 ? '' : 's') + ' restocked.', 'success');
     });
     $('rsQty').focus();
   }
