@@ -3122,6 +3122,20 @@
   .ord-orderedbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:11px 14px; border-radius:10px; border:1.5px dashed #BFD4F2; background:#F7FAFF; margin-bottom:12px; }
   .ord-orderedbar.on { border-style:solid; border-color:#C5E08E; background:#F4FAE9; }
   .ord-orderedbar b { display:block; font-size:13px; } .ord-orderedbar small { display:block; color:var(--grey); font-size:12px; margin-top:2px; }
+  /* "Order on AliExpress": the bar in the order window and the window that places the order */
+  .ord-aebar { padding:12px 14px; border-radius:10px; border:1.5px solid #F2D9A6; background:#FFFBF2; margin-bottom:12px; }
+  .ord-aebar.placed { border-color:#C5E08E; background:#F4FAE9; } .ord-aebar.warn { border-color:#F3C6C2; background:#FFF6F5; }
+  .ord-aebar .ae-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .ord-aebar b { display:block; font-size:13px; } .ord-aebar small { display:block; color:var(--grey); font-size:12px; margin-top:2px; } .ord-aebar small.bad, .ord-aebar .bad { color:#B42318; } .ord-aebar .good { color:#3F6208; }
+  .ae-box { max-width:620px; max-height:92vh; overflow:auto; text-align:left; }
+  .ae-sec { margin:12px 0 0; } .ae-sec h5 { margin:0 0 6px; font:800 11px Inter,sans-serif; letter-spacing:.04em; text-transform:uppercase; color:#64748B; }
+  .ae-kv { display:flex; justify-content:space-between; gap:12px; font:600 13px Inter,sans-serif; color:#0F172A; padding:3px 0; } .ae-kv span:first-child { color:#64748B; font-weight:500; } .ae-kv span:last-child { text-align:right; } .ae-kv .good { color:#3F6208; } .ae-kv .bad { color:#B42318; }
+  .ae-kv.total { border-top:1px solid #E2E8F0; margin-top:4px; padding-top:6px; font-weight:800; }
+  .ae-list { margin:10px 0 0; padding:0; list-style:none; display:grid; gap:6px; } .ae-list li { padding:8px 10px; border-radius:8px; font:600 13px Inter,sans-serif; }
+  .ae-list li.block { background:#FFF1F0; color:#B42318; border:1px solid #F3C6C2; } .ae-list li.warn { background:#FFFAEB; color:#8A5A00; border:1px solid #F5DDA0; }
+  .ae-addr { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .ae-addr .wide { grid-column:1 / -1; }
+  .ae-check { display:flex; gap:8px; align-items:flex-start; margin:10px 0 0; font:600 13px Inter,sans-serif; color:#0F172A; } .ae-check input { margin-top:3px; }
+  @media (max-width: 560px) { .ae-addr { grid-template-columns:1fr; } }
   .ord-banner { padding:11px 14px; border-radius:10px; font-size:13px; line-height:1.45; } .ord-banner.red { background:#FDECEC; color:#b42318; } .ord-banner.amber { background:#FEF3DA; color:#8a6300; } .ord-banner.blue { background:#EEF4FF; color:#1d4ed8; }
   .ord-steps { list-style:none; margin:0; padding:14px 16px; background:#fff; border:1px solid #e3e9f2; border-radius:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
   .ord-steps li { display:grid; justify-items:center; gap:3px; text-align:center; font-size:12px; color:#94a3b8; position:relative; }
@@ -13528,6 +13542,202 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
+  // ---------- Buying an order's item from AliExpress (backend: routes/aliexpressOrders.js) ----------
+  // Three separate, confirmed steps, none automatic: 1) the window below shows the item, the delivery, the total and whether it would
+  // lose money, and places the order UNPAID; 2) "Pay" pays exactly the amount AliExpress asks (the server stops if it changed);
+  // 3) "Send tracking to eBay" is the seller's own click, through the same PUT /api/orders/:id/tracking as always.
+  async function aeApi(orderId, action, body) {
+    const res = await apiFetch(`/api/aliexpress-orders/${encodeURIComponent(orderId)}/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+    const data = await apiJson(res);
+    if (!res.ok || !data.success) {
+      const err = new Error(data.error || 'Request failed.');
+      err.code = data.code; err.data = data;
+      throw err;
+    }
+    return data;
+  }
+
+  /** The AliExpress part of the order window's Fulfillment section: offers to order, or shows how the AliExpress order is going. '' for an order that is not for an AliExpress product. */
+  function aliexpressOrderBarHtml(o, st) {
+    if (o.listing_source !== 'aliexpress') return '';
+    const ae = o.aliexpress_order;
+    const label = (v, c) => (v == null ? null : `${Number(v).toFixed(2)} ${c || ''}`.trim());
+    if (!ae) {
+      if (st !== 'awaiting_shipment') return '';
+      return '<div class="ord-aebar"><div class="ae-head"><div><b>Buy it on AliExpress</b><small>ELMS shows you the item, the delivery cost and what you would make first. Nothing is ordered or paid until you confirm each step.</small></div><button class="ord-btn small primary" type="button" id="ordAePlace">Order on AliExpress…</button></div></div>';
+    }
+    if (ae.state === 'placing') return '<div class="ord-aebar"><div class="ae-head"><div><b>Placing the AliExpress order…</b><small>If this stays here for more than a few minutes it turns into “unclear”: then check your AliExpress orders.</small></div><button class="ord-btn small" type="button" id="ordAeRefresh" disabled>Refresh</button></div></div>';
+    if (ae.state === 'failed') return `<div class="ord-aebar warn"><div class="ae-head"><div><b>${ae.error_code === 'CLOSED_UNPAID' ? 'The AliExpress order was closed unpaid' : 'AliExpress did not place the order'}</b><small class="bad">${escapeHtml(ae.error || 'No reason was given.')}</small><small>Nothing was ordered or paid. Fix it and try again.</small></div><button class="ord-btn small primary" type="button" id="ordAePlace">Try again…</button></div></div>`;
+    if (ae.state === 'unknown') return `<div class="ord-aebar warn"><div class="ae-head"><div><b>AliExpress did not give a clear answer</b><small class="bad">${escapeHtml(ae.error || 'An order MAY have been placed.')}</small><small>Open your AliExpress orders and look. Only if there is NO order for this item, try again - otherwise the same item is bought twice.</small></div><button class="ord-btn small" type="button" id="ordAePlace">I checked - try again…</button></div></div>`;
+    const total = label(ae.amount, ae.currency);
+    const paid = ae.pay_state === 'paid';
+    const paying = ae.pay_state === 'paying';
+    const split = Array.isArray(ae.ae_order_ids) && new Set(ae.ae_order_ids).size > 1; // AliExpress split it: ELMS does not pay half of it
+    // an order AliExpress shows as finished / closed / being cancelled, or that is shipped on eBay already, is not paid for any more (the server refuses too)
+    const dead = !!ae.finished || /^(FINISH|CLOSED|CANCEL|IN_CANCEL)/i.test(String(ae.status || '')) || st === 'shipped' || st === 'delivered' || st === 'cancelled';
+    // a payment request that got no clear answer blocks a second one for 5 minutes (the server enforces it); after that, once Refresh still shows it unpaid, paying again is allowed
+    // AliExpress shows it as closed / cancelled / finished and no parcel exists: the seller may release the line to order again (the server checks it again)
+    const releasable = (!!ae.finished || /^(FINISH|CLOSED|CANCEL)/i.test(String(ae.status || ''))) && !split && !ae.tracking_number && st !== 'shipped' && st !== 'delivered';
+    const stalePaying = paying && !!ae.paying_at && Date.now() - new Date(ae.paying_at).getTime() > 15 * 60 * 1000;
+    const sent = ae.tracking_number && o.tracking_number === ae.tracking_number;
+    const eta = ae.eta_at && !isNaN(new Date(ae.eta_at)) ? ' · expected ' + new Date(ae.eta_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '';
+    return `<div class="ord-aebar placed"><div class="ae-head"><div>
+        <b>&#10003; Ordered on AliExpress · ${escapeHtml(ae.ae_order_id || '')}</b>
+        <small>Status: ${escapeHtml(ae.status || 'waiting for the first update')}</small>
+        ${split ? `<small class="bad">AliExpress split this into ${ae.ae_order_ids.length} orders (${escapeHtml(ae.ae_order_ids.join(', '))}). ELMS does not follow split orders: pay and track them on AliExpress.</small>` : ''}
+        ${paying ? (stalePaying ? '<small class="bad">A payment was sent more than 15 minutes ago and AliExpress still does not show the order as paid. Press Refresh first - only if it still says unpaid, press Pay again.</small>' : '<small class="bad">A payment was sent to AliExpress and it does not show the order as paid yet. Do NOT pay again - press Refresh, or look at the order on AliExpress.</small>') : ''}
+        ${paid ? '<small class="good">&#10003; Paid' + (total ? ' · ' + escapeHtml(total) : '') + '</small>' : (paying || split || dead ? '' : total ? `<small class="bad">Not paid yet · AliExpress asks ${escapeHtml(total)}</small>` : '<small>Press Refresh to see how much AliExpress asks.</small>')}
+        ${releasable ? '<small>AliExpress shows this order as closed. If it was cancelled and refunded, press “Order again” to place a new one.</small>' : ''}
+        ${ae.tracking_number ? `<small>Tracking: ${escapeHtml(ae.carrier || 'carrier not given')} ${escapeHtml(ae.tracking_number)}${escapeHtml(eta)}${ae.last_event ? ' · ' + escapeHtml(ae.last_event) : ''}${sent ? ' · <b style="display:inline">&#10003; sent to eBay</b>' : ''}</small>` : ''}
+      </div><span style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${!paid && (!paying || stalePaying) && !split && !dead && total ? `<button class="ord-btn small primary" type="button" id="ordAePay">Pay ${escapeHtml(total)}…</button>` : ''}
+        ${ae.tracking_number && !sent ? '<button class="ord-btn small primary" type="button" id="ordAeSendTracking">Send tracking to eBay</button>' : ''}
+        ${releasable ? '<button class="ord-btn small" type="button" id="ordAeRelease">Order again…</button>' : ''}
+        <button class="ord-btn small" type="button" id="ordAeRefresh">Refresh</button>
+      </span></div></div>`;
+  }
+
+  /** Pays the AliExpress order, only for the amount shown on screen. The server compares it with AliExpress's current total and stops if it moved. */
+  async function aliexpressPay(o, apply) {
+    const ae = o.aliexpress_order;
+    if (!ae || ae.amount == null) throw new Error('Press Refresh first, so ELMS can see how much AliExpress asks.');
+    const amount = Number(ae.amount);
+    const label = `${amount.toFixed(2)} ${ae.currency || ''}`.trim();
+    const buyerPaid = Number(o.sale_price || 0) + Number(o.delivery_cost || 0);
+    const buyerLine = buyerPaid > 0 ? `\nThe buyer paid you ${buyerPaid.toFixed(2)} ${o.currency || ''}`.trimEnd() + ' (before eBay’s fees).' : '';
+    if (!(await elmsConfirm(`Pay ${label} to AliExpress for this order?${buyerLine}\n\nIt is taken from the balance or payment method of your AliExpress account. ELMS cannot take it back.`, { title: 'Pay on AliExpress', okText: 'Pay ' + label, danger: true }))) return;
+    try {
+      const data = await aeApi(o.id, 'pay', { confirm: true, expectedAmount: amount, expectedCurrency: ae.currency || '' });
+      apply(data.order);
+      // "accepted" is not "paid": the bar says Paid only once AliExpress shows the payment (the server keeps it as "payment sent" until then)
+      if (data.pending) showToast('Payment sent', data.message || 'AliExpress accepted the payment but does not show it yet. Press Refresh in a minute. Do not pay again.', 'error');
+      else showToast('Paid', data.alreadyPaid ? 'AliExpress already shows this order as paid.' : `${label} paid to AliExpress.`, 'success');
+    } catch (err) {
+      if (err.code === 'amount_changed') {
+        const again = await aeApi(o.id, 'refresh').catch(() => null);
+        if (again) apply(again.order);
+        throw new Error(err.message + ' Check it, then press Pay again.');
+      }
+      if (err.code === 'pay_unclear' || err.code === 'claimed') {
+        // the payment MAY have gone through: read the order back so the bar shows "payment sent, no clear answer" (or "Paid") instead of a Pay button
+        const again = await aeApi(o.id, 'refresh').catch(() => null);
+        if (again) apply(again.order);
+      }
+      throw err;
+    }
+  }
+
+  /** Frees the line of an AliExpress order that AliExpress itself shows as closed / cancelled, so a new one can be placed. The server checks it again and refuses anything else. */
+  async function aliexpressRelease(o, apply) {
+    const ae = o.aliexpress_order;
+    if (!(await elmsConfirm(`Release the AliExpress order ${ae && ae.ae_order_id ? ae.ae_order_id : ''} and order again?\n\nELMS will stop following it. Do this only if you looked at it on AliExpress and it is cancelled or closed (and refunded). If the goods are on their way, ordering again buys the item twice.`, { title: 'Order again', okText: 'Release it', danger: true }))) return;
+    const data = await aeApi(o.id, 'release', { confirm: true });
+    apply(data.order);
+    showToast('Released', 'The old AliExpress order is no longer followed. You can order on AliExpress again.', 'success');
+  }
+
+  /**
+   * The window that opens on "Order on AliExpress": asks the server for a read-only preview (item, delivery, total, would it lose money, why
+   * it may not be placed), lets the seller correct the delivery address, and places the order UNPAID. Resolves the updated order, or null
+   * when closed without placing.
+   */
+  function openAliexpressOrderDialog(o) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'elms-confirm-overlay';
+      overlay.innerHTML = '<div class="elms-confirm-box ae-box" role="dialog" aria-modal="true" aria-label="Order on AliExpress"><div class="elms-confirm-title">Order on AliExpress</div><div id="aeBody"><div class="elms-loader sm" role="status" aria-label="Checking AliExpress" style="margin:30px auto;"></div></div></div>';
+      document.body.appendChild(overlay);
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const $ = (id) => overlay.querySelector('#' + id);
+      let placing = false;
+      const close = (value) => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); resolve(value); };
+      const onKey = (e) => { if (e.key === 'Escape' && !placing) close(null); };
+      document.addEventListener('keydown', onKey);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay && !placing) close(null); });
+
+      const FIELDS = [['fullName', 'Name', 'wide'], ['line1', 'Street address', 'wide'], ['line2', 'Address line 2 (optional)', 'wide'], ['city', 'City'], ['state', 'County / state'], ['zip', 'Postcode'], ['country', 'Country (2 letters)'], ['phone', 'Phone, with country code', 'wide']];
+      const readAddress = () => { const a = {}; FIELDS.forEach(([k]) => { const el = $('aeF_' + k); if (el) a[k] = el.value; }); return a; };
+      const money = (v, c) => (v == null ? '—' : `${Number(v).toFixed(2)} ${c || ''}`.trim());
+      const kv = (k, v, cls) => `<div class="ae-kv${cls ? ' ' + cls : ''}"><span>${escapeHtml(k)}</span><span>${v}</span></div>`;
+
+      function render(pv) {
+        const blockers = pv.blockers || [];
+        const warnings = pv.warnings || [];
+        const hard = blockers.filter((b) => !b.overridable);
+        // each overridable blocker names the switch that accepts it (`override`): allowLoss (the money side: a loss, or it could not be checked) or
+        // confirmNotPlaced (an order may already exist). Every one gets its OWN tick, and the server only accepts what was ticked here (shownCodes).
+        const soft = blockers.filter((b) => b.overridable && (b.override === 'allowLoss' || b.override === 'confirmNotPlaced'));
+        const acceptText = (b) => ({
+          loses_money: 'Order anyway - I accept this loss.',
+          sale_unknown: 'ELMS could not check whether this order makes money. Order anyway - I have checked it myself.',
+          currency_unknown: 'ELMS could not check whether this order makes money (the currency is not known). Order anyway - I have checked it myself.',
+          unknown_state: 'I looked at my AliExpress orders: there is NO order for this item yet.',
+          already_ordered: 'This order is already marked as ordered. I checked: the item was NOT bought yet (or the mark was a mistake).',
+        }[b.code] || 'I understand this and want to order anyway.');
+        const item = pv.item; const ship = pv.shipping; const cost = pv.cost; const sale = pv.sale; const margin = pv.margin;
+        const days = ship && ship.minDays && ship.maxDays ? `${ship.minDays}–${ship.maxDays} days` : (ship && ship.maxDays ? `up to ${ship.maxDays} days` : '');
+        $('aeBody').style.opacity = '';
+        $('aeBody').innerHTML = `
+          ${item ? `<div class="ae-sec"><h5>Item</h5>${kv('Product', escapeHtml(String(item.title || item.productId).slice(0, 90)))}${item.optionNames ? kv('Option', escapeHtml(String(item.optionNames).slice(0, 90))) : ''}${kv('Quantity', `${item.quantity} × ${money(item.unitPrice, item.currency)}`)}${item.stock != null ? kv('In stock at AliExpress', escapeHtml(String(item.stock))) : ''}</div>` : ''}
+          ${ship ? `<div class="ae-sec"><h5>Delivery</h5>${kv('Method', escapeHtml(ship.carrier || ship.code || ''))}${kv('Cost', escapeHtml(ship.free ? 'free' : money(ship.cost, ship.currency)))}${days ? kv('Time', escapeHtml(days) + (ship.shipFrom ? ' · from ' + escapeHtml(ship.shipFrom) : '')) : ''}</div>` : ''}
+          ${cost ? `<div class="ae-sec"><h5>What it costs you</h5>${kv('Item(s)', escapeHtml(money(cost.items, cost.currency)))}${kv('Delivery', escapeHtml(money(cost.shipping, cost.currency)))}${kv('Total (AliExpress may add tax)', escapeHtml(money(cost.total, cost.currency)), 'total')}${sale ? kv('The buyer paid you (before eBay’s fees)', escapeHtml(money(sale.amount, sale.currency))) : ''}${margin ? kv('Left after this order', `<b class="${margin.amount >= 0 ? 'good' : 'bad'}">${escapeHtml(money(margin.amount, margin.currency))}</b>`) : ''}</div>` : ''}
+          ${blockers.length || warnings.length ? `<ul class="ae-list">${blockers.map((b) => `<li class="block">${escapeHtml(b.message)}</li>`).join('')}${warnings.map((w) => `<li class="warn">${escapeHtml(w.message)}</li>`).join('')}</ul>` : ''}
+          <div class="ae-sec"><h5>Deliver to <em style="text-transform:none;letter-spacing:0;font-weight:500">- check it, AliExpress rejects a wrong address</em></h5>
+            <div class="ae-addr">${FIELDS.map(([k, label, wide]) => `<label class="mo-f${wide ? ' wide' : ''}"><span>${escapeHtml(label)}</span><input type="text" id="aeF_${k}" autocomplete="off" value="${escapeAttr((pv.address || {})[k] || '')}" /></label>`).join('')}</div>
+          </div>
+          ${soft.map((b) => `<label class="ae-check"><input type="checkbox" class="aeAccept" data-code="${escapeAttr(b.code)}" data-override="${escapeAttr(b.override)}" /> <span>${escapeHtml(acceptText(b))}</span></label>`).join('')}
+          <div class="ord-sub bad" id="aeError"></div>
+          <div class="ord-sub">The order is created <b>unpaid</b>. You pay it in a second step, after you see the exact amount.</div>
+          <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn" data-act="recheck">Check again</button><button type="button" class="ord-btn primary" data-act="place" id="aePlace">Place order on AliExpress</button></div>`;
+        const ticks = () => [...overlay.querySelectorAll('.aeAccept')];
+        const ready = () => hard.length === 0 && !!item && !!ship && !!cost && ticks().every((el) => el.checked);
+        const sync = () => { $('aePlace').disabled = !ready(); };
+        ticks().forEach((el) => el.addEventListener('change', sync));
+        sync();
+        overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => close(null));
+        overlay.querySelector('[data-act="recheck"]').addEventListener('click', () => load(readAddress()));
+        $('aePlace').addEventListener('click', async () => {
+          if (!ready() || placing) return;
+          placing = true;
+          const btn = $('aePlace'); btn.disabled = true; btn.textContent = 'Placing…';
+          try {
+            // consent is sent for exactly the blockers that were shown and ticked in THIS window: the server will not apply it to one that appeared later
+            const ticked = ticks().filter((el) => el.checked);
+            const data = await aeApi(o.id, 'place', {
+              address: readAddress(),
+              allowLoss: ticked.some((el) => el.dataset.override === 'allowLoss'),
+              confirmNotPlaced: ticked.some((el) => el.dataset.override === 'confirmNotPlaced'),
+              shownCodes: ticked.map((el) => el.dataset.code),
+            });
+            placing = false;
+            showToast('Ordered on AliExpress', 'The order is placed but NOT paid yet. Check the amount, then press Pay.', 'success');
+            close(data.order);
+          } catch (err) {
+            placing = false;
+            // the window stays open: a refusal can be fixed (the address), an unclear answer must be looked at - either way the preview is read again so it shows the truth
+            await load(readAddress());
+            const box = $('aeError');
+            if (box) box.textContent = err.message; else showToast('Order on AliExpress', err.message, 'error'); // the window shows the failed re-read: the answer must still be seen
+          }
+        });
+      }
+
+      async function load(address) {
+        $('aeBody').style.opacity = '.55';
+        try {
+          const data = await aeApi(o.id, 'preview', address ? { address } : {});
+          render(data.preview);
+        } catch (err) {
+          $('aeBody').style.opacity = '';
+          $('aeBody').innerHTML = `<div class="ord-sub bad">${escapeHtml(err.message)}</div><div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Close</button></div>`;
+          overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => close(null));
+        }
+      }
+      load(null);
+    });
+  }
+
   async function setOrderOrdered(id, ordered, btn) {
     const order = ordersAll.find((x) => String(x.id) === String(id));
     let form = null;
@@ -13753,6 +13963,7 @@ async function autoSuggestEmptyDraftCategories() {
         </section>
 
         <section class="ord-sec"><h4>Fulfillment</h4>
+          ${aliexpressOrderBarHtml(o, st)}
           ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this' + (o.delivery_date ? ' \u00b7 delivery ' + escapeHtml(new Date(o.delivery_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })) : ' \u00b7 no delivery date') : 'Not ordered yet'}</b><small>${ordersEbayNote ? 'A reminder for you. ELMS also writes \u201cELMS: ordered\u201d in the private note of this order on eBay (only you see it).' : 'Only a reminder for you: nothing is sent to eBay or Amazon.'}</small>${o.ebay_note_error ? `<small class="bad">eBay note not changed: ${escapeHtml(o.ebay_note_error)}</small>` : o.ebay_note_at ? '<small>&#10003; It is in the eBay note too.</small>' : ''}${orderIsOrdered(o) && ordersEbayNote && !o.ebay_note_at ? '<small><button class="ord-link" type="button" id="ordRetryEbayNote">Write the eBay note now</button></small>' : ''}</div><span style="display:flex;gap:8px;flex-wrap:wrap;">${orderIsOrdered(o) ? '<button class="ord-btn small" type="button" id="ordEditOrdered">Edit</button>' : ''}<button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></span></div>` : ''}
           <label class="ord-field"><span>Amazon order ID <em>after you buy the item on Amazon</em></span>
             <div class="ord-row-inline"><input id="ordAmazonId" type="text" placeholder="e.g. 111-2222222-3333333" value="${escapeAttr(o.amazon_order_id || '')}" /><button class="ord-btn" type="button" id="ordSaveAmazon">Save</button></div></label>
@@ -13807,6 +14018,23 @@ async function autoSuggestEmptyDraftCategories() {
     $('ordToggleOrdered')?.addEventListener('click', (e) => setOrderOrdered(o.id, !orderIsOrdered(o), e.currentTarget));
     $('ordEditOrdered')?.addEventListener('click', (e) => setOrderOrdered(o.id, true, e.currentTarget)); // the same window, with what is saved
     $('ordRetryEbayNote')?.addEventListener('click', (e) => { e.currentTarget.disabled = true; writeEbayNote(o.id, true, o.delivery_date ? String(o.delivery_date).slice(0, 10) : undefined); });
+    // ---- Buying this order's item from AliExpress (aliexpressOrderBarHtml): place, pay, refresh, and the seller's own "send tracking to eBay" ----
+    $('ordAePlace')?.addEventListener('click', async () => {
+      const updated = await openAliexpressOrderDialog(o);
+      if (!updated) return;
+      apply(updated);
+      // right after placing, read the order back once so the amount AliExpress asks for is on screen (the Pay button needs it); best effort
+      aeApi(o.id, 'refresh').then((r) => apply(r.order)).catch(() => {});
+    });
+    $('ordAeRefresh')?.addEventListener('click', (e) => run(e.currentTarget, 'Refreshing…', async () => { const data = await aeApi(o.id, 'refresh'); apply(data.order); }));
+    $('ordAeRelease')?.addEventListener('click', (e) => run(e.currentTarget, 'Releasing…', () => aliexpressRelease(o, apply)));
+    $('ordAePay')?.addEventListener('click', (e) => run(e.currentTarget, 'Paying…', () => aliexpressPay(o, apply)));
+    $('ordAeSendTracking')?.addEventListener('click', (e) => run(e.currentTarget, 'Sending…', async () => {
+      const ae = o.aliexpress_order;
+      const data = await json(`/api/orders/${encodeURIComponent(o.id)}/tracking`, { method: 'PUT', body: JSON.stringify({ trackingNumber: ae.tracking_number, shippingCarrier: ae.carrier }) });
+      apply(data.order);
+      showToast(data.ebayNotified ? 'Tracking sent to eBay' : 'Saved in ELMS', data.ebayNotified ? 'The buyer can see the tracking number on eBay.' : `eBay did not take it${data.ebayError ? ': ' + data.ebayError : '.'}`, data.ebayNotified ? 'success' : 'error');
+    }));
     $('ordSaveAmazon').addEventListener('click', (e) => run(e.currentTarget, 'Saving…', async () => {
       const amazonOrderId = $('ordAmazonId').value.trim();
       if (!amazonOrderId) throw new Error('Enter the Amazon order ID.');
