@@ -1374,6 +1374,7 @@
   .be-pick-i b { display:block; font-size:13.5px; }
   .be-pick-i small { display:block; font-size:12px; color:#64748B; line-height:1.35; }
   .be-edit { min-width:0; display:grid; gap:12px; align-content:start; }
+  .be-box .elms-confirm-actions { flex-wrap:wrap; } .ord-btn.be-del { margin-right:auto; color:#B42318; border-color:#F2B8B5; } .ord-btn.be-del:hover:not(:disabled) { background:#FEF3F2; border-color:#B42318; }
   .be-empty { padding:22px; border:1.5px dashed var(--line); border-radius:12px; color:#64748B; font-size:13.5px; line-height:1.5; }
   .be-sec { border:1px solid var(--line); border-radius:12px; padding:14px; }
   .be-sec[hidden] { display:none; }
@@ -3899,6 +3900,7 @@
   .dv-bulk b { font:800 13.5px Inter,sans-serif; margin-right:6px; }
   .dv-bulk .dv-btn { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.2); color:#fff; height:34px; } .dv-bulk .dv-btn:hover { background:rgba(255,255,255,.2); }
   .dv-bulk .dv-btn.primary { background:#0064D2; border-color:#0064D2; }
+  .dv-bulk .dv-btn.end { background:#B42318; border-color:#B42318; } .dv-bulk .dv-btn.end:hover { background:#991B1B; }
   .dv-empty { text-align:center; padding:54px 16px; background:#fff; border:1.5px dashed var(--dv-line); border-radius:18px; color:var(--dv-mute); }
   .dv-empty b { display:block; font-size:16px; color:var(--dv-ink); margin-bottom:6px; } .dv-empty .dv-btn { margin-top:14px; }
   .dv-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:18px; font:600 13px Inter,sans-serif; color:var(--dv-mute); }
@@ -11320,7 +11322,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${(!live ? BE_FIELDS : liveEdit ? BE_FIELDS.filter((f) => f.key !== 'price') : BE_FIELDS.filter((f) => f.key === 'price')).map((f) => `<label class="be-pick-i"><input type="checkbox" data-be-pick="${f.key}" /><span><b>${f.label}</b><small>${f.hint}</small></span></label>`).join('')}
           </nav>
           <div class="be-edit" id="bkeEdit">
-            <div class="be-empty" id="bkeEmpty">Tick what you want to change. Each one opens here, and what you set is applied to all ${n} selected ${noun}${n === 1 ? '' : 's'}.</div>
+            <div class="be-empty" id="bkeEmpty">Tick what you want to change. Each one opens here, and what you set is applied to all ${n} selected ${noun}${n === 1 ? '' : 's'}.${liveEdit ? ' To take them off eBay instead, press <b>Delete &amp; end on eBay</b> at the bottom left.' : ''}</div>
 
             <section class="be-sec" data-be-sec="price" hidden>
               <h4>Price</h4>
@@ -11399,6 +11401,7 @@ async function autoSuggestEmptyDraftCategories() {
         </div>
         <div class="be-result" id="bkeResult"></div>
         <div class="elms-confirm-actions">
+          ${liveEdit ? '<button type="button" class="ord-btn be-del" data-act="delete" title="Ends the selected listings on eBay and removes them from ELMS">Delete &amp; end on eBay</button>' : ''}
           <button type="button" class="ord-btn" data-act="cancel">Cancel</button>
           <button type="button" class="ord-btn primary" data-act="apply" disabled></button>
         </div>
@@ -11407,11 +11410,24 @@ async function autoSuggestEmptyDraftCategories() {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
-    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    let asking = false; // the "are you sure" question of Delete & end is open: Escape answers it, it must not also close this window
+    const onKey = (e) => { if (e.key === 'Escape' && !asking) close(); };
     document.addEventListener('keydown', onKey);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay && !asking) close(); });
     overlay.querySelector('[data-act="cancel"]').addEventListener('click', close);
     const $ = (sel) => overlay.querySelector(sel);
+    // Delete & end on eBay (Bulk edit of live listings only): the same delete as the bar's button - the eBay listing is ended first, then the listing is removed from ELMS
+    const deleteBtn = $('[data-act="delete"]');
+    if (deleteBtn) deleteBtn.addEventListener('click', async () => {
+      asking = true;
+      let sure = false;
+      try {
+        sure = await elmsConfirm(`End ${n === 1 ? 'this listing' : 'these ' + n + ' listings'} on eBay and remove ${n === 1 ? 'it' : 'them'} from ELMS? This cannot be undone.`, { title: 'Delete & end on eBay', danger: true, okText: 'Delete & end' });
+      } finally { setTimeout(() => { asking = false; }, 0); }
+      if (!sure) return;
+      close();
+      bulkDeleteLiveListings(ids, document.getElementById('llBulkDeleteBtn') || document.createElement('button'));
+    });
     const applyBtn = $('[data-act="apply"]');
     const resultBox = $('#bkeResult');
     const applyLabel = 'Apply to ' + ids.length + ' ' + noun + (ids.length === 1 ? '' : 's');
@@ -11632,7 +11648,7 @@ async function autoSuggestEmptyDraftCategories() {
     btn.disabled = true;
     let deleted = 0;
     let notDeleted = 0;
-    let reason = '';
+    const problems = []; // the reasons eBay or the server gave (one line each): shown in a window that stays until it is read
     const DEL_CHUNK = 50;
     for (let i = 0; i < ids.length; i += DEL_CHUNK) {
       const chunk = ids.slice(i, i + DEL_CHUNK);
@@ -11645,10 +11661,10 @@ async function autoSuggestEmptyDraftCategories() {
         const errors = data.errors || [];
         deleted += removed;
         notDeleted += Math.max(0, chunk.length - removed);
-        if (!reason && errors.length) reason = String(errors[0]).replace(/^[^:]*:\s*/, '');
+        errors.forEach((e) => { if (problems.length < 8) problems.push(String(e)); });
       } catch (err) {
         notDeleted += ids.length - i;
-        reason = err.message || 'Could not reach the server.';
+        problems.push(err.message || 'Could not reach the server.');
         break;
       }
     }
@@ -11656,7 +11672,10 @@ async function autoSuggestEmptyDraftCategories() {
     btn.textContent = label;
     llSelected.clear();
     loadListings();
-    showToast(deleted ? 'Deleted' : 'Not deleted', `${deleted} listing${deleted === 1 ? '' : 's'} deleted${notDeleted ? `, ${notDeleted} could not be deleted${reason ? ': ' + reason.slice(0, 140) : ''}` : ''}.`, notDeleted && !deleted ? 'error' : 'success');
+    if (notDeleted) {
+      // a toast is gone in seconds and the reason is the one thing the seller needs, so this window stays until OK
+      await elmsConfirm(`${deleted} of ${total} deleted. ${notDeleted} could not be deleted - what was not removed is still in your list:\n\n` + problems.map((p) => '\u2022 ' + p.slice(0, 220)).join('\n'), { title: 'Not everything was deleted', info: true });
+    } else showToast('Deleted', `${deleted} listing${deleted === 1 ? '' : 's'} deleted.`, 'success');
   }
 
   // ---------- Bulk: AI chooses the eBay category of the selected drafts that have none ----------
@@ -12476,7 +12495,7 @@ async function autoSuggestEmptyDraftCategories() {
           <button class="dv-btn small" id="llBulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected listings and pushes them to eBay">Fill specifics with AI</button>
           <button class="dv-btn small" id="llBulkBeautifyBtn" type="button" title="AI restructures the description of the selected listings into your saved Description Template and pushes it to eBay">Beautify descriptions with AI</button>
           <button class="dv-btn small" id="llBulkVeroBtn" type="button" title="AI checks the selected listings for VeRO words (brand names eBay removes listings for), takes them out of the title, description and item specifics, and pushes the change to eBay">Remove VeRO words</button>` : ''}
-          <button class="dv-btn small" id="llBulkDeleteBtn" type="button" title="Removes the selected listings from ELMS - a live one is also ended on eBay">Delete</button>
+          <button class="dv-btn small${llTab === 'ended' || llTab === 'issues' ? '' : ' end'}" id="llBulkDeleteBtn" type="button" title="Removes the selected listings from ELMS - a live one is also ended on eBay">${llTab === 'ended' || llTab === 'issues' ? 'Delete' : 'Delete &amp; end on eBay'}</button>
           <button class="dv-btn small" id="llClearBtn" type="button">Clear</button>
         </div>
       </div>
