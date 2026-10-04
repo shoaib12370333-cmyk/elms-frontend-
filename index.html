@@ -11890,6 +11890,65 @@ async function autoSuggestEmptyDraftCategories() {
     overlay.querySelector('[data-act="ok"]').focus();
   }
 
+  // ---------- Live Listings: "Fit titles to eBay". An eBay title is 80 characters at most and ELMS keeps the whole Amazon title; until 2026-10-04 the cut was
+  // title.slice(0, 80), which ended "...USB Rech" on about 2,300 of the 6,800 live listings of a real store. This puts the cut right (at the last whole word)
+  // on eBay AND in ELMS for every selected live listing that needs it (services/liveBulkTitleFitService.js: no AI, no credits, and ONLY the title is changed -
+  // not the price, the stock, the description or the pictures). A listing whose title is already right is left alone, so "Select all" is safe. 20 at a time. ----------
+  async function bulkFitLiveTitles(ids, btn) {
+    const n = ids.length;
+    const ok = await elmsConfirm(`An eBay title is 80 characters at most. For ${n} selected listing${n === 1 ? '' : 's'}, a title that ends in the middle of a word ("...USB Rech") is cut at the last whole word instead, on eBay and in ELMS.\n\nOnly the title is changed - not the price, the stock, the description or the pictures. A listing whose title is already right is left alone. No credits are used.${n > 20 ? ' A selection this size is sent in batches of 20, so this can take a while - leave this tab open until it finishes.' : ''}`, { title: 'Fit titles to eBay', okText: 'Fit titles' });
+    if (!ok) return;
+
+    const FIT_CHUNK = 20;
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Fitting…';
+    const all = [];
+    let stop = '';
+    try {
+      for (let i = 0; i < ids.length && !stop; i += FIT_CHUNK) {
+        if (n > FIT_CHUNK) btn.textContent = `Fitting ${Math.min(i + FIT_CHUNK, n)}/${n}…`;
+        const res = await apiFetch('/api/listings/bulk-title-fit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: ids.slice(i, i + FIT_CHUNK) }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
+        all.push(...data.results);
+      }
+    } catch (err) {
+      stop = err.message || 'Could not reach the server.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+    llSelected.clear();
+    loadListings();
+
+    const count = (s) => all.filter((r) => r.status === s).length;
+    const attention = all.filter((r) => r.status === 'skipped').map((r) => `${r.title || r.id}: ${r.reason}`);
+    if (stop) attention.unshift(stop);
+    const tail = (t) => { const s = String(t || ''); return s.length > 28 ? '…' + s.slice(-28) : s; };
+    const examples = all.filter((r) => r.status === 'changed' && r.before && r.after).slice(0, 4).map((r) => `${tail(r.before)}  →  ${tail(r.after)}`);
+    const lines = [`${count('changed')} title${count('changed') === 1 ? '' : 's'} fixed, ${count('unchanged')} already right${count('skipped') ? `, ${count('skipped')} could not be changed` : ''}.`];
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box bk-box" role="dialog" aria-modal="true" aria-label="Fit titles result">
+        <div class="elms-confirm-title">${count('changed') ? 'Titles fitted' : 'Fit titles'}</div>
+        <div class="elms-confirm-message">${lines.map(escapeHtml).join('<br>')}</div>
+        ${examples.length ? `<div class="bk-sec"><b>For example</b><small style="margin-top:0;">${examples.map(escapeHtml).join('<br>')}</small></div>` : ''}
+        ${attention.length ? `<div class="bk-sec"><b>Needs your attention</b><small style="margin-top:0;">${attention.slice(0, 25).map(escapeHtml).join('<br>')}${attention.length > 25 ? `<br>and ${attention.length - 25} more.` : ''}</small></div>` : ''}
+        <div class="elms-confirm-actions"><button type="button" class="ord-btn primary" data-act="ok">OK</button></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter') close(); };
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-act="ok"]').addEventListener('click', close);
+    overlay.querySelector('[data-act="ok"]').focus();
+  }
+
   // ---------- Live Listings: AI fills the item specifics of the selected live (or sold-out) listings AND pushes
   // the change to eBay (services/listingAspectFillService.js fillLiveListingAspects) - unlike the Drafts version,
   // which only ever saves ELMS's own copy. A listing with no eBay category yet is skipped (eBay does not let an
@@ -12557,7 +12616,8 @@ async function autoSuggestEmptyDraftCategories() {
           <button class="dv-btn small" id="llBulkSettingsBtn" type="button" title="Change title, brand, quantity, item location, policies, tags, note or monitoring for all the selected listings at once - pushed to eBay where it applies">Bulk edit</button>
           <button class="dv-btn small" id="llBulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected listings and pushes them to eBay">Fill specifics with AI</button>
           <button class="dv-btn small" id="llBulkBeautifyBtn" type="button" title="AI restructures the description of the selected listings into your saved Description Template and pushes it to eBay">Beautify descriptions with AI</button>
-          <button class="dv-btn small" id="llBulkVeroBtn" type="button" title="AI checks the selected listings for VeRO words (brand names eBay removes listings for), takes them out of the title, description and item specifics, and pushes the change to eBay">Remove VeRO words</button>` : ''}
+          <button class="dv-btn small" id="llBulkVeroBtn" type="button" title="AI checks the selected listings for VeRO words (brand names eBay removes listings for), takes them out of the title, description and item specifics, and pushes the change to eBay">Remove VeRO words</button>
+          <button class="dv-btn small" id="llBulkFitTitlesBtn" type="button" title="An eBay title is 80 characters at most. A title that ends in the middle of a word is cut at the last whole word instead, on eBay and in ELMS. Only the title is changed - not the price, the stock or the description. No credits.">Fit titles to eBay</button>` : ''}
           <button class="dv-btn small${llTab === 'ended' || llTab === 'issues' ? '' : ' end'}" id="llBulkDeleteBtn" type="button" title="Removes the selected listings from ELMS - a live one is also ended on eBay">${llTab === 'ended' || llTab === 'issues' ? 'Delete' : 'Delete &amp; end on eBay'}</button>
           <button class="dv-btn small" id="llClearBtn" type="button">Clear</button>
         </div>
@@ -12810,6 +12870,10 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#llBulkVeroBtn')?.addEventListener('click', (e) => {
       const ids = [...llSelected];
       if (ids.length) bulkRemoveLiveVero(ids, e.currentTarget);
+    });
+    root.querySelector('#llBulkFitTitlesBtn')?.addEventListener('click', (e) => {
+      const ids = [...llSelected];
+      if (ids.length) bulkFitLiveTitles(ids, e.currentTarget);
     });
     root.querySelector('#llBulkDeleteBtn')?.addEventListener('click', async (e) => {
       const ids = [...llSelected];
