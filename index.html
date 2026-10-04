@@ -732,6 +732,14 @@
     .topbar .subline { display: none; }
   }
 
+  /* A store eBay refuses until the seller connects it again: orders, messages or earnings stopped. Shown on every page, under the top bar. */
+  .reconnect-banner { display:flex; align-items:center; gap:10px 16px; flex-wrap:wrap; background:#FEF2F2; border-bottom:1px solid #FECACA; color:#7F1D1D; padding:10px 32px; font-size:14px; line-height:1.45; }
+  .reconnect-banner[hidden] { display:none; }
+  .reconnect-banner-text { flex:1 1 320px; min-width:0; }
+  .reconnect-banner-text small { display:block; color:#991B1B; opacity:.85; }
+  .reconnect-banner-btn { flex:0 0 auto; border:0; border-radius:8px; background:#B42318; color:#fff; font:inherit; font-weight:700; padding:8px 16px; cursor:pointer; }
+  .reconnect-banner-btn:hover { background:#912018; }
+  @media (max-width: 720px) { .reconnect-banner { padding:10px 16px; } .reconnect-banner-btn { width:100%; } }
   .topbar {
     display: flex;
     align-items: center;
@@ -4476,6 +4484,11 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="reconnect-banner" id="reconnectBanner" role="alert" hidden>
+      <div class="reconnect-banner-text" id="reconnectBannerText"></div>
+      <button type="button" class="reconnect-banner-btn" id="reconnectBannerBtn">Reconnect eBay</button>
     </div>
 
     <div class="sidebar-scrim" id="sidebarScrim"></div>
@@ -8451,6 +8464,24 @@ B0EXAMPLE2"></textarea></div>
     return (username && username.toLowerCase() !== label.toLowerCase() ? `${label} · ${username}` : label) + tag;
   }
 
+  // A connected store eBay refuses until the seller connects it again (the server marks it: needsReconnect + which kinds of work stopped).
+  const RECONNECT_WHAT = { orders: 'new orders', messages: 'buyer messages', earnings: 'order earnings' };
+  function renderReconnectBanner(accounts) {
+    const el = document.getElementById('reconnectBanner');
+    const textEl = document.getElementById('reconnectBannerText');
+    if (!el || !textEl) return;
+    const stuck = (Array.isArray(accounts) ? accounts : []).filter((a) => a && a.needsReconnect && a.connected !== false);
+    if (!stuck.length) { el.hidden = true; textEl.innerHTML = ''; return; }
+    const listOf = (names) => (names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : (names[0] || 'its data'));
+    const lines = stuck.map((a) => {
+      const what = (Array.isArray(a.reconnectIssues) ? a.reconnectIssues : []).map((k) => RECONNECT_WHAT[k]).filter(Boolean);
+      return `<b>${escapeHtml(accountDisplayLabel(a))}</b>: ${escapeHtml(listOf(what))} are not coming in`;
+    });
+    textEl.innerHTML = `<b>Reconnect your eBay store.</b> eBay no longer lets ELMS read it, so ${lines.join('; ')}.<small>Press Reconnect and Agree on eBay's page - it takes a minute and your listings and data stay as they are.</small>`;
+    el.hidden = false;
+  }
+  document.getElementById('reconnectBannerBtn')?.addEventListener('click', () => openEbayConnectModal());
+
   async function populateSidebarEbayWidget() {
     const selectEl = document.getElementById('sidebarEbaySelect');
     const connectBtn = document.getElementById('sidebarEbayConnectBtn');
@@ -8466,8 +8497,10 @@ B0EXAMPLE2"></textarea></div>
         addBtn.style.display = 'none';
         connectBtn.style.display = 'block';
         setActiveStoreId('');
+        renderReconnectBanner([]);
         return;
       }
+      renderReconnectBanner(data.accounts);
 
       const limitReached = data.limit && data.limit.connected >= data.limit.max;
       const activeAccount = data.accounts.find((acc) => acc.isActive) || data.accounts[0];
