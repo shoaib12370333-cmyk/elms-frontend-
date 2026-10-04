@@ -19540,7 +19540,7 @@ async function autoSuggestEmptyDraftCategories() {
         const out = await adminPost('/api/admin/product-catalog/push-bulk', { ids, email });
         status.textContent = '';
         const s = out.summary;
-        resultEl.innerHTML = `<div class="meta-line">${s.pushed} pushed${s.alreadyHave ? `, ${s.alreadyHave} already had it` : ''}${s.failed ? `, ${s.failed} failed` : ''}${s.notFound ? `, ${s.notFound} not found` : ''}.${s.pushed ? ` ${s.withCategory || 0} with a category${s.withoutCategory ? `, ${s.withoutCategory} without one` : ''}.` : ''}</div>`;
+        resultEl.innerHTML = `<div class="meta-line">${s.pushed} pushed${s.alreadyHave ? `, ${s.alreadyHave} already had it` : ''}${s.failed ? `, ${s.failed} failed` : ''}${s.notFound ? `, ${s.notFound} not found` : ''}.${s.pushed ? ` ${s.withCategory || 0} with a category${s.withoutCategory ? `, ${s.withoutCategory} without one` : ''}.${s.ebayLimitReached ? " eBay's daily limit for category lookups is used up, so those could not be looked up now - use Find missing categories later." : ''}` : ''}</div>`;
         showToast('Pushed to Drafts', `${s.pushed} product${s.pushed === 1 ? '' : 's'} added to ${email}'s Drafts.`, 'success');
         catalogSections[marketplaceId].selected.clear();
         updateCatalogSelectedCount(marketplaceId);
