@@ -12503,23 +12503,33 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
-  // Views and watchers refresh on their own every 30 minutes on the server. Opening the page also
-  // refreshes them quietly when they are older than 10 minutes; the button does it on demand.
+  // Watchers refresh on their own on the server (every totals.auto_sync_minutes, 2 hours; 30 minutes before that changed). Opening the page also
+  // refreshes them quietly when they are older than an hour; the button does it on demand.
+  // Views: eBay's listing API sends none, and the server then reports totals.views = null. Until it does, the page says "Watchers", shows a dash
+  // for the views total and does not offer "Most views" (a sort by a number nobody has). An older server sends a number (0) and nothing changes.
+  const LL_STALE_MS = 60 * 60 * 1000;
+  function llNoViews() { const t = llSummary && llSummary.totals; return !!t && t.views == null; }
   function llLastSynced() {
     const t = llSummary && llSummary.totals && llSummary.totals.last_synced_at;
     return t ? new Date(t).getTime() : 0;
   }
+  function llAutoEveryText() {
+    const m = Number(llSummary && llSummary.totals && llSummary.totals.auto_sync_minutes);
+    const mins = m > 0 ? m : 30; // an older server does not say, and it did refresh every 30 minutes
+    return 'auto every ' + (mins % 60 === 0 ? (mins / 60) + ' h' : mins + ' min');
+  }
   function llSyncedText() {
-    if (!llSummary) return 'Views & watchers: \u2026';
+    const what = llNoViews() ? 'Watchers' : 'Views & watchers';
+    if (!llSummary) return what + ': \u2026';
     const t = llLastSynced();
-    if (!t) return 'Views & watchers: not synced yet';
+    if (!t) return what + ': not synced yet';
     const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
-    return 'Views & watchers synced ' + (mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : Math.round(mins / 60) + ' h ago') + ' \u00b7 auto every 30 min';
+    return what + ' synced ' + (mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : Math.round(mins / 60) + ' h ago') + ' \u00b7 ' + llAutoEveryText();
   }
   async function llAutoRefresh() {
     if (llAutoRefreshed || !llSummary || !llSummary.counts.all) return;
     const t = llLastSynced();
-    if (t && Date.now() - t < 10 * 60 * 1000) return;
+    if (t && Date.now() - t < LL_STALE_MS) return;
     llAutoRefreshed = true; // once per visit
     try {
       const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: (await getActiveStoreId()) || undefined }) });
@@ -12547,7 +12557,7 @@ async function autoSuggestEmptyDraftCategories() {
     return [
       kpi('Live now', c ? c.active : dots, c ? c.all + ' listings in total' : ''),
       kpi('Units sold', t ? num(t.units_sold) : dots, 'from synced orders'),
-      kpi('Views', t ? num(t.views) : dots, 'on eBay'),
+      kpi('Views', !t ? dots : t.views == null ? '—' : num(t.views), t && t.views == null ? 'not shared by eBay' : 'on eBay'),
       kpi('Watchers', t ? num(t.watchers) : dots, 'people following'),
       kpi('Average margin', !t ? dots : margin == null ? '\u2014' : margin + '%', 'sell vs. Amazon cost', margin == null ? '' : margin >= 15 ? 'good' : margin < 5 ? 'bad' : ''),
       kpi('Need attention', c ? c.issues : dots, c ? (c.issues ? 'open the card to fix' : 'no problems') : '', c ? (c.issues ? 'bad' : 'good') : ''),
@@ -12559,6 +12569,7 @@ async function autoSuggestEmptyDraftCategories() {
     const t = document.getElementById('llTabs'); if (t) t.innerHTML = llTabsHtml();
     const v = document.getElementById('llVeroCount'); if (v && llSummary) v.textContent = llSummary.counts.vero;
     const s = document.getElementById('llSyncedLabel'); if (s) s.textContent = llSyncedText();
+    if (llNoViews() && llSort !== 'views') { const o = document.querySelector('#llSortSelect option[value="views"]'); if (o) o.remove(); } // the summary arrived after the list was drawn
   }
 
   function renderListings() {
@@ -12590,7 +12601,7 @@ async function autoSuggestEmptyDraftCategories() {
           <span class="dv-seg" role="tablist" id="llTabs">${llTabsHtml()}</span>
           <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="llSearchInput" placeholder="Search title, SKU or item ID" value="${escapeAttr(llSearch)}" /></div>
           <select id="llSortSelect" class="dv-select">
-            ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
+            ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].filter(([v]) => v !== 'views' || llSort === 'views' || !llNoViews()).map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
           <select id="llSourceSelect" class="dv-select" title="Filter by product source">
             ${[['', 'Every source'], ['amazon', 'Amazon'], ['cj', 'CJdropshipping'], ['aliexpress', 'AliExpress']].map(([v, t]) => `<option value="${v}"${llSource === v ? ' selected' : ''}>${t}</option>`).join('')}
@@ -12798,7 +12809,8 @@ async function autoSuggestEmptyDraftCategories() {
         const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: (await getActiveStoreId()) || undefined }) });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not sync from eBay.');
-        showToast('Synced from eBay', `${data.synced} listing(s) updated with views and watchers${data.failed ? `, ${data.failed} could not be read` : ''}.`, data.failed && !data.synced ? 'error' : 'success');
+        const anyViews = (data.listings || []).some((x) => x.views != null); // eBay's listing API sends no views: then only the watchers were updated
+        showToast('Synced from eBay', `${data.synced} listing(s) updated with ${anyViews ? 'views and watchers' : 'watchers'}${data.failed ? `, ${data.failed} could not be read` : ''}.`, data.failed && !data.synced ? 'error' : 'success');
         await loadListings();
       } catch (err) {
         showToast('Sync failed', err.message, 'error');
@@ -20214,7 +20226,7 @@ async function autoSuggestEmptyDraftCategories() {
         + row('All Trading calls', '', u.total, u.limit) + row('Views & watchers', 'their share', u.stats, u.statsLimit);
       const run = data.lastStatsRun;
       html += '<p class="meta-line" style="margin:8px 0 14px;">' + (run
-        ? 'Last statistics run ' + escapeHtml(new Date(run.at).toLocaleString()) + ': ' + (run.skipped ? 'skipped (' + escapeHtml(run.skipped) + ')' : fmt(run.synced) + ' listing(s) from ' + fmt(run.stores) + ' store(s) with ' + fmt(run.calls) + ' eBay call(s)' + (run.viewsInBulk ? ', views came with the bulk answer' : ', eBay sent no views in bulk, so a few are read one by one') + (run.limited ? ', stopped: the day\'s share is used up' : ''))
+        ? 'Last statistics run ' + escapeHtml(new Date(run.at).toLocaleString()) + ': ' + (run.skipped ? 'skipped (' + escapeHtml(run.skipped) + ')' : fmt(run.synced) + ' listing(s) from ' + fmt(run.stores) + ' store(s) with ' + fmt(run.calls) + ' eBay call(s)' + (run.viewsInBulk ? ', views came with the bulk answer' : run.viewsPaused ? ', eBay sends no views (bulk or one by one): the one-by-one reads are paused for a day' : ', eBay sent no views in bulk, so a few are read one by one') + (run.limited ? ', stopped: the day\'s share is used up' : ''))
         : 'No statistics run since the server started.') + '</p>';
       if (data.ebay) {
         const used = data.ebay.filter((r) => r.used > 0).slice(0, 12);
