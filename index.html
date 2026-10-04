@@ -739,7 +739,7 @@
   .reconnect-banner-text small { display:block; color:#991B1B; opacity:.85; }
   .reconnect-banner-btn { flex:0 0 auto; border:0; border-radius:8px; background:#B42318; color:#fff; font:inherit; font-weight:700; padding:8px 16px; cursor:pointer; }
   .reconnect-banner-btn:hover { background:#912018; }
-  @media (max-width: 720px) { .reconnect-banner { padding:10px 16px; } .reconnect-banner-btn { width:100%; } }
+  @media (max-width: 720px) { .reconnect-banner { padding:8px 16px; font-size:13px; } .reconnect-banner-text small { display:none; } .reconnect-banner-btn { padding:7px 14px; } }
   .topbar {
     display: flex;
     align-items: center;
@@ -6262,10 +6262,11 @@ B0EXAMPLE2"></textarea></div>
 <div class="modal-overlay" id="marketplaceModal">
   <div class="modal-box" style="max-width:420px;">
     <div class="modal-header">
-      <h2>Choose your eBay marketplace</h2>
+      <h2 id="marketplaceModalTitle">Choose your eBay marketplace</h2>
       <button class="modal-close" id="marketplaceModalCloseBtn">&times;</button>
     </div>
-    <p class="meta-line" style="margin-bottom:14px;">This is the eBay site your listings will be published to. You can change it later in Settings.</p>
+    <p class="meta-line" id="marketplaceModalIntro" style="margin-bottom:14px;">This is the eBay site your listings will be published to. You can change it later in Settings.</p>
+    <p class="meta-line" id="marketplaceModalReconnectNote" hidden style="margin-bottom:14px;font-weight:600;"></p>
     <div class="publish-field" style="width:100%;">
       <label>Marketplace</label>
       <select class="editable-input" id="connectMarketplaceSelect" style="width:100%;">
@@ -8443,12 +8444,26 @@ B0EXAMPLE2"></textarea></div>
    * the dropdown when no account is connected yet, so users can connect
    * their first eBay account directly from here.
    */
-  function openEbayConnectModal() {
+  // The store being connected AGAIN (null = a new connection). A store being connected again keeps its own marketplace and everything saved, and is not
+  // counted against the seller's store limit - the server decides from reconnectAccountId (routes/ebayConnect.js /start).
+  let connectReconnectId = null;
+  function openEbayConnectModal(opts) {
     const sessionToken = localStorage.getItem('elmsSessionToken');
     if (!sessionToken) {
       alert('Please sign in first.');
       return;
     }
+    // (also used straight as a click listener: then `opts` is the click event and carries none of these)
+    const o = opts && typeof opts === 'object' && !opts.type ? opts : {};
+    const select = document.getElementById('connectMarketplaceSelect');
+    connectReconnectId = o.reconnectAccountId || null;
+    select.value = [...select.options].some((x) => x.value === o.marketplaceId) ? o.marketplaceId : 'EBAY_US';
+    select.disabled = !!connectReconnectId; // a store connected again keeps its own marketplace
+    const note = document.getElementById('marketplaceModalReconnectNote');
+    note.hidden = !connectReconnectId;
+    note.textContent = connectReconnectId ? 'Reconnecting ' + (o.label || 'your store') + '. It keeps its marketplace and everything already saved.' : '';
+    document.getElementById('marketplaceModalIntro').hidden = !!connectReconnectId;
+    document.getElementById('marketplaceModalTitle').textContent = connectReconnectId ? 'Reconnect your eBay store' : 'Choose your eBay marketplace';
     document.getElementById('marketplaceModalStatus').textContent = '';
     document.getElementById('marketplaceModalStatus').className = '';
     document.getElementById('marketplaceModal').classList.add('open');
@@ -8471,16 +8486,21 @@ B0EXAMPLE2"></textarea></div>
     const textEl = document.getElementById('reconnectBannerText');
     if (!el || !textEl) return;
     const stuck = (Array.isArray(accounts) ? accounts : []).filter((a) => a && a.needsReconnect && a.connected !== false);
-    if (!stuck.length) { el.hidden = true; textEl.innerHTML = ''; return; }
+    if (!stuck.length) { el.hidden = true; textEl.innerHTML = ''; reconnectBannerTarget = null; return; }
+    reconnectBannerTarget = stuck[0];
     const listOf = (names) => (names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : (names[0] || 'its data'));
     const lines = stuck.map((a) => {
       const what = (Array.isArray(a.reconnectIssues) ? a.reconnectIssues : []).map((k) => RECONNECT_WHAT[k]).filter(Boolean);
-      return `<b>${escapeHtml(accountDisplayLabel(a))}</b>: ${escapeHtml(listOf(what))} are not coming in`;
+      return `<b>${escapeHtml(accountDisplayLabel(a))}</b> - ${escapeHtml(listOf(what))}`;
     });
-    textEl.innerHTML = `<b>Reconnect your eBay store.</b> eBay no longer lets ELMS read it, so ${lines.join('; ')}.<small>Press Reconnect and Agree on eBay's page - it takes a minute and your listings and data stay as they are.</small>`;
+    textEl.innerHTML = `<b>Reconnect your eBay store.</b> eBay no longer lets ELMS read it. Not coming in: ${lines.join('; ')}.<small>Press Reconnect and Agree on eBay's page - it takes a minute; your listings and data stay as they are.</small>`;
     el.hidden = false;
   }
-  document.getElementById('reconnectBannerBtn')?.addEventListener('click', () => openEbayConnectModal());
+  let reconnectBannerTarget = null; // the first store that has to be reconnected (when several, the banner comes back for the next one)
+  document.getElementById('reconnectBannerBtn')?.addEventListener('click', () => {
+    if (!reconnectBannerTarget) return;
+    openEbayConnectModal({ reconnectAccountId: reconnectBannerTarget.id, marketplaceId: reconnectBannerTarget.marketplaceId, label: accountDisplayLabel(reconnectBannerTarget) });
+  });
 
   async function populateSidebarEbayWidget() {
     const selectEl = document.getElementById('sidebarEbaySelect');
@@ -8522,6 +8542,7 @@ B0EXAMPLE2"></textarea></div>
       selectEl.style.display = 'none';
       addBtn.style.display = 'none';
       connectBtn.style.display = 'block';
+      renderReconnectBanner([]);
     }
   }
 
@@ -9384,6 +9405,7 @@ B0EXAMPLE2"></textarea></div>
     const endingToken = localStorage.getItem('elmsSessionToken');
     if (endingToken) fetch(`${API_BASE}/api/security/logout`, { method: 'POST', headers: { Authorization: `Bearer ${endingToken}` }, keepalive: true }).catch(() => {});
     localStorage.removeItem('elmsSessionToken');
+    renderReconnectBanner([]);
     document.getElementById('appShell').style.display = 'none';
     document.getElementById('authPage').style.display = 'flex';
     document.getElementById('userChip').style.display = 'none';
@@ -16006,7 +16028,7 @@ async function autoSuggestEmptyDraftCategories() {
 
       const reconnectFinancesBtn = row.querySelector('[data-action="reconnect-finances"]');
       if (reconnectFinancesBtn) {
-        reconnectFinancesBtn.addEventListener('click', () => openEbayConnectModal());
+        reconnectFinancesBtn.addEventListener('click', () => openEbayConnectModal({ reconnectAccountId: accountId, label: (row.querySelector('.st-acct-name, b') || {}).textContent || 'your store' }));
       }
 
       const activateBtn = row.querySelector('[data-action="activate-account"]');
@@ -16162,7 +16184,7 @@ async function autoSuggestEmptyDraftCategories() {
       // marketplace is passed directly here (rather than saved to settings
       // first) since this connection may become a brand-new account with
       // no settings of its own yet.
-      const res = await fetch(`${API_BASE}/api/ebay-connect/start?token=${encodeURIComponent(sessionToken)}&marketplaceId=${encodeURIComponent(marketplaceId)}`);
+      const res = await fetch(`${API_BASE}/api/ebay-connect/start?token=${encodeURIComponent(sessionToken)}&marketplaceId=${encodeURIComponent(marketplaceId)}${connectReconnectId ? `&reconnectAccountId=${encodeURIComponent(connectReconnectId)}` : ''}`);
       const data = await res.json();
 
       if (!res.ok || !data.success) {
