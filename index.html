@@ -19374,7 +19374,7 @@ async function autoSuggestEmptyDraftCategories() {
         listEl.innerHTML = '<div class="empty-state">No fetched products yet. Paste some Amazon links above and press Fetch.</div>';
         return;
       }
-      listEl.innerHTML = data.marketplaces.map((m) => catalogSectionShellHtml(m.marketplaceId, m.count)).join('');
+      listEl.innerHTML = data.marketplaces.map((m) => catalogSectionShellHtml(m.marketplaceId, m.count, m.withoutCategory || 0)).join('');
       data.marketplaces.forEach((m) => {
         const id = m.marketplaceId;
         if (!catalogSections[id]) catalogSections[id] = { page: 1, selected: new Set() };
@@ -19389,6 +19389,7 @@ async function autoSuggestEmptyDraftCategories() {
           updateCatalogSelectedCount(id);
         });
         section?.querySelector('[data-catalog-push-selected]')?.addEventListener('click', () => openCatalogBulkPushModal(id));
+        section?.querySelector('[data-catalog-find-missing]')?.addEventListener('click', () => findMissingCatalogCategories(id));
         loadCatalogSectionItems(id, catalogSections[id].page);
       });
     } catch (err) {
@@ -19397,13 +19398,14 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
-  function catalogSectionShellHtml(marketplaceId, count) {
+  function catalogSectionShellHtml(marketplaceId, count, withoutCategory) {
     const label = CATALOG_MARKETPLACE_LABELS[marketplaceId] || marketplaceId;
     return `<div class="st-custom" data-catalog-section="${escapeAttr(marketplaceId)}" style="margin-bottom:16px;">
       <div class="st-custom-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <span>${escapeHtml(label)} <span class="meta-line" style="display:inline;">(${count.toLocaleString()})</span></span>
         <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:13px;"><input type="checkbox" data-catalog-select-all /> Select all on this page</label>
       </div>
+      ${withoutCategory ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 8px;"><button class="st-btn" type="button" data-catalog-find-missing>Find missing categories (${withoutCategory.toLocaleString()})</button><span class="meta-line" data-catalog-find-status>${withoutCategory.toLocaleString()} product${withoutCategory === 1 ? ' has' : 's have'} no category yet.</span></div>` : ''}
       <div data-catalog-items="${escapeAttr(marketplaceId)}"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;flex-wrap:wrap;">
         <div data-catalog-section-pager="${escapeAttr(marketplaceId)}"></div>
@@ -19438,7 +19440,7 @@ async function autoSuggestEmptyDraftCategories() {
   function catalogRowHtml(marketplaceId, item) {
     const img = item.mainImage ? `<img src="${escapeAttr(item.mainImage)}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;" />` : '<div style="width:44px;height:44px;flex-shrink:0;"></div>';
     const price = item.price != null ? escapeHtml(String(item.price)) + ' ' + escapeHtml(item.currency || '') : '—';
-    const cat = item.categoryId ? escapeHtml(item.categoryName || item.categoryId) : 'No category';
+    const cat = item.categoryId ? escapeHtml(item.categoryName || '') + ' <span style="opacity:.7;">(' + escapeHtml(item.categoryId) + ')</span>' : `<span title="${escapeAttr(item.categoryError || '')}">No category</span>`;
     const checked = catalogSections[marketplaceId]?.selected.has(item.id) ? ' checked' : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);">
       <input type="checkbox" data-catalog-check="${item.id}"${checked} />
@@ -19449,6 +19451,33 @@ async function autoSuggestEmptyDraftCategories() {
       </div>
       <button class="st-btn" type="button" data-catalog-delete="${item.id}">Remove</button>
     </div>`;
+  }
+
+  // "Find missing categories": the server works on 40 products per call (eBay's own suggestion first, then the AI); the page repeats until it is done.
+  async function findMissingCatalogCategories(marketplaceId) {
+    const section = document.querySelector(`[data-catalog-section="${marketplaceId}"]`);
+    const btn = section?.querySelector('[data-catalog-find-missing]');
+    const status = section?.querySelector('[data-catalog-find-status]');
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    let afterId = null;
+    let tried = 0;
+    let filled = 0;
+    let limitHit = false;
+    try {
+      for (;;) {
+        const out = await adminPost('/api/admin/product-catalog/fill-categories', { marketplaceId, afterId });
+        tried += out.tried; filled += out.filled; afterId = out.nextAfterId;
+        if (out.ebayLimitReached) limitHit = true;
+        if (status) status.textContent = 'Looked at ' + tried.toLocaleString() + ', found a category for ' + filled.toLocaleString() + '…';
+        if (out.done) break;
+      }
+      showToast('Product Catalog', filled.toLocaleString() + ' of ' + tried.toLocaleString() + ' products got a category.' + (limitHit ? " eBay's daily limit for category lookups was reached - the rest can be tried again later." : ''), filled ? 'success' : '');
+    } catch (err) {
+      showToast('Product Catalog', err.message, 'error');
+    } finally {
+      loadCatalogSections();
+    }
   }
 
   function catalogPagerHtml(page, pages) {
@@ -19494,7 +19523,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (!ids.length) return;
     const m = adminModal(`
       <div class="draft-title">Push ${ids.length} product${ids.length === 1 ? '' : 's'} to a seller's Drafts</div>
-      <p class="meta-line" style="margin:10px 0 0;">Free - no credit is used. A product the seller already has is skipped and reported, not treated as a failure - the rest still go through. The category only carries over when that seller's active eBay store is on the same marketplace these were fetched for.</p>
+      <p class="meta-line" style="margin:10px 0 0;">Free - no credit is used. A product the seller already has is skipped and reported, not treated as a failure - the rest still go through. The category is kept when the seller's eBay store is on the marketplace these were fetched for (or the seller has no store yet); for a store on another marketplace eBay is asked for that marketplace's category.</p>
       <div class="st-field" style="margin-top:14px;"><label>Seller's email</label><input class="st-input" type="email" id="catalogBulkPushEmail" placeholder="seller@example.com" /></div>
       <div class="st-actions"><button class="st-btn primary" id="catalogBulkPushGo" type="button">Push</button><div id="catalogBulkPushStatus" class="meta-line"></div></div>
       <div id="catalogBulkPushResult"></div>
@@ -19511,7 +19540,7 @@ async function autoSuggestEmptyDraftCategories() {
         const out = await adminPost('/api/admin/product-catalog/push-bulk', { ids, email });
         status.textContent = '';
         const s = out.summary;
-        resultEl.innerHTML = `<div class="meta-line">${s.pushed} pushed${s.alreadyHave ? `, ${s.alreadyHave} already had it` : ''}${s.failed ? `, ${s.failed} failed` : ''}${s.notFound ? `, ${s.notFound} not found` : ''}.</div>`;
+        resultEl.innerHTML = `<div class="meta-line">${s.pushed} pushed${s.alreadyHave ? `, ${s.alreadyHave} already had it` : ''}${s.failed ? `, ${s.failed} failed` : ''}${s.notFound ? `, ${s.notFound} not found` : ''}.${s.pushed ? ` ${s.withCategory || 0} with a category${s.withoutCategory ? `, ${s.withoutCategory} without one` : ''}.${s.ebayLimitReached ? " eBay's daily limit for category lookups is used up, so those could not be looked up now - use Find missing categories later." : ''}` : ''}</div>`;
         showToast('Pushed to Drafts', `${s.pushed} product${s.pushed === 1 ? '' : 's'} added to ${email}'s Drafts.`, 'success');
         catalogSections[marketplaceId].selected.clear();
         updateCatalogSelectedCount(marketplaceId);
