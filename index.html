@@ -4040,9 +4040,11 @@
   .msg-bubble-row.ebay .msg-sender { color:#B45309; } .msg-bubble-row.ebay .msg-sender-tag { background:#FEF3C7; color:#B45309; }
   .msg-bubble-row.ebay .msg-bubble { background:#FFF7E6; border:1px solid #F3DDAE; color:#4a3a14; }
   .msg-you { color:#1D6FEB; font-weight:700; }
-  .msg-save-toggle summary { color:#1D6FEB; } .msg-save-toggle summary::-webkit-details-marker { display:none; }
-  /* the form hangs above the whole tools row (not above its own pill), so on a phone it never runs off the right edge */
-  .msg-save-form { position:absolute; z-index:5; bottom:calc(100% + 6px); left:0; display:grid; gap:6px; padding:10px; background:#F7FAFF; border:1px solid #CFE0FB; border-radius:10px; width:min(340px,calc(100vw - 56px)); box-sizing:border-box; }
+  #messageSaveToggleBtn { color:#1D6FEB; } #messageSaveToggleBtn.open { background:#E4EEFF; border-color:#BBD3F8; }
+  /* the form sits in the flow, right above the tools row: nothing is clipped by the scrolling row on a short screen, nothing runs off a phone's edge, and it is never wider than the thread */
+  .msg-save-form { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 8px; align-items:center; padding:8px 10px; margin-bottom:8px; background:#F7FAFF; border:1px solid #CFE0FB; border-radius:10px; box-sizing:border-box; max-width:100%; }
+  .msg-save-form #messageSnippetName { grid-column:1; grid-row:1; min-width:0; } .msg-save-form #messageSnippetSaveBtn { grid-column:2; grid-row:1; white-space:nowrap; } .msg-save-form small { grid-column:1 / -1; grid-row:2; }
+  .msg-save-form[hidden] { display:none; }
   .msg-save-form input { height:34px; border:1px solid #D5DCE6; border-radius:8px; padding:0 10px; font:500 13px Inter,sans-serif; }
   .msg-save-form small { color:#6b7686; font-size:11.5px; line-height:1.4; }
   .msg-compose-row { align-items:center; gap:8px; }
@@ -4110,7 +4112,7 @@
     .msg-context { padding:6px 14px; } .msg-context img, .msg-context-ph, .sk-sq { width:38px; height:38px; flex-basis:38px; }
     .msg-context-price, .msg-context-txt small { display:none; }
     .msg-thread-body { padding:10px 18px 6px; }
-    .msg-tools { flex-wrap:nowrap; overflow:visible; margin-bottom:6px; } .msg-pill { height:26px; flex:0 0 auto; } /* visible, not auto: a scrolling row clipped the Private note and Save reply forms that open above it */
+    .msg-tools { flex-wrap:nowrap; overflow-x:auto; margin-bottom:6px; } .msg-pill { height:26px; flex:0 0 auto; }
     .msg-compose { padding:6px 14px 8px; } .msg-compose-row textarea { min-height:40px; } .msg-btn.send { height:40px; padding:0 20px; }
   }
   @media (prefers-reduced-motion: reduce) { .sk { animation:none; } }
@@ -17927,6 +17929,7 @@ async function autoSuggestEmptyDraftCategories() {
         ${c.ai_draft && c.ai_draft.status === 'ready' ? `<div class="msg-ai-banner" id="msgAiBanner">&#10024; AI wrote this draft. Read it, edit it, then press Send.<button type="button" id="messageAiDiscardBtn">Discard</button><small>AI can make mistakes. Check names, dates and promises before sending.</small></div>` : ''}
         ${c.ai_draft && c.ai_draft.status === 'auto_sent' ? `<div class="msg-ai-banner sent">&#10024; AI already replied to the latest message automatically: &ldquo;${escapeHtml(String(c.ai_draft.text || '').slice(0, 160))}&rdquo;<small>AI can make mistakes. Follow up here if needed.</small></div>` : ''}
         <div class="msg-attach-tray" id="messageAttachTray"></div>
+        <div class="msg-save-form" id="messageSaveForm" hidden><input id="messageSnippetName" maxlength="80" placeholder="Name, e.g. Refund done" /><small>Saves the message in the box below as a saved reply. The buyer's name in it is kept as {{buyer_name}}.</small><button class="msg-btn small" id="messageSnippetSaveBtn" type="button">Save reply</button></div>
         <div class="msg-tools">
           <label class="msg-pill" title="Saved replies">Saved replies &#9662;
             <select id="messageSnippetSelect"><option value="">Saved replies&hellip;</option>${snippets.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}<option value="__manage">Manage saved replies&hellip;</option></select>
@@ -17935,10 +17938,7 @@ async function autoSuggestEmptyDraftCategories() {
             <summary class="msg-pill" title="Private note - only visible in ELMS">Private note</summary>
             <div class="msg-note-form"><textarea id="messageNoteInput" placeholder="Only visible in ELMS&hellip;"></textarea><button class="msg-btn small" id="messageNoteBtn" type="button">Add note</button></div>
           </details>
-          <details class="msg-save-toggle">
-            <summary class="msg-pill" title="Keep the message you typed below as a saved reply">Save reply</summary>
-            <div class="msg-save-form"><input id="messageSnippetName" maxlength="80" placeholder="Name, e.g. Refund done" /><small>Saves the message in the box below. The buyer's name is kept as {{buyer_name}}.</small><button class="msg-btn small" id="messageSnippetSaveBtn" type="button">Save reply</button></div>
-          </details>
+          <button class="msg-pill" id="messageSaveToggleBtn" type="button" title="Keep the message you typed below as a saved reply">Save reply</button>
           <button class="msg-pill" id="messageAiDraftBtn" type="button" title="Let AI write a reply for you to check">&#10024; Draft with AI</button>
         </div>
         <div class="msg-compose-row">
@@ -17996,7 +17996,21 @@ async function autoSuggestEmptyDraftCategories() {
       const sn = messageSnippets.find((x) => x.id === e.target.value);
       if (sn) document.getElementById('messageReplyInput').value = applySnippetVariables(sn.content, c, context);
     });
+    document.getElementById('messageSaveToggleBtn')?.addEventListener('click', (e) => {
+      const form = document.getElementById('messageSaveForm'); if (!form) return;
+      form.hidden = !form.hidden;
+      e.currentTarget.classList.toggle('open', !form.hidden);
+      if (!form.hidden) document.getElementById('messageSnippetName')?.focus();
+    });
     document.getElementById('messageSnippetSaveBtn')?.addEventListener('click', (e) => saveReplyAsSnippet(c, e.currentTarget));
+    document.getElementById('messageSnippetName')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('messageSnippetSaveBtn')?.click(); } });
+  }
+
+  /** The Saved replies list of the open thread follows messageSnippets (a reply was added or deleted in the manager). */
+  function syncSnippetSelect() {
+    const select = document.getElementById('messageSnippetSelect');
+    if (!select) return;
+    select.innerHTML = `<option value="">Saved replies&hellip;</option>${(messageSnippets || []).map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}<option value="__manage">Manage saved replies&hellip;</option>`;
   }
 
   /** "Save reply": the message typed in the reply box becomes a saved reply (the buyer's name is kept as {{buyer_name}}, so it fits the next buyer). */
@@ -18007,22 +18021,22 @@ async function autoSuggestEmptyDraftCategories() {
     const name = ((nameInput && nameInput.value) || '').trim();
     if (!raw) { showToast('Nothing to save', 'Type the message in the box first, then save it.', 'error'); return; }
     if (!name) { showToast('Name needed', 'Give this saved reply a short name.', 'error'); nameInput && nameInput.focus(); return; }
+    // the buyer's username becomes {{buyer_name}} - but only a real buyer's: not the store's own name, not eBay, and not a very short one that could be an ordinary word
     const buyer = String(c.other_party_username || c.from_username || '').trim();
-    const content = buyer.length >= 3 ? raw.replace(new RegExp('\\b' + buyer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi'), '{{buyer_name}}') : raw;
+    const row = Array.isArray(messageRows) ? messageRows.find((r) => r.id === c.id) : null;
+    const own = String((row && row.ebay_account_username) || c.ebay_account_username || '').trim().toLowerCase();
+    const replaceable = c.conversation_type === 'FROM_MEMBERS' && buyer.length >= 4 && buyer.toLowerCase() !== 'ebay' && buyer.toLowerCase() !== own;
+    const content = replaceable ? raw.replace(new RegExp('\\b' + buyer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi'), '{{buyer_name}}') : raw;
     btn.disabled = true;
     try {
       const res = await apiFetch('/api/message-snippets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, content }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this reply.');
       messageSnippets.push(data.snippet);
-      const select = document.getElementById('messageSnippetSelect');
-      if (select) {
-        const opt = document.createElement('option');
-        opt.value = data.snippet.id; opt.textContent = data.snippet.name;
-        select.insertBefore(opt, select.querySelector('option[value="__manage"]'));
-      }
+      syncSnippetSelect();
       nameInput.value = '';
-      const details = btn.closest('details'); if (details) details.open = false;
+      const form = document.getElementById('messageSaveForm'); if (form) form.hidden = true;
+      document.getElementById('messageSaveToggleBtn')?.classList.remove('open');
       showToast('Reply saved', '"' + name + '" is in Saved replies now.', 'success');
     } catch (err) {
       showToast('Could not save', err.message, 'error');
@@ -18115,6 +18129,9 @@ async function autoSuggestEmptyDraftCategories() {
       input.value = '';
       messageAttachments = [];
       showToast('Reply sent', 'Your message was sent through eBay.', 'success');
+      // the list follows at once: the conversation is no longer "Needs reply", its preview is what was just sent ("You: ...")
+      messageRows = messageRows.map((r) => r.id === id ? { ...r, last_message_from_self: true, last_message_snippet: content || 'Attachment', last_message_date: new Date().toISOString(), is_read: true } : r);
+      renderMessageList();
       await openMessageThread(id);
     } catch (err) { showToast('Reply failed', err.message, 'error'); }
     finally { btn.disabled = false; }
@@ -18224,6 +18241,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   function renderSnippetManagerList() {
+    syncSnippetSelect(); // the open thread's Saved replies list follows what was added or deleted here
     const el = document.getElementById('snippetManagerList');
     if (!el) return;
     el.innerHTML = messageSnippets.length ? messageSnippets.map((sn) => `
