@@ -4033,6 +4033,18 @@
   .msg-pill select { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
   .msg-note-toggle { position:relative; } .msg-note-toggle summary::-webkit-details-marker { display:none; }
   .msg-note-form { bottom:38px; margin-top:0; }
+  /* who wrote it: a small name above the first bubble of a run, the seller's blue / the buyer's grey / eBay's notices in warm yellow */
+  .msg-sender { margin:2px 6px 3px; font-size:11.5px; font-weight:700; color:#6b7686; letter-spacing:.01em; }
+  .msg-sender-tag { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:700; background:#EEF2F7; color:#475467; }
+  .msg-bubble-row.self .msg-sender { color:#1D6FEB; } .msg-bubble-row.self .msg-sender-tag { background:#E4EEFF; color:#1D6FEB; }
+  .msg-bubble-row.ebay .msg-sender { color:#B45309; } .msg-bubble-row.ebay .msg-sender-tag { background:#FEF3C7; color:#B45309; }
+  .msg-bubble-row.ebay .msg-bubble { background:#FFF7E6; border:1px solid #F3DDAE; color:#4a3a14; }
+  .msg-you { color:#1D6FEB; font-weight:700; }
+  .msg-save-toggle summary { color:#1D6FEB; } .msg-save-toggle summary::-webkit-details-marker { display:none; }
+  /* the form hangs above the whole tools row (not above its own pill), so on a phone it never runs off the right edge */
+  .msg-save-form { position:absolute; z-index:5; bottom:calc(100% + 6px); left:0; display:grid; gap:6px; padding:10px; background:#F7FAFF; border:1px solid #CFE0FB; border-radius:10px; width:min(340px,calc(100vw - 56px)); box-sizing:border-box; }
+  .msg-save-form input { height:34px; border:1px solid #D5DCE6; border-radius:8px; padding:0 10px; font:500 13px Inter,sans-serif; }
+  .msg-save-form small { color:#6b7686; font-size:11.5px; line-height:1.4; }
   .msg-compose-row { align-items:center; gap:8px; }
   .msg-compose-row textarea { min-height:48px; max-height:132px; resize:none; border-radius:14px; padding:13px 16px; line-height:1.4; background:#fff; border-color:#D5DCE6; }
   .msg-compose-row textarea:focus { border-color:var(--blue); }
@@ -4098,7 +4110,7 @@
     .msg-context { padding:6px 14px; } .msg-context img, .msg-context-ph, .sk-sq { width:38px; height:38px; flex-basis:38px; }
     .msg-context-price, .msg-context-txt small { display:none; }
     .msg-thread-body { padding:10px 18px 6px; }
-    .msg-tools { flex-wrap:nowrap; overflow-x:auto; margin-bottom:6px; } .msg-pill { height:26px; flex:0 0 auto; }
+    .msg-tools { flex-wrap:nowrap; overflow:visible; margin-bottom:6px; } .msg-pill { height:26px; flex:0 0 auto; } /* visible, not auto: a scrolling row clipped the Private note and Save reply forms that open above it */
     .msg-compose { padding:6px 14px 8px; } .msg-compose-row textarea { min-height:40px; } .msg-btn.send { height:40px; padding:0 20px; }
   }
   @media (prefers-reduced-motion: reduce) { .sk { animation:none; } }
@@ -17544,7 +17556,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="msg-item-main">
           <div class="msg-item-top"><span class="msg-item-name">${escapeHtml(name)}${buyerRatingHtml(r.buyer_profile)}</span><span class="msg-item-time">${escapeHtml(messageTime(r.last_message_date))}</span></div>
           <div class="msg-item-subject">${escapeHtml(r.subject || (r.conversation_type === 'FROM_MEMBERS' ? 'Member message' : 'eBay notification'))}</div>
-          <div class="msg-item-snippet">${escapeHtml(r.last_message_snippet || 'No preview available.')}</div>
+          <div class="msg-item-snippet">${r.last_message_from_self && !isEbay ? '<span class="msg-you">You: </span>' : ''}${escapeHtml(r.last_message_snippet || 'No preview available.')}</div>
           <div class="msg-item-tags">
             ${r.ai_draft && r.ai_draft.status === 'ready' ? '<span class="msg-tag ai">AI draft</span>' : ''}
             ${r.ai_draft && r.ai_draft.status === 'auto_sent' ? '<span class="msg-tag ai">AI replied</span>' : ''}
@@ -17845,6 +17857,18 @@ async function autoSuggestEmptyDraftCategories() {
     return m.isSelf ? `<span class="msg-ticks${m.readStatus ? ' read' : ''}" title="${m.readStatus ? 'Read by buyer' : 'Sent'}">${m.readStatus ? '&#10003;&#10003;' : '&#10003;'}</span>` : '';
   }
 
+  /**
+   * Who wrote a message: the seller ("You"), the buyer, or eBay itself (its notices). The server works out isSelf from the sender (eBay never sends it); an older server,
+   * or a thread loaded before it was updated, still says false for the seller's own messages, so the sender's name is compared with the store's own username here too.
+   */
+  function messageSender(m, c, storeUser) {
+    if (c.conversation_type === 'FROM_EBAY') return { kind: 'ebay', label: 'eBay', tag: 'eBay notice' };
+    const mine = m.isSelf === true || (!!storeUser && String(m.fromUsername || '').trim().toLowerCase() === String(storeUser).trim().toLowerCase());
+    if (mine) return { kind: 'me', label: 'You', tag: storeUser || 'Seller' };
+    const buyer = m.fromUsername && m.fromUsername !== 'Member' ? m.fromUsername : (c.other_party_username || c.from_username || 'Buyer');
+    return { kind: 'buyer', label: buyer, tag: 'Buyer' };
+  }
+
   function renderMessageDetail(data) {
     const c = data.conversation;
     const d = data.detail || {};
@@ -17855,14 +17879,21 @@ async function autoSuggestEmptyDraftCategories() {
     const name = c.other_party_username || c.from_username || 'eBay';
     const dayKey = (v) => (v ? new Date(v).toDateString() : '');
     let lastDay = '';
+    let lastWho = '';
+    const listRow = Array.isArray(messageRows) ? messageRows.find((r) => r.id === c.id) : null;
+    const storeUser = c.ebay_account_username || (listRow && listRow.ebay_account_username) || '';
     const bubbles = messages.map((m) => {
       const day = dayKey(m.sentDate);
       const sep = day && day !== lastDay ? `<div class="msg-day">${escapeHtml(messageDayLabel(m.sentDate))}</div>` : '';
       lastDay = day || lastDay;
-      return `${sep}<div class="msg-bubble-row ${m.isSelf ? 'self' : ''}"><div class="msg-bubble-col"><div class="msg-bubble">
+      const who = messageSender(m, c, storeUser);
+      const whoKey = who.kind + '|' + who.label;
+      const showWho = whoKey !== lastWho || !!sep; // the name goes above the first bubble of a run, and again after a day line
+      lastWho = whoKey;
+      return `${sep}<div class="msg-bubble-row ${who.kind === 'me' ? 'self' : who.kind === 'ebay' ? 'ebay' : ''}"><div class="msg-bubble-col">${showWho ? `<div class="msg-sender">${escapeHtml(who.label)}<span class="msg-sender-tag">${escapeHtml(who.tag)}</span></div>` : ''}<div class="msg-bubble">
         <div class="msg-bubble-text">${escapeHtml(m.content || '')}</div>
         ${messageMediaHtml(m.media)}
-      </div><div class="msg-bubble-time">${escapeHtml(m.sentDate ? new Date(m.sentDate).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '')} ${readTicksHtml(m)}</div></div></div>`;
+      </div><div class="msg-bubble-time">${escapeHtml(m.sentDate ? new Date(m.sentDate).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '')} ${readTicksHtml({ ...m, isSelf: who.kind === 'me' })}</div></div></div>`;
     }).join('');
     const notesHtml = notes.length ? `<div class="msg-notes">${notes.slice(-3).map((n) => `<div class="msg-note"><b>${escapeHtml(n.created_at ? new Date(n.created_at).toLocaleString() : '')}</b><br>${escapeHtml(n.text)}</div>`).join('')}</div>` : '';
 
@@ -17898,11 +17929,15 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="msg-attach-tray" id="messageAttachTray"></div>
         <div class="msg-tools">
           <label class="msg-pill" title="Saved replies">Saved replies &#9662;
-            <select id="messageSnippetSelect"><option value="">Saved replies&hellip;</option>${snippets.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}</select>
+            <select id="messageSnippetSelect"><option value="">Saved replies&hellip;</option>${snippets.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('')}<option value="__manage">Manage saved replies&hellip;</option></select>
           </label>
           <details class="msg-note-toggle">
             <summary class="msg-pill" title="Private note - only visible in ELMS">Private note</summary>
             <div class="msg-note-form"><textarea id="messageNoteInput" placeholder="Only visible in ELMS&hellip;"></textarea><button class="msg-btn small" id="messageNoteBtn" type="button">Add note</button></div>
+          </details>
+          <details class="msg-save-toggle">
+            <summary class="msg-pill" title="Keep the message you typed below as a saved reply">Save reply</summary>
+            <div class="msg-save-form"><input id="messageSnippetName" maxlength="80" placeholder="Name, e.g. Refund done" /><small>Saves the message in the box below. The buyer's name is kept as {{buyer_name}}.</small><button class="msg-btn small" id="messageSnippetSaveBtn" type="button">Save reply</button></div>
           </details>
           <button class="msg-pill" id="messageAiDraftBtn" type="button" title="Let AI write a reply for you to check">&#10024; Draft with AI</button>
         </div>
@@ -17957,9 +17992,43 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('messageMarkUnreadBtn').addEventListener('click', () => markMessageUnread(c.id));
     document.getElementById('messageTrashBtn').addEventListener('click', () => c.conversation_status === 'DELETE' ? restoreMessage(c.id) : trashMessage(c.id));
     document.getElementById('messageSnippetSelect').addEventListener('change', (e) => {
+      if (e.target.value === '__manage') { e.target.value = ''; openMessageSnippetsManager(); return; }
       const sn = messageSnippets.find((x) => x.id === e.target.value);
       if (sn) document.getElementById('messageReplyInput').value = applySnippetVariables(sn.content, c, context);
     });
+    document.getElementById('messageSnippetSaveBtn')?.addEventListener('click', (e) => saveReplyAsSnippet(c, e.currentTarget));
+  }
+
+  /** "Save reply": the message typed in the reply box becomes a saved reply (the buyer's name is kept as {{buyer_name}}, so it fits the next buyer). */
+  async function saveReplyAsSnippet(c, btn) {
+    const box = document.getElementById('messageReplyInput');
+    const nameInput = document.getElementById('messageSnippetName');
+    const raw = ((box && box.value) || '').trim();
+    const name = ((nameInput && nameInput.value) || '').trim();
+    if (!raw) { showToast('Nothing to save', 'Type the message in the box first, then save it.', 'error'); return; }
+    if (!name) { showToast('Name needed', 'Give this saved reply a short name.', 'error'); nameInput && nameInput.focus(); return; }
+    const buyer = String(c.other_party_username || c.from_username || '').trim();
+    const content = buyer.length >= 3 ? raw.replace(new RegExp('\\b' + buyer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi'), '{{buyer_name}}') : raw;
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/api/message-snippets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, content }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this reply.');
+      messageSnippets.push(data.snippet);
+      const select = document.getElementById('messageSnippetSelect');
+      if (select) {
+        const opt = document.createElement('option');
+        opt.value = data.snippet.id; opt.textContent = data.snippet.name;
+        select.insertBefore(opt, select.querySelector('option[value="__manage"]'));
+      }
+      nameInput.value = '';
+      const details = btn.closest('details'); if (details) details.open = false;
+      showToast('Reply saved', '"' + name + '" is in Saved replies now.', 'success');
+    } catch (err) {
+      showToast('Could not save', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   function applySnippetVariables(text, conversation, context) {
