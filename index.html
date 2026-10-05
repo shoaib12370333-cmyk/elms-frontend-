@@ -5582,10 +5582,10 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico blue">&#128193;</div>
-              <div class="st-head-txt"><h2>AI category</h2><p>Only when eBay's own category suggestion is out of calls for the day: the AI chooses from the category list you upload in the Categories tab. Nothing is charged while eBay answers.</p></div>
+              <div class="st-head-txt"><h2>AI category</h2><p>The first step for every product: the AI chooses the eBay category from the category list you upload in the Categories tab; when the list has nothing that fits, eBay's own suggestion is used. <b>Credits per AI category</b> is the price a seller pays each time the AI assigns a category to a product (when a draft is published without one, and "Fill category with AI"); nothing when it finds none, and the suggestions shown while editing are always free: <b>0 = free</b>, which is how it starts - set a number when you want to charge. (If you saved a price here or in Credit costs earlier, it stays until you change it.)</p></div>
               <label class="toggle-switch"><input type="checkbox" id="aiCategoryEnabled" /><span class="toggle-slider"></span></label>
             </div>
-            <div class="st-field"><label>Credits per AI category</label><input class="st-input" type="number" min="0" step="1" id="aiCostCategory" /></div>
+            <div class="st-field"><label>Credits per AI category (0 = free)</label><input class="st-input" type="number" min="0" step="1" id="aiCostCategory" /></div>
           </section>
           <section class="st-card">
             <div class="st-head">
@@ -5642,12 +5642,12 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico blue">&#128193;</div>
-              <div class="st-head-txt"><h2>Category lists</h2><p>eBay's "Category IDs" CSV for each eBay site (columns CategoryID and Category Path). When eBay's own category suggestion is out of calls for the day, the AI chooses from the list of the seller's eBay site. Upload one file per country: ebay.com is the US list, ebay.co.uk the GB list, and so on.</p></div>
+              <div class="st-head-txt"><h2>Category lists</h2><p>eBay's "Category IDs" CSV for each eBay site (columns CategoryID and Category Path). The AI chooses from the list of the seller's eBay site first; when it finds nothing there, eBay's own suggestion is used. Upload one file per country: ebay.com is the US list, ebay.co.uk the GB list, and so on.</p></div>
             </div>
             <div id="catListStatus" class="st-status"></div>
             <input type="file" id="catListFile" accept=".csv,text/csv" hidden />
             <div id="adminCategoryLists"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
-            <p class="st-hint">Uploading again replaces that country's list at once. The AI is used only when eBay says its daily category limit is reached; it costs the seller the "AI category" credits set in the AI tab (nothing when the AI finds no category).</p>
+            <p class="st-hint">Uploading again replaces that country's list at once. The AI uses it first for every product; it costs the seller the "AI category" credits set in the AI tab (0 = free; nothing is charged when the AI finds no category).</p>
           </section>
         </div>
 
@@ -20038,7 +20038,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('aiCostAspects').value = d.costs.AI_ASPECTS ?? 1;
       document.getElementById('aiCostReply').value = d.costs.AI_REPLY ?? 1;
       document.getElementById('aiCategoryEnabled').checked = d.settings.aiCategoryEnabled !== false;
-      document.getElementById('aiCostCategory').value = d.costs.AI_CATEGORY ?? 1;
+      document.getElementById('aiCostCategory').value = d.costs.AI_CATEGORY ?? 0;
       document.getElementById('aiBeautifyDescriptionEnabled').checked = d.settings.aiBeautifyDescriptionEnabled !== false;
       document.getElementById('aiCostBeautify').value = d.costs.AI_DESCRIPTION_BEAUTIFY ?? 1;
       document.getElementById('aiDescriptionLength').value = d.settings.aiDescriptionLength || 'standard';
