@@ -5209,7 +5209,7 @@
         <section class="st-card" id="veroCard">
           <div class="st-head">
             <div class="st-ico" style="background:#FEF2F2;color:#B42318;">&#9888;</div>
-            <div class="st-head-txt"><h2>VeRO words</h2><p>Brand or character names that get eBay listings removed. ELMS warns you about the words you save here, in your drafts and live listings, and can remove them with AI.</p></div>
+            <div class="st-head-txt"><h2>VeRO words</h2><p>Brand or character names that get eBay listings removed. ELMS warns you about the words you save here, in your drafts and live listings, and can remove them for you.</p></div>
             <button class="st-btn primary" id="veroToggleBtn" type="button">VeRO words <span id="veroCountBadge"></span></button>
           </div>
           <div id="veroSection" style="display:none;">
@@ -5594,6 +5594,21 @@
               <label class="toggle-switch"><input type="checkbox" id="aiBeautifyDescriptionEnabled" /><span class="toggle-slider"></span></label>
             </div>
             <div class="st-field"><label>Credits per beautify</label><input class="st-input" type="number" min="0" step="1" id="aiCostBeautify" /></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#128737;</div>
+              <div class="st-head-txt"><h2>VeRO clean</h2><p>"Remove VeRO words" on Drafts and Live Listings. The AI is the expensive part of a clean, so you choose how much of it does. Whatever you choose, every word of the seller's list is gone from the result: what the AI does not rewrite is cut out by rule.</p></div>
+            </div>
+            <div class="st-field">
+              <label>What the AI rewrites</label>
+              <select class="st-input" id="aiVeroMode">
+                <option value="title">Title only (cheapest AI use) - the bullet points and description are cut by rule</option>
+                <option value="full">Title, bullet points and description sentences (reads best, costs the most)</option>
+                <option value="rules">Nothing - no AI at all, every word is cut by rule</option>
+              </select>
+            </div>
+            <p class="st-hint">The price is "Credits per AI title" (a clean is charged only when the AI is really asked something: with <b>Title only</b>, a listing whose words are only in the description or bullet points is cleaned free; with <b>Nothing</b> every clean is free). The cut-by-rule text can read a little abruptly (a word is removed, not rewritten around), which is why the title - the part buyers read first - is the one the AI rewrites. Save with "Save AI settings" below.</p>
           </section>
           <section class="st-card">
             <div class="st-head">
@@ -9908,7 +9923,7 @@ B0EXAMPLE2"></textarea></div>
             <button class="dv-btn small" id="bulkCategoryBtn" type="button" title="AI chooses the eBay category of the selected drafts that have none, from the category list of each draft's own eBay site (a US store uses the US list, a UK store the UK list)">Fill category with AI</button>
             <button class="dv-btn small" id="bulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected drafts and saves them, so publishing does not stop on a missing one">Fill specifics with AI</button>
             <button class="dv-btn small" id="bulkBeautifyBtn" type="button" title="AI restructures the description of the selected drafts into your saved Description Template (Settings &gt; Description Template) and saves it">Beautify descriptions with AI</button>
-            <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the VeRO words out of the selected drafts with AI">Remove VeRO words</button>
+            <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the VeRO words out of the selected drafts">Remove VeRO words</button>
             <button class="dv-btn small" id="bulkDeleteBtn" type="button">Remove</button>
             <button class="dv-btn small" id="bulkClearBtn" type="button">Clear</button>
           </div>
@@ -10764,7 +10779,7 @@ B0EXAMPLE2"></textarea></div>
     const scan = veroScanValues(values);
     if (!scan.terms.length) { showToast('VeRO words', 'No VeRO words found.', 'info'); return; }
     if (String(values.title || '').trim().length < 3) { showToast('Title needed', 'Type a title first.', 'error'); return; }
-    if (!(await elmsConfirm(`AI will take these words out of the title, description, bullet points and item specifics:\n${scan.terms.join(', ')}\n\nIt uses 1 AI credit. The result goes into the editor so you can check it; press Save changes to keep it.`, { title: 'Remove VeRO words', okText: 'Remove with AI' }))) return;
+    if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${scan.terms.join(', ')}\n\nOne AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free. The result goes into the editor so you can check it; press Save changes to keep it.`, { title: 'Remove VeRO words', okText: 'Remove words' }))) return;
     const label = btn.textContent;
     btn.disabled = true; btn.textContent = 'Removing…';
     try {
@@ -11114,7 +11129,7 @@ async function autoSuggestEmptyDraftCategories() {
         const btn = e.currentTarget;
         const l = draftListingMap.get(String(id));
         if (!l || !l._vero.terms.length) return;
-        if (!(await elmsConfirm(`AI will take these words out of the title, description, bullet points and item specifics:\n${l._vero.terms.join(', ')}\n\nIt uses 1 AI credit.`, { title: 'Remove VeRO words', okText: 'Remove with AI' }))) return;
+        if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${l._vero.terms.join(', ')}\n\nOne AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free.`, { title: 'Remove VeRO words', okText: 'Remove words' }))) return;
         const label = btn.textContent;
         btn.disabled = true; btn.textContent = 'Removing…';
         try {
@@ -11919,7 +11934,7 @@ async function autoSuggestEmptyDraftCategories() {
   // instead of being refused outright - the button's own label shows progress across the whole selection.
   async function bulkRemoveLiveVero(ids, btn) {
     const n = ids.length;
-    const ok = await elmsConfirm(`AI will check ${n} selected live listing${n === 1 ? '' : 's'} for VeRO words (brand names eBay removes listings for), take them out of the title, description, bullet points and item specifics, and push the change to eBay.\n\nOnly a listing that actually has VeRO words is changed and costs a credit; the rest are left alone at no cost.${n > 20 ? ' A selection this size is sent in batches of 20, so this can take a while - leave this tab open until it finishes.' : ''}`, { title: 'Remove VeRO words', okText: 'Check and clean' });
+    const ok = await elmsConfirm(`ELMS will check ${n} selected live listing${n === 1 ? '' : 's'} for VeRO words (brand names eBay removes listings for), take them out of the title, description, bullet points and item specifics, and push the change to eBay.\n\nOnly a listing that actually has VeRO words is changed; a credit is used for it only when the AI is needed (otherwise it is free); the rest are left alone at no cost.${n > 20 ? ' A selection this size is sent in batches of 20, so this can take a while - leave this tab open until it finishes.' : ''}`, { title: 'Remove VeRO words', okText: 'Check and clean' });
     if (!ok) return;
 
     const VERO_CHUNK = 20;
@@ -12434,7 +12449,7 @@ async function autoSuggestEmptyDraftCategories() {
     bulkVeroBtn?.addEventListener('click', async () => {
       const chosen = getSelectedIds().map((id) => draftListingMap.get(String(id))).filter((l) => l && l._vero && l._vero.terms.length);
       if (!chosen.length) { showToast('VeRO words', 'None of the selected drafts contain VeRO words.', 'info'); return; }
-      if (!(await elmsConfirm(`${chosen.length} selected draft(s) contain VeRO words.\nAI will take the words out of their title, description, bullet points and item specifics.\n\nIt uses ${chosen.length} AI credit${chosen.length === 1 ? '' : 's'}.`, { title: 'Remove VeRO words', okText: 'Remove with AI' }))) return;
+      if (!(await elmsConfirm(`${chosen.length} selected draft(s) contain VeRO words.\nThe words will be taken out of their title, description, bullet points and item specifics.\n\nAt most ${chosen.length} AI credit${chosen.length === 1 ? '' : 's'} (one per draft, and only when the AI is needed, for example to rewrite the title); a clean done without the AI is free.`, { title: 'Remove VeRO words', okText: 'Remove words' }))) return;
       const label = bulkVeroBtn.textContent;
       bulkVeroBtn.disabled = true;
       let done = 0; let failed = 0; let firstError = '';
@@ -20061,6 +20076,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('aiCategoryEnabled').checked = d.settings.aiCategoryEnabled !== false;
       document.getElementById('aiCostCategory').value = d.costs.AI_CATEGORY ?? 0;
       document.getElementById('aiBeautifyDescriptionEnabled').checked = d.settings.aiBeautifyDescriptionEnabled !== false;
+      document.getElementById('aiVeroMode').value = d.settings.aiVeroMode || 'title';
       document.getElementById('aiCostBeautify').value = d.costs.AI_DESCRIPTION_BEAUTIFY ?? 1;
       document.getElementById('aiDescriptionLength').value = d.settings.aiDescriptionLength || 'standard';
       document.getElementById('aiModel').value = d.settings.aiModel || '';
@@ -20112,6 +20128,7 @@ async function autoSuggestEmptyDraftCategories() {
         aiReplyEnabled: document.getElementById('aiReplyEnabled').checked,
         aiCategoryEnabled: document.getElementById('aiCategoryEnabled').checked,
         aiBeautifyDescriptionEnabled: document.getElementById('aiBeautifyDescriptionEnabled').checked,
+        aiVeroMode: document.getElementById('aiVeroMode').value,
         aiDescriptionLength: document.getElementById('aiDescriptionLength').value,
         aiModel: document.getElementById('aiModel').value.trim(),
         aiDailyLimitUsd: document.getElementById('aiDailyLimitUsd').value.trim(),
