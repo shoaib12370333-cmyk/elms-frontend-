@@ -5681,7 +5681,7 @@
               <div class="st-ico blue">&#128230;</div>
               <div class="st-head-txt"><h2>Bulk-fetch products</h2><p>Paste Amazon product URLs or ASINs, one per line. Each is fetched (Easyparser) in the background and its eBay category is resolved for the marketplace you pick below, so it is ready to push into any seller's Drafts with no extra step.</p></div>
             </div>
-            <div class="st-field"><label>eBay marketplace (the category is resolved for this site)</label>
+            <div class="st-field"><label>eBay marketplace (the category is resolved for this site; the links must be from the same country's Amazon, e.g. eBay UK takes amazon.co.uk links)</label>
               <select class="st-input" id="catalogMarketplaceSelect">
                 <option value="EBAY_US">eBay US</option>
                 <option value="EBAY_GB">eBay UK</option>
@@ -19415,7 +19415,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/admin/product-catalog/fetch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ marketplaceId, amazonUrls: lines }) });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not start the fetch.');
-      status.textContent = `Fetching ${data.total} product${data.total === 1 ? '' : 's'}${data.skipped?.length ? `, ${data.skipped.length} skipped` : ''}…`;
+      status.textContent = `Fetching ${data.total} product${data.total === 1 ? '' : 's'}${data.skipped?.length ? `, ${data.skipped.length} skipped (${data.skipped[0].error})` : ''}…`;
       document.getElementById('catalogInput').value = '';
       pollCatalogJob(data.jobId);
     } catch (err) {
