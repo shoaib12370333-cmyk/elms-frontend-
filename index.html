@@ -5605,7 +5605,12 @@
                 <label>Claude model</label>
                 <input class="st-input mono" id="aiModel" placeholder="claude-haiku-4-5-20251001" />
               </div>
+              <div class="st-field">
+                <label>Daily AI spending limit (US dollars, 0 = no limit)</label>
+                <input class="st-input" type="number" min="0" step="0.5" id="aiDailyLimitUsd" placeholder="0" />
+              </div>
             </div>
+            <p class="st-hint">When today's estimated spend (UTC day, shown in "AI spend" below) reaches the limit, every AI feature - categories, item specifics, VeRO clean, replies, descriptions - pauses until tomorrow or until you raise the limit. Answers already kept from an earlier identical question are still given. Sellers whose action is stopped get their credits back.</p>
             <div class="st-field" style="margin-top:12px;">
               <label>Extra instructions (optional)</label>
               <textarea class="st-input" id="aiCustomInstructions" rows="3" maxlength="600" style="height:auto;padding:10px 12px;" placeholder="e.g. Use British English. Keep a friendly, professional tone. Never mention shipping speed."></textarea>
@@ -5614,6 +5619,13 @@
               <button class="st-btn primary" id="saveAiSettingsBtn" type="button">Save AI settings</button>
               <div id="aiSettingsStatus"></div>
             </div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico yellow">&#128176;</div>
+              <div class="st-head-txt"><h2>AI spend (estimated)</h2><p>What the Anthropic API costs, worked out from the tokens ELMS used at the model's public price. The exact bill is in the Anthropic console.</p></div>
+            </div>
+            <div id="adminAiSpend"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           </section>
           <section class="st-card">
             <div class="st-head">
@@ -19415,7 +19427,14 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/admin/product-catalog/fetch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ marketplaceId, amazonUrls: lines }) });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not start the fetch.');
-      status.textContent = `Fetching ${data.total} product${data.total === 1 ? '' : 's'}${data.skipped?.length ? `, ${data.skipped.length} skipped (${data.skipped[0].error})` : ''}…`;
+      // the lines that were not taken, by reason: what is already in the catalog (or being fetched) apart from what cannot be used
+      const notTaken = data.skipped || [];
+      const already = notTaken.filter((s) => /^Already /.test(s.error)).length;
+      const other = notTaken.filter((s) => !/^Already /.test(s.error));
+      const parts = [];
+      if (already) parts.push(already + ' already in the catalog or being fetched');
+      if (other.length) parts.push(other.length + ' skipped (' + other[0].error + ')');
+      status.textContent = `Fetching ${data.total} product${data.total === 1 ? '' : 's'}${parts.length ? ', ' + parts.join('; ') : ''}…`;
       document.getElementById('catalogInput').value = '';
       pollCatalogJob(data.jobId);
     } catch (err) {
@@ -19548,15 +19567,17 @@ async function autoSuggestEmptyDraftCategories() {
     let tried = 0;
     let filled = 0;
     let limitHit = false;
+    let aiPaused = false;
     try {
       for (;;) {
         const out = await adminPost('/api/admin/product-catalog/fill-categories', { marketplaceId, afterId });
         tried += out.tried; filled += out.filled; afterId = out.nextAfterId;
         if (out.ebayLimitReached) limitHit = true;
+        if (out.budgetReached) aiPaused = true;
         if (status) status.textContent = 'Looked at ' + tried.toLocaleString() + ', found a category for ' + filled.toLocaleString() + '…';
-        if (out.done) break;
+        if (out.done || out.budgetReached) break; // the AI is paused for the day (the daily spending limit): going on would only skip every product
       }
-      showToast('Product Catalog', filled.toLocaleString() + ' of ' + tried.toLocaleString() + ' products got a category.' + (limitHit ? " eBay's daily limit for category lookups was reached - the rest can be tried again later." : ''), filled ? 'success' : '');
+      showToast('Product Catalog', filled.toLocaleString() + ' of ' + tried.toLocaleString() + ' products got a category.' + (limitHit ? " eBay's daily limit for category lookups was reached - the rest can be tried again later." : '') + (aiPaused ? ' The AI is paused for today (the daily AI spending limit in Admin > AI) - the rest can be tried again tomorrow or after raising the limit.' : ''), filled ? 'success' : '');
     } catch (err) {
       showToast('Product Catalog', err.message, 'error');
     } finally {
@@ -20043,10 +20064,12 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('aiCostBeautify').value = d.costs.AI_DESCRIPTION_BEAUTIFY ?? 1;
       document.getElementById('aiDescriptionLength').value = d.settings.aiDescriptionLength || 'standard';
       document.getElementById('aiModel').value = d.settings.aiModel || '';
+      document.getElementById('aiDailyLimitUsd').value = d.settings.aiDailyLimitUsd || 0;
       document.getElementById('aiCustomInstructions').value = d.settings.aiCustomInstructions || '';
       banner.className = 'ad-banner ' + (d.apiKeyConfigured ? 'ok' : 'bad');
       banner.textContent = d.apiKeyConfigured ? 'AI is connected. Users are charged the credit cost below each time they use an AI button.' : 'ANTHROPIC_API_KEY is not set on the server, so every AI button will fail. Add it in Render \u2192 Environment.';
-      const u = d.usage; const uc = u.category || { calls: 0, failed: 0, credits: 0 }; const ub = u.beautify || { calls: 0, failed: 0, credits: 0 }; const us = u.support || { calls: 0, failed: 0, credits: 0 };
+      renderAdminAiSpend(d.spend);
+      const u = d.usage; const uc = u.category || { calls: 0, failed: 0, credits: 0 }; const ub = u.beautify || { calls: 0, failed: 0, credits: 0 }; const us = u.support || { calls: 0, failed: 0, credits: 0 }; const uv = u.vero || { calls: 0, failed: 0, credits: 0 };
       document.getElementById('adminAiUsage').innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Feature</th><th>Successful</th><th>Failed</th><th>Credits spent</th></tr></thead><tbody>
         <tr><td>AI title</td><td>${u.title.calls}</td><td>${u.title.failed}</td><td>${u.title.credits}</td></tr>
         <tr><td>AI description</td><td>${u.description.calls}</td><td>${u.description.failed}</td><td>${u.description.credits}</td></tr>
@@ -20054,9 +20077,29 @@ async function autoSuggestEmptyDraftCategories() {
         <tr><td>AI category</td><td>${uc.calls}</td><td>${uc.failed}</td><td>${uc.credits}</td></tr>
         <tr><td>AI description beautifier</td><td>${ub.calls}</td><td>${ub.failed}</td><td>${ub.credits}</td></tr>
         <tr><td>AI message replies</td><td>${u.reply.calls}</td><td>${u.reply.failed}</td><td>${u.reply.credits}</td></tr>
+        <tr><td>VeRO clean</td><td>${uv.calls}</td><td>${uv.failed}</td><td>${uv.credits}</td></tr>
         <tr><td>AI support assistant</td><td>${us.calls}</td><td>${us.failed}</td><td>${us.credits}</td></tr></tbody></table></div>
         <p class="st-hint">Tokens used: ${u.inputTokens.toLocaleString()} in / ${u.outputTokens.toLocaleString()} out. Failed calls are refunded to the user.</p>`;
     } catch (err) { banner.className = 'ad-banner bad'; banner.textContent = err.message; }
+  }
+  /** Admin > AI > "AI spend": today and the last days in dollars (every real call counted on the server), and what each feature used. */
+  function renderAdminAiSpend(sp) {
+    const el = document.getElementById('adminAiSpend'); if (!el) return;
+    if (!sp) { el.innerHTML = '<p class="st-hint">The spend could not be read right now.</p>'; return; }
+    const money = (n) => '$' + Number(n || 0).toFixed(2);
+    const num = (n) => Number(n || 0).toLocaleString();
+    const names = { category: 'AI category', vero: 'VeRO clean', aspects: 'AI item specifics', description: 'AI description', beautify: 'Description beautifier', title: 'AI title', reply: 'AI message replies', support: 'AI support assistant' };
+    const dayRows = sp.days.map((x) => `<tr><td>${escapeHtml(x.day)}</td><td>${num(x.calls)}</td><td>${num(x.inputTokens)} / ${num(x.outputTokens)}</td><td>${money(x.usd)}</td></tr>`).join('');
+    const featureRows = Object.entries(sp.features || {}).sort((a, b) => b[1].usd - a[1].usd).map(([k, f]) => `<tr><td>${escapeHtml(names[k] || k)}</td><td>${num(f.calls)}</td><td>${num(f.failed)}</td><td>${num(f.inputTokens)} / ${num(f.outputTokens)}</td><td>${money(f.usd)}</td></tr>`).join('');
+    const paused = sp.limitUsd > 0 && sp.todayUsd >= sp.limitUsd;
+    const oldest = sp.days.length ? sp.days[sp.days.length - 1].day : null;
+    const counting = !sp.countedSince
+      ? '<p class="st-hint"><b>Counting starts with the next AI call:</b> the daily table is empty until then. The feature table below already shows the last ' + sp.windowDays + ' days, from the usage log.</p>'
+      : (oldest && sp.countedSince > oldest ? '<p class="st-hint"><b>Counting started on ' + escapeHtml(sp.countedSince) + ':</b> earlier days show $0.00 because they were not counted. The feature table below covers all ' + sp.windowDays + ' days, from the usage log.</p>' : '');
+    el.innerHTML = counting + `<p><b>Today:</b> ${money(sp.todayUsd)}${sp.limitUsd > 0 ? ` of the ${money(sp.limitUsd)} daily limit${paused ? ' - <b>the AI is paused until tomorrow (UTC)</b>' : ''}` : ' (no daily limit set)'} &nbsp;&middot;&nbsp; <b>Last ${sp.windowDays} days:</b> ${money(sp.windowUsd)}</p>
+      <div class="st-table-wrap"><table class="st-table"><thead><tr><th>Day (UTC)</th><th>AI calls</th><th>Tokens in / out</th><th>Estimated cost</th></tr></thead><tbody>${dayRows}</tbody></table></div>
+      <div class="st-table-wrap" style="margin-top:12px;"><table class="st-table"><thead><tr><th>Feature (last ${sp.windowDays} days)</th><th>Successful</th><th>Failed</th><th>Tokens in / out</th><th>Estimated cost</th></tr></thead><tbody>${featureRows || '<tr><td colspan="5">Nothing logged yet.</td></tr>'}</tbody></table></div>
+      <p class="st-hint">The daily table counts every call made to Anthropic, from the day counting started. The feature table comes from the usage log: it also covers the days before, but it does not include every call (for example the checks that a suggested category fits). (Each product fetched into the Product Catalog is one AI call for its category.)</p>`;
   }
   document.getElementById('saveAiSettingsBtn')?.addEventListener('click', async () => {
     const btn = document.getElementById('saveAiSettingsBtn'), st = document.getElementById('aiSettingsStatus');
@@ -20071,6 +20114,7 @@ async function autoSuggestEmptyDraftCategories() {
         aiBeautifyDescriptionEnabled: document.getElementById('aiBeautifyDescriptionEnabled').checked,
         aiDescriptionLength: document.getElementById('aiDescriptionLength').value,
         aiModel: document.getElementById('aiModel').value.trim(),
+        aiDailyLimitUsd: document.getElementById('aiDailyLimitUsd').value.trim(),
         aiCustomInstructions: document.getElementById('aiCustomInstructions').value.trim(),
         costs: { AI_TITLE: Number(document.getElementById('aiCostTitle').value), AI_DESCRIPTION: Number(document.getElementById('aiCostDescription').value), AI_ASPECTS: Number(document.getElementById('aiCostAspects').value), AI_REPLY: Number(document.getElementById('aiCostReply').value), AI_CATEGORY: Number(document.getElementById('aiCostCategory').value), AI_DESCRIPTION_BEAUTIFY: Number(document.getElementById('aiCostBeautify').value) },
       };
@@ -20078,6 +20122,7 @@ async function autoSuggestEmptyDraftCategories() {
       const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save the AI settings.');
       st.className = 'success'; st.textContent = 'Saved. Active immediately.';
       loadAdminActionCosts();
+      loadAdminAi();
     } catch (err) { st.className = 'error'; st.textContent = err.message; }
     finally { btn.disabled = false; }
   });
