@@ -11825,8 +11825,22 @@ async function autoSuggestEmptyDraftCategories() {
   // ---------- Live Listings: delete many at once (the same POST /api/listings/bulk-delete Drafts' own Remove uses -
   // it already ends a live eBay offer first, one at a time, before removing the ELMS record). Smaller chunks than
   // Drafts' 1000: most selected rows here actually have a real eBay offer to end, unlike a draft. ----------
+  // What the delete did on eBay, in words (the server reports it per delete: see endOfferAndSay in routes/listings.js). A listing ended in Seller Hub leaves an
+  // unpublished offer on eBay, so "already ended there" is the honest answer for those: this delete did not end them.
+  function ebayDeleteSummary(e) {
+    if (!e) return '';
+    const n = (k) => Number(e[k]) || 0;
+    const bits = [];
+    if (n('ended')) bits.push(`${n('ended').toLocaleString()} ${n('ended') === 1 ? 'was a live listing' : 'were live listings'} and ELMS ended ${n('ended') === 1 ? 'it' : 'them'} on eBay now`);
+    if (n('alreadyEnded')) bits.push(`${n('alreadyEnded').toLocaleString()} ${n('alreadyEnded') === 1 ? 'was' : 'were'} already ended on eBay before (for example in Seller Hub), so only the offer was removed`);
+    if (n('alreadyGone')) bits.push(`${n('alreadyGone').toLocaleString()} ${n('alreadyGone') === 1 ? 'was' : 'were'} not on eBay any more`);
+    if (n('unchecked')) bits.push(`${n('unchecked').toLocaleString()} could not be checked (eBay did not say what it held), the delete itself went through`);
+    return bits.length ? 'On eBay: ' + bits.join('; ') + '.' : '';
+  }
+
   async function bulkDeleteLiveListings(ids, btn) {
     const total = ids.length;
+    const ebayTotals = { ended: 0, alreadyEnded: 0, alreadyGone: 0, unchecked: 0 };
     const label = btn.textContent;
     btn.disabled = true;
     let deleted = 0;
@@ -11843,6 +11857,7 @@ async function autoSuggestEmptyDraftCategories() {
         const removed = Number(data.deletedCount) || 0;
         const errors = data.errors || [];
         deleted += removed;
+        Object.keys(ebayTotals).forEach((k) => { ebayTotals[k] += Number(data.ebay && data.ebay[k]) || 0; });
         notDeleted += Math.max(0, chunk.length - removed);
         errors.forEach((e) => { if (problems.length < 8) problems.push(String(e)); });
       } catch (err) {
@@ -11857,8 +11872,14 @@ async function autoSuggestEmptyDraftCategories() {
     loadListings();
     if (notDeleted) {
       // a toast is gone in seconds and the reason is the one thing the seller needs, so this window stays until OK
-      await elmsConfirm(`${deleted} of ${total} deleted. ${notDeleted} could not be deleted - what was not removed is still in your list:\n\n` + problems.map((p) => '\u2022 ' + p.slice(0, 220)).join('\n'), { title: 'Not everything was deleted', info: true });
-    } else showToast('Deleted', `${deleted} listing${deleted === 1 ? '' : 's'} deleted.`, 'success');
+      const onEbay = ebayDeleteSummary(ebayTotals);
+      await elmsConfirm(`${deleted} of ${total} deleted. ${notDeleted} could not be deleted - what was not removed is still in your list:\n\n` + problems.map((p) => '\u2022 ' + p.slice(0, 220)).join('\n') + (onEbay ? '\n\n' + onEbay : ''), { title: 'Not everything was deleted', info: true });
+    } else {
+      const onEbay = ebayDeleteSummary(ebayTotals);
+      // a toast is gone in seconds: when there is something to say about eBay, it stays in a window until OK
+      if (onEbay) await elmsConfirm(`${deleted.toLocaleString()} listing${deleted === 1 ? '' : 's'} deleted from ELMS.\n\n` + onEbay, { title: 'Deleted', info: true });
+      else showToast('Deleted', `${deleted} listing${deleted === 1 ? '' : 's'} deleted.`, 'success');
+    }
   }
 
   // ---------- Bulk: AI chooses the eBay category of the selected drafts that have none ----------
@@ -13015,10 +13036,11 @@ async function autoSuggestEmptyDraftCategories() {
       if (ids.length) bulkFitLiveTitles(ids, e.currentTarget);
     });
     root.querySelector('#llBulkDeleteBtn')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget; // taken BEFORE the await: once the click event is over the browser sets e.currentTarget back to null
       const ids = [...llSelected];
       if (!ids.length) return;
       if (!(await elmsConfirm(`Remove ${ids.length} selected listing${ids.length === 1 ? '' : 's'} from ELMS? Any that are still live on eBay will also be ended there.`, { title: 'Delete listings', danger: true }))) return;
-      bulkDeleteLiveListings(ids, e.currentTarget);
+      bulkDeleteLiveListings(ids, btn);
     });
     root.querySelector('#llRelistBtn')?.addEventListener('click', (e) => {
       const ids = [...llSelected];
@@ -13309,6 +13331,8 @@ async function autoSuggestEmptyDraftCategories() {
       if (!res.ok || !data.success) { alert(data.error || 'Could not delete this listing.'); return; }
       llSelected.delete(String(l.id));
       llRefresh();
+      const said = { ended: 'It was live on eBay and ELMS ended it.', alreadyEnded: 'It was already ended on eBay before (for example in Seller Hub); this delete did not end it, it only removed the offer.', alreadyGone: 'eBay did not have it any more.', unchecked: 'eBay did not say whether it was live; the delete went through.' }[data.ebay];
+      showToast('Deleted', said ? 'The listing is deleted from ELMS. ' + said : 'The listing is deleted.', 'success');
     } catch (err) { alert('Could not connect to the server: ' + err.message); }
   }
 
@@ -15720,8 +15744,9 @@ async function autoSuggestEmptyDraftCategories() {
   document.getElementById('orderedTextSaveBtn')?.addEventListener('click', () => saveAutoMessageSetting('orderedText', document.getElementById('orderedTextInput').value));
   document.getElementById('shippedTextSaveBtn')?.addEventListener('click', () => saveAutoMessageSetting('shippedText', document.getElementById('shippedTextInput').value));
   document.getElementById('secLogoutOthersBtn')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget; // before the await (it is null once the click event is over)
     if (!(await elmsConfirm('Log out every other device? This device stays signed in.'))) return;
-    const btn = e.currentTarget; btn.disabled = true;
+    btn.disabled = true;
     try {
       const r = await apiFetch('/api/security/revoke-others', { method: 'POST' }); const j = await r.json();
       if (!r.ok || !j.success) throw new Error(j.error || 'Could not log the other devices out.');
@@ -15730,8 +15755,9 @@ async function autoSuggestEmptyDraftCategories() {
     btn.disabled = false; loadSecurityOverview();
   });
   document.getElementById('secLogoutAllBtn')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget; // before the await (it is null once the click event is over)
     if (!(await elmsConfirm('Log out on EVERY device, including this one? You will need to sign in again. Do this if you think someone else has your account.', { danger: true }))) return;
-    const btn = e.currentTarget; btn.disabled = true;
+    btn.disabled = true;
     try {
       const r = await apiFetch('/api/security/logout-everywhere', { method: 'POST' }); const j = await r.json();
       if (!r.ok || !j.success) throw new Error(j.error || 'Could not log out everywhere.');
