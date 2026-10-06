@@ -8075,8 +8075,9 @@ B0EXAMPLE2"></textarea></div>
   // Every store-specific list (drafts, live listings, orders, messages, notifications,
   // import history, dashboard) is requested for the store that is selected in the
   // sidebar. Other stores' data stays in the backend and comes back when that store
-  // is selected again.
-  const STORE_SCOPED_GET = /^\/api\/(listings(\/queue|\/counts|\/summary|\/ids|\/export)?|dashboard|imports|system-notifications(\/unread-count)?|orders|notifications(\/unread-count)?)$/;
+  // is selected again. A background sync is started for the selected store (POST .../sync), so the page must ask how it is going
+  // (GET .../sync-status) for the SAME store: the server keeps one running job per store, and asking without it finds none.
+  const STORE_SCOPED_GET = /^\/api\/(listings(\/queue|\/counts|\/summary|\/ids|\/export)?|dashboard|imports|system-notifications(\/unread-count)?|orders(\/sync-status)?|notifications(\/unread-count|\/sync-status)?)$/;
   const STORE_SCOPED_POST = /^\/api\/(orders\/sync|notifications\/sync|system-notifications\/mark-all-read)$/;
   let activeStoreId; // undefined = not loaded yet, '' = no store connected
   let activeStorePromise = null;
