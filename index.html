@@ -5612,6 +5612,35 @@
           </section>
           <section class="st-card">
             <div class="st-head">
+              <div class="st-ico blue">&#9881;</div>
+              <div class="st-head-txt"><h2>Models per feature</h2><p>Each AI job can use its own model, so a cheap one does the simple jobs. Leave a box empty to use the default model (the Claude model below). If the model you choose fails, or its company has no key on the server, the default model answers instead. Claude names start with <code>claude-</code>, OpenAI's with <code>gpt-</code>; OpenAI needs <code>OPENAI_API_KEY</code> in Render &rarr; Environment.</p></div>
+            </div>
+            <div id="aiKeysStatus" class="ad-banner" style="margin-bottom:12px;"></div>
+            <div class="st-table-wrap"><table class="st-table"><thead><tr><th>Job</th><th>Model</th><th>Price per million tokens (in / out)</th></tr></thead><tbody id="aiFeatureModelsBody"></tbody></table></div>
+            <datalist id="aiModelList"><option value="gpt-5-nano"></option><option value="gpt-5-mini"></option><option value="gpt-5"></option><option value="claude-haiku-4-5-20251001"></option></datalist>
+            <div class="st-actions" style="margin-top:12px;">
+              <button class="st-btn" id="aiMixRecommendedBtn" type="button">Fill the recommended mix</button>
+              <button class="st-btn" id="aiMixClearBtn" type="button">Use the default model for every job</button>
+            </div>
+            <p class="st-hint">The recommended mix: <b>GPT-5 mini</b> for the category pick and the item specifics, <b>GPT-5 nano</b> for the category check, VeRO clean and titles; buyer replies, support and descriptions stay on the default model (customers read those). It is a starting point: use "Test models" below to see how often each model finds the category your catalog already has, then press "Save AI settings" at the bottom.</p>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico green">&#129514;</div>
+              <div class="st-head-txt"><h2>Test models</h2><p>Asks each model the real category question (with your uploaded category list) for products already in the Product Catalog, and counts how often it finds the category the catalog holds. It runs in the background and costs a few cents in all (counted in "AI spend"). The catalog's categories were chosen by the default model and checked, so "same category" is the thing to protect.</p></div>
+            </div>
+            <div class="st-grid">
+              <div class="st-field"><label>Models to test (up to 4, separated by commas)</label><input class="st-input mono" id="aiTestModels" value="gpt-5-mini, gpt-5-nano" /></div>
+              <div class="st-field"><label>eBay site</label>
+                <select class="st-input" id="aiTestMarketplace"><option value="EBAY_US">eBay US</option><option value="EBAY_GB">eBay UK</option><option value="EBAY_DE">eBay Germany</option><option value="EBAY_FR">eBay France</option><option value="EBAY_IT">eBay Italy</option><option value="EBAY_ES">eBay Spain</option><option value="EBAY_CA">eBay Canada</option><option value="EBAY_AU">eBay Australia</option></select>
+              </div>
+              <div class="st-field"><label>Products (5 to 100)</label><input class="st-input" type="number" min="5" max="100" step="1" id="aiTestSample" value="40" /></div>
+            </div>
+            <div class="st-actions"><button class="st-btn primary" id="aiTestRunBtn" type="button">Run the test</button><div id="aiTestStatus" class="meta-line"></div></div>
+            <div id="aiTestResults"></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
               <div class="st-ico blue">&#129504;</div>
               <div class="st-head-txt"><h2>Model and style</h2><p>Applies to both AI title and AI description for every user.</p></div>
             </div>
@@ -20082,8 +20111,12 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('aiModel').value = d.settings.aiModel || '';
       document.getElementById('aiDailyLimitUsd').value = d.settings.aiDailyLimitUsd || 0;
       document.getElementById('aiCustomInstructions').value = d.settings.aiCustomInstructions || '';
-      banner.className = 'ad-banner ' + (d.apiKeyConfigured ? 'ok' : 'bad');
-      banner.textContent = d.apiKeyConfigured ? 'AI is connected. Users are charged the credit cost below each time they use an AI button.' : 'ANTHROPIC_API_KEY is not set on the server, so every AI button will fail. Add it in Render \u2192 Environment.';
+      const anyKey = d.apiKeyConfigured || d.openaiKeyConfigured;
+      banner.className = 'ad-banner ' + (anyKey ? 'ok' : 'bad');
+      banner.textContent = !anyKey
+        ? 'ANTHROPIC_API_KEY is not set on the server, so every AI button will fail. Add it in Render \u2192 Environment.'
+        : (d.apiKeyConfigured ? 'AI is connected. Users are charged the credit cost below each time they use an AI button.' : 'ANTHROPIC_API_KEY is not set: every job on a Claude model will fail (set the key, or choose a GPT model for those jobs in "Models per feature").');
+      renderAiFeatureModels(d.settings.aiFeatureModels || {}, d);
       renderAdminAiSpend(d.spend);
       const u = d.usage; const uc = u.category || { calls: 0, failed: 0, credits: 0 }; const ub = u.beautify || { calls: 0, failed: 0, credits: 0 }; const us = u.support || { calls: 0, failed: 0, credits: 0 }; const uv = u.vero || { calls: 0, failed: 0, credits: 0 };
       document.getElementById('adminAiUsage').innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Feature</th><th>Successful</th><th>Failed</th><th>Credits spent</th></tr></thead><tbody>
@@ -20098,6 +20131,135 @@ async function autoSuggestEmptyDraftCategories() {
         <p class="st-hint">Tokens used: ${u.inputTokens.toLocaleString()} in / ${u.outputTokens.toLocaleString()} out. Failed calls are refunded to the user.</p>`;
     } catch (err) { banner.className = 'ad-banner bad'; banner.textContent = err.message; }
   }
+  // ---------- Admin > AI > Models per feature + Test models ----------
+  // The AI jobs (config/aiFeatures.js on the server), what they do, and the model each uses; an empty box = the default model.
+  const AI_FEATURE_ROWS = [
+    ['category', 'AI category', 'picks the eBay category from your uploaded list (the biggest spender)'],
+    ['categoryFit', 'Category check', 'yes / no: does a suggested category fit the product'],
+    ['aspects', 'Item specifics', 'fills the item specifics'],
+    ['vero', 'VeRO clean', 'rewrites the title (and more in the full mode)'],
+    ['title', 'AI title', '"Optimise title"'],
+    ['description', 'AI description', '"Write description"'],
+    ['beautify', 'Description beautifier', 'restructures a description into the seller\'s template'],
+    ['reply', 'Buyer replies', 'drafts replies that buyers read'],
+    ['support', 'Support assistant', 'answers support tickets'],
+  ];
+  const AI_RECOMMENDED_MIX = { category: 'gpt-5-mini', aspects: 'gpt-5-mini', categoryFit: 'gpt-5-nano', vero: 'gpt-5-nano', title: 'gpt-5-nano' };
+  // dollars per million tokens (input, output) - the same table as the server's config/aiPricing.js, for the models offered here
+  const AI_MODEL_PRICES = [['gpt-5-nano', 0.05, 0.4], ['gpt-5-mini', 0.25, 2], ['gpt-5-pro', 15, 120], ['gpt-5-2025', 1.25, 10], ['claude-haiku-4', 1, 5], ['claude-sonnet-', 3, 15]];
+  function aiModelPriceText(model, defaultModel) {
+    const name = String(model || '').trim().toLowerCase();
+    if (!name) return defaultModel ? 'the default model\'s price: ' + aiModelPriceText(defaultModel) : 'the default model\'s price';
+    const row = name === 'gpt-5' ? ['gpt-5', 1.25, 10] : AI_MODEL_PRICES.find((r) => name.startsWith(r[0]));
+    return row ? '$' + row[1] + ' / $' + row[2] : 'not in the price list here: counted as the most expensive when the limit is checked';
+  }
+  const aiIsOpenAiModel = (name) => /^(gpt-|chatgpt-|o\d)/i.test(String(name || '').trim());
+  let aiKeys = { anthropic: true, openai: false };
+  function updateAiKeysStatus() {
+    const el = document.getElementById('aiKeysStatus'); if (!el) return;
+    const chosen = collectAiFeatureModels();
+    const needsOpenAi = Object.values(chosen).some(aiIsOpenAiModel);
+    const warn = needsOpenAi && !aiKeys.openai;
+    el.className = 'ad-banner ' + (warn ? 'bad' : 'ok');
+    el.textContent = 'Anthropic key: ' + (aiKeys.anthropic ? 'set' : 'NOT set') + '  ·  OpenAI key: ' + (aiKeys.openai ? 'set' : 'NOT set') + (warn ? ' - the jobs you gave a GPT model use the default model until OPENAI_API_KEY is added in Render → Environment.' : '');
+  }
+  function collectAiFeatureModels() {
+    const out = {};
+    document.querySelectorAll('[data-ai-feature]').forEach((input) => { const v = input.value.trim(); if (v) out[input.getAttribute('data-ai-feature')] = v; });
+    return out;
+  }
+  function renderAiFeatureModels(chosen, d) {
+    const body = document.getElementById('aiFeatureModelsBody'); if (!body) return;
+    aiKeys = { anthropic: !!d.apiKeyConfigured, openai: !!d.openaiKeyConfigured };
+    body.innerHTML = AI_FEATURE_ROWS.map(([key, name, what]) => `<tr>
+      <td><b>${escapeHtml(name)}</b><div class="meta-line">${escapeHtml(what)}</div></td>
+      <td><input class="st-input mono" style="min-width:170px;" list="aiModelList" data-ai-feature="${key}" value="${escapeAttr(chosen[key] || '')}" placeholder="(default model)" autocomplete="off" /></td>
+      <td class="meta-line" data-ai-price="${key}"></td></tr>`).join('');
+    const refresh = () => {
+      const def = document.getElementById('aiModel').value.trim() || 'claude-haiku-4-5';
+      document.querySelectorAll('[data-ai-feature]').forEach((input) => {
+        const cell = document.querySelector('[data-ai-price="' + input.getAttribute('data-ai-feature') + '"]');
+        if (cell) cell.textContent = aiModelPriceText(input.value, def);
+      });
+      updateAiKeysStatus();
+    };
+    body.querySelectorAll('[data-ai-feature]').forEach((input) => input.addEventListener('input', refresh));
+    document.getElementById('aiModel').oninput = refresh;
+    body.refreshPrices = refresh;
+    refresh();
+    const test = document.getElementById('aiTestModels');
+    if (test && !test.dataset.touched) test.value = [...new Set([d.settings.aiModel, 'gpt-5-mini', 'gpt-5-nano'].filter(Boolean))].join(', ');
+    if (test) test.addEventListener('input', () => { test.dataset.touched = '1'; }, { once: true });
+    // a test still running (or finished) when the page was reloaded is picked up again
+    let saved = null; try { saved = sessionStorage.getItem('aiTestJob'); } catch (_) { /* storage can be blocked */ }
+    if (saved && aiTestWatching !== saved) {
+      const btn = document.getElementById('aiTestRunBtn'); if (btn) btn.disabled = true;
+      const s = document.getElementById('aiTestStatus'); if (s) s.textContent = 'Reading the test…';
+      pollAiTest(saved);
+    }
+  }
+  document.getElementById('aiMixRecommendedBtn')?.addEventListener('click', () => {
+    document.querySelectorAll('[data-ai-feature]').forEach((input) => { input.value = AI_RECOMMENDED_MIX[input.getAttribute('data-ai-feature')] || ''; });
+    document.getElementById('aiFeatureModelsBody')?.refreshPrices?.();
+  });
+  document.getElementById('aiMixClearBtn')?.addEventListener('click', () => {
+    document.querySelectorAll('[data-ai-feature]').forEach((input) => { input.value = ''; });
+    document.getElementById('aiFeatureModelsBody')?.refreshPrices?.();
+  });
+
+  let aiTestTimer = null;
+  let aiTestWatching = null; // the test this page is following
+  const forgetAiTest = () => { aiTestWatching = null; try { sessionStorage.removeItem('aiTestJob'); } catch (_) { /* storage can be blocked */ } };
+  function renderAiTest(job) {
+    const status = document.getElementById('aiTestStatus');
+    const out = document.getElementById('aiTestResults');
+    const pct = job.total ? Math.round((100 * job.done) / job.total) : 0;
+    if (status) status.textContent = job.status === 'running' ? 'Testing… ' + job.done + ' of ' + job.total + ' questions asked (' + pct + '%)' : job.status === 'done' ? 'Finished: ' + job.sample + ' products, ' + job.models.length + ' model' + (job.models.length === 1 ? '' : 's') + '.' : 'The test stopped: ' + (job.error || 'unknown error');
+    if (!out) return;
+    const money = (n) => (n == null ? '-' : '$' + Number(n).toFixed(2));
+    const rows = job.models.map((m) => `<tr>
+      <td class="mono">${escapeHtml(m.model)}</td>
+      <td><b>${m.agreePct == null ? '-' : m.agreePct + '%'}</b> <span class="meta-line">(${m.agree} of ${m.asked})</span></td>
+      <td>${money(m.usdPer1000)}</td>
+      <td>${m.avgMs ? (m.avgMs / 1000).toFixed(1) + ' s' : '-'}</td>
+      <td class="meta-line">${m.noFit ? m.noFit + ' found nothing that fits' : ''}${m.failed ? (m.noFit ? ', ' : '') + m.failed + ' failed' + (m.errors && m.errors[0] ? ' (' + escapeHtml(m.errors[0]) + ')' : '') : ''}${m.priceKnown === false ? '<div>This model is not in the price list: the cost shown is the worst case.</div>' : ''}</td></tr>`).join('');
+    out.innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Model</th><th>Found the catalog's category</th><th>Cost per 1,000 products</th><th>Speed per product</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="st-hint">"Found the catalog's category" is out of every product asked: a product the model failed on counts against it. Use a model for a job when it finds nearly as many as the default model and costs far less.</p>`;
+  }
+  let aiTestFails = 0;
+  async function pollAiTest(jobId) {
+    clearTimeout(aiTestTimer);
+    aiTestWatching = jobId;
+    const btn = document.getElementById('aiTestRunBtn');
+    try {
+      const res = await apiFetch('/api/admin/ai/model-test/' + jobId); const d = await res.json();
+      if (res.status === 404) { forgetAiTest(); throw new Error(d.error || 'That test is gone.'); }
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not read the test.');
+      aiTestFails = 0;
+      renderAiTest(d.job);
+      if (d.job.status === 'running') { aiTestTimer = setTimeout(() => pollAiTest(jobId), 3000); return; }
+      forgetAiTest();
+    } catch (err) {
+      // a poll that fails (a network blip, the server restarting) is tried again a few times; only a test that is gone, or the fifth failure in a row, ends the watching
+      if (aiTestWatching === jobId && ++aiTestFails < 5) { aiTestTimer = setTimeout(() => pollAiTest(jobId), 3000); return; }
+      aiTestFails = 0; aiTestWatching = null;
+      const s = document.getElementById('aiTestStatus'); if (s) s.textContent = err.message;
+    }
+    if (btn) btn.disabled = false;
+  }
+  document.getElementById('aiTestRunBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('aiTestRunBtn'); const status = document.getElementById('aiTestStatus');
+    const models = document.getElementById('aiTestModels').value.split(',').map((s) => s.trim()).filter(Boolean);
+    btn.disabled = true; status.textContent = 'Starting…'; document.getElementById('aiTestResults').innerHTML = '';
+    try {
+      const res = await apiFetch('/api/admin/ai/model-test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ models, marketplaceId: document.getElementById('aiTestMarketplace').value, sample: Number(document.getElementById('aiTestSample').value) }) });
+      const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not start the test.');
+      status.textContent = 'Testing ' + d.models.length + ' model' + (d.models.length === 1 ? '' : 's') + ' on ' + d.sample + ' products (about $' + Number(d.estimatedUsd).toFixed(2) + ')…';
+      try { sessionStorage.setItem('aiTestJob', d.jobId); } catch (_) { /* storage can be blocked */ }
+      pollAiTest(d.jobId);
+    } catch (err) { status.textContent = err.message; btn.disabled = false; }
+  });
+
   /** Admin > AI > "AI spend": today and the last days in dollars (every real call counted on the server), and what each feature used. */
   function renderAdminAiSpend(sp) {
     const el = document.getElementById('adminAiSpend'); if (!el) return;
@@ -20129,6 +20291,7 @@ async function autoSuggestEmptyDraftCategories() {
         aiCategoryEnabled: document.getElementById('aiCategoryEnabled').checked,
         aiBeautifyDescriptionEnabled: document.getElementById('aiBeautifyDescriptionEnabled').checked,
         aiVeroMode: document.getElementById('aiVeroMode').value,
+        aiFeatureModels: collectAiFeatureModels(),
         aiDescriptionLength: document.getElementById('aiDescriptionLength').value,
         aiModel: document.getElementById('aiModel').value.trim(),
         aiDailyLimitUsd: document.getElementById('aiDailyLimitUsd').value.trim(),
