@@ -5196,13 +5196,13 @@
             <textarea class="st-input" id="orderedTextInput" rows="2" maxlength="1000" style="height:auto;padding:10px 12px;" placeholder="Hi {{buyer_name}}, quick update on your order of {{product_name}}... (leave blank to use the default message)"></textarea>
             <div class="st-actions"><button class="st-btn" type="button" id="orderedTextSaveBtn">Save wording</button></div>
           </div>
-          <label class="sc-toggle" style="margin-top:10px;"><input type="checkbox" id="autoShippedToggle" /><span class="toggle-slider-sm"></span><span><b>"Shipped" update</b><small>Sent once, the moment an order is marked shipped (with or without tracking) - separate from the review request above.</small></span></label>
+          <label class="sc-toggle" style="margin-top:10px;"><input type="checkbox" id="autoShippedToggle" /><span class="toggle-slider-sm"></span><span><b>"Shipped" update</b><small>Sent once, the moment an order is marked shipped (with or without tracking) - separate from the review request above. When you ship with a tracking number, the message also says the tracking number and the carrier.</small></span></label>
           <div class="st-field" style="margin-top:6px;">
             <label>Your own wording (optional)</label>
             <textarea class="st-input" id="shippedTextInput" rows="2" maxlength="1000" style="height:auto;padding:10px 12px;" placeholder="Hi {{buyer_name}}, good news - your order of {{product_name}} has shipped... (leave blank to use the default message)"></textarea>
             <div class="st-actions"><button class="st-btn" type="button" id="shippedTextSaveBtn">Save wording</button></div>
           </div>
-          <p class="meta-line" style="margin-top:4px;">Variables for your own wording: <code>{{buyer_name}}</code>, <code>{{product_name}}</code>.</p>
+          <p class="meta-line" style="margin-top:4px;">Variables for your own wording: <code>{{buyer_name}}</code>, <code>{{product_name}}</code>. In the "Shipped" update you can also use <code>{{tracking_number}}</code> and <code>{{carrier}}</code>; if you do not place the tracking number yourself, it is added at the end when you ship with one.</p>
           <div id="autoMessagesStatus" style="margin-top:10px;"></div>
         </section>
 
