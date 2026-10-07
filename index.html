@@ -5495,6 +5495,7 @@
           <button class="ad-tab" data-admin-tab="categories" type="button">Categories</button>
           <button class="ad-tab" data-admin-tab="ebayrules" type="button">eBay rules</button>
           <button class="ad-tab" data-admin-tab="catalog" type="button">Product Catalog</button>
+          <button class="ad-tab" data-admin-tab="service" type="button">Done-for-you</button>
           <button class="ad-tab" data-admin-tab="plans" type="button">Plans</button>
           <button class="ad-tab" data-admin-tab="referrals" type="button">Referrals</button>
           <button class="ad-tab" data-admin-tab="vouchers" type="button">Vouchers</button>
@@ -5794,6 +5795,73 @@ B0EXAMPLE2"></textarea></div>
             </div>
             <div id="catalogListStatus" class="st-status"></div>
             <div id="catalogList"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
+        </div>
+
+        <!-- Done-for-you -->
+        <div class="ad-panel" data-admin-panel="service" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#129309;</div>
+              <div class="st-head-txt"><h2>Done-for-you order</h2><p>A customer paid for N ready listings. Their drafts are pushed into their Drafts clean - no protected brand or character name, a good title, a category that fits their eBay site - and the customer publishes them. The customer needs an eBay store connected first (its eBay site decides which products fit).</p></div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="st-field" style="flex:2 1 220px;margin:0;"><label for="svcEmail">Customer's email</label><input class="st-input" id="svcEmail" type="email" autocomplete="off" /></div>
+              <div class="st-field" style="flex:0 0 110px;margin:0;"><label for="svcCount">Listings</label><input class="st-input" id="svcCount" type="number" min="1" max="5000" step="1" /></div>
+              <div class="st-field" style="flex:0 0 150px;margin:0;"><label for="svcCountry">Products from</label>
+                <select class="st-input" id="svcCountry"><option value="">Any Amazon site</option><option value="UK">Amazon UK</option><option value="US">Amazon US</option><option value="DE">Amazon Germany</option><option value="FR">Amazon France</option><option value="IT">Amazon Italy</option><option value="ES">Amazon Spain</option><option value="CA">Amazon Canada</option><option value="AU">Amazon Australia</option></select>
+              </div>
+              <button class="st-btn primary" id="svcCreateBtn" type="button">Start order</button>
+            </div>
+            <div id="svcCreateStatus" class="st-status" role="status"></div>
+          </section>
+
+          <section class="st-card" id="svcWorkCard" style="display:none;">
+            <div class="st-head">
+              <div class="st-ico green">&#9998;</div>
+              <div class="st-head-txt"><h2 id="svcWorkTitle">Order</h2><p id="svcWorkSub"></p></div>
+            </div>
+            <progress id="svcBar" value="0" max="1" style="width:100%;height:10px;"></progress>
+            <div id="svcFacts" class="meta-line" style="margin:8px 0;"></div>
+            <div class="st-actions" style="flex-wrap:wrap;gap:8px;">
+              <button class="st-btn primary" id="svcNextBtn" type="button">Next batch</button>
+              <button class="st-btn" id="svcAiBtn" type="button" title="The AI writes one batch itself. Costs AI money (shown above); the same checks apply.">Write this batch with AI</button>
+              <button class="st-btn" id="svcAiAllBtn" type="button" title="The AI writes batch after batch until the order is ready, the pool is used up or you stop it.">Write the whole order with AI</button>
+              <button class="st-btn" id="svcStopBtn" type="button" style="display:none;">Stop</button>
+              <button class="st-btn danger" id="svcCancelBtn" type="button">Cancel order</button>
+            </div>
+            <div id="svcWorkStatus" class="st-status" role="status"></div>
+
+            <div class="st-field" style="margin-top:14px;">
+              <label for="svcBatch">Products waiting to be written (a batch)</label>
+              <textarea class="st-input" id="svcBatch" rows="10" readonly spellcheck="false" style="height:auto;padding:10px 12px;font-family:ui-monospace,Consolas,monospace;font-size:12px;" placeholder="Press Next batch."></textarea>
+              <p class="st-hint">Each line is one product: its <b>title</b>, the <b>words</b> that must go, the pieces to rewrite (<b>write</b>: bullet points by <b>i</b>, description sentences by <b>id</b>), its category and a bit of its text. Answer with a new title for every product, <b>every</b> piece that is listed (plain text, no markup), and a <b>categoryId</b> when it shows <b>categoryChoices</b>. A product with a name that is not on the list yet: <b>suggest</b> it (then add it with the + button and read the batch again) or <b>drop</b> the product.</p>
+            </div>
+            <div class="st-field">
+              <label for="svcAnswers">Answers (JSON list)</label>
+              <textarea class="st-input" id="svcAnswers" rows="8" spellcheck="false" style="height:auto;padding:10px 12px;font-family:ui-monospace,Consolas,monospace;font-size:12px;" placeholder='[{"id":"B0EXAMPLE1","title":"New title 15-80 characters","bullets":[{"i":0,"t":"..."}],"snippets":[{"id":0,"t":"..."}],"categoryId":"123"},{"id":"B0EXAMPLE2","drop":"why"}]'></textarea>
+            </div>
+            <div class="st-actions"><button class="st-btn primary" id="svcSubmitBtn" type="button">Check answers &amp; create drafts</button><span class="meta-line">Nothing is created unless it passes every check.</span></div>
+            <div id="svcResults"></div>
+            <div id="svcSuggest"></div>
+          </section>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico yellow">&#128737;</div>
+              <div class="st-head-txt"><h2>Protected brand &amp; character names</h2><p>Only brand and character names (Nike, Marvel, Disney ...). Taken out of every product of every order, on top of the customer's own VeRO words. Leave generic words out: they would cut good titles. A plural or another spelling is a separate word: list both (Barbie, Barbies). No order starts while this list is empty and the customer has no words of their own.</p></div>
+            </div>
+            <div id="svcWordsWarn" class="st-status" role="status"></div>
+            <div class="st-field"><textarea class="st-input" id="svcWords" rows="6" spellcheck="false" style="height:auto;padding:10px 12px;" placeholder="nike, adidas, marvel, disney, ..."></textarea></div>
+            <div class="st-actions"><button class="st-btn primary" id="svcWordsSave" type="button">Save list</button><span id="svcWordsCount" class="meta-line"></span></div>
+          </section>
+
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128203;</div>
+              <div class="st-head-txt"><h2>Orders</h2><p>Newest first. Open one to carry on with it.</p></div>
+            </div>
+            <div id="svcJobs"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           </section>
         </div>
 
@@ -19474,7 +19542,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadAdminPage() {
     loadAdminAdmins();
     loadAdminAffiliates();
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadAdminEbayRules(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadAdminEbayRules(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog(), loadAdminService()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -19487,6 +19555,252 @@ async function autoSuggestEmptyDraftCategories() {
   document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.addEventListener('click', () => setAdminTab(t.dataset.adminTab)));
   document.getElementById('adminRefreshBtn')?.addEventListener('click', () => loadAdminPage());
   try { const saved = sessionStorage.getItem('elmsAdminTab'); if (saved) setAdminTab(saved); } catch (_) {}
+
+  // ---------- Admin Panel: Done-for-you ----------
+  // An order: the admin pushes N clean drafts into a customer's Drafts (services/serviceListingService.js). "Next batch" shows the products to write up (the batch box is for whoever writes them -
+  // Claude, here in the admin - and needs no AI), "Check answers" sends the written pieces back (every one is checked on the server before a draft is made), and "Write ... with AI" lets the AI do it.
+  let svcJob = null;        // the order being worked on, as the server last described it
+  let svcLabels = {};       // reason code -> words
+  let svcBusy = false;      // a request is running: the order on the screen can not be changed meanwhile
+  let svcStopAsked = false;
+  let svcLoop = false;      // "Write the whole order with AI" is running
+  let svcSeq = 0;
+  let svcMaster = new Set(); // the protected names saved on the server (a suggestion that is already there is not offered again)
+  let svcWordsLoaded = false; // the list was read: saving before that would save an empty box
+  let svcWordsDirty = false;  // the box holds changes that are not saved yet
+
+  const svcMoney = (n) => { const v = Number(n) || 0; return v ? '$' + v.toFixed(v < 0.1 ? 4 : 2) : '$0'; };
+  async function svcApi(path, method, body) {
+    const res = await apiFetch('/api/admin/service' + path, { method: method || 'GET', headers: body ? { 'Content-Type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined });
+    let d = null; let readError = null;
+    try { d = await res.json(); } catch (err) { readError = err; /* answered with no JSON: apiFetch says why (a restarting server, a proxy timeout) */ }
+    if (!res.ok || !d || !d.success) throw new Error((d && d.error) || (readError && readError.message) || 'The server did not answer. Please try again.');
+    return d;
+  }
+  function svcSay(text, kind) { const el = document.getElementById('svcWorkStatus'); if (!el) return; el.className = 'st-status' + (kind ? ' ' + kind : ''); el.textContent = text || ''; }
+  function svcPaintButtons() {
+    const open = !!svcJob && svcJob.status === 'open';
+    ['svcNextBtn', 'svcAiBtn', 'svcAiAllBtn', 'svcSubmitBtn', 'svcCancelBtn'].forEach((id) => { const b = document.getElementById(id); if (b) b.disabled = svcBusy || !open; });
+    const stop = document.getElementById('svcStopBtn'); if (stop) stop.style.display = svcLoop ? '' : 'none';
+  }
+  function svcPaintJob() {
+    const card = document.getElementById('svcWorkCard'); if (!card) return;
+    if (!svcJob) { card.style.display = 'none'; return; }
+    const j = svcJob;
+    card.style.display = '';
+    document.getElementById('svcWorkTitle').textContent = 'Order for ' + (j.targetEmail || 'a customer');
+    document.getElementById('svcWorkSub').textContent = j.count + ' listings on ' + j.marketplaceId + (j.sourceCountry ? ', products from Amazon ' + j.sourceCountry : '') + ' - ' + (j.status === 'open' ? 'in progress' : j.status === 'done' ? 'finished' : 'cancelled') + '.';
+    const bar = document.getElementById('svcBar'); bar.max = Math.max(1, j.count); bar.value = Math.min(j.ready, j.count);
+    const why = Object.entries(j.drops || {}).filter(([, n]) => n).map(([c, n]) => escapeHtml((svcLabels[c] || c) + ': ' + n)).join(' &middot; ');
+    document.getElementById('svcFacts').innerHTML = '<b>' + j.ready + ' of ' + j.count + ' ready</b> in the customer\'s Drafts &middot; ' + j.dropped + ' not used' + (why ? ' (' + why + ')' : '') + ' &middot; ' + j.openCount + ' waiting &middot; ' + (j.tried || 0) + ' looked at &middot; AI cost ' + svcMoney(j.aiCostUsd)
+      + (j.veroTerms && j.veroTerms.length ? '<br>Protected words taken out so far: ' + escapeHtml(j.veroTerms.slice(0, 40).join(', ')) + (j.veroTerms.length > 40 ? ' ...' : '') : '')
+      + (j.note ? '<br><b>' + escapeHtml(j.note) + '</b>' : '');
+    const sug = (j.suggestedWords || []).filter((w) => !svcMaster.has(w));
+    document.getElementById('svcSuggest').innerHTML = sug.length
+      ? '<div class="st-hint" style="margin-top:10px;">Brand / character names the writer noticed that are not on the list: ' + sug.map((w) => '<button class="st-btn small" type="button" data-svc-add="' + escapeAttr(w) + '">+ ' + escapeHtml(w) + '</button>').join(' ') + '</div>' : '';
+    svcPaintButtons();
+  }
+  function svcPaintResults(results) {
+    const el = document.getElementById('svcResults');
+    if (!results || !results.length) { el.innerHTML = ''; return; }
+    el.innerHTML = '<div class="st-table-wrap"><table class="st-table"><tbody>' + results.map((r) => {
+      const badge = r.status === 'ready' ? '<span class="status-badge published">draft made</span>' : r.status === 'dropped' ? '<span class="status-badge pending">not used</span>' : '<span class="status-badge error">refused</span>';
+      return '<tr><td style="white-space:nowrap;">' + escapeHtml(r.id) + '</td><td>' + badge + '</td><td>' + escapeHtml(r.title || '') + (r.reason ? ' <small>' + escapeHtml(r.reason) + '</small>' : '') + (r.error ? ' <small style="color:var(--red);">' + escapeHtml(r.error) + '</small>' : '') + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+  }
+  function svcShowBatch(items) {
+    const box = document.getElementById('svcBatch');
+    box.value = items && items.length ? '[\n' + items.map((i) => JSON.stringify(i)).join(',\n') + '\n]' : '';
+  }
+  // An answer of the server changes the screen only while the screen still shows the order the request was for.
+  function svcTakeJob(job, forId) { if (job && (!forId || (svcJob && svcJob.id === forId))) { svcJob = job; svcPaintJob(); } }
+  // Another order is opened (or started): only when nothing is running for the one on the screen, or the run would go on for the wrong customer.
+  function svcShow(job) { svcJob = job; svcShowBatch(null); document.getElementById('svcAnswers').value = ''; svcPaintResults(null); svcSay('', ''); svcPaintJob(); }
+
+  async function loadAdminService() {
+    const mine = ++svcSeq;
+    const [jobs, words] = await Promise.allSettled([svcApi('/jobs'), svcApi('/vero-words')]);
+    if (mine !== svcSeq) return;
+    if (words.status === 'fulfilled') svcPaintWords(words.value.words, words.value.max);
+    else { const warn = document.getElementById('svcWordsWarn'); warn.className = 'st-status error'; warn.textContent = 'Could not read the list: ' + words.reason.message; }
+    const list = document.getElementById('svcJobs');
+    if (jobs.status !== 'fulfilled') { list.innerHTML = '<div class="state-msg error">' + escapeHtml(jobs.reason.message) + '</div>'; return; }
+    svcLabels = jobs.value.labels || {};
+    const rows = jobs.value.jobs || [];
+    list.innerHTML = rows.length ? '<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Customer</th><th>eBay site</th><th>Ready</th><th>Not used</th><th>AI cost</th><th>Status</th><th></th></tr></thead><tbody>' + rows.map((j) => '<tr><td>' + escapeHtml(j.targetEmail || '') + '<br><small>' + new Date(j.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + '</small></td><td>' + escapeHtml(j.marketplaceId) + '</td><td>' + j.ready + ' / ' + j.count + '</td><td>' + j.dropped + '</td><td>' + svcMoney(j.aiCostUsd) + '</td><td><span class="status-badge ' + (j.status === 'done' ? 'published' : j.status === 'open' ? 'pending' : 'error') + '">' + escapeHtml(j.status) + '</span></td><td style="text-align:right;"><button class="st-btn small primary" type="button" data-svc-open="' + escapeAttr(j.id) + '">Open</button></td></tr>').join('') + '</tbody></table></div>' : '<div class="state-msg">No orders yet.</div>';
+    // the order on the screen is refreshed from the list only when nothing is running for it (a list read before a newer answer must not put older numbers back)
+    if (svcBusy) return;
+    if (svcJob) { const fresh = rows.find((j) => j.id === svcJob.id); if (fresh) svcTakeJob(fresh, svcJob.id); }
+    else { const open = rows.find((j) => j.status === 'open'); if (open) { svcJob = open; svcPaintJob(); } }
+  }
+  function svcPaintWords(words, max, force) {
+    svcMaster = new Set(words || []);
+    svcWordsLoaded = true;
+    const box = document.getElementById('svcWords');
+    if (box && (force || !svcWordsDirty)) { box.value = (words || []).join(', '); svcWordsDirty = false; }
+    document.getElementById('svcWordsCount').textContent = (words || []).length + ' of ' + (max || 3000) + ' words' + (svcWordsDirty ? ' saved (you have changes that are not saved yet)' : '');
+    const warn = document.getElementById('svcWordsWarn');
+    warn.className = 'st-status' + (words && words.length ? '' : ' error');
+    warn.textContent = words && words.length ? '' : 'The list is empty: only each customer\'s own VeRO words are checked. Add the brand and character names to take out.';
+    if (svcJob) svcPaintJob(); // the suggestions that are on the list now are not offered
+  }
+  document.getElementById('svcWords')?.addEventListener('input', () => { svcWordsDirty = true; });
+
+  document.getElementById('svcWordsSave')?.addEventListener('click', async () => {
+    const btn = document.getElementById('svcWordsSave');
+    const warn = document.getElementById('svcWordsWarn');
+    if (!svcWordsLoaded) { warn.className = 'st-status error'; warn.textContent = 'The list has not been read yet, so it is not saved (it would be saved empty). Press Refresh at the top of the page.'; return; }
+    btn.disabled = true;
+    try {
+      const d = await svcApi('/vero-words', 'PUT', { words: document.getElementById('svcWords').value });
+      svcWordsDirty = false;
+      svcPaintWords(d.words, d.max, true);
+      if (d.words.length) { warn.className = 'st-status success'; warn.textContent = 'Saved.'; }
+    } catch (err) { warn.className = 'st-status error'; warn.textContent = err.message; }
+    btn.disabled = false;
+  });
+
+  document.getElementById('svcCreateBtn')?.addEventListener('click', async () => {
+    const status = document.getElementById('svcCreateStatus');
+    const btn = document.getElementById('svcCreateBtn');
+    if (svcBusy) { status.className = 'st-status error'; status.textContent = 'Wait until the work on the open order has finished.'; return; }
+    const email = document.getElementById('svcEmail').value.trim();
+    const count = Number(document.getElementById('svcCount').value);
+    if (!email) { status.className = 'st-status error'; status.textContent = 'Enter the customer\'s email.'; return; }
+    if (!Number.isInteger(count) || count < 1 || count > 5000) { status.className = 'st-status error'; status.textContent = 'Enter how many listings (1 to 5,000).'; return; }
+    btn.disabled = true; status.className = 'st-status'; status.textContent = 'Starting...';
+    try {
+      const d = await svcApi('/jobs', 'POST', { email, count, sourceCountry: document.getElementById('svcCountry').value });
+      status.className = 'st-status success'; status.textContent = 'Order started for ' + (d.job.targetEmail || email) + '.';
+      if (!svcBusy) svcShow(d.job);
+      loadAdminService();
+    } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
+    btn.disabled = false;
+  });
+
+  document.getElementById('svcJobs')?.addEventListener('click', async (e) => {
+    const open = e.target.closest('[data-svc-open]'); if (!open) return;
+    if (svcBusy) { svcSay('Wait until the work on the open order has finished.', 'error'); return; }
+    try {
+      const d = await svcApi('/jobs/' + encodeURIComponent(open.dataset.svcOpen));
+      if (svcBusy) return;
+      svcShow(d.job);
+      document.getElementById('svcWorkCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { svcSay(err.message, 'error'); }
+  });
+
+  document.getElementById('svcWorkCard')?.addEventListener('click', async (e) => {
+    const add = e.target.closest('[data-svc-add]'); if (!add) return;
+    add.disabled = true;
+    try {
+      const word = add.dataset.svcAdd;
+      const d = await svcApi('/vero-words/add', 'POST', { words: word });
+      if (svcWordsDirty) { const box = document.getElementById('svcWords'); box.value = box.value.replace(/[,;\s]+$/, '') + (box.value.trim() ? ', ' : '') + word; } // unsaved changes stay, the word joins them
+      svcPaintWords(d.words, d.max);
+    } catch (err) { svcSay(err.message, 'error'); add.disabled = false; }
+  });
+
+  // Hands out (or shows again) the batch waiting for a write-up. `after`: text kept in front of the answer (what the answers just sent did), so one line says both; `kind` its colour.
+  async function svcNext(after, kind) {
+    if (!svcJob || svcBusy) return;
+    const lead = typeof after === 'string' ? after + ' ' : '';
+    const jobId = svcJob.id;
+    svcBusy = true; svcPaintButtons(); svcSay(lead + 'Looking for suitable products...', kind || '');
+    try {
+      const d = await svcApi('/jobs/' + jobId + '/batch', 'POST', { size: 15 });
+      svcTakeJob(d.job, jobId);
+      if (svcJob && svcJob.id === jobId) {
+        svcShowBatch(d.items);
+        svcSay(lead + (d.items.length ? d.items.length + ' products to write up.' : (d.note || 'Nothing to write right now.')), kind || (d.items.length ? 'success' : ''));
+      }
+    } catch (err) { svcSay(lead + err.message, 'error'); }
+    svcBusy = false; svcPaintButtons();
+  }
+  document.getElementById('svcNextBtn')?.addEventListener('click', () => svcNext());
+
+  document.getElementById('svcSubmitBtn')?.addEventListener('click', async () => {
+    if (!svcJob || svcBusy) return;
+    let answers;
+    try {
+      const parsed = JSON.parse(document.getElementById('svcAnswers').value);
+      answers = Array.isArray(parsed) ? parsed : parsed && Array.isArray(parsed.answers) ? parsed.answers : null;
+      if (!answers || !answers.length) throw new Error('Paste a JSON list of answers.');
+    } catch (err) { svcSay('The answers are not a valid JSON list: ' + err.message, 'error'); return; }
+    const jobId = svcJob.id;
+    svcBusy = true; svcPaintButtons(); svcSay('Checking ' + answers.length + ' answers...', '');
+    try {
+      const d = await svcApi('/jobs/' + jobId + '/answers', 'POST', { answers });
+      svcTakeJob(d.job, jobId); svcPaintResults(d.results);
+      const ready = d.results.filter((r) => r.status === 'ready').length;
+      const refusedIds = new Set(d.results.filter((r) => r.status === 'error').map((r) => String(r.id)));
+      const refused = refusedIds.size;
+      const summary = ready + ' draft' + (ready === 1 ? '' : 's') + ' made' + (refused ? ', ' + refused + ' refused (they are still waiting: fix them in the answers box and send again)' : '') + '.';
+      svcSay(summary, refused ? 'error' : 'success');
+      // what was refused stays in the box to be corrected; what was taken is gone from it
+      const keep = answers.filter((a) => a && refusedIds.has(String(a.id)));
+      document.getElementById('svcAnswers').value = keep.length ? JSON.stringify(keep, null, 1) : '';
+      svcBusy = false; svcPaintButtons();
+      if (svcJob && svcJob.id === jobId && svcJob.status === 'open') await svcNext(summary, refused ? 'error' : ''); else if (svcJob && svcJob.id === jobId) svcShowBatch(null);
+      loadAdminService();
+      return;
+    } catch (err) { svcSay(err.message, 'error'); }
+    svcBusy = false; svcPaintButtons();
+  });
+
+  async function svcAiOnce(jobId) {
+    const d = await svcApi('/jobs/' + jobId + '/ai-run', 'POST', { size: 12 });
+    svcTakeJob(d.job, jobId);
+    if (svcJob && svcJob.id === jobId) { svcPaintResults(d.results); svcShowBatch(null); }
+    return d;
+  }
+  document.getElementById('svcAiBtn')?.addEventListener('click', async () => {
+    if (!svcJob || svcBusy) return;
+    if (!(await elmsConfirm('The AI will write up to 12 products of this order now. This costs AI money (the order shows the total). Every draft still has to pass the same checks.', { title: 'Write this batch with AI?', okText: 'Write with AI' }))) return;
+    if (!svcJob || svcBusy) return;
+    const jobId = svcJob.id;
+    svcBusy = true; svcPaintButtons(); svcSay('The AI is writing...', '');
+    try {
+      const d = await svcAiOnce(jobId);
+      const made = d.results.filter((r) => r.status === 'ready').length;
+      svcSay(made + ' draft' + (made === 1 ? '' : 's') + ' made.' + (d.note ? ' ' + d.note : ''), d.note ? 'error' : 'success');
+      loadAdminService();
+    } catch (err) { svcSay(err.message, 'error'); }
+    svcBusy = false; svcPaintButtons();
+  });
+  document.getElementById('svcAiAllBtn')?.addEventListener('click', async () => {
+    if (!svcJob || svcBusy) return;
+    if (!(await elmsConfirm('The AI will write batch after batch (12 products each) until the order is ready, no suitable products are left or you press Stop. This costs AI money; the order shows the total. Every draft still has to pass the same checks.', { title: 'Write the whole order with AI?', okText: 'Start' }))) return;
+    if (!svcJob || svcBusy) return;
+    const jobId = svcJob.id; // the loop works on this order only, whatever else is opened on the screen
+    svcBusy = true; svcLoop = true; svcStopAsked = false; svcPaintButtons();
+    let rounds = 0;
+    try {
+      while (!svcStopAsked && svcJob && svcJob.id === jobId && svcJob.status === 'open') {
+        rounds += 1;
+        svcSay('The AI is writing... batch ' + rounds + ' (' + svcJob.ready + ' of ' + svcJob.count + ' ready, ' + svcMoney(svcJob.aiCostUsd) + ' so far)', '');
+        const before = svcJob.ready + svcJob.dropped;
+        const d = await svcAiOnce(jobId);
+        if (d.note) { svcSay(d.note, 'error'); break; }
+        if (!d.results.length) { svcSay(svcJob.note || 'Nothing more to write.', ''); break; }
+        if (svcJob.ready + svcJob.dropped === before) { svcSay('The AI could not write any of the last batch (see the list below). Stopped.', 'error'); break; }
+      }
+      if (svcStopAsked) svcSay('Stopped. ' + svcJob.ready + ' of ' + svcJob.count + ' ready.', '');
+      else if (svcJob.status === 'done') svcSay('The order is ' + (svcJob.ready >= svcJob.count ? 'ready' : 'finished') + ': ' + svcJob.ready + ' of ' + svcJob.count + '.', svcJob.ready >= svcJob.count ? 'success' : '');
+    } catch (err) { svcSay(err.message, 'error'); }
+    svcLoop = false; svcBusy = false; svcPaintButtons(); loadAdminService();
+  });
+  document.getElementById('svcStopBtn')?.addEventListener('click', () => { svcStopAsked = true; svcSay('Stopping after this batch...', ''); });
+
+  document.getElementById('svcCancelBtn')?.addEventListener('click', async () => {
+    if (!svcJob || svcBusy) return;
+    const jobId = svcJob.id;
+    if (!(await elmsConfirm('Cancel this order? The ' + svcJob.ready + ' drafts already made stay in the customer\'s Drafts.', { title: 'Cancel the order?', okText: 'Cancel order', danger: true }))) return;
+    if (!svcJob || svcBusy || svcJob.id !== jobId) return;
+    svcBusy = true; svcPaintButtons();
+    try { const d = await svcApi('/jobs/' + jobId + '/cancel', 'POST', {}); svcTakeJob(d.job, jobId); svcShowBatch(null); svcSay('The order was cancelled.', ''); }
+    catch (err) { svcSay(err.message, 'error'); }
+    svcBusy = false; svcPaintButtons(); loadAdminService();
+  });
 
   // ---------- Admin Panel: Product Catalog ----------
   async function loadAdminCatalog() {
