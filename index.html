@@ -10346,7 +10346,18 @@ B0EXAMPLE2"></textarea></div>
     }).catch(() => { veroPatternPromise = null; return null; });
     return veroPatternPromise;
   }
-  const veroFold = (text) => String(text == null ? '' : text).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[‘’]/g, "'");
+  // The same folding as the server's services/textCleanService.js (the browser only finds words, it never cuts them, so no index map is needed): invisible marks are dropped, look-alike
+  // characters (apostrophes, dashes, Cyrillic / Greek letters written like Latin ones) are made plain, compatibility forms and accents are folded. Built from code points.
+  const VERO_INVISIBLE = new RegExp('[' + [0xad, 0x180e, 0x200b, 0x200c, 0x200d, 0x200e, 0x200f, 0x202a, 0x202b, 0x202c, 0x202d, 0x202e, 0x2060, 0x2061, 0x2062, 0x2063, 0x2064, 0xfeff].map((c) => String.fromCharCode(c)).join('') + ']', 'g');
+  const VERO_ACCENTS = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
+  const VERO_LOOKALIKE = new Map();
+  [[[0x2018, 0x2019, 0x201b, 0x02bc, 0x02b9, 0x2032, 0x2035, 0x00b4, 0x0060, 0xff07], "'"], [[0x2010, 0x2011, 0x2012, 0x2013, 0x2014, 0x2015, 0x2212, 0x2043, 0xfe58, 0xfe63, 0xff0d], '-']].forEach(([codes, to]) => codes.forEach((c) => VERO_LOOKALIKE.set(String.fromCodePoint(c), to)));
+  [[0x430, 'a'], [0x435, 'e'], [0x43e, 'o'], [0x440, 'p'], [0x441, 'c'], [0x443, 'y'], [0x445, 'x'], [0x456, 'i'], [0x458, 'j'], [0x455, 's'], [0x501, 'd'], [0x4bb, 'h'], [0x43a, 'k'],
+    [0x410, 'A'], [0x412, 'B'], [0x415, 'E'], [0x41a, 'K'], [0x41c, 'M'], [0x41d, 'H'], [0x41e, 'O'], [0x420, 'P'], [0x421, 'C'], [0x422, 'T'], [0x425, 'X'], [0x423, 'Y'], [0x406, 'I'], [0x408, 'J'], [0x405, 'S'],
+    [0x391, 'A'], [0x392, 'B'], [0x395, 'E'], [0x396, 'Z'], [0x397, 'H'], [0x399, 'I'], [0x39a, 'K'], [0x39c, 'M'], [0x39d, 'N'], [0x39f, 'O'], [0x3a1, 'P'], [0x3a4, 'T'], [0x3a5, 'Y'], [0x3a7, 'X'],
+    [0x3bf, 'o'], [0x3bd, 'v'], [0x3c1, 'p'], [0x3b9, 'i'], [0x3ba, 'k'], [0x3b1, 'a'], [0x3c5, 'u']].forEach(([c, latin]) => VERO_LOOKALIKE.set(String.fromCodePoint(c), latin));
+  [0x2122, 0x2120, 0x2121].forEach((c) => VERO_LOOKALIKE.set(String.fromCodePoint(c), String.fromCodePoint(c))); // trademark signs stay signs ("Nike" + TM must not become "NikeTM")
+  const veroFold = (text) => Array.from(String(text == null ? '' : text).replace(VERO_INVISIBLE, ''), (ch) => { const m = VERO_LOOKALIKE.get(ch); return m !== undefined ? m : ch.normalize('NFKD').replace(VERO_ACCENTS, ''); }).join('');
   function veroFind(text) {
     if (!veroPattern || !text) return [];
     const re = new RegExp(veroPattern.source, veroPattern.flags);
@@ -19635,21 +19646,27 @@ async function autoSuggestEmptyDraftCategories() {
   }
   function svcPaintWords(words, max, force) {
     svcMaster = new Set(words || []);
+    const firstRead = !svcWordsLoaded;
     svcWordsLoaded = true;
     const box = document.getElementById('svcWords');
-    if (box && (force || !svcWordsDirty)) { box.value = (words || []).join(', '); svcWordsDirty = false; }
+    if (box) box.readOnly = false;
+    if (box && (force || firstRead || !svcWordsDirty)) { box.value = (words || []).join(', '); svcWordsDirty = false; } // what was typed before the list was ever read is not kept: it would replace the whole list
     document.getElementById('svcWordsCount').textContent = (words || []).length + ' of ' + (max || 3000) + ' words' + (svcWordsDirty ? ' saved (you have changes that are not saved yet)' : '');
     const warn = document.getElementById('svcWordsWarn');
     warn.className = 'st-status' + (words && words.length ? '' : ' error');
     warn.textContent = words && words.length ? '' : 'The list is empty: only each customer\'s own VeRO words are checked. Add the brand and character names to take out.';
     if (svcJob) svcPaintJob(); // the suggestions that are on the list now are not offered
   }
+  { const box = document.getElementById('svcWords'); if (box) box.readOnly = true; } // until the list has been read there is nothing to edit
   document.getElementById('svcWords')?.addEventListener('input', () => { svcWordsDirty = true; });
 
   document.getElementById('svcWordsSave')?.addEventListener('click', async () => {
     const btn = document.getElementById('svcWordsSave');
     const warn = document.getElementById('svcWordsWarn');
     if (!svcWordsLoaded) { warn.className = 'st-status error'; warn.textContent = 'The list has not been read yet, so it is not saved (it would be saved empty). Press Refresh at the top of the page.'; return; }
+    const typed = new Set(document.getElementById('svcWords').value.split(/[,;\n]/).map((w) => w.trim().toLowerCase().replace(/\s+/g, ' ')).filter(Boolean));
+    const removed = [...svcMaster].filter((w) => !typed.has(w));
+    if (removed.length && !(await elmsConfirm('This takes ' + removed.length + ' word' + (removed.length === 1 ? '' : 's') + ' off the list (' + removed.slice(0, 8).join(', ') + (removed.length > 8 ? ', ...' : '') + '). Orders will no longer cut them. Save anyway?', { title: 'Remove words from the list?', okText: 'Save', danger: true }))) return;
     btn.disabled = true;
     try {
       const d = await svcApi('/vero-words', 'PUT', { words: document.getElementById('svcWords').value });
@@ -19713,7 +19730,7 @@ async function autoSuggestEmptyDraftCategories() {
         svcShowBatch(d.items);
         svcSay(lead + (d.items.length ? d.items.length + ' products to write up.' : (d.note || 'Nothing to write right now.')), kind || (d.items.length ? 'success' : ''));
       }
-    } catch (err) { svcSay(lead + err.message, 'error'); }
+    } catch (err) { svcShowBatch(null); svcSay(lead + err.message, 'error'); }
     svcBusy = false; svcPaintButtons();
   }
   document.getElementById('svcNextBtn')?.addEventListener('click', () => svcNext());
@@ -19732,12 +19749,13 @@ async function autoSuggestEmptyDraftCategories() {
       const d = await svcApi('/jobs/' + jobId + '/answers', 'POST', { answers });
       svcTakeJob(d.job, jobId); svcPaintResults(d.results);
       const ready = d.results.filter((r) => r.status === 'ready').length;
-      const refusedIds = new Set(d.results.filter((r) => r.status === 'error').map((r) => String(r.id)));
+      const refusedIds = new Set(d.results.filter((r) => r.status === 'error' && r.waiting !== false).map((r) => String(r.id).trim()));
       const refused = refusedIds.size;
-      const summary = ready + ' draft' + (ready === 1 ? '' : 's') + ' made' + (refused ? ', ' + refused + ' refused (they are still waiting: fix them in the answers box and send again)' : '') + '.';
+      const gone = d.results.filter((r) => r.status === 'error' && r.waiting === false).length; // answered before (a lost reply sent again): nothing to fix
+      const summary = ready + ' draft' + (ready === 1 ? '' : 's') + ' made' + (refused ? ', ' + refused + ' refused (they are still waiting: fix them in the answers box and send again)' : '') + (gone ? ', ' + gone + ' not waiting any more (already answered)' : '') + '.';
       svcSay(summary, refused ? 'error' : 'success');
       // what was refused stays in the box to be corrected; what was taken is gone from it
-      const keep = answers.filter((a) => a && refusedIds.has(String(a.id)));
+      const keep = answers.filter((a) => a && refusedIds.has(String(a.id).trim()));
       document.getElementById('svcAnswers').value = keep.length ? JSON.stringify(keep, null, 1) : '';
       svcBusy = false; svcPaintButtons();
       if (svcJob && svcJob.id === jobId && svcJob.status === 'open') await svcNext(summary, refused ? 'error' : ''); else if (svcJob && svcJob.id === jobId) svcShowBatch(null);
@@ -19755,9 +19773,9 @@ async function autoSuggestEmptyDraftCategories() {
   }
   document.getElementById('svcAiBtn')?.addEventListener('click', async () => {
     if (!svcJob || svcBusy) return;
+    const jobId = svcJob.id; // the order the question is about
     if (!(await elmsConfirm('The AI will write up to 12 products of this order now. This costs AI money (the order shows the total). Every draft still has to pass the same checks.', { title: 'Write this batch with AI?', okText: 'Write with AI' }))) return;
-    if (!svcJob || svcBusy) return;
-    const jobId = svcJob.id;
+    if (!svcJob || svcBusy || svcJob.id !== jobId) return; // another order was shown while the question was open: the AI does not run on it
     svcBusy = true; svcPaintButtons(); svcSay('The AI is writing...', '');
     try {
       const d = await svcAiOnce(jobId);
@@ -19769,9 +19787,9 @@ async function autoSuggestEmptyDraftCategories() {
   });
   document.getElementById('svcAiAllBtn')?.addEventListener('click', async () => {
     if (!svcJob || svcBusy) return;
+    const jobId = svcJob.id; // the order the question is about
     if (!(await elmsConfirm('The AI will write batch after batch (12 products each) until the order is ready, no suitable products are left or you press Stop. This costs AI money; the order shows the total. Every draft still has to pass the same checks.', { title: 'Write the whole order with AI?', okText: 'Start' }))) return;
-    if (!svcJob || svcBusy) return;
-    const jobId = svcJob.id; // the loop works on this order only, whatever else is opened on the screen
+    if (!svcJob || svcBusy || svcJob.id !== jobId) return; // another order was shown while the question was open: the AI does not run on it
     svcBusy = true; svcLoop = true; svcStopAsked = false; svcPaintButtons();
     let rounds = 0;
     try {
@@ -22030,7 +22048,7 @@ async function autoSuggestEmptyDraftCategories() {
       status.textContent = 'Pushing… this can take a little while for a large count.';
       try {
         const out = await adminPost('/api/admin/users/' + encodeURIComponent(user.id) + '/push-listings', { count, sourceCountry });
-        status.textContent = `Pushed ${out.pushed.toLocaleString()} of ${out.requested.toLocaleString()} requested (pool had ${out.poolSize.toLocaleString()}).`;
+        status.textContent = `Pushed ${out.pushed.toLocaleString()} of ${out.requested.toLocaleString()} requested (pool had ${out.poolSize.toLocaleString()}${out.marketplaceId ? ', products set up for ' + out.marketplaceId : ''}).`;
         showToast('Listings pushed', `${out.pushed.toLocaleString()} draft${out.pushed === 1 ? '' : 's'} added for ${user.name || user.email}.`, 'success');
       } catch (err) {
         status.textContent = err.message;
