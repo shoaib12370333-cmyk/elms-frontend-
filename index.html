@@ -3673,6 +3673,21 @@
   .ad-chipbtn b { margin-left:5px; } .ad-chipbtn.on { background:#0064D2; border-color:#0064D2; color:#fff; }
   .ad-tag { display:inline-block; font:800 10.5px Inter,sans-serif; padding:2px 8px; border-radius:99px; letter-spacing:.03em; }
   .ad-tag.paid { background:#EDF7DC; color:#4C7A0B; } .ad-tag.free { background:#F2F4F7; color:#475467; } .ad-tag.bad { background:#FEF2F2; color:#B42318; }
+  /* Admin -> Users: the row's three-dot button, the admins' own tags, and the edit window */
+  .ad-tagchip { display:inline-block; font:700 10.5px Inter,sans-serif; padding:1px 7px; border-radius:6px; background:#EEF4FF; color:#1D3A8A; border:1px solid #C7D7FE; margin:3px 4px 0 0; }
+  .ad-kebab { border:1.5px solid var(--line); background:#fff; color:#475467; width:34px; height:34px; border-radius:9px; cursor:pointer; font-size:20px; line-height:1; font-weight:800; }
+  .ad-kebab:hover, .ad-kebab:focus-visible { background:#F2F4F7; border-color:#98A2B3; outline:none; }
+  #page-admin #adminUsersTable th:last-child, #page-admin #adminUsersTable td:last-child { width:1%; text-align:right; white-space:nowrap; }
+  .ad-sect { margin-top:18px; padding-top:14px; border-top:1px solid var(--line); }
+  .ad-sect-title { font-weight:800; font-size:13px; color:#0B4FA0; margin-bottom:10px; }
+  .ad-edit-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; align-items:end; } @media (max-width:560px) { .ad-edit-grid { grid-template-columns:1fr; } }
+  .ad-edit-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .ad-kv { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px 18px; }
+  .ad-kv > div { font-size:13px; min-width:0; word-break:break-word; } .ad-kv small { display:block; color:var(--grey); font-size:11.5px; font-weight:600; letter-spacing:.02em; }
+  .ad-note-text { white-space:pre-wrap; word-break:break-word; font-size:13px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .ad-hit { cursor:pointer; } .ad-hit:hover { background:#F5F9FE; } .ad-hit:focus-visible { outline:2px solid #0064D2; outline-offset:-2px; background:#F5F9FE; }
+  /* on a narrow screen the table scrolls sideways: the three dots stay in view at the right edge */
+  @media (max-width:860px) { #page-admin #adminUsersTable th:last-child, #page-admin #adminUsersTable td:last-child { position:sticky; right:0; background:#fff; box-shadow:-8px 0 8px -8px rgba(15,23,42,.2); } }
   .ad-sec-grid { display:grid; gap:14px; grid-template-columns:1fr 1fr; } @media (max-width:980px) { .ad-sec-grid { grid-template-columns:1fr; } }
   .ad-form { display:grid; gap:8px; } .ad-form label { font:700 12.5px Inter,sans-serif; color:#344054; }
   .ad-form select, .ad-form input, .ad-form textarea { width:100%; box-sizing:border-box; border:1.5px solid #D0D5DD; border-radius:10px; padding:9px 11px; font:500 13.5px Inter,sans-serif; background:#fff; }
@@ -5501,8 +5516,9 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico blue">&#128101;</div>
-              <div class="st-head-txt"><h2>Users</h2><p>Who is online, who bought a plan, last sign-in IP. Adjust credits, stock-check interval and eBay stores; open Security to suspend or block.</p></div>
-              <input class="st-input ad-search" id="adminUserSearch" type="search" placeholder="Search name, email, phone or IP&hellip;" />
+              <div class="st-head-txt"><h2>Users</h2><p>Who is online, who bought a plan, last sign-in IP. Click the three dots at the end of a row to edit credits and limits, add a private note or tags, open Security, push listings or see the whole picture.</p></div>
+              <input class="st-input ad-search" id="adminUserSearch" type="search" placeholder="Search name, email, phone, IP or tag&hellip;" />
+              <button class="btn-small" id="adminUsersExportBtn" type="button" title="Download the users that are shown now as a CSV file">Export CSV</button>
             </div>
             <div class="ad-chips" id="adminUserChips"></div>
             <div id="adminUsersContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
@@ -5514,13 +5530,13 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico blue">&#128269;</div>
-              <div class="st-head-txt"><h2>User Lookup</h2><p>One user's whole picture by email: their plan and stores, how many listings they have in each status, their orders and their net profit - the same numbers their own Orders / Net Profit pages show.</p></div>
+              <div class="st-head-txt"><h2>User Lookup</h2><p>One user's whole picture, found by email, name, phone number, IP address or store name: plan, payments, devices and sign-ins, settings, referrals, AI use, imports, tickets, stores, listings, orders and net profit - the same numbers their own Orders / Net Profit pages show.</p></div>
             </div>
             <div class="st-grid" style="grid-template-columns:1fr auto;align-items:end;">
-              <div class="st-field"><label>User's email</label><input class="st-input" type="email" id="lookupEmail" placeholder="someone@example.com" /></div>
+              <div class="st-field"><label for="lookupEmail">Email, name, phone, IP address or store</label><input class="st-input" type="search" id="lookupEmail" autocomplete="off" placeholder="someone@example.com, a name, +92 300 1234567, 203.0.113.7 or a store name" /></div>
               <div class="st-actions" style="margin:0;"><button class="st-btn primary" id="lookupBtn" type="button">Look up</button></div>
             </div>
-            <div id="userLookupContent" style="margin-top:16px;"><div class="empty-state">Type a user's email above and click Look up.</div></div>
+            <div id="userLookupContent" style="margin-top:16px;"><div class="empty-state">Type an email, name, phone number, IP address or store name above and click Look up.</div></div>
           </section>
         </div>
 
@@ -20825,25 +20841,24 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       adminUsersData = data.users || [];
+      adminUsersSummary = data.summary || null;
       container.innerHTML = `
 
         <table class="data-table" id="adminUsersTable">
           <thead>
-            <tr><th>User</th><th title="Typed by the user at sign-up. Not verified: no SMS or code.">Phone</th><th>Status</th><th>Plan</th><th>eBay</th><th>Last sign-in</th><th>Credits</th><th>Stock check (days)</th><th>Max eBay accounts</th><th></th></tr>
+            <tr><th>User</th><th title="Typed by the user at sign-up. Not verified: no SMS or code.">Phone</th><th>Status</th><th>Plan</th><th>eBay</th><th>Last sign-in</th><th>Credits</th><th><span style="position:absolute;left:-9999px;">Actions</span></th></tr>
           </thead>
           <tbody>
             ${adminUsersData.map((u) => `
               <tr data-user-id="${u.id}" ${adminUserRowAttrs(u)}>
-                <td class="row-title">${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">' + (u.banned ? 'BANNED' : 'SUSPENDED') + '</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span></td>
+                <td class="row-title" data-cell="user">${adminUserNameHtml(u)}</td>
                 <td data-cell="phone" style="font-size:12.5px;">${adminUserPhoneHtml(u)}</td>
                 <td data-cell="status" style="white-space:nowrap;">${adminUserStatusHtml(u)}</td>
                 <td data-cell="plan">${adminUserPlanHtml(u)}</td>
                 <td data-cell="ebay" style="font-size:12.5px;">${adminUserEbayHtml(u)}</td>
                 <td data-cell="login" style="font-size:12.5px;">${adminUserLoginHtml(u)}</td>
-                <td><input class="editable-input" data-field="creditBalance" type="number" value="${u.creditBalance}" style="width:100px;" /></td>
-                <td><input class="editable-input" data-field="stockCheckIntervalDays" type="number" min="1" value="${u.stockCheckIntervalDays}" style="width:80px;" /></td>
-                <td><input class="editable-input" data-field="maxEbayAccounts" type="number" min="0" value="${u.maxEbayAccounts ?? 1}" style="width:80px;" /></td>
-                <td style="white-space:nowrap;"><button class="btn-small save" data-action="save-user">Save</button> <button class="btn-small" data-action="user-security" style="background:var(--grey-light);color:var(--ink);">Security</button> <button class="btn-small" data-action="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told." style="background:var(--grey-light);color:var(--ink);">Draft links</button> <button class="btn-small" data-action="push-listings" title="Push random ready-to-list drafts (with a real eBay category, Amazon link included) straight into this user's Drafts. Free, no credit is used." style="background:var(--grey-light);color:var(--ink);">Push listings</button></td>
+                <td data-cell="credits" style="font-size:13px;">${adminUserCreditsHtml(u)}</td>
+                <td><button class="ad-kebab" type="button" data-action="user-menu" aria-haspopup="dialog" aria-label="Edit ${escapeAttr(u.name || u.email)}" title="Edit this user">&#8942;</button></td>
               </tr>
             `).join('')}
           </tbody>
@@ -20860,13 +20875,28 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin: who is online, plan, last IP ----------
   let adminUsersData = [];
+  let adminUsersSummary = null; // the last summary the server sent: the chips are drawn again from it after a save in the edit window
   let adminUserFilter = 'all';
   const adminUserAgo = (min) => (min == null ? 'never' : min < 1 ? 'just now' : min < 60 ? `${min} min ago` : min < 1440 ? `${Math.round(min / 60)} h ago` : `${Math.round(min / 1440)} d ago`);
-  const adminUserRowAttrs = (u) => `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended && !u.banned ? 1 : 0}" data-banned="${u.banned ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}" data-phone="${escapeAttr(String(u.phone || '').replace(/\D/g, ''))}"`;
-  // Has this person connected an eBay store (and how many, on which eBay sites)?
+  // The quick filters above the table: a plan that ends within a week, few credits left, nobody home for two weeks, and people the admins made a note or tag for.
+  const AD_LOW_CREDITS = 20; const AD_EXPIRING_DAYS = 7; const AD_INACTIVE_DAYS = 14;
+  const adminUserFlags = (u) => {
+    const left = u.planExpiresAt ? new Date(u.planExpiresAt).getTime() - Date.now() : null;
+    return {
+      expiring: left != null && left >= 0 && left <= AD_EXPIRING_DAYS * 86400000,
+      low: u.role !== 'admin' && Number(u.creditBalance || 0) < AD_LOW_CREDITS,
+      inactive: !u.online && (u.minutesAgo == null || u.minutesAgo > AD_INACTIVE_DAYS * 1440),
+      tagged: !!(u.adminTags && u.adminTags.length) || !!u.adminNote,
+    };
+  };
+  const adminUserRowAttrs = (u) => { const f = adminUserFlags(u); return `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended && !u.banned ? 1 : 0}" data-banned="${u.banned ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}" data-expiring="${f.expiring ? 1 : 0}" data-low="${f.low ? 1 : 0}" data-inactive="${f.inactive ? 1 : 0}" data-tagged="${f.tagged ? 1 : 0}" data-phone="${escapeAttr(String(u.phone || '').replace(/\D/g, ''))}"`; };
+  // The name cell: name, ADMIN / BANNED marks, the email and the admins' own tags. The note text is in the row (hidden) so the search box finds it.
+  const adminUserNameHtml = (u) => `${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">' + (u.banned ? 'BANNED' : 'SUSPENDED') + '</span>' : ''}${u.adminNote ? ' <span class="ad-tag free" title="' + escapeAttr(String(u.adminNote).slice(0, 300)) + '">NOTE</span><span style="display:none;"> ' + escapeHtml(u.adminNote) + '</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span>${(u.adminTags || []).length ? '<br />' + u.adminTags.map((t) => `<span class="ad-tagchip">${escapeHtml(t)}</span>`).join('') : ''}`;
+  const adminUserCreditsHtml = (u) => `<b>${Number(u.creditBalance || 0).toLocaleString()}</b>${adminUserFlags(u).low ? '<br /><small style="color:#B42318;">low</small>' : ''}`;
+  // Has this person connected an eBay store (how many of the number they may connect, on which eBay sites)?
   const adminUserEbayHtml = (u) => (u.ebay && u.ebay.connected
-    ? `<span class="ad-tag paid">CONNECTED</span><br /><small style="color:var(--grey);">${u.ebay.stores} store${u.ebay.stores === 1 ? '' : 's'}${u.ebay.marketplaces && u.ebay.marketplaces.length ? ' &middot; ' + escapeHtml(u.ebay.marketplaces.map((m) => String(m).replace('EBAY_', '')).join(', ')) : ''}</small>`
-    : '<span class="ad-tag free">NOT CONNECTED</span>');
+    ? `<span class="ad-tag paid">CONNECTED</span><br /><small style="color:var(--grey);">${u.ebay.stores} of ${u.maxEbayAccounts ?? 1} store${(u.maxEbayAccounts ?? 1) === 1 ? '' : 's'}${u.ebay.marketplaces && u.ebay.marketplaces.length ? ' &middot; ' + escapeHtml(u.ebay.marketplaces.map((m) => String(m).replace('EBAY_', '')).join(', ')) : ''}</small>`
+    : `<span class="ad-tag free">NOT CONNECTED</span><br /><small style="color:var(--grey);">may connect ${u.maxEbayAccounts ?? 1}</small>`);
   // The phone number the user typed at sign-up (NOT verified). The plain +number is in the row too (hidden), so the search finds it with or without spaces.
   const adminUserPhoneHtml = (u) => (u.phone
     ? `<span style="white-space:nowrap;">${escapeHtml(u.phoneDisplay || u.phone)}</span><span style="display:none;"> ${escapeHtml(u.phone)}</span><br /><small style="color:var(--grey);">${escapeHtml(u.phoneCountry || '')}</small>`
@@ -20875,7 +20905,7 @@ async function autoSuggestEmptyDraftCategories() {
     ? '<span class="ad-dot on"></span><b style="color:#15803D;">Online</b>'
     : `<span class="ad-dot"></span>${u.minutesAgo == null ? 'Never seen' : 'Left ' + adminUserAgo(u.minutesAgo)}`);
   const adminUserPlanHtml = (u) => (u.plan && u.plan.paid
-    ? `<span class="ad-tag paid">PAID</span><br /><small style="color:var(--grey);">$${escapeHtml(String(u.plan.totalUsd))} &middot; ${u.plan.purchases} purchase${u.plan.purchases === 1 ? '' : 's'}</small>`
+    ? `<span class="ad-tag paid">PAID</span><br /><small style="color:var(--grey);">$${escapeHtml(String(u.plan.totalUsd))} &middot; ${u.plan.purchases} purchase${u.plan.purchases === 1 ? '' : 's'}</small>${u.planName ? `<br /><small style="color:var(--grey);">${escapeHtml(u.planName)}${u.planExpiresAt ? ' &middot; ends ' + escapeHtml(new Date(u.planExpiresAt).toLocaleDateString()) : ''}</small>` : ''}`
     : '<span class="ad-tag free">FREE</span>');
   const adminUserLoginHtml = (u) => (u.lastLogin && u.lastLogin.ip
     ? `<code>${escapeHtml(u.lastLogin.ip)}</code><br /><small style="color:var(--grey);">${escapeHtml(u.lastLogin.place || 'Unknown place')} &middot; ${escapeHtml(adminUserAgo(Math.round((Date.now() - new Date(u.lastLogin.at).getTime()) / 60000)))}</small>`
@@ -20885,7 +20915,10 @@ async function autoSuggestEmptyDraftCategories() {
     const box = document.getElementById('adminUserChips');
     if (!box || !summary) return;
     const chip = (key, label, n) => `<button type="button" class="ad-chipbtn${adminUserFilter === key ? ' on' : ''}" data-user-filter="${key}">${label}<b>${n}</b></button>`;
-    box.innerHTML = chip('all', 'All', summary.total) + chip('online', '● Online now', summary.online) + chip('paid', 'Bought a plan', summary.paid) + chip('free', 'Free plan', summary.free) + chip('suspended', 'Suspended', summary.suspended) + chip('banned', 'Banned', summary.banned || 0) + chip('ebay', 'eBay connected', summary.ebayConnected || 0) + chip('noebay', 'No eBay yet', summary.ebayNotConnected || 0);
+    const flagged = adminUsersData.map(adminUserFlags);
+    const count = (key) => flagged.filter((f) => f[key]).length;
+    box.innerHTML = chip('all', 'All', summary.total) + chip('online', '● Online now', summary.online) + chip('paid', 'Bought a plan', summary.paid) + chip('free', 'Free plan', summary.free) + chip('suspended', 'Suspended', summary.suspended) + chip('banned', 'Banned', summary.banned || 0) + chip('ebay', 'eBay connected', summary.ebayConnected || 0) + chip('noebay', 'No eBay yet', summary.ebayNotConnected || 0)
+      + chip('expiring', 'Plan ends in ' + AD_EXPIRING_DAYS + ' days', count('expiring')) + chip('low', 'Under ' + AD_LOW_CREDITS + ' credits', count('low')) + chip('inactive', 'Away ' + AD_INACTIVE_DAYS + '+ days', count('inactive')) + chip('tagged', 'With note or tag', count('tagged'));
     box.querySelectorAll('[data-user-filter]').forEach((b) => b.addEventListener('click', () => { adminUserFilter = b.dataset.userFilter; renderAdminUserChips(summary); applyAdminUserSearch(); }));
   }
 
@@ -20898,16 +20931,8 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await res.json();
       if (!res.ok || !data.success) return;
       adminUsersData = data.users || [];
-      adminUsersData.forEach((u) => {
-        const row = document.querySelector(`#adminUsersContent tr[data-user-id="${u.id}"]`);
-        if (!row) return;
-        row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended && !u.banned ? 1 : 0); row.setAttribute('data-banned', u.banned ? 1 : 0); row.setAttribute('data-ebay', u.ebay && u.ebay.connected ? 1 : 0); row.setAttribute('data-phone', String(u.phone || '').replace(/\D/g, ''));
-        row.querySelector('[data-cell="status"]').innerHTML = adminUserStatusHtml(u);
-        row.querySelector('[data-cell="ebay"]').innerHTML = adminUserEbayHtml(u);
-        row.querySelector('[data-cell="plan"]').innerHTML = adminUserPlanHtml(u);
-        row.querySelector('[data-cell="login"]').innerHTML = adminUserLoginHtml(u);
-        row.querySelector('[data-cell="phone"]').innerHTML = adminUserPhoneHtml(u);
-      });
+      adminUsersSummary = data.summary || null;
+      adminUsersData.forEach(paintAdminUserRow);
       renderAdminUserChips(data.summary);
       applyAdminUserSearch();
     } catch (_) { /* next minute */ }
@@ -20924,7 +20949,11 @@ async function autoSuggestEmptyDraftCategories() {
         || (adminUserFilter === 'suspended' && row.dataset.suspended === '1')
         || (adminUserFilter === 'banned' && row.dataset.banned === '1')
         || (adminUserFilter === 'ebay' && row.dataset.ebay === '1')
-        || (adminUserFilter === 'noebay' && row.dataset.ebay !== '1');
+        || (adminUserFilter === 'noebay' && row.dataset.ebay !== '1')
+        || (adminUserFilter === 'expiring' && row.dataset.expiring === '1')
+        || (adminUserFilter === 'low' && row.dataset.low === '1')
+        || (adminUserFilter === 'inactive' && row.dataset.inactive === '1')
+        || (adminUserFilter === 'tagged' && row.dataset.tagged === '1');
       // a number typed the local way (xxxxxxxxx) finds +92 xxxxxxxxx: compare digits only, without the leading 0
       const typedDigits = q.replace(/\D/g, '');
       const phoneHit = typedDigits.length >= 5 && !!row.dataset.phone && (row.dataset.phone.includes(typedDigits) || row.dataset.phone.includes(typedDigits.replace(/^0+/, '')));
@@ -20939,7 +20968,7 @@ async function autoSuggestEmptyDraftCategories() {
     const overlay = document.createElement('div');
     overlay.id = 'adminSecModal';
     overlay.className = 'modal-overlay open';
-    overlay.innerHTML = `<div class="modal-box" style="max-width:${wide ? 900 : 580}px; width:100%; max-height:90vh; overflow:auto;">${html}</div>`;
+    overlay.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true" style="max-width:${wide ? 900 : 580}px; width:100%; max-height:90vh; overflow:auto;">${html}</div>`;
     document.body.appendChild(overlay);
     overlay.addEventListener('click', (e) => { if (e.target === overlay || e.target.closest('[data-close]')) overlay.remove(); });
     return overlay;
@@ -21153,103 +21182,212 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) { status.textContent = err.message; } finally { btn.disabled = false; }
   });
 
+  // Admin -> Users: the three dots at the end of a row open ONE window for that person (credits and limits, a private note and tags, and the actions
+  // that used to be four buttons on every row). The row itself only shows what the admin wants at a glance.
   function wireAdminUserRows() {
     document.querySelectorAll('#adminUsersContent tr[data-user-id]').forEach((row) => {
       const userId = row.getAttribute('data-user-id');
-      const saveBtn = row.querySelector('[data-action="save-user"]');
-      row.querySelector('[data-action="user-security"]')?.addEventListener('click', () => {
+      row.querySelector('[data-action="user-menu"]')?.addEventListener('click', () => {
         const user = adminUsersData.find((u) => u.id === userId);
-        if (user) openUserSecurityModal(user);
-      });
-      // Downloads the Amazon links of this user's drafts as a CSV (one column). A plain read: the user is not told.
-      row.querySelector('[data-action="draft-links"]')?.addEventListener('click', async (e) => {
-        const btn = e.currentTarget;
-        const label = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Preparing\u2026';
-        try {
-          const res = await apiFetch('/api/admin/users/' + encodeURIComponent(userId) + '/draft-links');
-          if (!res.ok) {
-            let message = 'Could not download the links.';
-            try { message = (await res.json()).error || message; } catch (_) { /* keep the plain message */ }
-            throw new Error(message);
-          }
-          const blob = await res.blob();
-          const user = adminUsersData.find((u) => u.id === userId);
-          const who = user && user.email ? user.email.split('@')[0].replace(/[^a-z0-9._-]/gi, '') : userId;
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'draft-amazon-links-' + who + '-' + new Date().toISOString().slice(0, 10) + '.csv';
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          setTimeout(() => URL.revokeObjectURL(link.href), 2000);
-        } catch (err) {
-          showToast('Draft links', err.message, 'error');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = label;
-        }
-      });
-
-      // Pushes N random ready-to-list drafts (a real eBay category + the clickable Amazon link, exactly like a normal
-      // draft) straight into this user's Drafts. Free, and never anything the user already has an ASIN for.
-      row.querySelector('[data-action="push-listings"]')?.addEventListener('click', () => {
-        const user = adminUsersData.find((u) => u.id === userId);
-        if (user) openPushListingsModal(user);
-      });
-
-      saveBtn.addEventListener('click', async () => {
-        const creditBalance = Number(row.querySelector('[data-field="creditBalance"]').value);
-        const stockCheckIntervalDays = Number(row.querySelector('[data-field="stockCheckIntervalDays"]').value);
-        const maxEbayAccounts = Number(row.querySelector('[data-field="maxEbayAccounts"]').value);
-
-        saveBtn.disabled = true;
-        saveBtn.textContent = 'Saving\u2026';
-
-        try {
-          const creditsRes = await apiFetch(`/api/admin/users/${userId}/credits`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ creditBalance }),
-          });
-          const creditsData = await creditsRes.json();
-          if (!creditsRes.ok || !creditsData.success) {
-            alert(creditsData.error || 'Could not update credits.');
-            return;
-          }
-
-          const intervalRes = await apiFetch(`/api/admin/users/${userId}/stock-check-interval`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ days: stockCheckIntervalDays }),
-          });
-          const intervalData = await intervalRes.json();
-          if (!intervalRes.ok || !intervalData.success) {
-            alert(intervalData.error || 'Could not update the stock check interval.');
-            return;
-          }
-
-          const maxAccountsRes = await apiFetch(`/api/admin/users/${userId}/max-ebay-accounts`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ max: maxEbayAccounts }),
-          });
-          const maxAccountsData = await maxAccountsRes.json();
-          if (!maxAccountsRes.ok || !maxAccountsData.success) {
-            alert(maxAccountsData.error || 'Could not update the max eBay accounts limit.');
-            return;
-          }
-
-          saveBtn.textContent = 'Saved';
-          setTimeout(() => { saveBtn.textContent = 'Save'; }, 1200);
-        } catch (err) {
-          alert('Could not connect to the server: ' + err.message);
-        } finally {
-          saveBtn.disabled = false;
-        }
+        if (user) openUserEditModal(user);
       });
     });
+  }
+
+  // Repaints one row of the table from fresh data (after a save in the edit window, and by the once-a-minute refresh).
+  function paintAdminUserRow(u) {
+    const row = document.querySelector(`#adminUsersContent tr[data-user-id="${u.id}"]`);
+    if (!row) return;
+    const flags = adminUserFlags(u);
+    row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended && !u.banned ? 1 : 0); row.setAttribute('data-banned', u.banned ? 1 : 0); row.setAttribute('data-ebay', u.ebay && u.ebay.connected ? 1 : 0); row.setAttribute('data-phone', String(u.phone || '').replace(/\D/g, ''));
+    row.setAttribute('data-expiring', flags.expiring ? 1 : 0); row.setAttribute('data-low', flags.low ? 1 : 0); row.setAttribute('data-inactive', flags.inactive ? 1 : 0); row.setAttribute('data-tagged', flags.tagged ? 1 : 0);
+    row.querySelector('[data-cell="user"]').innerHTML = adminUserNameHtml(u);
+    row.querySelector('[data-cell="credits"]').innerHTML = adminUserCreditsHtml(u);
+    row.querySelector('[data-cell="status"]').innerHTML = adminUserStatusHtml(u);
+    row.querySelector('[data-cell="ebay"]').innerHTML = adminUserEbayHtml(u);
+    row.querySelector('[data-cell="plan"]').innerHTML = adminUserPlanHtml(u);
+    row.querySelector('[data-cell="login"]').innerHTML = adminUserLoginHtml(u);
+    row.querySelector('[data-cell="phone"]').innerHTML = adminUserPhoneHtml(u);
+  }
+
+  async function adminPut(path, body) {
+    const res = await apiFetch(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'That did not work.');
+    return data;
+  }
+
+  // Downloads the Amazon links of this user's drafts as a CSV (one column). A plain read: the user is not told.
+  async function downloadDraftLinks(user, btn) {
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Preparing…';
+    try {
+      const res = await apiFetch('/api/admin/users/' + encodeURIComponent(user.id) + '/draft-links');
+      if (!res.ok) {
+        let message = 'Could not download the links.';
+        try { message = (await res.json()).error || message; } catch (_) { /* keep the plain message */ }
+        throw new Error(message);
+      }
+      const blob = await res.blob();
+      const who = user.email ? user.email.split('@')[0].replace(/[^a-z0-9._-]/gi, '') : user.id;
+      saveAdminFile(blob, 'draft-amazon-links-' + who + '-' + new Date().toISOString().slice(0, 10) + '.csv');
+    } catch (err) {
+      showToast('Draft links', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+  }
+
+  function saveAdminFile(blob, fileName) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+  }
+
+  // One CSV cell. A text that a spreadsheet would run as a formula (starts with = + - @) gets a quote in front of it, except a phone number (+92...).
+  function adminCsvCell(value) {
+    let s = value == null ? '' : String(value);
+    if (typeof value === 'string' && /^[=+\-@\t\r]/.test(s) && !/^\+[0-9][0-9 ]*$/.test(s)) s = "'" + s;
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  // Exports the people the table shows right now (the chips and the search box decide who that is).
+  function exportAdminUsersCsv() {
+    const shown = Array.from(document.querySelectorAll('#adminUsersContent tr[data-user-id]')).filter((r) => r.style.display !== 'none').map((r) => adminUsersData.find((u) => u.id === r.getAttribute('data-user-id'))).filter(Boolean);
+    if (!shown.length) { showToast('Export', 'No user is shown, so there is nothing to export.', 'error'); return; }
+    const iso = (d) => (d ? new Date(d).toISOString() : '');
+    const head = ['Name', 'Email', 'Phone', 'Phone country', 'Signed up', 'Role', 'Account', 'Online', 'Last seen', 'Last sign-in IP', 'Last sign-in place', 'Plan', 'Plan name', 'Plan ends', 'Paid USD', 'Purchases', 'Credits', 'Stock check days', 'Max eBay accounts', 'eBay stores', 'eBay sites', 'Tags', 'Note'];
+    const lines = [head.map(adminCsvCell).join(',')];
+    shown.forEach((u) => {
+      lines.push([
+        u.name || '', u.email || '', u.phoneDisplay || u.phone || '', u.phoneCountry || '', iso(u.createdAt), u.role || 'user', u.banned ? 'Banned' : u.suspended ? 'Suspended' : 'Active', u.online ? 'Yes' : 'No', iso(u.lastSeenAt),
+        (u.lastLogin && u.lastLogin.ip) || '', (u.lastLogin && u.lastLogin.place) || '', u.plan && u.plan.paid ? 'Paid' : 'Free', u.planName || '', iso(u.planExpiresAt), u.plan && u.plan.paid ? u.plan.totalUsd : 0, u.plan && u.plan.paid ? u.plan.purchases : 0,
+        u.creditBalance == null ? '' : u.creditBalance, u.stockCheckIntervalDays == null ? '' : u.stockCheckIntervalDays, u.maxEbayAccounts == null ? '' : u.maxEbayAccounts, (u.ebay && u.ebay.stores) || 0,
+        ((u.ebay && u.ebay.marketplaces) || []).map((m) => String(m).replace('EBAY_', '')).join(' '), (u.adminTags || []).join('; '), u.adminNote || '',
+      ].map(adminCsvCell).join(','));
+    });
+    saveAdminFile(new Blob(['\uFEFF' + lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }), 'elms-users-' + new Date().toISOString().slice(0, 10) + '.csv');
+    showToast('Export', shown.length.toLocaleString() + ' user' + (shown.length === 1 ? '' : 's') + ' exported.', 'success');
+  }
+  document.getElementById('adminUsersExportBtn')?.addEventListener('click', exportAdminUsersCsv);
+
+  // The edit window of one person: credits and limits, the admins' private note and tags, and the actions. `opts.onSaved` runs after a save (the lookup page reloads itself).
+  const AD_TAG_SUGGESTIONS = ['VIP', 'Refund asked', 'Watch', 'Support', 'Reseller'];
+  function openUserEditModal(u, opts = {}) {
+    const listed = adminUsersData.find((x) => x.id === u.id);
+    const cur = opts.fromLookup ? u : (listed || u); // opened from the lookup page, that page's copy is the fresher one
+    // The note is "unknown" (no fields at all) when the server could not read this person's account, or is an older version: saving would write over the real note.
+    const noteKnown = cur.adminNote !== undefined || cur.adminTags !== undefined;
+    const m = adminModal(`
+      <div class="draft-title">${escapeHtml(cur.name || cur.email)}${cur.banned ? ' <span class="ad-tag bad">BANNED</span>' : cur.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}${cur.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}</div>
+      <div class="meta-line">${escapeHtml(cur.email)}${cur.phone ? ' &middot; ' + escapeHtml(cur.phoneDisplay || cur.phone) : ''} &middot; ${adminUserStatusHtml(cur)} &middot; ${cur.plan && cur.plan.paid ? 'Paid plan' : 'Free plan'}</div>
+
+      <div class="ad-sect">
+        <div class="ad-sect-title">Credits and limits</div>
+        <div class="ad-edit-grid">
+          <div class="st-field"><label for="ueCredits">Credits</label><input class="st-input" type="number" id="ueCredits" min="0" max="10000000" step="1" value="${escapeAttr(String(cur.creditBalance ?? 0))}" /></div>
+          <div class="st-field"><label for="ueStock">Stock check (days)</label><input class="st-input" type="number" id="ueStock" min="1" step="1" value="${escapeAttr(String(cur.stockCheckIntervalDays ?? 1))}" /></div>
+          <div class="st-field"><label for="ueMax">Max eBay accounts</label><input class="st-input" type="number" id="ueMax" min="0" max="50" step="1" value="${escapeAttr(String(cur.maxEbayAccounts ?? 1))}" /></div>
+        </div>
+        <p class="meta-line" style="margin:8px 0 0;">Only the numbers you change are saved. Credits are set to exactly the number you type.</p>
+        <div class="st-actions"><button class="st-btn primary" id="ueSave" type="button">Save changes</button><div id="ueStatus" role="status"></div></div>
+      </div>
+
+      <div class="ad-sect">
+        <div class="ad-sect-title">Private note and tags <span style="font-weight:600;color:var(--grey);">(only admins see them)</span></div>
+        ${noteKnown ? '' : '<div class="state-msg error" style="margin-bottom:10px;">The note could not be loaded, so it cannot be saved now (saving would write over it). Close this window and try again.</div>'}
+        <div class="st-field"><label for="ueTags">Tags (separate with a comma, up to 8)</label><input class="st-input" id="ueTags" list="ueTagList" maxlength="260" value="${escapeAttr((cur.adminTags || []).join(', '))}" placeholder="e.g. VIP, Refund asked" ${noteKnown ? '' : 'disabled'} /><datalist id="ueTagList">${AD_TAG_SUGGESTIONS.map((t) => `<option value="${escapeAttr(t)}"></option>`).join('')}</datalist></div>
+        <div class="st-field"><label for="ueNote">Note</label><textarea class="st-input" id="ueNote" rows="3" maxlength="1000" style="height:auto;padding:10px 12px;resize:vertical;" ${noteKnown ? '' : 'disabled'}>${escapeHtml(cur.adminNote || '')}</textarea></div>
+        <div class="st-actions"><button class="st-btn primary" id="ueNoteSave" type="button" ${noteKnown ? '' : 'disabled'}>Save note and tags</button><div id="ueNoteStatus" role="status" style="font-size:12.5px;color:var(--grey);">${cur.adminNoteBy ? 'Last saved by ' + escapeHtml(cur.adminNoteBy) + (cur.adminNoteAt ? ' on ' + escapeHtml(new Date(cur.adminNoteAt).toLocaleString()) : '') : ''}</div></div>
+      </div>
+
+      <div class="ad-sect">
+        <div class="ad-sect-title">Actions</div>
+        <div class="ad-edit-actions">
+          <button class="btn-small" type="button" data-ue="security">Security and sign-ins…</button>
+          <button class="btn-small" type="button" data-ue="message">Send a message</button>
+          <button class="btn-small" type="button" data-ue="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told.">Draft links (CSV)</button>
+          <button class="btn-small" type="button" data-ue="push" title="Push random ready-to-list drafts (with a real eBay category, Amazon link included) straight into this user's Drafts. Free, no credit is used.">Push listings…</button>
+          ${opts.fromLookup ? '' : '<button class="btn-small" type="button" data-ue="lookup">Whole picture</button>'}
+        </div>
+      </div>
+      <div class="ad-chips" style="margin:18px 0 0;"><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Close</button></div>`);
+
+    const done = () => {
+      if (listed && listed !== cur) Object.assign(listed, cur);
+      paintAdminUserRow(listed || cur);
+      renderAdminUserChips(adminUsersSummary); // the quick-filter counts (few credits, with a note...) and who is shown follow what was just saved
+      applyAdminUserSearch();
+      if (typeof opts.onSaved === 'function') opts.onSaved(cur);
+    };
+
+    m.querySelector('#ueSave').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const status = m.querySelector('#ueStatus');
+      const wanted = { credits: m.querySelector('#ueCredits').value.trim(), stock: m.querySelector('#ueStock').value.trim(), max: m.querySelector('#ueMax').value.trim() };
+      const credits = Number(wanted.credits); const stock = Number(wanted.stock); const max = Number(wanted.max);
+      // Only a number the admin changed is checked and saved: an old value the server would not accept today (say 0.5 days) in a field nobody touched must not block the others.
+      const touched = (raw, current) => raw === '' || Number(raw) !== Number(current);
+      const t = { credits: touched(wanted.credits, cur.creditBalance ?? 0), stock: touched(wanted.stock, cur.stockCheckIntervalDays ?? 1), max: touched(wanted.max, cur.maxEbayAccounts ?? 1) };
+      if (t.credits && (wanted.credits === '' || !Number.isFinite(credits) || credits < 0 || credits > 10000000)) { status.textContent = 'Credits must be a number from 0 to 10,000,000.'; return; }
+      if (t.stock && (wanted.stock === '' || !Number.isInteger(stock) || stock < 1)) { status.textContent = 'Stock check days must be a whole number, at least 1.'; return; }
+      if (t.max && (wanted.max === '' || !Number.isInteger(max) || max < 0 || max > 50)) { status.textContent = 'Max eBay accounts must be a whole number from 0 to 50.'; return; }
+      const steps = [];
+      if (t.credits) steps.push({ label: 'credits', path: 'credits', body: { creditBalance: credits }, apply: (user) => { cur.creditBalance = user.creditBalance; } });
+      if (t.stock) steps.push({ label: 'stock check', path: 'stock-check-interval', body: { days: stock }, apply: (user) => { cur.stockCheckIntervalDays = user.stockCheckIntervalDays; } });
+      if (t.max) steps.push({ label: 'max eBay accounts', path: 'max-ebay-accounts', body: { max }, apply: (user) => { cur.maxEbayAccounts = user.maxEbayAccounts; } });
+      if (!steps.length) { status.textContent = 'Nothing changed.'; return; }
+      btn.disabled = true;
+      status.textContent = 'Saving…';
+      const saved = [];
+      try {
+        for (const step of steps) {
+          const out = await adminPut('/api/admin/users/' + encodeURIComponent(cur.id) + '/' + step.path, step.body);
+          step.apply(out.user || {});
+          saved.push(step.label);
+        }
+        status.textContent = 'Saved: ' + saved.join(', ') + '.';
+        showToast('Saved', (cur.name || cur.email) + ': ' + saved.join(', '), 'success');
+      } catch (err) {
+        status.textContent = (saved.length ? 'Saved ' + saved.join(', ') + ', then: ' : '') + err.message;
+      } finally {
+        btn.disabled = false;
+        if (saved.length) done();
+      }
+    });
+
+    m.querySelector('#ueNoteSave').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const status = m.querySelector('#ueNoteStatus');
+      if (!noteKnown) { status.textContent = 'The note could not be loaded: not saved.'; return; }
+      const tags = m.querySelector('#ueTags').value.split(',').map((t) => t.trim()).filter(Boolean);
+      btn.disabled = true;
+      status.textContent = 'Saving…';
+      try {
+        const out = await adminPut('/api/admin/users/' + encodeURIComponent(cur.id) + '/admin-notes', { note: m.querySelector('#ueNote').value, tags });
+        cur.adminNote = out.note; cur.adminTags = out.tags; cur.adminNoteBy = out.by; cur.adminNoteAt = out.at;
+        m.querySelector('#ueTags').value = out.tags.join(', ');
+        m.querySelector('#ueNote').value = out.note;
+        status.textContent = 'Saved.';
+        done();
+      } catch (err) {
+        status.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    m.querySelector('[data-ue="security"]').addEventListener('click', () => openUserSecurityModal(cur));
+    m.querySelector('[data-ue="message"]').addEventListener('click', () => { m.remove(); setAdminTab('security'); document.getElementById('noticeTo').value = cur.email; document.getElementById('noticeTitle').focus(); });
+    m.querySelector('[data-ue="draft-links"]').addEventListener('click', (e) => downloadDraftLinks(cur, e.currentTarget));
+    m.querySelector('[data-ue="push"]').addEventListener('click', () => openPushListingsModal(cur));
+    m.querySelector('[data-ue="lookup"]')?.addEventListener('click', () => { m.remove(); setAdminTab('lookup'); const box = document.getElementById('lookupEmail'); if (box) box.value = cur.email; openLookupById(cur.id); });
   }
 
   // Admin -> Users -> "Push listings": pick a count, push that many random ready-to-list drafts (real eBay category,
@@ -21283,53 +21421,106 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
-  // ---------- Admin: User Lookup (one user's whole picture by email) ----------
+  // ---------- Admin: User Lookup (one user's whole picture; found by email, name, phone, IP or store) ----------
   const LISTING_STATUS_LABELS = { draft: 'Drafts', publishing: 'Publishing', scheduled: 'Scheduled', published: 'Published', paused: 'Paused', error: 'Errors', ended: 'Ended', sold: 'Sold out' };
-  async function searchUserLookup() {
-    const email = document.getElementById('lookupEmail').value.trim();
+  const adEsc = (v) => escapeHtml(v == null ? '' : String(v)); // escapeHtml wants a string; a number or a missing value is fine here
+  const adDate = (d) => (d ? new Date(d).toLocaleDateString() : '—');
+  const adDateTime = (d) => (d ? new Date(d).toLocaleString() : '—');
+  const adOnOff = (on) => (on ? '<span class="ad-tag paid">ON</span>' : '<span class="ad-tag free">OFF</span>');
+  const adKv = (rows) => '<div class="ad-kv">' + rows.map(([label, value]) => `<div><small>${adEsc(label)}</small>${value}</div>`).join('') + '</div>';
+  const adTable = (head, rows, empty) => (rows.length
+    ? `<div style="overflow-x:auto;"><table class="data-table"><thead><tr>${head.map((h) => `<th>${adEsc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => '<tr>' + r.map((c) => `<td>${c}</td>`).join('') + '</tr>').join('')}</tbody></table></div>`
+    : `<p class="meta-line" style="margin:0;color:var(--grey);">${adEsc(empty)}</p>`);
+  const adSection = (title, body, note) => `<details class="st-custom" open><summary class="st-custom-title" style="cursor:pointer;">${adEsc(title)}</summary>${note ? `<p class="meta-line" style="margin:0 0 10px;">${note}</p>` : ''}${body}</details>`;
+  const adDevice = (x) => [x.browser, x.os, x.deviceType && x.deviceType !== 'unknown' ? x.deviceType : ''].filter(Boolean).join(' · ') || '—';
+  const adUsd = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const adDaysLeft = (d) => { const n = Math.ceil((new Date(d).getTime() - Date.now()) / 86400000); return n > 0 ? n + ' day' + (n === 1 ? '' : 's') + ' left' : 'ended'; };
+
+  let lookupSeq = 0; // a slow answer must never paint over a newer search
+  async function lookupRequest(params) {
     const container = document.getElementById('userLookupContent');
     const btn = document.getElementById('lookupBtn');
-    if (!email) { container.innerHTML = '<div class="empty-state">Type a user\'s email above and click Look up.</div>'; return; }
+    const seq = ++lookupSeq;
     btn.disabled = true;
     container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
     try {
-      const res = await apiFetch('/api/admin/user-lookup?email=' + encodeURIComponent(email));
+      const res = await apiFetch('/api/admin/user-lookup?' + params);
       const data = await res.json();
+      if (seq !== lookupSeq) return;
       if (!res.ok || !data.success) {
-        container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not look up this user.')}</div>`;
+        container.innerHTML = `<div class="state-msg error">${adEsc(data.error || 'Could not look up this user.')}</div>`;
         return;
       }
+      if (data.matches) { renderLookupMatches(data); return; }
       renderUserLookup(data);
     } catch (err) {
-      container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+      if (seq === lookupSeq) container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${adEsc(err.message)}</div>`;
     } finally {
-      btn.disabled = false;
+      if (seq === lookupSeq) btn.disabled = false;
     }
   }
+  function openLookupById(id) { return lookupRequest('id=' + encodeURIComponent(id)); }
+  function searchUserLookup() {
+    const text = document.getElementById('lookupEmail').value.trim();
+    const container = document.getElementById('userLookupContent');
+    if (!text) { lookupSeq += 1; document.getElementById('lookupBtn').disabled = false; container.innerHTML = '<div class="empty-state">Type an email, name, phone number, IP address or store name above and click Look up.</div>'; return; }
+    // Always a search: an email that does not exist exactly (a typo, a half address) then shows the people it is close to instead of a dead end. When the text IS
+    // exactly one person's email, that person opens straight away (renderLookupMatches).
+    lookupTyped = text;
+    return lookupRequest('q=' + encodeURIComponent(text));
+  }
+  let lookupTyped = '';
   document.getElementById('lookupBtn')?.addEventListener('click', searchUserLookup);
   document.getElementById('lookupEmail')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchUserLookup(); });
 
-  function renderUserLookup({ user: u, listings, orders, netProfit, stores, tickets }) {
+  // Several people matched the text: pick one (a single match opens straight away).
+  function renderLookupMatches({ matches, truncated }) {
+    const container = document.getElementById('userLookupContent');
+    if (!matches.length) { container.innerHTML = '<div class="empty-state">Nobody matches that. Try part of an email, a name, a phone number, an IP address or an eBay store name.</div>'; return; }
+    if (matches.length === 1 || String(matches[0].email || '').toLowerCase() === lookupTyped.toLowerCase()) { openLookupById(matches[0].id); return; } // one person, or the exact email typed (it is always first)
+    container.innerHTML = `
+      <p class="meta-line" style="margin:0 0 10px;">${matches.length} people match${truncated ? ' (more exist: type more of the text to narrow it)' : ''}. Click one to see the whole picture.</p>
+      <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Person</th><th>Phone</th><th>Matched on</th><th>Signed up</th></tr></thead><tbody>
+        ${matches.map((p) => `<tr class="ad-hit" data-lookup-id="${escapeAttr(String(p.id))}" tabindex="0" role="button">
+          <td class="row-title">${adEsc(p.name || '—')}${p.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${p.banned ? ' <span class="ad-tag bad">BANNED</span>' : p.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}<br /><span style="font-weight:400;color:var(--grey);font-size:12px;">${adEsc(p.email)}</span>${(p.tags || []).map((t) => `<span class="ad-tagchip">${adEsc(t)}</span>`).join('')}</td>
+          <td style="font-size:12.5px;">${adEsc(p.phone || '—')}</td>
+          <td style="font-size:12.5px;">${(p.matchedOn || []).map(adEsc).join('<br />')}</td>
+          <td style="font-size:12.5px;">${adEsc(adDate(p.createdAt))}</td>
+        </tr>`).join('')}
+      </tbody></table></div>`;
+    container.querySelectorAll('[data-lookup-id]').forEach((row) => {
+      const open = () => openLookupById(row.getAttribute('data-lookup-id'));
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+    });
+  }
+
+  function renderUserLookup({ user: u, listings, orders, netProfit, stores, tickets, recentTickets, details }) {
     const container = document.getElementById('userLookupContent');
     const cSign = (currency) => CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '$');
     const money = (amount, currency) => cSign(currency) + Number(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const live = (listings.published || 0) + (listings.paused || 0) + (listings.sold || 0);
+    const d = details || {};
+    const acc = d.account || {};
+    const set = d.settings || {};
+    const act = d.activity || null;
 
     const ordersRows = orders.currencies.length
-      ? orders.currencies.map((c) => `<tr><td>${escapeHtml(c.currency || '—')}</td><td>${c.orders.toLocaleString()}</td><td>${money(c.revenue, c.currency)}</td><td>${c.profit == null ? '—' : money(c.profit, c.currency)}</td></tr>`).join('')
+      ? orders.currencies.map((c) => `<tr><td>${adEsc(c.currency || '—')}</td><td>${c.orders.toLocaleString()}</td><td>${money(c.revenue, c.currency)}</td><td>${c.profit == null ? '—' : money(c.profit, c.currency)}</td></tr>`).join('')
       : '<tr><td colspan="4" style="color:var(--grey);">No orders yet.</td></tr>';
     const netProfitRows = netProfit.currencies.length
-      ? netProfit.currencies.map((c) => `<tr><td>${escapeHtml(c.currency || '—')}</td><td>${c.orders.toLocaleString()}</td><td>${money(c.net_profit, c.currency)}</td></tr>`).join('')
+      ? netProfit.currencies.map((c) => `<tr><td>${adEsc(c.currency || '—')}</td><td>${c.orders.toLocaleString()}</td><td>${money(c.net_profit, c.currency)}</td></tr>`).join('')
       : '<tr><td colspan="3" style="color:var(--grey);">No net profit figures typed in yet.</td></tr>';
 
     const storeRows = (stores || []).length
       ? stores.map((s) => {
           const best = (s.orders && s.orders.currencies[0]) || null;
+          const policiesMissing = [!s.paymentPolicyId && 'payment policy', !s.fulfillmentPolicyId && 'shipping policy', !s.returnPolicyId && 'return policy', !s.merchantLocationKey && 'location'].filter(Boolean);
           return `<tr>
-            <td><div style="display:flex;align-items:center;gap:8px;">${s.storeLogoUrl ? `<img src="${escapeAttr(s.storeLogoUrl)}" alt="" style="width:28px;height:28px;border-radius:6px;object-fit:contain;background:#fff;border:1px solid var(--line);flex:none;" onerror="this.remove();" />` : ''}<div><b>${escapeHtml(s.label || s.displayName || s.username || 'eBay store')}</b>${s.isActive ? ' <span class="ad-tag free">SELECTED</span>' : ''}${s.financesSyncError ? ' <span class="ad-tag bad">EARNINGS STUCK</span>' : ''}<br /><small style="color:var(--grey);">${escapeHtml(s.username || s.ebayUserId || '—')}</small>${s.financesSyncError ? `<br /><small class="bad" style="word-break:break-word;">${escapeHtml(s.financesSyncError)}</small>` : ''}</div></div></td>
-            <td>${escapeHtml(String(s.marketplaceId || 'EBAY_US').replace('EBAY_', ''))}</td>
+            <td><div style="display:flex;align-items:center;gap:8px;">${s.storeLogoUrl ? `<img src="${escapeAttr(s.storeLogoUrl)}" alt="" style="width:28px;height:28px;border-radius:6px;object-fit:contain;background:#fff;border:1px solid var(--line);flex:none;" onerror="this.remove();" />` : ''}<div><b>${adEsc(s.label || s.displayName || s.username || 'eBay store')}</b>${s.isActive ? ' <span class="ad-tag free">SELECTED</span>' : ''}${s.needsReconnect ? ' <span class="ad-tag bad">RECONNECT NEEDED</span>' : ''}${s.financesSyncError ? ' <span class="ad-tag bad">EARNINGS STUCK</span>' : ''}<br /><small style="color:var(--grey);">${adEsc(s.username || s.ebayUserId || '—')}</small>${s.financesSyncError ? `<br /><small class="bad" style="word-break:break-word;">${adEsc(s.financesSyncError)}</small>` : ''}${s.connected !== false && policiesMissing.length ? `<br /><small style="color:#B54708;">Missing: ${adEsc(policiesMissing.join(', '))}</small>` : ''}</div></div></td>
+            <td>${adEsc(String(s.marketplaceId || 'EBAY_US').replace('EBAY_', ''))}</td>
             <td>${s.connected === false ? '<span class="ad-tag bad">DISCONNECTED</span>' : '<span class="ad-tag paid">CONNECTED</span>'}</td>
-            <td>${escapeHtml(new Date(s.createdAt).toLocaleDateString())}</td>
+            <td>${adEsc(adDate(s.createdAt))}</td>
             <td>${(s.liveListings || 0).toLocaleString()}</td>
             <td>${(s.orders ? s.orders.orders : 0).toLocaleString()}</td>
             <td>${best ? money(best.revenue, best.currency) : '—'}</td>
@@ -21338,10 +21529,20 @@ async function autoSuggestEmptyDraftCategories() {
         }).join('')
       : '<tr><td colspan="8" style="color:var(--grey);">No eBay stores connected yet.</td></tr>';
 
-    container.innerHTML = `
-      <div class="draft-title">${escapeHtml(u.name || u.email)}${u.banned ? ' <span class="ad-tag bad">BANNED</span>' : u.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}</div>
-      <div class="meta-line">${escapeHtml(u.email)}${u.phone ? ' &middot; ' + escapeHtml(u.phoneDisplay || u.phone) : ''} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}${u.planName ? ' (' + escapeHtml(u.planName) + (u.planExpiresAt ? ', until ' + escapeHtml(new Date(u.planExpiresAt).toLocaleDateString()) + ')' : ')') : ''} &middot; Signed up ${escapeHtml(new Date(u.createdAt).toLocaleDateString())}</div>
-      ${u.suspended ? `<div class="elms-blocked-reason" style="margin-top:10px;">${u.banned ? 'Permanently banned (no appeal)' : 'Suspended'}: ${escapeHtml(u.suspendedReason || '')}</div>` : ''}
+    const parts = [];
+
+    // header
+    parts.push(`
+      <div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;">
+        <div style="min-width:0;">
+          <div class="draft-title">${adEsc(u.name || u.email)}${u.banned ? ' <span class="ad-tag bad">BANNED</span>' : u.suspended ? ' <span class="ad-tag bad">SUSPENDED</span>' : ''}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}</div>
+          <div class="meta-line">${adEsc(u.email)}${u.phone ? ' &middot; ' + adEsc(u.phoneDisplay || u.phone) : ''} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}${u.planName ? ' (' + adEsc(u.planName) + (u.planExpiresAt ? ', until ' + adEsc(new Date(u.planExpiresAt).toLocaleDateString()) : '') + ')' : ''} &middot; Signed up ${adEsc(adDate(u.createdAt))}</div>
+          ${(u.adminTags || []).length ? `<div>${u.adminTags.map((t) => `<span class="ad-tagchip">${adEsc(t)}</span>`).join('')}</div>` : ''}
+        </div>
+        <div class="ad-edit-actions"><button class="btn-small" id="luEdit" type="button" title="Credits and limits, note and tags, security, push listings">Edit &#8942;</button></div>
+      </div>
+      ${u.suspended ? `<div class="elms-blocked-reason" style="margin-top:10px;">${u.banned ? 'Permanently banned (no appeal)' : 'Suspended'}: ${adEsc(u.suspendedReason || '')}</div>` : ''}
+      ${(d.errors || []).length ? `<div class="state-msg error" style="margin-top:10px;">Could not read: ${adEsc(d.errors.join(', '))}. Everything else is shown.</div>` : ''}
 
       <div class="ad-chips" style="margin-top:16px;">
         <span class="ad-chipbtn on">Credits<b>${Number(u.creditBalance || 0).toLocaleString()}</b></span>
@@ -21350,48 +21551,131 @@ async function autoSuggestEmptyDraftCategories() {
         <span class="ad-chipbtn on">Live listings<b>${live.toLocaleString()}</b></span>
         <span class="ad-chipbtn on">Lifetime spend<b>${u.plan && u.plan.paid ? '$' + Number(u.plan.totalUsd || 0).toLocaleString() + ' (' + u.plan.purchases + ')' : '$0'}</b></span>
         <span class="ad-chipbtn on">Support tickets<b>${(tickets ? tickets.total : 0).toLocaleString()}${tickets && tickets.open ? ' (' + tickets.open + ' open)' : ''}</b></span>
-      </div>
+      </div>`);
 
-      <div class="st-custom" style="margin-top:16px;">
-        <div class="st-custom-title">Last seen</div>
-        <p class="meta-line" style="margin:0;">${adminUserStatusHtml(u)}</p>
-        <p class="meta-line" style="margin:6px 0 0;">Last sign-in: ${adminUserLoginHtml(u)}</p>
-      </div>
+    // private note
+    if (u.adminNote || (u.adminTags || []).length) {
+      parts.push(adSection('Private note', `${u.adminNote ? `<div class="ad-note-text">${adEsc(u.adminNote)}</div>` : '<p class="meta-line" style="margin:0;">Tags only, no note.</p>'}${u.adminNoteBy ? `<p class="meta-line" style="margin:8px 0 0;">Saved by ${adEsc(u.adminNoteBy)}${u.adminNoteAt ? ' on ' + adEsc(adDateTime(u.adminNoteAt)) : ''}. Only admins see this.</p>` : ''}`));
+    }
 
-      <div class="st-custom">
-        <div class="st-custom-title">eBay stores (${(stores || []).length})</div>
-        <p class="meta-line" style="margin:0 0 10px;">Every eBay account this user has ever connected, even one they later disconnected. Orders/Revenue/Profit are for that store's most common currency only - see the Orders table below for every currency combined.</p>
-        <table class="data-table">
-          <thead><tr><th>Store</th><th>Marketplace</th><th>Status</th><th>Connected since</th><th>Live listings</th><th>Orders</th><th>Revenue</th><th>Profit</th></tr></thead>
-          <tbody>${storeRows}</tbody>
-        </table>
-      </div>
+    // account
+    if (d.account) {
+      parts.push(adSection('Account', adKv([
+        ['Signed up with', adEsc(acc.signUpMethod || '—')],
+        ['Username', adEsc(acc.username || '—')],
+        // emailStatus comes from the server; an older server only sends emailVerifiedAt
+        ['Email', (() => {
+          const status = acc.emailStatus || (acc.emailVerifiedAt ? 'confirmed' : 'older');
+          if (status === 'confirmed') return 'Confirmed' + (acc.emailVerifiedAt ? ' ' + adEsc(adDate(acc.emailVerifiedAt)) : '');
+          if (status === 'google') return 'Confirmed by Google sign-in';
+          if (status === 'unproven') return '<span class="ad-tag bad">NOT PROVEN</span> <small>(password sign-up, the mailed code was never entered)</small>';
+          return 'Older account <small>(made before the confirmation code; trusted)</small>';
+        })()],
+        ['Last sign-in', adminUserLoginHtml(u)],
+        ['Password', acc.hasPassword ? (acc.passwordUnproven ? 'Set, but the owner never proved the mailbox' : 'Set') : 'None (Google sign-in only)'],
+        ['Phone (typed, not verified)', u.phone ? adEsc(u.phoneDisplay || u.phone) + (u.phoneCountry ? ' &middot; ' + adEsc(u.phoneCountry) : '') : (u.phoneRequired ? '<span class="ad-tag bad">MUST ADD</span>' : '—')],
+        ['Welcome credits given', acc.welcomeCredits == null ? '—' : adEsc(acc.welcomeCredits)],
+        ['Referral code', acc.referralCode ? adEsc(acc.referralCode) + (acc.referralBlocked ? ' <span class="ad-tag bad">BLOCKED</span>' : '') : '—'],
+        ['Suspension note (private)', acc.suspendedNote ? adEsc(acc.suspendedNote) : '—'],
+      ])));
+    }
 
-      <div class="st-custom">
-        <div class="st-custom-title">Listings by status</div>
-        <table class="data-table">
-          <thead><tr>${Object.keys(LISTING_STATUS_LABELS).map((k) => `<th>${LISTING_STATUS_LABELS[k]}</th>`).join('')}</tr></thead>
-          <tbody><tr>${Object.keys(LISTING_STATUS_LABELS).map((k) => `<td>${(listings[k] || 0).toLocaleString()}</td>`).join('')}</tr></tbody>
-        </table>
-      </div>
+    // plan and payments
+    if (d.account) {
+      parts.push(adSection('Plan and payments', `
+        ${adKv([
+          ['Plan', acc.planName ? adEsc(acc.planName) + (acc.planTerm ? ' &middot; ' + adEsc(acc.planTerm) : '') : 'Free'],
+          ['Plan ends', acc.planExpiresAt ? adEsc(adDate(acc.planExpiresAt)) + ' (' + adEsc(adDaysLeft(acc.planExpiresAt)) + ')' : '—'],
+          ['eBay accounts after the plan ends', acc.planPrevMaxEbayAccounts == null ? '—' : adEsc(acc.planPrevMaxEbayAccounts)],
+          ['Lifetime spend', u.plan && u.plan.paid ? adEsc(adUsd(u.plan.totalUsd)) + ' in ' + u.plan.purchases + ' purchase' + (u.plan.purchases === 1 ? '' : 's') : '$0.00'],
+        ])}
+        <div class="st-custom-title" style="margin:14px 0 8px;">Purchases (latest 20)</div>
+        ${adTable(['Date', 'Plan', 'Paid', 'List price', 'Discount', 'Credits', 'Method', 'Invoice', 'Status'], (d.purchases || []).map((p) => [
+          adEsc(adDate(p.createdAt)), adEsc(p.planName || '—') + (p.billing ? ' <small style="color:var(--grey);">' + adEsc(p.billing) + '</small>' : ''), adEsc(adUsd(p.priceUsd)), adEsc(adUsd(p.listPriceUsd)),
+          p.discountPercent ? adEsc(p.discountPercent) + '%' : '—', Number(p.creditsGranted || 0).toLocaleString(), adEsc(p.paymentMethod || p.provider || '—'), adEsc(p.invoiceNo || '—'),
+          p.status === 'refunded' ? '<span class="ad-tag bad">REFUNDED</span>' : '<span class="ad-tag paid">PAID</span>',
+        ]), 'No purchases.')}
+        ${(d.listingPacks || []).length ? `<div class="st-custom-title" style="margin:14px 0 8px;">Buy Listings packs</div>${adTable(['Date', 'Pack', 'Paid', 'Listings bought', 'Pushed'], d.listingPacks.map((p) => [adEsc(adDate(p.createdAt)), adEsc(p.tierName || '—'), adEsc(adUsd(p.priceUsd)), Number(p.listingCount || 0).toLocaleString(), Number(p.pushed || 0).toLocaleString()]), '')}` : ''}
+        ${(d.vouchers || []).length ? `<div class="st-custom-title" style="margin:14px 0 8px;">Vouchers</div>${adTable(['Given', 'What', 'Note', 'Status'], d.vouchers.map((v) => [
+          adEsc(adDate(v.createdAt)),
+          adEsc(v.kind === 'credits' ? v.credits + ' credits' : v.kind === 'purchase_discount' ? (v.percent ? v.percent + '% off' : adUsd(v.amountUsd) + ' off') : v.kind === 'free_plan' ? 'A free plan' : v.kind === 'ebay_accounts' ? '+' + v.ebayAccounts + ' eBay accounts' : v.kind),
+          adEsc(v.note || '—'), adEsc(v.status) + (v.expiresAt && v.status === 'active' ? ' <small style="color:var(--grey);">until ' + adEsc(adDate(v.expiresAt)) + '</small>' : ''),
+        ]), '')}` : ''}`));
+    }
 
-      <div class="st-custom">
-        <div class="st-custom-title">Orders (${orders.orders.toLocaleString()} total)</div>
-        <table class="data-table">
-          <thead><tr><th>Currency</th><th>Orders</th><th>Revenue</th><th>Profit</th></tr></thead>
-          <tbody>${ordersRows}</tbody>
-        </table>
-      </div>
+    // devices and sign-ins
+    if (act) {
+      parts.push(adSection('Devices and sign-ins', `
+        ${adKv([
+          ['Now', adminUserStatusHtml(u)],
+          ['Failed password attempts (30 days)', act.failedLogins30d ? '<b style="color:#B42318;">' + adEsc(act.failedLogins30d) + '</b>' : '0'],
+          ['Different IP addresses (180 days)', adEsc(act.distinctIps) + (act.distinctIpsCapped ? '+' : '')],
+          ['Countries', act.countries.length ? adEsc(act.countries.join(', ')) : '—'],
+        ])}
+        <div class="st-custom-title" style="margin:14px 0 8px;">Signed in on these devices now</div>
+        ${adTable(['Device', 'IP', 'Place', 'How', 'Last active'], act.sessions.map((s) => [adEsc(adDevice(s)), '<code>' + adEsc(s.ip || '—') + '</code>', adEsc(s.place || '—'), adEsc(s.method), adEsc(adDateTime(s.lastSeenAt))]), 'No signed-in device right now.')}
+        <div class="st-custom-title" style="margin:14px 0 8px;">Latest sign-ins</div>
+        ${adTable(['When', 'Result', 'IP', 'Place', 'Device'], act.recentLogins.map((l) => [adEsc(adDateTime(l.at)), (l.success ? 'Signed in' : '<span class="ad-tag bad">Wrong password</span>') + (l.isNewDevice ? ' <span class="ad-tag free">NEW DEVICE</span>' : ''), '<code>' + adEsc(l.ip || '—') + '</code>', adEsc(l.place || '—'), adEsc(adDevice(l))]), 'No sign-ins recorded yet.')}
+        <div class="st-custom-title" style="margin:14px 0 8px;">Other accounts on the same IP addresses</div>
+        <p class="meta-line" style="margin:0 0 8px;">An address is often shared (family, office, mobile network), so this is a hint, not proof. Open Security on the person to block an IP.</p>
+        ${adTable(['Person', 'Shared IPs', 'Sign-ins', 'Last', 'State'], act.sameIp.map((o) => [
+          `<b>${adEsc(o.name || o.email)}</b><br /><small style="color:var(--grey);">${adEsc(o.email)}</small>`, (o.ips || []).map((ip) => '<code>' + adEsc(ip) + '</code>').join('<br />'), adEsc(o.logins), adEsc(adDate(o.lastAt)),
+          o.banned ? '<span class="ad-tag bad">BANNED</span>' : o.suspended ? '<span class="ad-tag bad">SUSPENDED</span>' : o.role === 'admin' ? '<span class="ad-tag free">ADMIN</span>' : '<span class="ad-tag paid">ACTIVE</span>',
+        ]), 'No other account used these addresses.')}`));
+    }
 
-      <div class="st-custom">
-        <div class="st-custom-title">Net profit</div>
-        <p class="meta-line" style="margin:0 0 10px;">From the Net Profit sheet's own typed-in figures (ORDER EARNING &minus; BUYING PRICE) - ${netProfit.orders.toLocaleString()} of their ${netProfit.ordersTotal.toLocaleString()} orders have one.</p>
-        <table class="data-table">
-          <thead><tr><th>Currency</th><th>Orders</th><th>Net profit</th></tr></thead>
-          <tbody>${netProfitRows}</tbody>
-        </table>
-      </div>
-    `;
+    // settings snapshot
+    if (d.settings) {
+      parts.push(adSection('Settings they chose', adKv([
+        ['Stock check', 'every ' + adEsc(set.stockCheckIntervalDays) + ' day' + (set.stockCheckIntervalDays === 1 ? '' : 's') + (set.lastStockCheckAt ? '<br /><small>last ran ' + adEsc(adDate(set.lastStockCheckAt)) + '</small>' : '')],
+        ['Order sync', adEsc(set.orderSyncMode) + (set.orderSyncMode === 'polling' ? ' every ' + adEsc(set.orderSyncIntervalMinutes) + ' min' : '')],
+        ['AI buyer-message replies', adEsc(set.aiReplyMode)],
+        ['Pricing rule', adOnOff(set.pricingRuleOn)],
+        ['eBay order note', adOnOff(set.ebayOrderNote)],
+        ['Auto thank-you message', adOnOff(set.autoThankYouMessage)],
+        ['Auto "ordered" message', adOnOff(set.autoOrderedMessage)],
+        ['Auto "shipped" message', adOnOff(set.autoShippedMessage)],
+        ['Auto review request', adOnOff(set.autoReviewRequestMessage)],
+        ['CJdropshipping', set.cjConnected ? 'Connected' + (set.cjConnectedAt ? ' ' + adEsc(adDate(set.cjConnectedAt)) : '') : 'Not connected'],
+        ['AliExpress', set.aliexpressConnected ? 'Connected' + (set.aliexpressAccount ? ' (' + adEsc(set.aliexpressAccount) + ')' : '') : 'Not connected'],
+        ['Chrome extension key', set.extensionKeyMade ? 'Made' : 'Not made'],
+        ['New-device email', adOnOff(set.notifyNewDevice)],
+        ['Product-news emails', set.marketingOptOut ? 'Unsubscribed' : 'Subscribed'],
+      ])));
+    }
+
+    // referrals + affiliate
+    if (d.referral) {
+      const r = d.referral;
+      const bits = [];
+      if (r.referredBy) bits.push(['Referred by', adEsc(r.referredBy.name || r.referredBy.email || '—') + (r.referredBy.email && r.referredBy.name ? '<br /><small>' + adEsc(r.referredBy.email) + '</small>' : '') + '<br /><small>code ' + adEsc(r.referredBy.code || '—') + ' &middot; ' + adEsc(r.referredBy.purchases) + ' purchase' + (r.referredBy.purchases === 1 ? '' : 's') + ' &middot; ' + (r.referredBy.rewardGiven ? 'reward of ' + adEsc(r.referredBy.rewardCredits) + ' credits given' : 'no reward given yet') + '</small>']);
+      if (r.viaAffiliate) bits.push(['Came through affiliate', adEsc(r.viaAffiliate.ownerEmail || '—') + '<br /><small>code ' + adEsc(r.viaAffiliate.code || '—') + '</small>']);
+      bits.push(['Friends they invited', adEsc(r.asReferrer.signups) + ' sign-up' + (r.asReferrer.signups === 1 ? '' : 's') + ' &middot; ' + adEsc(r.asReferrer.buyers) + ' bought<br /><small>earned ' + adEsc(r.asReferrer.creditsEarned) + ' credits &middot; friends spent ' + adEsc(adUsd(r.asReferrer.revenueUsd)) + '</small>']);
+      if (r.affiliate) bits.push(['Is an affiliate', adEsc(r.affiliate.status) + ' &middot; code ' + adEsc(r.affiliate.code || '—') + (r.affiliate.commissionPercent != null ? ' &middot; ' + adEsc(r.affiliate.commissionPercent) + '%' : '') + '<br /><small>' + adEsc(r.affiliate.signups) + ' sign-up' + (r.affiliate.signups === 1 ? '' : 's') + ' through the link</small>']);
+      parts.push(adSection('Referrals and affiliate', adKv(bits)));
+    }
+
+    // AI and imports
+    if (d.ai) {
+      parts.push(adSection('AI use (last 30 days)', adTable(['What', 'Calls', 'Failed', 'Credits', 'Tokens in', 'Tokens out', 'Last'], d.ai.byKind.map((k) => [adEsc(k.kind), adEsc(k.calls), adEsc(k.failed), adEsc(k.credits), Number(k.inputTokens).toLocaleString(), Number(k.outputTokens).toLocaleString(), adEsc(adDate(k.lastAt))]).concat(d.ai.byKind.length ? [[`<b>Total</b>`, `<b>${adEsc(d.ai.total.calls)}</b>`, adEsc(d.ai.total.failed), `<b>${adEsc(d.ai.total.credits)}</b>`, Number(d.ai.total.inputTokens).toLocaleString(), Number(d.ai.total.outputTokens).toLocaleString(), '']] : []), 'No AI use in the last 30 days.'), 'What the AI did for this person, from the AI log. Imports and publishes also cost credits but are not itemised anywhere.'));
+    }
+    if (d.imports) parts.push(adSection('Imports', adTable(['From', 'Total', 'Last 7 days', 'Last 30 days', 'Last import'], (d.imports || []).map((r) => [adEsc(r.source), Number(r.total).toLocaleString(), adEsc(r.last7), adEsc(r.last30), adEsc(adDate(r.lastAt))]), 'Nothing imported yet.')));
+
+    // support
+    if (recentTickets) parts.push(adSection('Support tickets', adTable(['Opened', 'Subject', 'Status', 'From'], (recentTickets || []).map((t) => [adEsc(adDate(t.createdAt)), adEsc(t.subject), t.status === 'resolved' ? '<span class="ad-tag paid">RESOLVED</span>' : '<span class="ad-tag bad">OPEN</span>' + (t.urgent ? ' <span class="ad-tag bad">URGENT</span>' : t.escalated ? ' <span class="ad-tag free">NEEDS YOU</span>' : ''), adEsc(t.source)]), 'No tickets.'), tickets && tickets.total > (recentTickets || []).length ? 'The latest ' + (recentTickets || []).length + ' of ' + tickets.total + '.' : ''));
+
+    // stores, listings, orders, net profit
+    parts.push(adSection(`eBay stores (${(stores || []).length})`, `
+      <div style="overflow-x:auto;"><table class="data-table">
+        <thead><tr><th>Store</th><th>Marketplace</th><th>Status</th><th>Connected since</th><th>Live listings</th><th>Orders</th><th>Revenue</th><th>Profit</th></tr></thead>
+        <tbody>${storeRows}</tbody>
+      </table></div>`, 'Every eBay account this user has ever connected, even one they later disconnected. Orders/Revenue/Profit are for that store\'s most common currency only - see the Orders table below for every currency combined.'));
+    parts.push(adSection('Listings by status', `<div style="overflow-x:auto;"><table class="data-table"><thead><tr>${Object.keys(LISTING_STATUS_LABELS).map((k) => `<th>${LISTING_STATUS_LABELS[k]}</th>`).join('')}</tr></thead><tbody><tr>${Object.keys(LISTING_STATUS_LABELS).map((k) => `<td>${(listings[k] || 0).toLocaleString()}</td>`).join('')}</tr></tbody></table></div>`));
+    parts.push(adSection(`Orders (${orders.orders.toLocaleString()} total)`, `<table class="data-table"><thead><tr><th>Currency</th><th>Orders</th><th>Revenue</th><th>Profit</th></tr></thead><tbody>${ordersRows}</tbody></table>`));
+    parts.push(adSection('Net profit', `<table class="data-table"><thead><tr><th>Currency</th><th>Orders</th><th>Net profit</th></tr></thead><tbody>${netProfitRows}</tbody></table>`, `From the Net Profit sheet's own typed-in figures (ORDER EARNING &minus; BUYING PRICE) - ${netProfit.orders.toLocaleString()} of their ${netProfit.ordersTotal.toLocaleString()} orders have one.`));
+
+    container.innerHTML = parts.join('');
+    document.getElementById('luEdit')?.addEventListener('click', () => openUserEditModal(u, { fromLookup: true, onSaved: () => openLookupById(u.id) }));
   }
 
   async function loadAdminTickets() {
