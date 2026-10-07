@@ -14111,22 +14111,30 @@ async function autoSuggestEmptyDraftCategories() {
     const o = id && ordersAll.find((x) => String(x.id) === String(id));
     if (!o) return;
     wrap.innerHTML = '<textarea class="dv-note-edit" rows="3" maxlength="2000" placeholder="A note for yourself (buyer, supplier, reminder)…">' + escapeHtml(o.seller_note || '') + '</textarea>'
-      + '<div class="dv-note-actions"><button type="button" class="dv-btn small primary" data-order-note-save>Save</button><button type="button" class="dv-btn small" data-order-note-cancel>Cancel</button><small>' + (ordersEbayNoteCopy ? 'Only for you. Also copied to the private note of this order on eBay (255 characters).' : 'Only for you. Never sent to eBay or Amazon.') + '</small></div>';
+      + '<div class="dv-note-actions"><button type="button" class="dv-btn small primary" data-order-note-save>Save</button><button type="button" class="dv-btn small" data-order-note-cancel>Cancel</button><small data-note-copy-hint>' + noteCopyHint(o) + '</small></div>';
     wrap.addEventListener('click', (e) => e.stopPropagation()); // the row itself opens the order on click: editing the note must not trigger that
     const ta = wrap.querySelector('textarea');
     ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
     const close = () => { wrap.outerHTML = orderNoteBlockHtml(o); };
+    const before = String(o.seller_note || ''); // what ELMS had when the editor opened: a Save that changed nothing never touches the eBay note
+    let saving = false; // Ctrl+Enter twice, or Ctrl+Enter and then the button, is ONE save
     const save = async () => {
+      if (saving) return;
+      saving = true;
       const saveBtn = wrap.querySelector('[data-order-note-save]');
       if (saveBtn) saveBtn.disabled = true;
       try {
         const res = await apiFetch('/api/orders/' + encodeURIComponent(o.id) + '/note', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ note: ta.value.trim() }) });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not save the note.');
-        o.seller_note = (data.order && data.order.seller_note) || '';
+        const saved = (data.order && data.order.seller_note) || '';
+        o.seller_note = saved;
+        const current = ordersAll.find((x) => String(x.id) === String(o.id)); // the list may hold a newer object than the one this editor was opened on
+        if (current && current !== o) current.seller_note = saved;
         close();
-        if (ordersEbayNoteCopy) copyNoteToEbay(o.id); // in the background: the note is saved in ELMS already
+        if (canCopyNoteToEbay(current || o) && saved !== before) copyNoteToEbay(o.id); // in the background: the note is saved in ELMS already
       } catch (err) {
+        saving = false;
         showToast('Could not save the note', err.message, 'error');
         if (saveBtn) saveBtn.disabled = false;
       }
@@ -14135,7 +14143,7 @@ async function autoSuggestEmptyDraftCategories() {
     wrap.querySelector('[data-order-note-cancel]').addEventListener('click', close);
     ta.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.stopPropagation(); close(); }
-      else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); }
+      else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (!e.repeat) save(); }
     });
   }
   document.addEventListener('click', (e) => {
@@ -14205,6 +14213,7 @@ async function autoSuggestEmptyDraftCategories() {
         const data = await apiJson(res);
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this.');
         ordersEbayNoteCopy = on;
+        refreshNoteCopyHints();
         showToast(on ? 'Note copy switched on' : 'Note copy switched off', on ? 'From now on, a note you save on an order is copied to the eBay order note too.' : 'A note you save on an order stays in ELMS only.', 'success');
       } catch (err) {
         box.checked = !on;
@@ -14277,7 +14286,7 @@ async function autoSuggestEmptyDraftCategories() {
             <label class="mo-f"><span>Buying price</span><span class="mo-money"><i>${escapeHtml(sign)}</i><input type="text" id="moBuy" inputmode="decimal" autocomplete="off" placeholder="e.g. 8.99" value="${escapeAttr(money(o.sheet_amazon_price))}" /></span></label>
           </div>
           <div class="mo-calc" id="moCalc"></div>
-          <div class="ord-sub">\u201cELMS: ordered, delivery &lt;date&gt;\u201d is saved in the private note of this order in ELMS${ordersEbayNote ? ' and on eBay' : ' (and on eBay when you switch that on in the toolbar above the orders)'}. Leave the date empty if you do not know it yet.</div>
+          <div class="ord-sub">\u201cELMS: ordered, delivery &lt;date&gt;\u201d is saved in the private note of this order in ELMS${ordersEbayNote || ordersEbayNoteCopy ? ' and on eBay' : ' (and on eBay when you switch that on in the toolbar above the orders)'}. Leave the date empty if you do not know it yet.</div>
           <div class="ord-sub bad" id="moError"></div>
           <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok">${orderIsOrdered(o) ? 'Save' : 'Mark as ordered'}</button></div>
         </div>`;
@@ -14529,7 +14538,9 @@ async function autoSuggestEmptyDraftCategories() {
       renderOrders();
       if (document.getElementById('ordDrawer') && i >= 0) renderOrderDrawer(ordersAll[i]);
       showToast(ordered ? 'Marked as ordered' : 'Mark removed', ordered ? 'Saved. The note is in the order in ELMS, and the buying price and order earning are in the Net Profit sheet.' : 'This order is shown as not ordered yet.', 'success');
-      if (ordersEbayNote) writeEbayNote(id, ordered, ordered ? form.deliveryDate : undefined); // in the background: the mark in ELMS does not wait for eBay
+      // in the background: the mark in ELMS does not wait for eBay. With the note copy on, the whole ELMS note (the mark is in it) goes to eBay: Undo and a new delivery date follow too, so eBay never keeps an old mark.
+      if (i >= 0 && canCopyNoteToEbay(ordersAll[i])) copyNoteToEbay(id);
+      else if (ordersEbayNote) writeEbayNote(id, ordered, ordered ? form.deliveryDate : undefined);
     } catch (err) {
       if (btn && btn.isConnected) btn.disabled = false;
       showToast('Order', err.message, 'error');
@@ -14600,8 +14611,8 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not update the eBay note.');
       const i = ordersAll.findIndex((x) => String(x.id) === String(id));
-      if (i >= 0 && data.order) ordersAll[i] = { ...ordersAll[i], ebay_note_at: data.order.ebay_note_at || null, ebay_note_error: data.order.ebay_note_error || null };
-      if (document.getElementById('ordDrawer') && i >= 0) renderOrderDrawer(ordersAll[i]);
+      if (i >= 0 && data.order) Object.assign(ordersAll[i], { ebay_note_at: data.order.ebay_note_at || null, ebay_note_error: data.order.ebay_note_error || null });
+      if (i >= 0) refreshOrderDrawerEbayState(ordersAll[i]);
       const r = data.result || {};
       if (r.status === 'written') showToast('eBay note added', 'The order on eBay now says \u201cELMS: ordered\u201d in its private note.', 'success');
       else if (r.status === 'removed') showToast('eBay note updated', 'The ELMS mark is out of the eBay note.', 'success');
@@ -14620,7 +14631,8 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await apiJson(res);
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not copy the note to eBay.');
       const i = ordersAll.findIndex((x) => String(x.id) === String(id));
-      if (i >= 0 && data.order) ordersAll[i] = { ...ordersAll[i], ebay_note_at: data.order.ebay_note_at || null, ebay_note_error: data.order.ebay_note_error || null };
+      if (i >= 0 && data.order) Object.assign(ordersAll[i], { ebay_note_at: data.order.ebay_note_at || null, ebay_note_error: data.order.ebay_note_error || null }); // in place: an editor that is open keeps a live entry
+      if (i >= 0) refreshOrderDrawerEbayState(ordersAll[i]);
       const r = data.result || {};
       if (r.status === 'written') showToast('eBay note updated', 'The private note of this order on eBay now says what your note says.' + (r.truncated ? ' ' + (r.message || 'eBay keeps only 255 characters of a note.') : ''), r.truncated ? 'info' : 'success');
       else if (r.status === 'removed') showToast('eBay note cleared', 'The private note of this order on eBay was removed, like yours.', 'success');
@@ -14628,6 +14640,49 @@ async function autoSuggestEmptyDraftCategories() {
       else showToast('Saved in ELMS only', 'The eBay note was not changed: ' + (r.message || 'eBay did not take it.'), 'error');
     } catch (err) {
       showToast('Saved in ELMS only', 'The eBay note was not changed: ' + err.message, 'error');
+    }
+  }
+
+  // A note is copied only for an order that eBay still lists as awaiting shipment (it is the only list the note can be found in; the server refuses the others too).
+  function canCopyNoteToEbay(o) { return !!(ordersEbayNoteCopy && o && orderStatusOf(o) === 'awaiting_shipment'); }
+  function noteCopyHint(o) {
+    if (!ordersEbayNoteCopy) return 'Only for you. Never sent to eBay or Amazon.';
+    return canCopyNoteToEbay(o) ? 'Only for you. Also copied to the private note of this order on eBay (255 characters).' : 'Only for you. Not copied to eBay: this order is not waiting for shipment any more.';
+  }
+  const noteCopyHeader = (o) => (canCopyNoteToEbay(o) ? 'in ELMS, copied to your eBay order note' : 'only in ELMS');
+  // The eBay-note state under "Mark as ordered": what went wrong, or that the mark is in the eBay note (only for an order that IS marked), and the retry link.
+  function ebayNoteStatusHtml(o) {
+    const on = ordersEbayNote || ordersEbayNoteCopy;
+    return (o.ebay_note_error ? `<small class="bad">eBay note not changed: ${escapeHtml(o.ebay_note_error)}</small>` : (orderIsOrdered(o) && o.ebay_note_at) ? '<small>&#10003; It is in the eBay note too.</small>' : '')
+      + (orderIsOrdered(o) && on && !o.ebay_note_at ? '<small><button class="ord-link" type="button" id="ordRetryEbayNote">Write the eBay note now</button></small>' : '');
+  }
+  function wireEbayNoteRetry(o) {
+    document.getElementById('ordRetryEbayNote')?.addEventListener('click', (e) => {
+      e.currentTarget.disabled = true;
+      if (canCopyNoteToEbay(o)) copyNoteToEbay(o.id);
+      else writeEbayNote(o.id, true, o.delivery_date ? String(o.delivery_date).slice(0, 10) : undefined);
+    });
+  }
+  // After a write to eBay: only the eBay-note state of the open order window is redrawn (the note being typed in it is never wiped).
+  function refreshOrderDrawerEbayState(o) {
+    const box = document.getElementById('ordEbayNoteState');
+    if (!box || !o || box.getAttribute('data-order-id') !== String(o.id)) return;
+    box.innerHTML = ebayNoteStatusHtml(o);
+    wireEbayNoteRetry(o);
+  }
+  // The switch was turned on or off: what the open note editors and the open order window say follows it.
+  function refreshNoteCopyHints() {
+    document.querySelectorAll('[data-note-copy-hint]').forEach((el) => {
+      const row = el.closest('[data-order-id]');
+      const o = row && ordersAll.find((x) => String(x.id) === String(row.getAttribute('data-order-id')));
+      if (o) el.textContent = noteCopyHint(o);
+    });
+    const em = document.getElementById('ordNoteCopyHint');
+    const o = em && ordersAll.find((x) => String(x.id) === em.getAttribute('data-order-id'));
+    if (o) {
+      em.textContent = noteCopyHeader(o);
+      const link = document.getElementById('ordCopyNoteNow');
+      if (link) link.style.display = canCopyNoteToEbay(o) ? '' : 'none';
     }
   }
 
@@ -14756,7 +14811,7 @@ async function autoSuggestEmptyDraftCategories() {
 
         <section class="ord-sec"><h4>Fulfillment</h4>
           ${aliexpressOrderBarHtml(o, st)}
-          ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this' + (o.delivery_date ? ' \u00b7 delivery ' + escapeHtml(new Date(o.delivery_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })) : ' \u00b7 no delivery date') : 'Not ordered yet'}</b><small>${ordersEbayNote ? 'A reminder for you. ELMS also writes \u201cELMS: ordered\u201d in the private note of this order on eBay (only you see it).' : 'Only a reminder for you: nothing is sent to eBay or Amazon.'}</small>${o.ebay_note_error ? `<small class="bad">eBay note not changed: ${escapeHtml(o.ebay_note_error)}</small>` : o.ebay_note_at ? '<small>&#10003; It is in the eBay note too.</small>' : ''}${orderIsOrdered(o) && ordersEbayNote && !o.ebay_note_at ? '<small><button class="ord-link" type="button" id="ordRetryEbayNote">Write the eBay note now</button></small>' : ''}</div><span style="display:flex;gap:8px;flex-wrap:wrap;">${orderIsOrdered(o) ? '<button class="ord-btn small" type="button" id="ordEditOrdered">Edit</button>' : ''}<button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></span></div>` : ''}
+          ${st === 'awaiting_shipment' ? `<div class="ord-orderedbar${orderIsOrdered(o) ? ' on' : ''}"><div><b>${orderIsOrdered(o) ? '&#10003; You ordered this' + (o.delivery_date ? ' \u00b7 delivery ' + escapeHtml(new Date(o.delivery_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })) : ' \u00b7 no delivery date') : 'Not ordered yet'}</b><small>${(ordersEbayNote || ordersEbayNoteCopy) ? 'A reminder for you. ELMS also writes \u201cELMS: ordered\u201d in the private note of this order on eBay (only you see it).' : 'Only a reminder for you: nothing is sent to eBay or Amazon.'}</small><span id="ordEbayNoteState" data-order-id="${escapeAttr(String(o.id))}" style="display:contents">${ebayNoteStatusHtml(o)}</span></div><span style="display:flex;gap:8px;flex-wrap:wrap;">${orderIsOrdered(o) ? '<button class="ord-btn small" type="button" id="ordEditOrdered">Edit</button>' : ''}<button class="ord-btn small${orderIsOrdered(o) ? '' : ' primary'}" type="button" id="ordToggleOrdered">${orderIsOrdered(o) ? 'Undo' : 'Mark as ordered'}</button></span></div>` : ''}
           <label class="ord-field"><span>Amazon order ID <em>after you buy the item on Amazon</em></span>
             <div class="ord-row-inline"><input id="ordAmazonId" type="text" placeholder="e.g. 111-2222222-3333333" value="${escapeAttr(o.amazon_order_id || '')}" /><button class="ord-btn" type="button" id="ordSaveAmazon">Save</button></div></label>
           ${o.tracking_number ? `<div class="ord-sub">Tracking: ${escapeHtml(o.shipping_carrier || 'Carrier not given')} ${escapeHtml(o.tracking_number)}</div>` : ''}
@@ -14768,9 +14823,10 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="ord-sub" id="ordActionStatus"></div>
         </section>
 
-        <section class="ord-sec"><h4>Private note <em>${ordersEbayNoteCopy ? 'in ELMS, copied to your eBay order note' : 'only in ELMS'}</em></h4>
+        <section class="ord-sec"><h4>Private note <em id="ordNoteCopyHint" data-order-id="${escapeAttr(String(o.id))}">${noteCopyHeader(o)}</em></h4>
           <textarea id="ordNote" rows="3" placeholder="Add a note for yourself…">${escapeHtml(o.seller_note || '')}</textarea>
           <button class="ord-btn small" type="button" id="ordSaveNote">Save note</button>
+          <button class="ord-link" type="button" id="ordCopyNoteNow" style="margin-left:10px;${canCopyNoteToEbay(o) ? '' : 'display:none'}" title="Puts the note that is SAVED in ELMS into the private note of this order on eBay, replacing it.">Copy the saved note to eBay now</button>
         </section>
       </div>
       <div class="ord-drawer-foot">
@@ -14809,7 +14865,7 @@ async function autoSuggestEmptyDraftCategories() {
     });
     $('ordToggleOrdered')?.addEventListener('click', (e) => setOrderOrdered(o.id, !orderIsOrdered(o), e.currentTarget));
     $('ordEditOrdered')?.addEventListener('click', (e) => setOrderOrdered(o.id, true, e.currentTarget)); // the same window, with what is saved
-    $('ordRetryEbayNote')?.addEventListener('click', (e) => { e.currentTarget.disabled = true; writeEbayNote(o.id, true, o.delivery_date ? String(o.delivery_date).slice(0, 10) : undefined); });
+    wireEbayNoteRetry(o);
     // ---- Buying this order's item from AliExpress (aliexpressOrderBarHtml): place, pay, refresh, and the seller's own "send tracking to eBay" ----
     $('ordAePlace')?.addEventListener('click', async () => {
       const updated = await openAliexpressOrderDialog(o);
@@ -14894,9 +14950,12 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await json(`/api/orders/${encodeURIComponent(o.id)}/note`, { method: 'PUT', body: JSON.stringify({ note: $('ordNote').value }) });
       showToast('Saved', 'Note saved.', 'success');
       const i = ordersAll.findIndex((x) => x.id === o.id);
-      if (i >= 0) ordersAll[i] = { ...ordersAll[i], ...data.order };
-      if (ordersEbayNoteCopy) copyNoteToEbay(o.id); // in the background: the note is saved in ELMS already
+      const before = String((i >= 0 ? ordersAll[i] : o).seller_note || ''); // what ELMS had before this save: a Save that changed nothing never touches the eBay note
+      if (i >= 0) Object.assign(ordersAll[i], data.order); // in place: an editor that is open on this order keeps a live entry
+      const saved = String((data.order && data.order.seller_note) || '');
+      if (canCopyNoteToEbay(i >= 0 ? ordersAll[i] : o) && saved !== before) copyNoteToEbay(o.id); // in the background: the note is saved in ELMS already
     }));
+    $('ordCopyNoteNow')?.addEventListener('click', (e) => { const btn = e.currentTarget; btn.disabled = true; copyNoteToEbay(o.id).finally(() => { if (btn.isConnected) btn.disabled = false; }); });
     $('ordRefresh').addEventListener('click', (e) => run(e.currentTarget, 'Refreshing…', async () => {
       const data = await json(`/api/orders/${encodeURIComponent(o.id)}/refresh`, { method: 'POST' });
       showToast('Refreshed', 'Order updated from eBay.', 'success');
