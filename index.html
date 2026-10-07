@@ -3409,6 +3409,7 @@
   .bc-buy-alt { background:#fff; color:#0064D2; border:1.5px solid #0064D2; } .bc-buy-alt:hover { background:#EEF5FF; }
   .bc-pay-note { font-size:12px; color:var(--grey); }
   .bc-billing { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:0 0 16px; } .bc-billing-note { font-size:12.5px; color:var(--grey); }
+  .bc-term-note { margin:0 0 16px; font-size:13px; line-height:1.55; color:var(--grey); }
   .bc-term { font-size:14px; font-weight:600; color:var(--grey); margin-left:2px; }
   .bc-custom { margin-top:20px; background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:22px; display:flex; flex-direction:column; gap:16px; box-shadow:0 6px 22px rgba(20,35,60,.05); }
   .bc-custom-head { display:flex; flex-direction:column; gap:2px; } .bc-custom-head span { font-size:13px; color:var(--grey); }
@@ -23086,6 +23087,7 @@ async function autoSuggestEmptyDraftCategories() {
       if (!offersYearly) pricingBilling = 'monthly';
       const topDiscount = data.custom && data.custom.yearlyDiscountPercent > 0 ? ` &middot; the custom plan saves ${fmtPct(data.custom.yearlyDiscountPercent)}% a year` : '';
       const billingSwitch = offersYearly ? `<div class="bc-billing"><span class="dv-seg" role="group" aria-label="Billing"><button type="button" data-billing="monthly" class="${pricingBilling === 'monthly' ? 'on' : ''}">Monthly</button><button type="button" data-billing="yearly" class="${pricingBilling === 'yearly' ? 'on' : ''}">Yearly</button></span><span class="bc-billing-note">One payment buys one ${pricingBilling === 'yearly' ? 'year' : 'month'}${pricingBilling === 'yearly' ? topDiscount : ''}. It does not renew by itself.</span></div>` : '';
+      const termNote = `<p class="bc-term-note">Credits last for the term you buy: ${offersYearly ? 'one month, or one year on a yearly plan' : 'one month'}. When the term ends, the credits that came with the plan and its extra eBay stores end with it, and the credits you already had stay. We email you ${pricingBilling === 'yearly' ? '7' : '3'} days before it ends. Buy again before then and the new term starts when this one ends.</p>`;
       const cs = data.custom;
       const customCard = cs ? `
         <div class="bc-custom" id="bcCustom">
@@ -23106,13 +23108,14 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="bc-csummary" id="bcCustomSummary">Working it out&hellip;</div>
           <button class="bc-buy" id="bcCustomBuy" type="button" disabled>Buy</button>
         </div>` : '';
-      const myPlan = data.myPlan ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${data.myPlan.planName ? escapeHtml(data.myPlan.planName) + ' runs' : 'Your plan runs'} until ${escapeHtml(new Date(data.myPlan.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span>Buying again adds a new term after it. When a plan ends, its credits and extra eBay stores end with it.</span></div></div>` : '';
+      const myPlan = data.myPlan ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${data.myPlan.planName ? escapeHtml(data.myPlan.planName) + ' runs' : 'Your plan runs'} until ${escapeHtml(new Date(data.myPlan.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span>Buying again adds a new term after it. When it ends, the credits that came with it and its extra eBay stores end too; the credits you already had stay. We email you ${data.myPlan.term === 'yearly' ? '7' : '3'} days before.</span></div></div>` : '';
 
       container.innerHTML = `
         ${myPlan}
         ${picker}
         ${banner}
         ${billingSwitch}
+        ${termNote}
         <div class="bc-plans">
           ${data.plans.map((p) => {
             const yr = pricingBilling === 'yearly';
@@ -23132,7 +23135,7 @@ async function autoSuggestEmptyDraftCategories() {
                 ${isBest ? '<div class="bc-badge">Best value</div>' : ''}
                 <div class="bc-plan-name">${escapeHtml(p.name)}</div>
                 ${noYear ? '<div class="bc-plan-price" style="font-size:16px;color:var(--grey);">No yearly option</div><div class="bc-plan-per">This plan is monthly only.</div>' : `
-                <div class="bc-plan-credits">${shownCredits.toLocaleString()}<small>credits for ${yr ? '1 year' : '1 month'}</small></div>
+                <div class="bc-plan-credits">${shownCredits.toLocaleString()}<small>credits, valid for ${yr ? '1 year' : '1 month'}</small></div>
                 <div class="bc-plan-price">${hasOff ? `<s>$${listUsd.toFixed(2)}</s><span class="bc-new">$${payNow.toFixed(2)}</span>` : '$' + listUsd.toFixed(2)}<small class="bc-term">${yr ? '/year' : '/month'} + tax</small></div>
                 ${hasOff ? `<div class="bc-save">You save $${(listUsd - payNow).toFixed(2)}</div>` : ''}
                 ${yr ? `<div class="bc-plan-per">&#8776; $${(payNow / 12).toFixed(2)} a month${yearSave > 0.005 ? ' &middot; $' + yearSave.toFixed(2) + ' less than paying monthly' : ''}</div>` : ''}

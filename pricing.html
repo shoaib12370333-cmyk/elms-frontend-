@@ -119,6 +119,7 @@
     <div class="wrap">
       <div class="info-grid">
         <div class="info-card"><h2>What a credit does</h2><p>Importing a product, publishing a listing and AI tools use credits. The cost of each action is listed in the <a href="/user-guide.html">User guide</a>, and the price you see when you act is the price you pay.</p></div>
+        <div class="info-card"><h2>How long credits last</h2><p>A plan is bought for one term: one month, or one year where a yearly option is offered. The credits that came with it, and any extra eBay stores, end when the term ends; credits you already had before it stay. We email you 3 days before a monthly plan ends (7 for a yearly one), and if you buy again before then the new term starts when the old one ends.</p></div>
         <div class="info-card"><h2>If an action fails</h2><p>If an action fails because of a problem on our side, the credits it used are returned. Purchase refunds are described in our <a href="/refund.html">Refund policy</a> and in our <a href="/terms#credits">Terms (credits and payments)</a>.</p></div>
         <div class="info-card"><h2>How you pay</h2><p id="howPay">You create a free account first, then buy a plan from inside ELMS. Checkout is handled by our payment provider, which also sends your receipt. We never see or store your full card details.</p></div>
         <div class="info-card"><h2>Questions</h2><p>Write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> for help, or <a href="mailto:billing@elmstool.com">billing@elmstool.com</a> about a payment.</p></div>
@@ -158,14 +159,14 @@
       var isBest = best && p === best;
       var perCredit = per(p) < 0.1 ? (per(p) * 100).toFixed(1) + '¢' : '$' + per(p).toFixed(2);
       return '<div class="plan' + (isBest ? ' best' : '') + '">' + (isBest ? '<span class="badge">BEST VALUE</span>' : '') +
-        '<h3>' + esc(p.name) + '</h3><div class="price">' + money(p.priceUsd) + ' <small>USD + tax</small></div>' +
+        '<h3>' + esc(p.name) + '</h3><div class="price">' + money(p.priceUsd) + ' <small>USD a month + tax</small></div>' +
         '<div class="per">about ' + perCredit + ' per credit</div><ul><li>' + Number(p.credits).toLocaleString('en-US') + ' credits</li>' +
         '<li>' + (p.maxEbayAccounts ? 'Connect up to ' + p.maxEbayAccounts + ' eBay account' + (p.maxEbayAccounts === 1 ? '' : 's') : 'Connect your eBay accounts') + '</li>' +
-        '<li>Imports, publishing and AI tools</li><li>Credits back if an action fails</li></ul>' +
+        '<li>Credits valid for 1 month from purchase</li><li>Imports, publishing and AI tools</li><li>Credits back if an action fails</li></ul>' +
         '<a class="btn ' + (isBest ? 'primary' : 'ghost') + '" href="/signup">Get started</a></div>';
     }).join('');
     if (card) $('howPay').textContent = 'You create a free account first, then buy a plan from inside ELMS. Pay with Cash App, or with a card (Visa, Mastercard, American Express and more), PayPal, Apple Pay or Google Pay where they are offered at checkout. Checkout is handled by our payment providers, who also send your receipt. We never see or store your full card details.';
-    $('note').textContent = 'Prices are in US dollars. Create a free account first, then buy the plan you want from inside ELMS.';
+    $('note').textContent = 'Prices are in US dollars. Create a free account first, then buy the plan you want from inside ELMS. Each plan is one term (one month; a yearly option is offered on some plans) and its credits last for that term.';
   }
 
   function fail() {
