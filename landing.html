@@ -380,7 +380,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <a class="btn ghost big" href="#how">See how it works</a>
       </div>
-      <div class="fine"><span>No card needed to sign up</span><span>Pay only for what you use</span><span>Credits back on failed actions</span></div>
+      <div class="fine"><span>No card needed to sign up</span><span>Simple monthly plans</span><span>Credits back on failed actions</span></div>
     </div>
 
     <div class="hero-vis" aria-hidden="true">
@@ -620,8 +620,8 @@
   <div class="wrap">
     <div class="head reveal">
       <div class="eyebrow">Pricing</div>
-      <h2>Pay for credits, <span class="grad">not for a subscription</span></h2>
-      <p class="sub">Credits are spent when an action succeeds: an import, a publish, an AI touch-up. Buy a pack when you need one.</p>
+      <h2>Simple plans, <span class="grad">pay for credits</span></h2>
+      <p class="sub">Credits are spent when an action succeeds: an import, a publish, an AI touch-up. Each plan lasts one month (or one year on a yearly plan).</p>
     </div>
     <div class="plans" id="plans"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
     <p class="plans-note" id="plansNote">Loading the latest plans…</p>
@@ -635,7 +635,7 @@
     <div class="faq reveal">
       <details><summary>Do I need an eBay account?</summary><p>Yes. You connect your own eBay seller account (or several) to ELMS with eBay's secure sign-in, and ELMS lists to it on your behalf. You can create your ELMS account first and connect eBay afterwards.</p></details>
       <details><summary>Can I import from AliExpress or CJdropshipping too?</summary><p>Yes. ELMS imports from Amazon, AliExpress and CJdropshipping - paste a link from any of them, or connect your CJ/AliExpress account, and it becomes a draft the same way.</p></details>
-      <details><summary>How do credits work?</summary><p>Actions such as importing a product, publishing a listing or an AI touch-up use credits. You buy a pack when you need more, and credits do not expire on a schedule. If an action fails, the credits it used are returned.</p></details>
+      <details><summary>How do credits work?</summary><p>Actions such as importing a product, publishing a listing or an AI touch-up use credits. You buy a plan for a term, one month or one year, and its credits last for that term: when the term ends, the credits that came with it end too, and we email you a few days before. Credits you already had before the plan stay. If an action fails, the credits it used are returned.</p></details>
       <details><summary>Does ELMS order from Amazon for me?</summary><p>No. ELMS prepares everything: it shows you the orders that need action, your cost and your profit, and sends the tracking number to eBay. You place the Amazon order yourself.</p></details>
       <details><summary>Can I import lots of products at once?</summary><p>Yes. Paste a list of product links and ELMS imports them in the background, so you can close the tab. You are charged per product that is actually imported. Links that fail, and repeats of the same product, are not charged.</p></details>
       <details><summary>Which Amazon and eBay sites are supported?</summary><p>ELMS works with the main Amazon sites (US, UK, Germany, France, Italy, Spain, Canada, Australia and more) and the matching eBay marketplaces. ELMS checks that the Amazon link fits the store you are listing to, so you do not mix up countries.</p></details>
@@ -888,13 +888,13 @@
       var isBest = best && p === best;
       var cents = per(p) < 0.1 ? (per(p) * 100).toFixed(1) + '¢' : '$' + per(p).toFixed(2);
       return '<div class="plan' + (isBest ? ' best' : '') + '">' + (isBest ? '<span class="badge">BEST VALUE</span>' : '') +
-        '<h3>' + esc(p.name) + '</h3><div class="price">$' + (+p.priceUsd % 1 ? (+p.priceUsd).toFixed(2) : (+p.priceUsd)) + ' <small>one time + tax</small></div>' +
+        '<h3>' + esc(p.name) + '</h3><div class="price">$' + (+p.priceUsd % 1 ? (+p.priceUsd).toFixed(2) : (+p.priceUsd)) + ' <small>a month + tax</small></div>' +
         '<div class="per">about ' + cents + ' per credit</div><ul><li>' + Number(p.credits).toLocaleString() + ' credits</li>' +
         '<li>' + (p.maxEbayAccounts ? 'Connect up to ' + p.maxEbayAccounts + ' eBay account' + (p.maxEbayAccounts === 1 ? '' : 's') : 'Connect your eBay accounts') + '</li>' +
-        '<li>Imports, publishing and AI tools</li><li>Credits back if an action fails</li></ul>' +
+        '<li>Credits valid for 1 month from purchase</li><li>Imports, publishing and AI tools</li><li>Credits back if an action fails</li></ul>' +
         '<a class="btn ' + (isBest ? 'primary' : 'ghost') + '" href="/signup">Get started</a></div>';
     }).join('');
-    $('plansNote').textContent = 'Create a free account first, then buy the pack you want from inside ELMS.';
+    $('plansNote').textContent = 'Create a free account first, then buy the plan you want from inside ELMS. Credits last for the term of the plan.';
   }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   var ctl = window.AbortController ? new AbortController() : null;
