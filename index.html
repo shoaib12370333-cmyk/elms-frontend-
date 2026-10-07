@@ -3092,9 +3092,10 @@
   .np-dates label { display:inline-flex; align-items:center; gap:6px; font:800 11px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#475569; }
   .np-dates input { height:40px; padding:0 8px; border:1.5px solid var(--dv-line); border-radius:12px; font:500 13px Inter,sans-serif; background:#fff; color:var(--dv-ink); }
   .np-dates input.set { border-color:#0064D2; background:#F4F8FE; }
+  .np-hint { flex:1 0 100%; font:700 12.5px Inter,sans-serif; color:#B42318; } .np-hint[hidden] { display:none; }
   .np-clear { border:0; background:transparent; color:var(--blue); font:700 12.5px Inter,sans-serif; cursor:pointer; padding:6px 4px; } .np-clear[hidden] { display:none; }
   @media (max-width: 520px) {
-    .np-range, .np-dates { width:100%; } .np-dates { display:grid; grid-template-columns:1fr 1fr; } .np-dates label { flex-direction:column; align-items:flex-start; gap:4px; } .np-dates input { width:100%; box-sizing:border-box; } .np-clear { grid-column:1 / -1; justify-self:start; }
+    .np-range, .np-dates { width:100%; } .np-dates { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); } .np-dates label { flex-direction:column; align-items:flex-start; gap:4px; min-width:0; } .np-dates input { width:100%; min-width:0; box-sizing:border-box; } .np-hint { grid-column:1 / -1; } .np-clear { grid-column:1 / -1; justify-self:start; }
   }
   .np-period { display:flex; align-items:center; justify-content:space-between; gap:14px 24px; flex-wrap:wrap; margin-bottom:14px; padding:12px 18px; border:1px solid #D6E4F7; border-radius:14px; background:#F4F8FE; } .np-period[hidden] { display:none; }
   .np-period-when b { display:block; font:800 15px Inter,sans-serif; color:#0F172A; } .np-period-when span { font:600 12.5px Inter,sans-serif; color:#64748B; }
@@ -13875,8 +13876,8 @@ async function autoSuggestEmptyDraftCategories() {
   function npRange() { return npRangeBounds('custom', npFilters.from, npFilters.to); }
   const NP_PRESETS = ['today', 'yesterday', '7', '30', 'month', 'lastmonth', 'year'];
   const npYmd = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  // a real day only: "2026-02-30" is no day (it would silently become 2 March)
-  const npDateOk = (v) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || '')); if (!m) return false; const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])); return d.getFullYear() === Number(m[1]) && d.getMonth() === Number(m[2]) - 1 && d.getDate() === Number(m[3]); };
+  // a real day only ("2026-02-30" is no day: it would silently become 2 March) in a sensible year: a date box that is being typed reports "0002-10-01" after the first digit of the year
+  const npDateOk = (v) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || '')); if (!m) return false; const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])); return Number(m[1]) >= 1900 && Number(m[1]) <= 2100 && d.getFullYear() === Number(m[1]) && d.getMonth() === Number(m[2]) - 1 && d.getDate() === Number(m[3]); };
   function npApplyPreset() {
     if (!NP_PRESETS.includes(npFilters.range)) return;
     const [from, to] = npRangeBounds(npFilters.range);
@@ -13885,7 +13886,8 @@ async function autoSuggestEmptyDraftCategories() {
   }
   function npRangeBounds(r, customFrom, customTo) {
     const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
-    const endOfDay = (d) => { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; };
+    // the instant before the next local midnight (23:59:59.999 would miss the repeated hour on a day the clocks go back at midnight)
+    const endOfDay = (d) => { const x = new Date(d); return new Date(new Date(x.getFullYear(), x.getMonth(), x.getDate() + 1).getTime() - 1); };
     const now = new Date();
     const dayOf = (back) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - back); // calendar days, so a change of the clock never moves a day
     if (r === 'today') return [startOfDay(now), endOfDay(now)];
@@ -13905,14 +13907,16 @@ async function autoSuggestEmptyDraftCategories() {
     const from = document.getElementById('npFrom');
     const to = document.getElementById('npTo');
     if (sel.value !== npFilters.range) sel.value = npFilters.range;
-    if (from.value !== npFilters.from) from.value = npFilters.from;
-    if (to.value !== npFilters.to) to.value = npFilters.to;
+    // (never the box the seller is typing in: it would wipe what they have typed so far)
+    if (document.activeElement !== from && from.value !== npFilters.from) from.value = npFilters.from;
+    if (document.activeElement !== to && to.value !== npFilters.to) to.value = npFilters.to;
     from.classList.toggle('set', !!npFilters.from);
     to.classList.toggle('set', !!npFilters.to);
     document.getElementById('npClear').hidden = !(npFilters.from || npFilters.to);
   }
   /** A quick choice from the box: it fills the two dates (or empties them for "All time"). "Custom dates" keeps the dates and takes the seller to the first box. */
   function npPickRange(r) {
+    document.getElementById('npDateHint').hidden = true;
     npFilters.range = r;
     if (r === 'all') { npFilters.from = ''; npFilters.to = ''; } else npApplyPreset();
     npSyncRangeUi();
@@ -13920,13 +13924,19 @@ async function autoSuggestEmptyDraftCategories() {
     npFetch(false);
   }
   let npDateTimer = null;
-  /** A date was typed or picked. The other box follows when the range would end before it starts. A short wait lets a year typed digit by digit finish first. */
-  function npDatesEdited(which) {
-    const fromEl = document.getElementById('npFrom');
-    const toEl = document.getElementById('npTo');
-    let from = npDateOk(fromEl.value) ? fromEl.value : '';
-    let to = npDateOk(toEl.value) ? toEl.value : '';
-    if (from && to && from > to) { if (which === 'from') to = from; else from = to; }
+  /**
+   * A date was typed or picked. A box that holds a half-typed date (a browser reports "0002-10-01" after the first digit of the year) is left alone until it is a real date;
+   * a start after the end changes nothing and says so (neither box is ever moved by itself: a month typed digit by digit passes through other dates). A short wait lets one
+   * more keystroke follow before the sheet loads.
+   */
+  function npDatesEdited() {
+    const read = (id) => { const v = document.getElementById(id).value; return v === '' ? '' : (npDateOk(v) ? v : null); };
+    const from = read('npFrom');
+    const to = read('npTo');
+    if (from === null || to === null) return;
+    const inverted = !!(from && to && from > to);
+    document.getElementById('npDateHint').hidden = !inverted;
+    if (inverted) return;
     npFilters.from = from;
     npFilters.to = to;
     npFilters.range = from || to ? 'custom' : 'all';
@@ -13950,7 +13960,7 @@ async function autoSuggestEmptyDraftCategories() {
   // lines below are only the page loaded so far). It follows the sheet's own filters (store, search, cancelled orders).
   let npPeriodSeq = 0;
   let npPeriodTimer = null;
-  const npPeriodSoon = () => { clearTimeout(npPeriodTimer); npPeriodTimer = setTimeout(npLoadPeriod, 500); };
+  const npPeriodSoon = () => { clearTimeout(npPeriodTimer); npPeriodTimer = setTimeout(() => npLoadPeriod(true), 500); };
   function npPeriodLabels() {
     const { from, to } = npFilters;
     const show = (v) => new Date(v + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
@@ -13962,7 +13972,7 @@ async function autoSuggestEmptyDraftCategories() {
     }
     return from ? ['From ' + show(from), 'every order from that day on'] : ['Up to ' + show(to), 'every order up to that day'];
   }
-  async function npLoadPeriod() {
+  async function npLoadPeriod(keepNumbers) {
     const box = document.getElementById('npPeriod');
     if (!box) return;
     const seq = ++npPeriodSeq;
@@ -13972,7 +13982,7 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('npPeriodDays').textContent = days;
     const nums = document.getElementById('npPeriodNums');
     box.hidden = false;
-    if (!nums.firstChild) nums.innerHTML = '<span class="np-period-note">Adding up\u2026</span>';
+    if (!keepNumbers || !nums.firstChild) nums.innerHTML = '<span class="np-period-note">Adding up\u2026</span>'; // only a re-sum of the SAME range (after a saved cell) keeps the old number until the new one is there
     try {
       const res = await apiFetch('/api/net-profit/summary?' + npQuery({ sheet: 1 }));
       const d = await res.json();
@@ -14126,7 +14136,7 @@ async function autoSuggestEmptyDraftCategories() {
             <select id="npRange" class="dv-select" aria-label="Quick date range">
               <option value="all">All time</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="month">This month</option><option value="lastmonth">Last month</option><option value="year">This year</option><option value="custom">Custom dates</option>
             </select>
-            <span class="np-dates"><label>From <input type="date" id="npFrom" aria-label="From date" /></label><label>To <input type="date" id="npTo" aria-label="To date" /></label><button type="button" class="np-clear" id="npClear" hidden>Clear dates</button></span>
+            <span class="np-dates"><label>From <input type="date" id="npFrom" aria-label="From date" /></label><label>To <input type="date" id="npTo" aria-label="To date" /></label><button type="button" class="np-clear" id="npClear" hidden>Clear dates</button><span class="np-hint" id="npDateHint" role="alert" hidden>The start date is after the end date.</span></span>
           </span>
           <label class="np-switch"><input type="checkbox" id="npCancelled" /> Show cancelled</label>
           <button type="button" class="dv-btn np-export" id="npExport">Export Excel</button>
@@ -14146,8 +14156,8 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('npSearch').addEventListener('input', (e) => { clearTimeout(timer); timer = setTimeout(() => { npFilters.q = e.target.value.trim(); npFetch(false); }, 350); });
       document.getElementById('npStore').addEventListener('change', (e) => { npFilters.accountId = e.target.value; npFetch(false); });
       document.getElementById('npRange').addEventListener('change', (e) => npPickRange(e.target.value));
-      document.getElementById('npFrom').addEventListener('change', () => npDatesEdited('from'));
-      document.getElementById('npTo').addEventListener('change', () => npDatesEdited('to'));
+      document.getElementById('npFrom').addEventListener('change', () => npDatesEdited());
+      document.getElementById('npTo').addEventListener('change', () => npDatesEdited());
       document.getElementById('npClear').addEventListener('click', () => npPickRange('all'));
       document.getElementById('npCancelled').addEventListener('change', (e) => { npFilters.cancelled = e.target.checked; npFetch(false); });
       document.getElementById('npExport').addEventListener('click', (e) => npExport(e.currentTarget));
