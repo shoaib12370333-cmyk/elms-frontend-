@@ -349,6 +349,9 @@
     .reveal, .card, .chip, .live { opacity: 1 !important; transform: none !important; }
   }
 </style>
+<!-- Paddle.js: loaded without blocking the page, initialised once it is there (the same public client-side token the app uses). Paddle Retain needs it on a public page. -->
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js" async></script>
+<script>window.addEventListener('load', function () { try { if (window.Paddle) Paddle.Initialize({ token: 'live_6e14cf9337f385541654e9079b4' }); } catch (e) { /* the landing page works without it */ } });</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
