@@ -3682,6 +3682,7 @@
   .ad-sect-title { font-weight:800; font-size:13px; color:#0B4FA0; margin-bottom:10px; }
   .ad-edit-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; align-items:end; } @media (max-width:560px) { .ad-edit-grid { grid-template-columns:1fr; } }
   .ad-edit-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .ce-add { display:grid; grid-template-columns:150px 1fr auto; gap:10px; align-items:end; } @media (max-width:640px) { .ce-add { grid-template-columns:1fr; } .ce-add .st-btn { width:100%; } }
   .ad-kv { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px 18px; }
   .ad-kv > div { font-size:13px; min-width:0; word-break:break-word; } .ad-kv small { display:block; color:var(--grey); font-size:11.5px; font-weight:600; letter-spacing:.02em; }
   .ad-note-text { white-space:pre-wrap; word-break:break-word; font-size:13px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
@@ -5598,7 +5599,7 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico blue">&#128193;</div>
-              <div class="st-head-txt"><h2>AI category</h2><p>The first step for every product: the AI chooses the eBay category from the category list you upload in the Categories tab; when the list has nothing that fits, eBay's own suggestion is used. <b>Credits per AI category</b> is the price a seller pays each time the AI assigns a category to a product (when a draft is published without one, and "Fill category with AI"); nothing when it finds none, and the suggestions shown while editing are always free: <b>0 = free</b>, which is how it starts - set a number when you want to charge. (If you saved a price here or in Credit costs earlier, it stays until you change it.)</p></div>
+              <div class="st-head-txt"><h2>AI category</h2><p><b>On:</b> the first step for every product is the AI, which chooses the eBay category from the category list you upload in the Categories tab; when the list has nothing that fits, eBay's own suggestion is used. <b>Off:</b> only eBay's own category suggestion (the Taxonomy call) is used: no AI, no credits, and the lists are not used. The same switch is at the top of the Categories tab. <b>Credits per AI category</b> is the price a seller pays each time the AI assigns a category to a product (when a draft is published without one, and "Fill category"); nothing when it finds none, and the suggestions shown while editing are always free: <b>0 = free</b>, which is how it starts - set a number when you want to charge. (If you saved a price here or in Credit costs earlier, it stays until you change it.)</p></div>
               <label class="toggle-switch"><input type="checkbox" id="aiCategoryEnabled" /><span class="toggle-slider"></span></label>
             </div>
             <div class="st-field"><label>Credits per AI category (0 = free)</label><input class="st-input" type="number" min="0" step="1" id="aiCostCategory" /></div>
@@ -5711,6 +5712,14 @@
 
         <!-- Categories -->
         <div class="ad-panel" data-admin-panel="categories" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#9881;</div>
+              <div class="st-head-txt"><h2>How a category is chosen</h2><p id="catModeText"></p></div>
+              <label class="toggle-switch" title="On: the AI chooses from the lists below. Off: eBay's own category suggestion (Taxonomy)."><input type="checkbox" id="catAiToggle" aria-label="Choose categories with the AI and the lists" disabled /><span class="toggle-slider"></span></label>
+            </div>
+            <div id="catModeStatus" class="st-status" role="status"></div>
+          </section>
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico blue">&#128193;</div>
@@ -9966,7 +9975,7 @@ B0EXAMPLE2"></textarea></div>
             <b id="draftSelectedCount">0 selected</b>
             <button class="dv-btn primary small" id="bulkPublishBtn" type="button">Publish all</button>
             <button class="dv-btn small" id="bulkEditBtn" type="button" title="Change the price, title, brand, quantity, tags, location or policies of all the selected drafts at once">Bulk edit</button>
-            <button class="dv-btn small" id="bulkCategoryBtn" type="button" title="AI chooses the eBay category of the selected drafts that have none, from the category list of each draft's own eBay site (a US store uses the US list, a UK store the UK list)">Fill category with AI</button>
+            <button class="dv-btn small" id="bulkCategoryBtn" type="button" title="Chooses the eBay category of the selected drafts that have none. As the admin has set it up: the AI from the category list of each draft's own eBay site (a US store uses the US list, a UK store the UK list), or eBay's own category suggestion">Fill category</button>
             <button class="dv-btn small" id="bulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected drafts and saves them, so publishing does not stop on a missing one">Fill specifics with AI</button>
             <button class="dv-btn small" id="bulkBeautifyBtn" type="button" title="AI restructures the description of the selected drafts into your saved Description Template (Settings &gt; Description Template) and saves it">Beautify descriptions with AI</button>
             <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the VeRO words out of the selected drafts">Remove VeRO words</button>
@@ -11898,21 +11907,27 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
-  // ---------- Bulk: AI chooses the eBay category of the selected drafts that have none ----------
-  // From the category list of each draft's OWN eBay site (a US store's draft from the US list, a UK store's from the UK list: the lists the admin
-  // uploads in Admin > Categories). eBay is not asked, so it costs none of eBay's category limit. The admin-set credits are taken per draft that gets one.
+  // ---------- Bulk: choose the eBay category of the selected drafts that have none ----------
+  // How is the admin's choice (Admin > Categories): the AI from the category list of each draft's OWN eBay site (a US store's draft from the US list, a UK store's from the
+  // UK list; no eBay call, the admin-set credits are taken per draft that gets one), or eBay's own category suggestion (free, but it uses eBay's daily category lookups).
   async function bulkFillCategories(ids, btn) {
     let cost = null;
+    let mode = null; // 'ai' = the AI from the category lists (credits), 'ebay' = eBay's own suggestion (free); null = could not be read: the wording stays neutral
     try {
       const r = await apiFetch('/api/listings/bulk-category/cost');
       const d = await apiJson(r);
-      if (r.ok && d.success) cost = Number(d.cost);
+      if (r.ok && d.success) { cost = Number(d.cost); mode = d.mode === 'ebay' ? 'ebay' : 'ai'; }
     } catch (_) { /* the dialog just leaves the price out */ }
     const n = ids.length;
     const price = cost === null ? '' : cost === 0
       ? '\n\nThis is free.'
       : `\n\nIt costs ${cost} credit${cost === 1 ? '' : 's'} per draft that gets a category: up to ${cost * n} credit${cost * n === 1 ? '' : 's'} for ${n} draft${n === 1 ? '' : 's'}. A draft that already has one, is skipped or fails is not charged.`;
-    const ok = await elmsConfirm(`AI will choose the eBay category of the selected drafts that have none, from the category list of each draft's own eBay site (a US store uses the US list, a UK store the UK list), and save it. A draft that already has a category is left alone.${price}`, { title: 'Fill category with AI', okText: 'Fill with AI' });
+    const ok = await elmsConfirm(mode === 'ebay'
+      ? `eBay's own category suggestion will choose the eBay category of the selected drafts that have none, for each draft's own eBay site, and save it. A draft that already has a category is left alone.\n\nThis is free.`
+      : mode === 'ai'
+        ? `AI will choose the eBay category of the selected drafts that have none, from the category list of each draft's own eBay site (a US store uses the US list, a UK store the UK list), and save it. A draft that already has a category is left alone.${price}`
+        : `A category will be chosen for the selected drafts that have none, the way the administrator has set it up (by the AI from the category lists, or by eBay's own suggestion), and saved. A draft that already has a category is left alone.`,
+    mode === 'ai' ? { title: 'Fill category with AI', okText: 'Fill with AI' } : { title: 'Fill category', okText: 'Fill categories' });
     if (!ok) return;
 
     const label = btn.textContent;
@@ -11927,6 +11942,7 @@ async function autoSuggestEmptyDraftCategories() {
         if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
         all.push(...data.results);
         if (data.results.some((r) => r.status === 'no_credits')) stop = 'You ran out of credits. Buy more to continue.';
+        else if (data.limitReached) stop = "eBay's category lookups are used up for today, so the rest of the selection was not tried. Try again tomorrow, or ask the administrator to switch the AI category on.";
       }
     } catch (err) {
       stop = err.message || 'Could not reach the server.';
@@ -20146,6 +20162,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.getElementById('aiCostAspects').value = d.costs.AI_ASPECTS ?? 1;
       document.getElementById('aiCostReply').value = d.costs.AI_REPLY ?? 1;
       document.getElementById('aiCategoryEnabled').checked = d.settings.aiCategoryEnabled !== false;
+      if (typeof paintCategoryMode === 'function' && !catModeSaving) paintCategoryMode(d.settings.aiCategoryEnabled !== false); // the switch of the Categories tab shows the same setting
       document.getElementById('aiCostCategory').value = d.costs.AI_CATEGORY ?? 0;
       document.getElementById('aiBeautifyDescriptionEnabled').checked = d.settings.aiBeautifyDescriptionEnabled !== false;
       document.getElementById('aiVeroMode').value = d.settings.aiVeroMode || 'title';
@@ -20534,7 +20551,50 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel: Categories (the eBay category list of each country) ----------
   let catUploadFor = null;
-  async function loadAdminCategories() {
+
+  // The switch at the top of the tab: ON = the AI chooses a category from the lists below (the AI category credits apply), OFF = eBay's own suggestion (the Taxonomy call),
+  // no AI and no credits. It is the same setting as "AI category" in the AI tab (aiCategoryEnabled), saved the moment it is flipped.
+  const catModeWords = (on) => (on
+    ? 'ON: the AI chooses a category from the lists below, for the eBay site of the product (the "AI category" price of the AI tab applies; 0 = free). eBay is only asked to confirm the pick, and for its own suggestion when the list has nothing that fits.'
+    : 'OFF: eBay\'s own category suggestion (the Taxonomy call) chooses. No AI is used and no credits are taken, and the lists below are not used. eBay limits how many of these calls ELMS can make in a day.');
+  var catModeSaving = false; // while the switch's own save is on its way, a re-read of the setting must not repaint over it
+  function paintCategoryMode(on) {
+    const box = document.getElementById('catAiToggle'); const text = document.getElementById('catModeText');
+    if (box) box.checked = !!on;
+    if (text) text.textContent = catModeWords(!!on);
+    const aiTab = document.getElementById('aiCategoryEnabled'); if (aiTab) aiTab.checked = !!on; // the same setting, shown in the AI tab too
+  }
+  async function loadCategoryMode() {
+    const text = document.getElementById('catModeText'); const status = document.getElementById('catModeStatus'); const box = document.getElementById('catAiToggle');
+    try {
+      const res = await apiFetch('/api/admin/settings/ai'); const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not load this setting.');
+      if (catModeSaving) return; // a save is on its way: it will paint the answer
+      paintCategoryMode(d.settings.aiCategoryEnabled !== false);
+      if (box) box.disabled = false;
+      if (status) { status.className = 'st-status'; status.textContent = ''; }
+    } catch (err) { if (text) text.textContent = ''; if (status) { status.className = 'st-status error'; status.textContent = err.message; } }
+  }
+  document.getElementById('catAiToggle')?.addEventListener('change', async (e) => {
+    const box = e.currentTarget; const status = document.getElementById('catModeStatus');
+    const wanted = box.checked;
+    catModeSaving = true; box.disabled = true; status.className = 'st-status'; status.textContent = 'Saving…';
+    try {
+      const res = await apiFetch('/api/admin/settings/ai', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ aiCategoryEnabled: wanted }) });
+      const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not save this setting.');
+      paintCategoryMode(d.settings.aiCategoryEnabled !== false);
+      status.className = 'st-status success'; status.textContent = wanted ? 'Saved. The AI now chooses categories from the lists.' : 'Saved. eBay\'s own suggestion now chooses categories.';
+    } catch (err) {
+      // A lost answer does not mean nothing was saved (a timeout, a bad gateway after the write): the real value is read again instead of guessed, and the error stays shown.
+      catModeSaving = false;
+      await loadCategoryMode();
+      status.className = 'st-status error'; status.textContent = err.message;
+    } finally { catModeSaving = false; box.disabled = false; }
+  });
+
+  async function loadAdminCategories(options = {}) {
+    if (options.mode !== false) loadCategoryMode();
     const el = document.getElementById('adminCategoryLists'); if (!el) return;
     try {
       const res = await apiFetch('/api/admin/category-lists'); const d = await res.json();
@@ -20546,7 +20606,7 @@ async function autoSuggestEmptyDraftCategories() {
         <td><b>${escapeHtml(l.domain || l.marketplaceId)}</b><br><small>${escapeHtml(l.marketplaceId)}</small></td>
         <td>${escapeHtml(countryName(l.country))}</td>
         <td>${l.uploaded ? `<span class="status-badge published">${Number(l.count).toLocaleString('en-US')} categories</span><br><small>${escapeHtml(l.filename || 'CSV')} &middot; ${escapeHtml(when(l.updatedAt))}</small>` : '<span class="status-badge draft">Not uploaded</span>'}</td>
-        <td style="text-align:right;white-space:nowrap;"><button class="st-btn small primary" type="button" data-cat-upload="${escapeAttr(l.marketplaceId)}">${l.uploaded ? 'Replace CSV' : 'Upload CSV'}</button>${l.uploaded ? ` <button class="st-btn small danger" type="button" data-cat-remove="${escapeAttr(l.marketplaceId)}" data-domain="${escapeAttr(l.domain || l.marketplaceId)}">Remove</button>` : ''}</td>
+        <td style="text-align:right;white-space:nowrap;">${l.uploaded ? `<button class="st-btn small primary" type="button" data-cat-edit="${escapeAttr(l.marketplaceId)}" data-domain="${escapeAttr(l.domain || l.marketplaceId)}">Edit categories</button> ` : ''}<button class="st-btn small${l.uploaded ? '' : ' primary'}" type="button" data-cat-upload="${escapeAttr(l.marketplaceId)}">${l.uploaded ? 'Replace CSV' : 'Upload CSV'}</button>${l.uploaded ? ` <button class="st-btn small" type="button" data-cat-csv="${escapeAttr(l.marketplaceId)}" title="Download this list as a CSV file">Download CSV</button>` : ''}${l.uploaded ? ` <button class="st-btn small danger" type="button" data-cat-remove="${escapeAttr(l.marketplaceId)}" data-domain="${escapeAttr(l.domain || l.marketplaceId)}">Remove</button>` : ''}</td>
       </tr>`;
       el.innerHTML = `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>eBay site</th><th>Country</th><th>Category list</th><th></th></tr></thead><tbody>${(d.lists || []).map(row).join('')}</tbody></table></div>`;
     } catch (err) { el.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
@@ -20554,8 +20614,14 @@ async function autoSuggestEmptyDraftCategories() {
   document.getElementById('adminCategoryLists')?.addEventListener('click', async (e) => {
     const up = e.target.closest('[data-cat-upload]');
     const rm = e.target.closest('[data-cat-remove]');
+    const edit = e.target.closest('[data-cat-edit]');
+    const csv = e.target.closest('[data-cat-csv]');
     const status = document.getElementById('catListStatus');
-    if (up) {
+    if (edit) {
+      openCategoryEditor(edit.dataset.catEdit, edit.dataset.domain);
+    } else if (csv) {
+      downloadCategoryCsv(csv.dataset.catCsv, status);
+    } else if (up) {
       catUploadFor = up.dataset.catUpload;
       const input = document.getElementById('catListFile');
       input.value = '';
@@ -20566,7 +20632,7 @@ async function autoSuggestEmptyDraftCategories() {
         const res = await apiFetch(`/api/admin/category-lists/${encodeURIComponent(rm.dataset.catRemove)}`, { method: 'DELETE' }); const d = await res.json();
         if (!res.ok || !d.success) throw new Error(d.error || 'Could not remove the list.');
         status.className = 'st-status success'; status.textContent = 'The list of ' + rm.dataset.domain + ' was removed.';
-        loadAdminCategories();
+        loadAdminCategories({ mode: false });
       } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
     }
   });
@@ -20585,9 +20651,248 @@ async function autoSuggestEmptyDraftCategories() {
       if (!res.ok || !d.success) throw new Error(d.error || 'Could not save this category list.');
       status.className = 'st-status success';
       status.textContent = marketplaceId + ': ' + Number(d.count).toLocaleString('en-US') + ' categories saved' + (d.skipped ? ' (' + d.skipped + ' unreadable rows left out)' : '') + '.';
-      loadAdminCategories();
+      loadAdminCategories({ mode: false });
     } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
   });
+
+  // The editor of one country's list: search, add, change and remove single categories, select many like in Drafts and remove them together, download the list.
+  // Every change carries the `stamp` of the list as this window last saw it; the server refuses a change to a list that is not that one any more (409), so two admins never overwrite each other unseen.
+  async function categoryApi(marketplaceId, tail, options = {}) {
+    const res = await apiFetch('/api/admin/category-lists/' + encodeURIComponent(marketplaceId) + tail, options);
+    let data = null;
+    try { data = await res.json(); } catch (_) { /* not JSON */ }
+    if (!res.ok || !data || !data.success) { const err = new Error((data && data.error) || 'That did not work.'); err.status = res.status; throw err; }
+    return data;
+  }
+  const categoryJson = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+  async function downloadCategoryCsv(marketplaceId, status) {
+    try {
+      const res = await apiFetch('/api/admin/category-lists/' + encodeURIComponent(marketplaceId) + '/csv');
+      if (!res.ok) { let message = 'Could not download the list.'; try { message = (await res.json()).error || message; } catch (_) { /* keep it */ } throw new Error(message); }
+      saveAdminFile(await res.blob(), 'category-ids-' + marketplaceId + '-' + new Date().toISOString().slice(0, 10) + '.csv');
+    } catch (err) {
+      if (status) { status.className = 'st-status error'; status.textContent = err.message; } else showToast('Category list', err.message, 'error');
+    }
+  }
+
+  function openCategoryEditor(marketplaceId, domain) {
+    const st = { q: '', page: 0, size: 50, rows: [], total: 0, count: 0, stamp: null, filename: '', selected: new Set(), editing: null, busy: false, seq: 0 };
+    const m = adminModal(`
+      <div class="draft-title">Categories of ${escapeHtml(domain || marketplaceId)}</div>
+      <div class="meta-line" id="ceInfo"></div>
+      <p class="meta-line" style="margin:6px 0 0;">The AI picks a category for a product from this list. A change is used at once for the next product. Download the list first if you want a backup.</p>
+
+      <div class="ad-sect">
+        <div class="ad-sect-title">Add a category</div>
+        <div class="ce-add">
+          <div class="st-field"><label for="ceNewId">Category ID</label><input class="st-input" id="ceNewId" inputmode="numeric" maxlength="12" placeholder="e.g. 20667" /></div>
+          <div class="st-field"><label for="ceNewPath">Category path</label><input class="st-input" id="ceNewPath" maxlength="600" placeholder="Home &amp; Garden > Kitchen, Dining &amp; Bar > Kettles" /></div>
+          <button class="st-btn primary" id="ceAdd" type="button" style="height:42px;">Add</button>
+        </div>
+      </div>
+
+      <div class="ad-sect">
+        <div class="dv-toolbar" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px;">
+          <label class="dv-selectall" style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;"><input type="checkbox" id="ceSelPage" /> Select</label>
+          <button type="button" class="btn-small" id="ceSelAll" hidden></button>
+          <span style="display:flex;gap:6px;align-items:center;"><input class="st-input" type="number" min="1" id="ceFirstN" placeholder="N" aria-label="How many categories to select" style="width:84px;height:34px;" /><button type="button" class="btn-small" id="ceFirstNBtn" title="Select the first N categories of this search, in list order">Select first N</button></span>
+          <input class="st-input" type="search" id="ceSearch" placeholder="Search words, an ID or part of a path" style="flex:1;min-width:200px;height:34px;" />
+          <button type="button" class="btn-small" id="ceCsv" title="Download this whole list as a CSV file">Download CSV</button>
+        </div>
+        <div class="dv-bulk-inline" style="display:flex;gap:10px;align-items:center;margin:0 0 8px;min-height:30px;"><b id="ceSelected">0 selected</b><button type="button" class="btn-small" id="ceDelSel" style="background:#FEF2F2;color:#B42318;" hidden>Delete selected</button></div>
+        <div id="ceStatus" class="st-status" role="status"></div>
+        <div id="ceList" style="overflow-x:auto;"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+        <div id="cePager" style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:10px;"></div>
+      </div>
+      <div class="ad-chips" style="margin:14px 0 0;"><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Close</button></div>`, true);
+    const $ = (sel) => m.querySelector(sel);
+    const status = $('#ceStatus');
+    const say = (text, kind) => { status.className = 'st-status' + (kind ? ' ' + kind : ''); status.textContent = text || ''; };
+    const nf = (n) => Number(n).toLocaleString('en-US');
+
+    function renderSelection() {
+      const n = st.selected.size;
+      $('#ceSelected').textContent = nf(n) + ' selected';
+      $('#ceDelSel').hidden = !n;
+      $('#ceDelSel').textContent = 'Delete ' + nf(n) + ' selected';
+      const all = $('#ceSelAll');
+      all.hidden = !(st.total > st.rows.length);
+      all.textContent = 'Select all ' + nf(st.total);
+      const pageIds = st.rows.map((r) => r.id);
+      $('#ceSelPage').checked = pageIds.length > 0 && pageIds.every((id) => st.selected.has(id));
+      m.querySelectorAll('[data-ce-pick]').forEach((box) => { box.checked = st.selected.has(box.getAttribute('data-ce-pick')); });
+    }
+
+    function renderList() {
+      const pages = Math.max(1, Math.ceil(st.total / st.size));
+      $('#ceInfo').textContent = nf(st.count) + ' categories' + (st.filename ? ' · ' + st.filename : '') + (st.q ? ' · ' + nf(st.total) + ' match' + (st.total === 1 ? '' : 'es') : '');
+      if (!st.rows.length) {
+        $('#ceList').innerHTML = '<div class="empty-state">' + (st.q ? 'No category matches that.' : 'This list is empty.') + '</div>';
+      } else {
+        $('#ceList').innerHTML = `<table class="data-table"><thead><tr><th style="width:34px;"></th><th style="width:120px;">ID</th><th>Path</th><th style="width:170px;"></th></tr></thead><tbody>${st.rows.map((r) => (st.editing === r.id
+          ? `<tr data-ce-row="${escapeAttr(r.id)}"><td></td><td><input class="st-input" data-ce-id value="${escapeAttr(r.id)}" maxlength="12" inputmode="numeric" style="height:34px;" /></td><td><input class="st-input" data-ce-path value="${escapeAttr(r.path)}" maxlength="600" style="height:34px;" /></td><td style="white-space:nowrap;"><button class="btn-small save" type="button" data-ce-save="${escapeAttr(r.id)}">Save</button> <button class="btn-small" type="button" data-ce-cancel style="background:var(--grey-light);color:var(--ink);">Cancel</button></td></tr>`
+          : `<tr data-ce-row="${escapeAttr(r.id)}"><td><input type="checkbox" data-ce-pick="${escapeAttr(r.id)}" aria-label="Select category ${escapeAttr(r.id)}" /></td><td><code>${escapeHtml(r.id)}</code></td><td style="word-break:break-word;">${escapeHtml(r.path)}</td><td style="white-space:nowrap;text-align:right;"><button class="btn-small" type="button" data-ce-edit="${escapeAttr(r.id)}">Edit</button> <button class="btn-small" type="button" data-ce-del="${escapeAttr(r.id)}" style="background:#FEF2F2;color:#B42318;">Delete</button></td></tr>`
+        )).join('')}</tbody></table>`;
+      }
+      $('#cePager').innerHTML = pages > 1
+        ? `<button class="btn-small" type="button" data-ce-page="-1" ${st.page <= 0 ? 'disabled' : ''}>Previous</button><span class="meta-line">Page ${st.page + 1} of ${nf(pages)}</span><button class="btn-small" type="button" data-ce-page="1" ${st.page >= pages - 1 ? 'disabled' : ''}>Next</button>`
+        : '';
+      renderSelection();
+    }
+
+    // Reads the page the window is on. A 409 from any change lands here too: the list is read again so what is shown is the list as it is now.
+    async function load(options = {}) {
+      const mine = ++st.seq; // answers can arrive out of order (a quick search, a page change): only the newest read is shown
+      st.busy = true;
+      try {
+        let data = null;
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          data = await categoryApi(marketplaceId, '/rows?q=' + encodeURIComponent(st.q) + '&offset=' + (st.page * st.size) + '&limit=' + st.size);
+          if (mine !== st.seq) return; // a newer read has started: this answer is out of date
+          const pages = Math.max(1, Math.ceil(data.total / st.size));
+          if (st.page <= pages - 1) break;
+          st.page = pages - 1; // the last page got shorter (rows were removed): read the new last page
+        }
+        st.rows = data.rows; st.total = data.total; st.count = data.count; st.stamp = data.stamp; st.filename = data.filename;
+        renderList();
+        if (options.say !== undefined) say(options.say, options.kind);
+      } catch (err) {
+        if (mine !== st.seq) return;
+        $('#ceList').innerHTML = '';
+        say(err.message, 'error');
+        $('#ceInfo').textContent = '';
+      } finally { if (mine === st.seq) st.busy = false; }
+    }
+
+    // One change to the list. `work` sends the request with the current stamp; on success the new stamp is kept and the list is read again.
+    async function change(work, doneText, button) {
+      if (st.busy) return false;
+      if (button) button.disabled = true;
+      st.busy = true;
+      try {
+        const out = await work();
+        st.stamp = out.stamp;
+        st.busy = false;
+        loadAdminCategories({ mode: false }); // the counts of the table behind this window
+        await load({ say: typeof doneText === 'function' ? doneText(out) : doneText, kind: 'success' });
+        return true;
+      } catch (err) {
+        st.busy = false;
+        // the list changed under this window (409) or the category/list is gone (404): read it again, so what is shown is the list as it is now, and drop the selection
+        if (err.status === 409 || err.status === 404) { st.selected.clear(); st.editing = null; await load({ say: err.message, kind: 'error' }); renderSelection(); } else say(err.message, 'error');
+        return false;
+      } finally { if (button) button.disabled = false; }
+    }
+
+    let searchTimer = null;
+    $('#ceSearch').addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { st.q = e.target.value.trim(); st.page = 0; st.selected.clear(); st.editing = null; say(''); load(); }, 300); // a new search starts a new selection: what is ticked is always what is on screen
+    });
+
+    // select: this page / every match / the first N matches (like Drafts)
+    $('#ceSelPage').addEventListener('change', (e) => {
+      st.rows.forEach((r) => { if (e.target.checked) st.selected.add(r.id); else st.selected.delete(r.id); });
+      renderSelection();
+    });
+    async function matchIds() {
+      const asked = st.q;
+      const data = await categoryApi(marketplaceId, '/rows?ids=1&limit=1&q=' + encodeURIComponent(asked));
+      if (st.q !== asked) return null; // the search was changed while this was on its way: its answer is for another search
+      if (data.stamp !== st.stamp) { await load({ say: 'The list changed while you were working: it was read again. Select again.', kind: 'error' }); return null; }
+      return { ids: data.ids || [], total: data.total };
+    }
+    $('#ceSelAll').addEventListener('click', async () => {
+      try {
+        const got = await matchIds(); if (!got) return;
+        st.selected = new Set(got.ids);
+        renderSelection();
+        say(got.ids.length < got.total ? 'Only the first ' + nf(got.ids.length) + ' of ' + nf(got.total) + ' matches were selected (the most that can be removed at once).' : '');
+      } catch (err) { say(err.message, 'error'); }
+    });
+    const selectFirstN = async () => {
+      const n = Math.floor(Number($('#ceFirstN').value));
+      if (!(n > 0)) { $('#ceFirstN').focus(); return; }
+      try {
+        const got = await matchIds(); if (!got) return;
+        st.selected = new Set(got.ids.slice(0, n));
+        renderSelection();
+        say(n > got.total ? 'Only ' + nf(got.total) + ' categories match: all of them are selected.' : (n > got.ids.length ? 'The most that can be selected at once is ' + nf(got.ids.length) + '.' : ''));
+      } catch (err) { say(err.message, 'error'); }
+    };
+    $('#ceFirstNBtn').addEventListener('click', selectFirstN);
+    $('#ceFirstN').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); selectFirstN(); } });
+
+    $('#ceDelSel').addEventListener('click', async (e) => {
+      const btn = e.currentTarget; // read now: it is null once an await has passed
+      const ids = [...st.selected];
+      if (!ids.length) return;
+      if (!(await elmsConfirm(`Delete ${nf(ids.length)} categor${ids.length === 1 ? 'y' : 'ies'} from the list of ${domain || marketplaceId}? The AI can no longer choose ${ids.length === 1 ? 'it' : 'them'}. Products that already have ${ids.length === 1 ? 'this category' : 'one of these categories'} keep ${ids.length === 1 ? 'it' : 'it'}.`, { title: 'Delete categories', okText: 'Delete', danger: true }))) return;
+      const done = await change(() => categoryApi(marketplaceId, '/rows/remove', categoryJson('POST', { ids, stamp: st.stamp })), (out) => nf(out.removed) + ' categor' + (out.removed === 1 ? 'y' : 'ies') + ' deleted' + (out.missing ? ' (' + nf(out.missing) + ' were already gone)' : '') + '.', btn);
+      if (done) st.selected.clear();
+      renderSelection();
+    });
+
+    $('#ceCsv').addEventListener('click', () => downloadCategoryCsv(marketplaceId, status));
+
+    // add
+    const add = async (e) => {
+      const id = $('#ceNewId').value.trim(); const path = $('#ceNewPath').value.trim();
+      if (!id || !path) { say('Write both the category ID and its path.', 'error'); return; }
+      const ok = await change(() => categoryApi(marketplaceId, '/rows', categoryJson('POST', { id, path, stamp: st.stamp })), (out) => 'Category ' + out.row.id + ' was added.', $('#ceAdd'));
+      if (ok) {
+        // show the category that was just added: the search is set to its ID
+        $('#ceNewId').value = ''; $('#ceNewPath').value = '';
+        $('#ceSearch').value = id; st.q = id; st.page = 0; st.selected.clear(); st.editing = null;
+        await load({ say: 'Category ' + id + ' was added.', kind: 'success' });
+      }
+    };
+    $('#ceAdd').addEventListener('click', add);
+    ['#ceNewId', '#ceNewPath'].forEach((sel) => $(sel).addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }));
+
+    // the table: edit / save / cancel / delete one, pick, page
+    m.addEventListener('click', async (e) => {
+      const edit = e.target.closest('[data-ce-edit]');
+      const cancel = e.target.closest('[data-ce-cancel]');
+      const save = e.target.closest('[data-ce-save]');
+      const del = e.target.closest('[data-ce-del]');
+      const page = e.target.closest('[data-ce-page]');
+      if (edit) { st.editing = edit.getAttribute('data-ce-edit'); say(''); renderList(); m.querySelector('[data-ce-path]')?.focus(); }
+      else if (cancel) { st.editing = null; say(''); renderList(); }
+      else if (save) {
+        const row = save.closest('tr');
+        const oldId = save.getAttribute('data-ce-save');
+        const id = row.querySelector('[data-ce-id]').value.trim(); const path = row.querySelector('[data-ce-path]').value.trim();
+        if (!id || !path) { say('Write both the category ID and its path.', 'error'); return; }
+        const ok = await change(() => categoryApi(marketplaceId, '/rows/' + encodeURIComponent(oldId), categoryJson('PUT', { id, path, stamp: st.stamp })), (out) => 'Category ' + out.row.id + ' was saved.', save);
+        if (ok) { st.editing = null; st.selected.delete(oldId); renderList(); }
+      } else if (del) {
+        const id = del.getAttribute('data-ce-del');
+        const found = st.rows.find((r) => r.id === id);
+        if (!(await elmsConfirm('Delete category ' + id + (found ? ' (' + found.path + ')' : '') + ' from the list of ' + (domain || marketplaceId) + '? The AI can no longer choose it.', { title: 'Delete category', okText: 'Delete', danger: true }))) return;
+        const ok = await change(() => categoryApi(marketplaceId, '/rows/' + encodeURIComponent(id) + '?stamp=' + encodeURIComponent(st.stamp), { method: 'DELETE' }), 'Category ' + id + ' was deleted.', del);
+        if (ok) { st.selected.delete(id); renderSelection(); }
+      } else if (page && !st.busy) {
+        st.page = Math.max(0, st.page + Number(page.getAttribute('data-ce-page'))); st.editing = null;
+        await load();
+      }
+    });
+    m.addEventListener('change', (e) => {
+      const box = e.target.closest('[data-ce-pick]');
+      if (!box) return;
+      const id = box.getAttribute('data-ce-pick');
+      if (box.checked) st.selected.add(id); else st.selected.delete(id);
+      renderSelection();
+    });
+    m.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || !e.target.matches('[data-ce-id], [data-ce-path]')) return;
+      e.preventDefault();
+      e.target.closest('tr').querySelector('[data-ce-save]')?.click();
+    });
+
+    load();
+  }
 
   // ---------- Admin Panel: eBay rules (what ELMS refuses to list because eBay does not allow it) ----------
   // The built-in areas and words come from the server (config/ebayPolicyRules.js); what the admin changes is saved as: areas switched off, words added to an
