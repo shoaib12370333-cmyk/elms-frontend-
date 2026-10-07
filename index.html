@@ -15,7 +15,7 @@
 <script>
   // elmstool.com/ is the public website (landing.html) for anyone who is not signed in; signed-in people get the app.
   // (When the host already serves landing.html at / this never runs.)
-  (function () { try { if ((location.pathname === '/' || location.pathname === '/index.html') && !localStorage.getItem('elmsSessionToken')) location.replace('/landing.html' + location.search + location.hash); } catch (e) { /* stay on the app */ } })();
+  (function () { try { if ((location.pathname === '/' || location.pathname === '/index.html') && !localStorage.getItem('elmsSessionToken') && !(Date.now() - Number(sessionStorage.getItem('elmsEbayLoginStarted') || 0) < 600000)) location.replace('/landing.html' + location.search + location.hash); /* not while a "Continue with eBay" is under way: eBay's Decline page lands here and the sign-in page has to show it */ } catch (e) { /* stay on the app */ } })();
 </script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -637,6 +637,23 @@
     display: flex;
     justify-content: center;
   }
+  .auth-ebay-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+  .auth-ebay-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; max-width: 270px; height: 40px; padding: 0 12px; background: #fff; color: #3c4043; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 14px; font-weight: 500; line-height: 1; cursor: pointer; transition: background .15s, box-shadow .15s; }
+  .auth-ebay-btn:hover { background: #f8fafd; box-shadow: 0 1px 3px rgba(60,64,67,.25); }
+  .auth-ebay-btn:disabled { opacity: .6; cursor: default; }
+  .auth-ebay-btn img { height: 20px; width: auto; display: block; }
+  .auth-ebay-btn span { white-space: nowrap; }
+  @media (max-width: 420px) {
+    .auth-ebay-row { flex-direction: column; align-items: stretch; }
+    .auth-ebay-btn { flex: none; width: 100%; max-width: none; }
+    .auth-ebay-site { flex: none; width: 100%; max-width: none; }
+  }
+  .auth-ebay-site { height: 40px; max-width: 112px; border: 1px solid #dadce0; border-radius: 4px; background: #fff; font-size: 12.5px; padding: 0 4px; color: #3c4043; }
+  .auth-ebay-note { display: none; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; background: #EFF6FF; border: 1px solid #BFDBFE; font-size: 13px; line-height: 1.5; color: #1e3a8a; }
+  .auth-ebay-note img { height: 18px; width: auto; flex: none; }
+  .auth-ebay-note a { cursor: pointer; color: var(--blue); font-weight: 600; white-space: nowrap; }
+  #authFormRegister.ebay-mode .auth-divider, #authFormRegister.ebay-mode .auth-google-btn, #authFormRegister.ebay-mode .auth-ebay-row, #authFormRegister.ebay-mode #ebayLoginStatusRegister,
+  #authFormRegister.ebay-mode .auth-google-legal-note, #authFormRegister.ebay-mode .auth-switch-line { display: none; }
   .auth-google-legal-note {
     margin-top: 12px;
     font-size: 11px;
@@ -4207,12 +4224,12 @@
       <div id="authFormLogin" class="auth-form">
         <div class="auth-heading">Login</div>
 
-        <label class="edit-label">Email</label>
+        <label class="edit-label">Email or username</label>
         <div class="auth-field-wrap">
-          <input type="email" class="editable-input" id="loginEmail" placeholder="you@example.com" />
+          <input type="text" class="editable-input" id="loginEmail" placeholder="Email or username" autocomplete="username" autocapitalize="none" spellcheck="false" />
           <span class="auth-field-icon">&#128100;</span>
         </div>
-        <div class="auth-field-error-msg" id="loginEmailError">Please enter your email.</div>
+        <div class="auth-field-error-msg" id="loginEmailError">Please enter your email or username.</div>
 
         <label class="edit-label" style="margin-top:12px;">Password</label>
         <div class="auth-field-wrap">
@@ -4228,6 +4245,8 @@
 
         <div class="auth-divider"><span>or</span></div>
         <div id="googleSignInDivLogin" class="auth-google-btn"></div>
+        <div class="auth-ebay-row"><button type="button" class="auth-ebay-btn" id="ebayLoginBtnLogin" aria-label="Continue with eBay"><span>Continue with</span><img src="/ebay-logo.png" alt="eBay" width="50" height="20"></button><select class="auth-ebay-site" id="ebaySiteLogin" aria-label="Your eBay site" title="Your eBay site"><option value="EBAY_US">US (.com)</option><option value="EBAY_GB">UK (.co.uk)</option><option value="EBAY_DE">Germany (.de)</option><option value="EBAY_FR">France (.fr)</option><option value="EBAY_IT">Italy (.it)</option><option value="EBAY_ES">Spain (.es)</option><option value="EBAY_CA">Canada (.ca)</option><option value="EBAY_AU">Australia (.com.au)</option><option value="EBAY_NL">Netherlands (.nl)</option><option value="EBAY_CH">Switzerland (.ch)</option><option value="EBAY_AT">Austria (.at)</option><option value="EBAY_BE">Belgium (.be)</option><option value="EBAY_IE">Ireland (.ie)</option><option value="EBAY_PL">Poland (.pl)</option><option value="EBAY_HK">Hong Kong (.com.hk)</option><option value="EBAY_SG">Singapore (.com.sg)</option><option value="EBAY_MY">Malaysia (.com.my)</option><option value="EBAY_PH">Philippines (.ph)</option></select></div>
+        <div id="ebayLoginStatusLogin" class="auth-status" role="status" aria-live="polite"></div>
       </div>
 
       <!-- Forgot password form -->
@@ -4259,6 +4278,7 @@
       <!-- Register form -->
       <div id="authFormRegister" class="auth-form" style="display:none;">
         <div class="auth-heading">Sign Up</div>
+        <div class="auth-ebay-note" id="ebaySignupNote"><img src="/ebay-logo.png" alt="eBay" width="45" height="18"><span><span id="ebaySignupNoteText"></span> <a id="ebaySignupCancel">Cancel</a></span></div>
 
         <label class="edit-label">Username</label>
         <div class="auth-field-wrap">
@@ -4318,7 +4338,9 @@
 
         <div class="auth-divider"><span>or</span></div>
         <div id="googleSignInDivRegister" class="auth-google-btn"></div>
-        <div class="auth-google-legal-note">By continuing with Google, you agree to our <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</div>
+        <div class="auth-ebay-row"><button type="button" class="auth-ebay-btn" id="ebayLoginBtnRegister" aria-label="Continue with eBay"><span>Continue with</span><img src="/ebay-logo.png" alt="eBay" width="50" height="20"></button><select class="auth-ebay-site" id="ebaySiteRegister" aria-label="Your eBay site" title="Your eBay site"><option value="EBAY_US">US (.com)</option><option value="EBAY_GB">UK (.co.uk)</option><option value="EBAY_DE">Germany (.de)</option><option value="EBAY_FR">France (.fr)</option><option value="EBAY_IT">Italy (.it)</option><option value="EBAY_ES">Spain (.es)</option><option value="EBAY_CA">Canada (.ca)</option><option value="EBAY_AU">Australia (.com.au)</option><option value="EBAY_NL">Netherlands (.nl)</option><option value="EBAY_CH">Switzerland (.ch)</option><option value="EBAY_AT">Austria (.at)</option><option value="EBAY_BE">Belgium (.be)</option><option value="EBAY_IE">Ireland (.ie)</option><option value="EBAY_PL">Poland (.pl)</option><option value="EBAY_HK">Hong Kong (.com.hk)</option><option value="EBAY_SG">Singapore (.com.sg)</option><option value="EBAY_MY">Malaysia (.com.my)</option><option value="EBAY_PH">Philippines (.ph)</option></select></div>
+        <div id="ebayLoginStatusRegister" class="auth-status" role="status" aria-live="polite"></div>
+        <div class="auth-google-legal-note">By continuing with Google or eBay, you agree to our <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</div>
       </div>
 
       <!-- Sign-up step 2: the confirmation code that was mailed to the address -->
@@ -8527,7 +8549,7 @@ B0EXAMPLE2"></textarea></div>
         <div class="welcome-sub">Your account is ready. Here are free credits to try ELMS:</div>
         <div class="welcome-credits"><b>${credits.toLocaleString()}</b><span>free credit${credits === 1 ? '' : 's'}</span></div>
         <ul class="welcome-steps">
-          <li><i>1</i><span>Connect your eBay store in Settings.</span></li>
+          <li><i>1</i><span>${user.hasEbayLogin ? 'Check your eBay store and its policies in Settings.' : 'Connect your eBay store in Settings.'}</span></li>
           <li><i>2</i><span>Paste an Amazon link on the Import page.</span></li>
           <li><i>3</i><span>Check the draft in Drafts and publish it to eBay.</span></li>
         </ul>
@@ -8639,6 +8661,7 @@ B0EXAMPLE2"></textarea></div>
     const stuck = (Array.isArray(accounts) ? accounts : []).filter((a) => a && a.needsReconnect && a.connected !== false);
     if (!stuck.length) { el.hidden = true; textEl.innerHTML = ''; reconnectBannerTarget = null; return; }
     reconnectBannerTarget = stuck[0];
+    maybeShowReconnectPopup(stuck);
     const listOf = (names) => (names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : (names[0] || 'its data'));
     const lines = stuck.map((a) => {
       const what = (Array.isArray(a.reconnectIssues) ? a.reconnectIssues : []).map((k) => RECONNECT_WHAT[k]).filter(Boolean);
@@ -8652,6 +8675,55 @@ B0EXAMPLE2"></textarea></div>
     if (!reconnectBannerTarget) return;
     openEbayConnectModal({ reconnectAccountId: reconnectBannerTarget.id, marketplaceId: reconnectBannerTarget.marketplaceId, label: accountDisplayLabel(reconnectBannerTarget) });
   });
+
+  // At the start of a session, when eBay no longer accepts the saved connection of a store (the token ran out or was revoked), the seller is asked to log in with eBay again.
+  // The red banner stays on every page; this popup comes once per sign-in so it cannot be missed. "Reconnect" opens the same reconnect the banner opens.
+  let reconnectPopupKey = null;
+  function maybeShowReconnectPopup(stuck) {
+    if (!stuck.length) return;
+    let key = '';
+    try { key = String(localStorage.getItem('elmsSessionToken') || '').slice(-16); } catch (_) { key = ''; }
+    if (!key || reconnectPopupKey === key || document.getElementById('reconnectPopup')) return;
+    try { if (sessionStorage.getItem('elmsReconnectPopup') === key) { reconnectPopupKey = key; return; } } catch (_) { /* then it shows once per page load */ }
+    reconnectPopupKey = key;
+    try { sessionStorage.setItem('elmsReconnectPopup', key); } catch (_) { /* nothing stored */ }
+    // let the other first-sign-in popups (welcome, plan ended, phone number) go first: this one waits until they are closed
+    const show = () => {
+      if (document.querySelector('.welcome-overlay')) { setTimeout(show, 1500); return; }
+      if (document.getElementById('reconnectPopup')) return;
+      const names = stuck.map((a) => '<b>' + escapeHtml(accountDisplayLabel(a)) + '</b>');
+      const what = [...new Set(stuck.flatMap((a) => (Array.isArray(a.reconnectIssues) ? a.reconnectIssues : [])).map((k) => RECONNECT_WHAT[k]).filter(Boolean))];
+      const overlay = document.createElement('div');
+      overlay.className = 'welcome-overlay';
+      overlay.id = 'reconnectPopup';
+      overlay.innerHTML = `
+        <div class="welcome-box" role="dialog" aria-modal="true" aria-label="Your eBay connection needs renewing">
+          <div class="welcome-title">Your eBay token is no longer valid</div>
+          <div class="welcome-sub">eBay no longer lets ELMS read ${names.join(', ')}${what.length ? ' - ' + escapeHtml(what.join(', ')) + ' are not coming in' : ''}. Please log in with eBay again to renew the token. It takes about a minute, and your listings and data stay exactly as they are.</div>
+          <div class="welcome-actions">
+            <button type="button" class="ord-btn primary" data-act="go">Log in with eBay again</button>
+            <button type="button" class="ord-btn" data-act="later">Later</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
+      const onKey = (e) => { if (e.key === 'Escape') close(); };
+      document.addEventListener('keydown', onKey);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+      overlay.querySelector('[data-act="later"]').addEventListener('click', close);
+      overlay.querySelector('[data-act="go"]').addEventListener('click', () => {
+        close();
+        const target = stuck[0];
+        openEbayConnectModal({ reconnectAccountId: target.id, marketplaceId: target.marketplaceId, label: accountDisplayLabel(target) });
+        const next = document.getElementById('marketplaceContinueBtn');
+        if (next) next.click(); // straight on to eBay: the store and its site are already known
+      });
+      overlay.querySelector('[data-act="go"]').focus();
+    };
+    setTimeout(show, 600);
+  }
 
   async function populateSidebarEbayWidget() {
     const selectEl = document.getElementById('sidebarEbaySelect');
@@ -8770,8 +8842,168 @@ B0EXAMPLE2"></textarea></div>
     }
   }
 
+  // ---------- Continue with eBay ----------
+  // eBay sends the browser back with only an opaque handoff token in the address. The secret `verifier` made before leaving never left this browser (only its hash went out),
+  // so the token alone is useless to anyone else: the server checks the two together (routes/auth.js, /api/auth/ebay/*).
+  let ebaySignup = null; // { handoffToken, verifier }: a seller who is back from eBay and is filling in the sign-up form
+  const EBAY_VERIFIER_KEY = 'elmsEbayVerifier';
+  const EBAY_SITE_KEY = 'elmsEbaySite';
+  const EBAY_STARTED_KEY = 'elmsEbayLoginStarted';
+  function base64Url(bytes) {
+    let bin = '';
+    new Uint8Array(bytes).forEach((b) => { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function readEbayVerifier() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(EBAY_VERIFIER_KEY) || 'null');
+      return saved && saved.verifier && Date.now() - saved.at < 60 * 60 * 1000 ? saved.verifier : null;
+    } catch (_) { return null; }
+  }
+  function clearEbayVerifier() {
+    try { localStorage.removeItem(EBAY_VERIFIER_KEY); sessionStorage.removeItem(EBAY_STARTED_KEY); } catch (_) { /* nothing stored */ }
+  }
+  // "A sign-in with eBay was started in this tab a moment ago" (ten minutes at most): it is what lets eBay's separate Decline page, which carries nothing, come back to the sign-in page.
+  function ebayLoginStartedRecently() {
+    try { return Date.now() - Number(sessionStorage.getItem(EBAY_STARTED_KEY) || 0) < 10 * 60 * 1000; } catch (_) { return false; }
+  }
+  // The sign-up form of a seller who is back from eBay survives a reload and "Use another email" (the handoff is alive on the server until the account is made).
+  const EBAY_SIGNUP_KEY = 'elmsEbaySignup';
+  function saveEbaySignupState(info, handoff) {
+    try { sessionStorage.setItem(EBAY_SIGNUP_KEY, JSON.stringify({ info, handoff, at: Date.now() })); } catch (_) { /* private mode: it lasts until a reload */ }
+  }
+  function readEbaySignupState() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(EBAY_SIGNUP_KEY) || 'null');
+      return saved && saved.handoff && saved.handoff.handoffToken && saved.info && Date.now() - saved.at < 25 * 60 * 1000 && readEbayVerifier() ? saved : null;
+    } catch (_) { return null; }
+  }
+  const EBAY_FAIL_TEXT = {
+    expired: 'This eBay sign-in expired. Please press "Continue with eBay" again.',
+    identity: 'eBay did not say who you are just now. Please try again in a minute, or sign up with your email.',
+    other: 'Could not sign in with eBay. Please try again, or use your email or Google.',
+  };
+  // The two "Continue with eBay" buttons (sign in and sign up): make the secret, ask the server for eBay's page, go there.
+  async function startEbaySignIn(btn, siteSelect, statusEl) {
+    const site = siteSelect.value || 'EBAY_US';
+    statusEl.className = 'auth-status';
+    statusEl.textContent = '';
+    if (!(window.crypto && crypto.subtle && crypto.getRandomValues)) {
+      statusEl.className = 'auth-status error';
+      statusEl.textContent = 'This browser cannot start the eBay sign-in. Please use your email or Google.';
+      return;
+    }
+    btn.disabled = true;
+    try {
+      const verifier = base64Url(crypto.getRandomValues(new Uint8Array(48)));
+      const challenge = base64Url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+      localStorage.setItem(EBAY_VERIFIER_KEY, JSON.stringify({ verifier, at: Date.now() }));
+      try { sessionStorage.setItem(EBAY_STARTED_KEY, String(Date.now())); localStorage.setItem(EBAY_SITE_KEY, site); } catch (_) { /* the sign-in works without these */ }
+      statusEl.textContent = 'Opening eBay…';
+      const res = await fetchWaitingForServer(`${API_BASE}/api/auth/ebay/start?marketplaceId=${encodeURIComponent(site)}&challenge=${encodeURIComponent(challenge)}`, {}, () => { statusEl.textContent = SERVER_WAKE_MESSAGE; });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success || !data.url) throw new Error(data.error || 'Could not open eBay right now.');
+      window.location.href = data.url;
+    } catch (err) {
+      statusEl.className = 'auth-status error';
+      statusEl.textContent = isServerDown(err) ? 'Still cannot reach the server. Check your internet connection, then press the button again in a minute.' : (err.message || 'Could not open eBay right now.');
+      btn.disabled = false;
+      clearEbayVerifier(); // nothing was started: no secret and no "started" flag are left behind
+    }
+  }
+  [['ebayLoginBtnLogin', 'ebaySiteLogin', 'ebayLoginStatusLogin'], ['ebayLoginBtnRegister', 'ebaySiteRegister', 'ebayLoginStatusRegister']].forEach(([btnId, siteId, statusId]) => {
+    const btn = document.getElementById(btnId);
+    const site = document.getElementById(siteId);
+    const statusEl = document.getElementById(statusId);
+    if (!btn || !site || !statusEl) return;
+    try { const last = localStorage.getItem(EBAY_SITE_KEY); if (last && [...site.options].some((o) => o.value === last)) site.value = last; } catch (_) { /* default: eBay US */ }
+    btn.addEventListener('click', () => startEbaySignIn(btn, site, statusEl));
+  });
+
+  // Back from eBay's page with the browser's Back button: a browser may bring this page back as it was, with the button still disabled and "Opening eBay..." on it.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    ['Login', 'Register'].forEach((suffix) => {
+      const btn = document.getElementById('ebayLoginBtn' + suffix);
+      const status = document.getElementById('ebayLoginStatus' + suffix);
+      if (btn) btn.disabled = false;
+      if (status) { status.textContent = ''; status.className = 'auth-status'; }
+    });
+  });
+
+  /** The sign-up form, filled for a seller who just came back from eBay (the same form and the same email code as any sign-up; the eBay store is connected when the code is entered). */
+  function enterEbaySignupMode(info, handoff) {
+    ebaySignup = handoff;
+    showRegisterForm();
+    document.getElementById('registerUsername').value = info.username || '';
+    const who = info.username ? '<b>' + escapeHtml(info.username) + '</b>' : 'Your eBay account';
+    const store = info.storeName ? ' (' + escapeHtml(info.storeName) + ')' : '';
+    const site = STORE_MARKET_TAG[info.marketplaceId] ? ' on eBay ' + STORE_MARKET_TAG[info.marketplaceId] : ''; // the site the store will be connected to
+    document.getElementById('ebaySignupNoteText').innerHTML = `${who}${store} is connected${site}. Finish your ELMS account: choose a username and a password, and tell us your email and phone.${info.usernameTaken ? ' <b>That username is already used here - please choose another.</b>' : ''}`;
+    document.getElementById('authWelcomeTitle').innerHTML = 'ONE<br>MORE<br>STEP';
+    document.getElementById('authWelcomeSub').innerHTML = 'Finish your account<br>and your eBay store<br>is connected.';
+    saveEbaySignupState(info, handoff);
+  }
+  function leaveEbaySignupMode() {
+    ebaySignup = null;
+    try { sessionStorage.removeItem(EBAY_SIGNUP_KEY); } catch (_) { /* nothing stored */ }
+    document.getElementById('authFormRegister').classList.remove('ebay-mode');
+    document.getElementById('ebaySignupNote').style.display = 'none';
+  }
+  document.getElementById('ebaySignupCancel')?.addEventListener('click', () => { clearEbayVerifier(); leaveEbaySignupMode(); showLoginForm(); });
+
+  /**
+   * The page was opened by eBay's redirect: /signin?ebayLogin=<handoff token>, or ?ebayLogin=error&message=..., or (eBay's separate "Decline" page) the flag set when the sign-in started.
+   * Returns true when it handled something (the caller then skips the usual first screen).
+   */
+  async function handleEbayLoginReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get('ebayLogin');
+    const declined = window.__ebayLoginDeclined === true;
+    const failed = window.__ebayLoginFailed === true;
+    if (!value && !declined && !failed) return false;
+    try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_) { /* the token must not stay in the address, but a blocked history cannot be helped */ }
+    showLoginForm();
+    const statusEl = document.getElementById('loginStatus');
+    const say = (text, kind) => { statusEl.className = 'auth-status' + (kind ? ' ' + kind : ''); statusEl.textContent = text; };
+    if (declined) { clearEbayVerifier(); say('eBay sign-in was cancelled. You can try again, or use your email or Google.'); return true; }
+    if (failed) { clearEbayVerifier(); say(EBAY_FAIL_TEXT.other, 'error'); return true; }
+    if (value === 'error') {
+      // only the short code from the server is read (a sentence in the address would be anyone's text on our sign-in page); a sign-in in progress is only ended when one was started here
+      if (readEbayVerifier() || ebayLoginStartedRecently()) clearEbayVerifier();
+      say(EBAY_FAIL_TEXT[params.get('reason')] || EBAY_FAIL_TEXT.other, 'error');
+      return true;
+    }
+    const verifier = readEbayVerifier();
+    if (!verifier) { say('This eBay sign-in was started in another browser. Please press "Continue with eBay" here.', 'error'); return true; }
+    say('Checking your eBay sign-in…');
+    try {
+      const res = await fetchWaitingForServer(`${API_BASE}/api/auth/ebay/handoff`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handoffToken: value, verifier }),
+      }, () => say(SERVER_WAKE_MESSAGE));
+      const data = await res.json().catch(() => ({}));
+      if (data.blocked) { clearEbayVerifier(); showBlockedScreen(data.blocked); return true; }
+      if (!res.ok || !data.success) { clearEbayVerifier(); say(data.error || 'Could not sign in with eBay.', 'error'); return true; }
+      if (data.kind === 'login') {
+        clearEbayVerifier();
+        localStorage.setItem('elmsSessionToken', data.sessionToken);
+        showApp(data.user);
+        if (data.storeRenewed) setTimeout(() => showToast('eBay connection renewed', 'Your eBay store was connected again.', 'success'), 800);
+        return true;
+      }
+      say('');
+      enterEbaySignupMode(data, { handoffToken: value, verifier });
+    } catch (err) {
+      say(isServerDown(err) ? 'Still cannot reach the server. Check your internet connection, then press "Continue with eBay" again in a minute.' : 'Could not connect to the server: ' + err.message, 'error');
+    }
+    return true;
+  }
+
   // ---------- Auth Page: switching between login/register ----------
   function showLoginForm() {
+    leaveEbaySignupMode(); // a form that was waiting for an eBay seller is given up
     // Auth screens must never sit on top of the authenticated app.
     document.getElementById('appShell').style.display = 'none';
     document.getElementById('authPage').style.display = 'flex';
@@ -8792,8 +9024,10 @@ B0EXAMPLE2"></textarea></div>
     document.getElementById('authFormLogin').style.display = 'none';
     document.getElementById('authFormForgot').style.display = 'none';
     document.getElementById('authFormConfirm').style.display = 'none';
-    document.getElementById('authWelcomeTitle').innerHTML = 'JOIN<br>ELMS';
-    document.getElementById('authWelcomeSub').innerHTML = 'Create your account<br>and start listing<br>in minutes.';
+    document.getElementById('authFormRegister').classList.toggle('ebay-mode', !!ebaySignup);
+    document.getElementById('ebaySignupNote').style.display = ebaySignup ? 'flex' : 'none';
+    document.getElementById('authWelcomeTitle').innerHTML = ebaySignup ? 'ONE<br>MORE<br>STEP' : 'JOIN<br>ELMS';
+    document.getElementById('authWelcomeSub').innerHTML = ebaySignup ? 'Finish your account<br>and your eBay store<br>is connected.' : 'Create your account<br>and start listing<br>in minutes.';
     setAuthUrl('/signup');
   }
 
@@ -9091,7 +9325,7 @@ B0EXAMPLE2"></textarea></div>
     document.getElementById('forgotStepRequest').style.display = 'block';
     document.getElementById('forgotStepReset').style.display = 'none';
     const email = document.getElementById('loginEmail').value.trim();
-    if (email) document.getElementById('forgotEmail').value = email;
+    if (email.includes('@')) document.getElementById('forgotEmail').value = email; // a username is not an address to mail a code to
   }
   document.getElementById('forgotPasswordLink').addEventListener('click', showForgotForm);
   document.getElementById('forgotBackToLogin').addEventListener('click', showLoginForm);
@@ -9172,7 +9406,7 @@ B0EXAMPLE2"></textarea></div>
       const res = await fetchWaitingForServer(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier: email, email, password }), // `email` for a server that is not updated yet; the name typed can be an email or a username
       }, () => { statusEl.className = 'auth-status'; statusEl.textContent = SERVER_WAKE_MESSAGE; });
       const data = await res.json();
 
@@ -9243,15 +9477,24 @@ B0EXAMPLE2"></textarea></div>
     statusEl.textContent = 'Sending your confirmation code\u2026';
 
     try {
-      const res = await fetchWaitingForServer(`${API_BASE}/api/auth/register`, {
+      const ebayMode = !!ebaySignup; // a seller back from eBay: the same form goes to the eBay sign-up, with the handoff and the browser's secret
+      const res = await fetchWaitingForServer(`${API_BASE}/api/auth/${ebayMode ? 'ebay/signup' : 'register'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password, phoneCountry, phone, referralCode: signupReferralCode(), affiliateCode: storedAffCode() || undefined }),
+        body: JSON.stringify({ username, email, password, phoneCountry, phone, referralCode: signupReferralCode(), affiliateCode: storedAffCode() || undefined, ...(ebayMode ? { handoffToken: ebaySignup.handoffToken, verifier: ebaySignup.verifier } : {}) }),
       }, () => { statusEl.className = 'auth-status'; statusEl.textContent = SERVER_WAKE_MESSAGE; });
       const data = await res.json();
 
       if (data.blocked) { showBlockedScreen(data.blocked); return; }
       if (!res.ok || !data.success) {
+        if (ebayMode && data.restart) { // the eBay sign-in is gone (expired, used, or this eBay account already has an ELMS account): back to the sign-in page with the reason
+          clearEbayVerifier();
+          showLoginForm();
+          const loginStatus = document.getElementById('loginStatus');
+          loginStatus.className = 'auth-status error';
+          loginStatus.textContent = data.error || 'This eBay sign-in has expired. Please start it again.';
+          return;
+        }
         statusEl.className = 'auth-status error';
         // a problem with the phone number is shown under the phone field, not in the general status line
         if (data.field === 'phone' || data.field === 'phoneCountry') {
@@ -9269,6 +9512,7 @@ B0EXAMPLE2"></textarea></div>
       // The account is made when the code that was mailed to the address is entered (step 2).
       if (data.needsConfirmation) {
         statusEl.textContent = '';
+        // (an eBay sign-up stays an eBay sign-up through the code step: "Use another email" comes back to the eBay form, and the account made by the code gets the eBay login and the store)
         showConfirmStep(data);
         return;
       }
@@ -9372,6 +9616,8 @@ B0EXAMPLE2"></textarea></div>
         return;
       }
       clearPendingSignup();
+      clearEbayVerifier();
+      leaveEbaySignupMode();
       localStorage.setItem('elmsSessionToken', data.sessionToken);
       showApp(data.user);
       afterSignupReferral(data.referral);
@@ -9483,10 +9729,17 @@ B0EXAMPLE2"></textarea></div>
       document.getElementById('authPage').style.display = 'flex';
     }
 
-    if (!loggedIn && window.location.pathname === '/signup') {
-      // a sign-up that is waiting for its code (the page was reloaded): go back to the code step, the mailed code is still good
+    let ebayHandled = false;
+    if (!loggedIn) ebayHandled = await handleEbayLoginReturn();
+    else if (new URLSearchParams(window.location.search).has('ebayLogin')) { try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_) { /* nothing to clean */ } }
+    if (!ebayHandled && !loggedIn && window.location.pathname === '/signup') {
+      // a sign-up that is waiting for its code (the page was reloaded): go back to the code step, the mailed code is still good; an eBay sign-up that is still open is an eBay sign-up again
+      const savedEbay = readEbaySignupState();
+      if (savedEbay) ebaySignup = savedEbay.handoff;
       const waiting = readPendingSignup();
-      if (waiting) showConfirmStep(waiting, { restored: true }); else showRegisterForm();
+      if (waiting) showConfirmStep(waiting, { restored: true });
+      else if (savedEbay) enterEbaySignupMode(savedEbay.info, savedEbay.handoff);
+      else showRegisterForm();
     }
 
     // Render Google buttons only after the auth state is settled, so they never
@@ -15870,7 +16123,7 @@ async function autoSuggestEmptyDraftCategories() {
   const SEC_ICON = { desktop: '&#128187;', mobile: '&#128241;', tablet: '&#128241;', unknown: '&#10067;' };
   const secWhen = (v) => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '\u2014'; };
   const secAgo = (v) => { const t = v ? new Date(v).getTime() : 0; if (!t) return '\u2014'; const m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
-  const SEC_METHOD = { password: 'Email & password', google: 'Google', register: 'New account', extension: 'Extension' };
+  const SEC_METHOD = { password: 'Email & password', google: 'Google', ebay: 'eBay', register: 'New account', extension: 'Extension' };
 
   async function loadSecurityOverview() {
     const devices = document.getElementById('secDevices'); const activity = document.getElementById('secActivity');
@@ -16759,6 +17012,15 @@ async function autoSuggestEmptyDraftCategories() {
     const params = new URLSearchParams(window.location.search);
     const ebayConnect = params.get('ebayConnect');
     if (!ebayConnect) return;
+    // eBay's "Decline" page carries no state: a signed-out visitor who just left for "Continue with eBay" gets the message on the sign-in page (handleEbayLoginReturn)
+    let ebayLoginStarted = false;
+    try { ebayLoginStarted = Date.now() - Number(sessionStorage.getItem('elmsEbayLoginStarted') || 0) < 10 * 60 * 1000; } catch (_) { /* no session storage */ }
+    if ((ebayConnect === 'declined' || ebayConnect === 'error') && ebayLoginStarted && !localStorage.getItem('elmsSessionToken')) {
+      window.__ebayLoginDeclined = ebayConnect === 'declined';
+      window.__ebayLoginFailed = ebayConnect === 'error';
+      try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_) { /* nothing to clean */ }
+      return;
+    }
 
     window.addEventListener('load', async () => {
       showPage('settings');
