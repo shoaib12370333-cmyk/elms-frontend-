@@ -13862,6 +13862,7 @@ async function autoSuggestEmptyDraftCategories() {
   try { const saved = Number(localStorage.getItem('elmsOrdersPageSize')); if (ORDERS_PAGE_SIZE_OPTIONS.includes(saved)) ordersPageSize = saved; } catch (_) {}
   let ordersAccounts = [];
   let ordersMarkFilter = 'all'; // on the Awaiting shipment tab: all | no (not ordered yet) | yes (ordered)
+  let ordersEbayNoteCopy = false; // the seller's other switch: a note saved on an order is also copied to the private note of that order on eBay, replacing it (off until they switch it on)
   let ordersEbayNote = false; // the seller's switch: "Mark as ordered" also writes "ELMS: ordered <date>" in the private note of the eBay order (off until they switch it on)
 
   // The seller's own reminder that the item was bought on Amazon: the order's fulfillment step "ordered_from_amazon" (saving an Amazon order ID sets it too).
@@ -13927,6 +13928,11 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await apiJson(res);
       ordersEbayNote = !!(res.ok && data.success && data.enabled);
     } catch (_) { /* the switch just shows off */ }
+    try {
+      const res = await apiFetch('/api/orders/ebay-note-copy-setting');
+      const data = await apiJson(res);
+      ordersEbayNoteCopy = !!(res.ok && data.success && data.enabled);
+    } catch (_) { /* the switch just shows off */ }
   }
 
   async function fetchOrdersList() {
@@ -13984,6 +13990,7 @@ async function autoSuggestEmptyDraftCategories() {
         <select class="ord-select" id="ordersRangeSelect"><option value="7"${ordersRange === '7' ? ' selected' : ''}>Last 7 days</option><option value="30"${ordersRange === '30' ? ' selected' : ''}>Last 30 days</option><option value="90"${ordersRange === '90' ? ' selected' : ''}>Last 90 days</option><option value="all"${ordersRange === 'all' ? ' selected' : ''}>All time</option></select>
         ${ordersTab === 'awaiting_shipment' ? `<select class="ord-select" id="ordersMarkSelect" title="Which awaiting orders to show"><option value="all"${ordersMarkFilter === 'all' ? ' selected' : ''}>All awaiting shipment (${awaiting.length})</option><option value="no"${ordersMarkFilter === 'no' ? ' selected' : ''}>Not ordered yet (${notOrderedCount})</option><option value="yes"${ordersMarkFilter === 'yes' ? ' selected' : ''}>Ordered (${orderedCount})</option></select>` : ''}
         <label class="np-switch" title="When you mark an order as ordered, ELMS also writes ELMS: ordered and the date in the private note of that order on eBay (only you see it). Your own note text there is kept."><input type="checkbox" id="ordersEbayNoteSwitch"${ordersEbayNote ? ' checked' : ''} /> Also write &ldquo;ordered&rdquo; in the eBay note</label>
+        <label class="np-switch" title="When you save a note on an order, ELMS also puts the same note in the private note of that order on eBay (only you see it). It REPLACES what is on eBay; eBay keeps 255 characters."><input type="checkbox" id="ordersEbayNoteCopySwitch"${ordersEbayNoteCopy ? ' checked' : ''} /> Also copy my order note to eBay</label>
       </div>
 
       ${rows.length ? `
@@ -14091,7 +14098,7 @@ async function autoSuggestEmptyDraftCategories() {
   // The seller's private note, right on the order row itself: click it (or "+ Add note") to write, Save keeps it with
   // the order. Mirrors Drafts' per-product note (noteBlockHtml) so a note is visible at a glance without opening the
   // order drawer; PUT /:id/note is the same endpoint the drawer's own "Private note" box already uses. Never sent to
-  // eBay or Amazon.
+  // Amazon; copied to the eBay order note only when the seller switched "copy my order note to eBay" on.
   function orderNoteBlockHtml(o) {
     const note = String(o.seller_note || '');
     return '<div class="dv-note-wrap" data-order-note-wrap>' + (note
@@ -14104,7 +14111,7 @@ async function autoSuggestEmptyDraftCategories() {
     const o = id && ordersAll.find((x) => String(x.id) === String(id));
     if (!o) return;
     wrap.innerHTML = '<textarea class="dv-note-edit" rows="3" maxlength="2000" placeholder="A note for yourself (buyer, supplier, reminder)…">' + escapeHtml(o.seller_note || '') + '</textarea>'
-      + '<div class="dv-note-actions"><button type="button" class="dv-btn small primary" data-order-note-save>Save</button><button type="button" class="dv-btn small" data-order-note-cancel>Cancel</button><small>Only for you. Never sent to eBay or Amazon.</small></div>';
+      + '<div class="dv-note-actions"><button type="button" class="dv-btn small primary" data-order-note-save>Save</button><button type="button" class="dv-btn small" data-order-note-cancel>Cancel</button><small>' + (ordersEbayNoteCopy ? 'Only for you. Also copied to the private note of this order on eBay (255 characters).' : 'Only for you. Never sent to eBay or Amazon.') + '</small></div>';
     wrap.addEventListener('click', (e) => e.stopPropagation()); // the row itself opens the order on click: editing the note must not trigger that
     const ta = wrap.querySelector('textarea');
     ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
@@ -14118,6 +14125,7 @@ async function autoSuggestEmptyDraftCategories() {
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not save the note.');
         o.seller_note = (data.order && data.order.seller_note) || '';
         close();
+        if (ordersEbayNoteCopy) copyNoteToEbay(o.id); // in the background: the note is saved in ELMS already
       } catch (err) {
         showToast('Could not save the note', err.message, 'error');
         if (saveBtn) saveBtn.disabled = false;
@@ -14181,6 +14189,23 @@ async function autoSuggestEmptyDraftCategories() {
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this.');
         ordersEbayNote = on;
         showToast(on ? 'eBay note switched on' : 'eBay note switched off', on ? 'From now on, marking an order as ordered also writes it in the eBay note.' : 'Marking an order as ordered only marks it in ELMS.', 'success');
+      } catch (err) {
+        box.checked = !on;
+        showToast('Not saved', err.message, 'error');
+      }
+      box.disabled = false;
+    });
+    root.querySelector('#ordersEbayNoteCopySwitch')?.addEventListener('change', async (e) => {
+      const box = e.target;
+      const on = box.checked;
+      if (on && !(await elmsConfirm('From now on, when you save a note on an order in ELMS (the note beside the order, or in the order window), ELMS also puts the same note in the private note of that order on eBay (only you see it).\n\nIt REPLACES what is on eBay: text you typed there yourself is overwritten, and an empty note in ELMS removes the eBay note. eBay keeps only 255 characters of a note.\n\nEach copy uses 2 of eBay\'s daily calls, and it only works for orders eBay still lists as awaiting shipment.', { title: 'Copy my order note to eBay', okText: 'Switch on' }))) { box.checked = false; return; }
+      box.disabled = true;
+      try {
+        const res = await apiFetch('/api/orders/ebay-note-copy-setting', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: on }) });
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this.');
+        ordersEbayNoteCopy = on;
+        showToast(on ? 'Note copy switched on' : 'Note copy switched off', on ? 'From now on, a note you save on an order is copied to the eBay order note too.' : 'A note you save on an order stays in ELMS only.', 'success');
       } catch (err) {
         box.checked = !on;
         showToast('Not saved', err.message, 'error');
@@ -14587,6 +14612,25 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
+  // Copies the note that is saved in ELMS for an order to the private note of that order on eBay, REPLACING it (the seller's own switch). Never changes the note in ELMS:
+  // it only says how it went.
+  async function copyNoteToEbay(id) {
+    try {
+      const res = await apiFetch(`/api/orders/${encodeURIComponent(id)}/ebay-note/mirror`, { method: 'POST' });
+      const data = await apiJson(res);
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not copy the note to eBay.');
+      const i = ordersAll.findIndex((x) => String(x.id) === String(id));
+      if (i >= 0 && data.order) ordersAll[i] = { ...ordersAll[i], ebay_note_at: data.order.ebay_note_at || null, ebay_note_error: data.order.ebay_note_error || null };
+      const r = data.result || {};
+      if (r.status === 'written') showToast('eBay note updated', 'The private note of this order on eBay now says what your note says.' + (r.truncated ? ' ' + (r.message || 'eBay keeps only 255 characters of a note.') : ''), r.truncated ? 'info' : 'success');
+      else if (r.status === 'removed') showToast('eBay note cleared', 'The private note of this order on eBay was removed, like yours.', 'success');
+      else if (r.status === 'unchanged') showToast('eBay note', 'The eBay note already says the same.' + (r.truncated ? ' (eBay keeps only 255 characters of a note.)' : ''), 'info');
+      else showToast('Saved in ELMS only', 'The eBay note was not changed: ' + (r.message || 'eBay did not take it.'), 'error');
+    } catch (err) {
+      showToast('Saved in ELMS only', 'The eBay note was not changed: ' + err.message, 'error');
+    }
+  }
+
   async function syncOrdersFromEbay(full) {
     const btn = document.getElementById(full ? 'syncOrdersFullBtn' : 'syncOrdersBtn');
     const statusEl = document.getElementById('syncOrdersStatus');
@@ -14724,7 +14768,7 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="ord-sub" id="ordActionStatus"></div>
         </section>
 
-        <section class="ord-sec"><h4>Private note <em>only in ELMS</em></h4>
+        <section class="ord-sec"><h4>Private note <em>${ordersEbayNoteCopy ? 'in ELMS, copied to your eBay order note' : 'only in ELMS'}</em></h4>
           <textarea id="ordNote" rows="3" placeholder="Add a note for yourself…">${escapeHtml(o.seller_note || '')}</textarea>
           <button class="ord-btn small" type="button" id="ordSaveNote">Save note</button>
         </section>
@@ -14851,6 +14895,7 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('Saved', 'Note saved.', 'success');
       const i = ordersAll.findIndex((x) => x.id === o.id);
       if (i >= 0) ordersAll[i] = { ...ordersAll[i], ...data.order };
+      if (ordersEbayNoteCopy) copyNoteToEbay(o.id); // in the background: the note is saved in ELMS already
     }));
     $('ordRefresh').addEventListener('click', (e) => run(e.currentTarget, 'Refreshing…', async () => {
       const data = await json(`/api/orders/${encodeURIComponent(o.id)}/refresh`, { method: 'POST' });
