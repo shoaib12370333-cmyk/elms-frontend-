@@ -3087,7 +3087,22 @@
   .np-search { position:relative; flex:1 1 260px; min-width:200px; max-width:420px; }
   .np-search svg { position:absolute; left:12px; top:50%; width:16px; height:16px; transform:translateY(-50%); color:#94A3B8; }
   .np-search input { width:100%; box-sizing:border-box; height:40px; padding:0 12px 0 36px; border:1.5px solid var(--dv-line); border-radius:12px; background:#fff; font:500 14px Inter,sans-serif; color:var(--dv-ink); }
-  .np-custom { display:inline-flex; align-items:center; gap:6px; } .np-custom[hidden] { display:none; } .np-custom input { height:40px; padding:0 8px; border:1.5px solid var(--dv-line); border-radius:12px; font:500 13px Inter,sans-serif; background:#fff; }
+  .np-range { display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .np-dates { display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .np-dates label { display:inline-flex; align-items:center; gap:6px; font:800 11px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#475569; }
+  .np-dates input { height:40px; padding:0 8px; border:1.5px solid var(--dv-line); border-radius:12px; font:500 13px Inter,sans-serif; background:#fff; color:var(--dv-ink); }
+  .np-dates input.set { border-color:#0064D2; background:#F4F8FE; }
+  .np-hint { flex:1 0 100%; font:700 12.5px Inter,sans-serif; color:#B42318; } .np-hint[hidden] { display:none; }
+  .np-clear { border:0; background:transparent; color:var(--blue); font:700 12.5px Inter,sans-serif; cursor:pointer; padding:6px 4px; } .np-clear[hidden] { display:none; }
+  @media (max-width: 520px) {
+    .np-range, .np-dates { width:100%; } .np-dates { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); } .np-dates label { flex-direction:column; align-items:flex-start; gap:4px; min-width:0; } .np-dates input { width:100%; min-width:0; box-sizing:border-box; } .np-hint { grid-column:1 / -1; } .np-clear { grid-column:1 / -1; justify-self:start; }
+  }
+  .np-period { display:flex; align-items:center; justify-content:space-between; gap:14px 24px; flex-wrap:wrap; margin-bottom:14px; padding:12px 18px; border:1px solid #D6E4F7; border-radius:14px; background:#F4F8FE; } .np-period[hidden] { display:none; }
+  .np-period-when b { display:block; font:800 15px Inter,sans-serif; color:#0F172A; } .np-period-when span { font:600 12.5px Inter,sans-serif; color:#64748B; }
+  .np-period-nums { display:flex; align-items:flex-start; gap:10px 28px; flex-wrap:wrap; }
+  .np-period-num .lbl { display:block; font:800 11px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#475569; }
+  .np-period-num .val { display:block; font:800 24px/1.15 Inter,sans-serif; font-variant-numeric:tabular-nums; margin:2px 0 1px; } .np-period-num .val.good { color:#3F6208; } .np-period-num .val.bad { color:#B42318; }
+  .np-period-num .hint, .np-period-note { font:600 12.5px Inter,sans-serif; color:#64748B; } .np-period-note { align-self:center; max-width:340px; }
   .np-switch { display:inline-flex; align-items:center; gap:7px; font:600 13px Inter,sans-serif; color:var(--dv-mute); cursor:pointer; } .np-switch input { width:16px; height:16px; accent-color:#0064D2; }
   .np-bar .np-export { margin-left:auto; }
   .np-card { background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
@@ -13825,7 +13840,7 @@ async function autoSuggestEmptyDraftCategories() {
     const totals = npTotals(npLines);
     if (!totals.length) { top.innerHTML = ''; if (end) end.innerHTML = ''; return; }
     const html = totals.map((t) => {
-      const label = 'Total' + (totals.length > 1 && t.currency ? ' \u00b7 ' + t.currency : '') + ' \u00b7 ' + t.lines + ' line' + (t.lines === 1 ? '' : 's');
+      const label = 'Total' + (totals.length > 1 && t.currency ? ' \u00b7 ' + t.currency : '') + ' \u00b7 ' + t.lines + ' line' + (t.lines === 1 ? '' : 's') + (npInfo.total > npLines.length ? ' shown' : '');
       const cell = (label2, v) => '<td class="np-num" data-label="' + label2 + '">' + escapeHtml(npMoney(v, t.currency)) + '</td>';
       return '<tr><td class="np-title-td" data-label="Total">' + escapeHtml(label) + '</td><td></td>' + cell('Buying price', t.amazon_price) + cell('eBay price', t.ebay_price) + cell('Profit', t.profit) + cell('Order earning', t.order_earning) + cell('eBay cost', t.ebay_cost) + cell('Ad fee', t.ad_fee) + cell('Net profit', t.net_profit) + '</tr>';
     }).join('');
@@ -13849,23 +13864,85 @@ async function autoSuggestEmptyDraftCategories() {
     if (!body) return;
     if (!npLines.length) {
       const filtered = npFilters.q || npFilters.accountId || npFilters.range !== 'all';
-      body.innerHTML = '<tr><td colspan="9" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div></td></tr>';
+      body.innerHTML = '<tr><td colspan="9" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date range.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div></td></tr>';
     } else body.innerHTML = npLines.map(npRowHtml).join('');
     npRenderTotals();
     npRenderFoot();
   }
 
-  function npRange() { return npRangeBounds(npFilters.range, npFilters.from, npFilters.to); }
+  // The range of the sheet is the two dates (npFilters.from / .to, "YYYY-MM-DD", the seller's own calendar days: from the start of the first day to the end of the last).
+  // A quick choice (today, last 7 days ...) only FILLS the two dates; they are worked out again at each fresh load (so "Today" is today after midnight) but never
+  // between a load and its "Add lines" (every page of one sheet has the same range).
+  function npRange() { return npRangeBounds('custom', npFilters.from, npFilters.to); }
+  const NP_PRESETS = ['today', 'yesterday', '7', '30', 'month', 'lastmonth', 'year'];
+  const npYmd = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  // a real day only ("2026-02-30" is no day: it would silently become 2 March) in a sensible year: a date box that is being typed reports "0002-10-01" after the first digit of the year
+  const npDateOk = (v) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || '')); if (!m) return false; const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])); return Number(m[1]) >= 1900 && Number(m[1]) <= 2100 && d.getFullYear() === Number(m[1]) && d.getMonth() === Number(m[2]) - 1 && d.getDate() === Number(m[3]); };
+  function npApplyPreset() {
+    if (!NP_PRESETS.includes(npFilters.range)) return;
+    const [from, to] = npRangeBounds(npFilters.range);
+    npFilters.from = npYmd(from);
+    npFilters.to = npYmd(to);
+  }
   function npRangeBounds(r, customFrom, customTo) {
     const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
-    const endOfDay = (d) => { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; };
+    // the instant before the next local midnight (23:59:59.999 would miss the repeated hour on a day the clocks go back at midnight)
+    const endOfDay = (d) => { const x = new Date(d); return new Date(new Date(x.getFullYear(), x.getMonth(), x.getDate() + 1).getTime() - 1); };
     const now = new Date();
+    const dayOf = (back) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - back); // calendar days, so a change of the clock never moves a day
     if (r === 'today') return [startOfDay(now), endOfDay(now)];
-    if (r === '7') return [startOfDay(new Date(now.getTime() - 6 * 86400000)), endOfDay(now)];
-    if (r === '30') return [startOfDay(new Date(now.getTime() - 29 * 86400000)), endOfDay(now)];
+    if (r === 'yesterday') return [startOfDay(dayOf(1)), endOfDay(dayOf(1))];
+    if (r === '7') return [startOfDay(dayOf(6)), endOfDay(now)];
+    if (r === '30') return [startOfDay(dayOf(29)), endOfDay(now)];
     if (r === 'month') return [startOfDay(new Date(now.getFullYear(), now.getMonth(), 1)), endOfDay(now)];
-    if (r === 'custom') return [customFrom ? startOfDay(customFrom + 'T00:00:00') : null, customTo ? endOfDay(customTo + 'T00:00:00') : null];
+    if (r === 'lastmonth') return [startOfDay(new Date(now.getFullYear(), now.getMonth() - 1, 1)), endOfDay(new Date(now.getFullYear(), now.getMonth(), 0))];
+    if (r === 'year') return [startOfDay(new Date(now.getFullYear(), 0, 1)), endOfDay(now)];
+    if (r === 'custom') return [npDateOk(customFrom) ? startOfDay(customFrom + 'T00:00:00') : null, npDateOk(customTo) ? endOfDay(customTo + 'T00:00:00') : null];
     return [null, null];
+  }
+  /** The date boxes, the quick-choice box and the Clear link show the range that is really used. */
+  function npSyncRangeUi() {
+    const sel = document.getElementById('npRange');
+    if (!sel) return;
+    const from = document.getElementById('npFrom');
+    const to = document.getElementById('npTo');
+    if (sel.value !== npFilters.range) sel.value = npFilters.range;
+    // (never the box the seller is typing in: it would wipe what they have typed so far)
+    if (document.activeElement !== from && from.value !== npFilters.from) from.value = npFilters.from;
+    if (document.activeElement !== to && to.value !== npFilters.to) to.value = npFilters.to;
+    from.classList.toggle('set', !!npFilters.from);
+    to.classList.toggle('set', !!npFilters.to);
+    document.getElementById('npClear').hidden = !(npFilters.from || npFilters.to);
+  }
+  /** A quick choice from the box: it fills the two dates (or empties them for "All time"). "Custom dates" keeps the dates and takes the seller to the first box. */
+  function npPickRange(r) {
+    document.getElementById('npDateHint').hidden = true;
+    npFilters.range = r;
+    if (r === 'all') { npFilters.from = ''; npFilters.to = ''; } else npApplyPreset();
+    npSyncRangeUi();
+    if (r === 'custom') { const from = document.getElementById('npFrom'); from.focus(); try { from.showPicker(); } catch (_) { /* a picker needs a click: the box is focused anyway */ } return; }
+    npFetch(false);
+  }
+  let npDateTimer = null;
+  /**
+   * A date was typed or picked. A box that holds a half-typed date (a browser reports "0002-10-01" after the first digit of the year) is left alone until it is a real date;
+   * a start after the end changes nothing and says so (neither box is ever moved by itself: a month typed digit by digit passes through other dates). A short wait lets one
+   * more keystroke follow before the sheet loads.
+   */
+  function npDatesEdited() {
+    const read = (id) => { const v = document.getElementById(id).value; return v === '' ? '' : (npDateOk(v) ? v : null); };
+    const from = read('npFrom');
+    const to = read('npTo');
+    if (from === null || to === null) return;
+    const inverted = !!(from && to && from > to);
+    document.getElementById('npDateHint').hidden = !inverted;
+    if (inverted) return;
+    npFilters.from = from;
+    npFilters.to = to;
+    npFilters.range = from || to ? 'custom' : 'all';
+    npSyncRangeUi();
+    clearTimeout(npDateTimer);
+    npDateTimer = setTimeout(() => npFetch(false), 300);
   }
   function npQuery(extra) {
     const p = new URLSearchParams();
@@ -13879,8 +13956,53 @@ async function autoSuggestEmptyDraftCategories() {
     return p.toString();
   }
 
+  // The strip above the sheet when a date range is set: the dates, how many days, and the net profit of ALL the lines of that range (one light sum on the server: the
+  // lines below are only the page loaded so far). It follows the sheet's own filters (store, search, cancelled orders).
+  let npPeriodSeq = 0;
+  let npPeriodTimer = null;
+  const npPeriodSoon = () => { clearTimeout(npPeriodTimer); npPeriodTimer = setTimeout(() => npLoadPeriod(true), 500); };
+  function npPeriodLabels() {
+    const { from, to } = npFilters;
+    const show = (v) => new Date(v + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+    if (from && to) {
+      const [fy, fm, fd] = from.split('-').map(Number);
+      const [ty, tm, td] = to.split('-').map(Number);
+      const days = Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86400000) + 1;
+      return [from === to ? show(from) : show(from) + ' \u2013 ' + show(to), days + ' day' + (days === 1 ? '' : 's')];
+    }
+    return from ? ['From ' + show(from), 'every order from that day on'] : ['Up to ' + show(to), 'every order up to that day'];
+  }
+  async function npLoadPeriod(keepNumbers) {
+    const box = document.getElementById('npPeriod');
+    if (!box) return;
+    const seq = ++npPeriodSeq;
+    if (!(npFilters.from || npFilters.to)) { box.hidden = true; document.getElementById('npPeriodNums').innerHTML = ''; return; }
+    const [when, days] = npPeriodLabels();
+    document.getElementById('npPeriodDates').textContent = when;
+    document.getElementById('npPeriodDays').textContent = days;
+    const nums = document.getElementById('npPeriodNums');
+    box.hidden = false;
+    if (!keepNumbers || !nums.firstChild) nums.innerHTML = '<span class="np-period-note">Adding up\u2026</span>'; // only a re-sum of the SAME range (after a saved cell) keeps the old number until the new one is there
+    try {
+      const res = await apiFetch('/api/net-profit/summary?' + npQuery({ sheet: 1 }));
+      const d = await res.json();
+      if (seq !== npPeriodSeq) return;
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not add up the net profit.');
+      if (!d.currencies.length) {
+        nums.innerHTML = '<span class="np-period-note">' + (d.ordersTotal ? 'No net profit is worked out for these ' + d.ordersTotal.toLocaleString() + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' yet: type the buying price on each line.' : 'No orders in this period.') + '</span>';
+        return;
+      }
+      nums.innerHTML = d.currencies.map((c) => '<div class="np-period-num"><span class="lbl">Net profit' + (d.currencies.length > 1 && c.currency ? ' \u00b7 ' + escapeHtml(c.currency) : '') + '</span><span class="val ' + (c.net_profit < 0 ? 'bad' : 'good') + '">' + escapeHtml(npMoney(c.net_profit, c.currency)) + '</span><span class="hint">from ' + c.orders.toLocaleString() + ' order' + (c.orders === 1 ? '' : 's') + '</span></div>').join('')
+        + '<span class="np-period-note">' + d.orders.toLocaleString() + ' of ' + d.ordersTotal.toLocaleString() + ' order' + (d.ordersTotal === 1 ? '' : 's') + ' in this period ha' + (d.orders === 1 ? 's' : 've') + ' a net profit.</span>';
+    } catch (err) {
+      if (seq !== npPeriodSeq) return;
+      nums.innerHTML = '<span class="np-period-note">' + escapeHtml(err.message) + '</span>';
+    }
+  }
+
   async function npFetch(append) {
     const seq = ++npSeq;
+    if (!append) { npApplyPreset(); npSyncRangeUi(); npLoadPeriod(); }
     const body = document.getElementById('npBody');
     if (!append && body) body.innerHTML = '<tr><td colspan="9" style="padding:0;border:0;"><div class="elms-loader sm" role="status" aria-label="Loading the sheet" style="margin:40px auto;"></div></td></tr>';
     const addBtn = document.getElementById('npAdd');
@@ -13940,7 +14062,7 @@ async function autoSuggestEmptyDraftCategories() {
     const old = i >= 0 ? npLines[i] : null;
     if (i >= 0) npLines[i] = line;
     const row = npRowOf(id);
-    if (!row) { npRenderTotals(); return; }
+    if (!row) { npRenderTotals(); npPeriodSoon(); return; }
     const shown = (v) => (v === null || v === undefined ? '' : Number(v).toFixed(2));
     const before = { amazon: shown(old && old.amazon_price), earning: shown(old && old.order_earning) };
     const typed = {};
@@ -13956,6 +14078,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (Object.keys(typed).length) npPreviewRow(fresh);
     if (focus) { const el = fresh.querySelector('[data-np-field="' + focus.field + '"]'); if (el) { el.focus(); try { el.setSelectionRange(focus.start, focus.end); } catch (_) { /* a number box has no selection */ } } }
     npRenderTotals();
+    npPeriodSoon();
   }
   /**
    * The figures of an order from what is typed (money as whole cents, null = cannot be worked out yet), with the same rule as the server:
@@ -13992,7 +14115,8 @@ async function autoSuggestEmptyDraftCategories() {
       const blob = await res.blob();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'net-profit-' + new Date().toISOString().slice(0, 10) + '.xlsx'; // the server sends a real Excel file now, not CSV
+      const { from, to } = npFilters;
+      a.download = 'net-profit-' + (from && to ? from + '_to_' + to : from ? 'from-' + from : to ? 'until-' + to : new Date().toISOString().slice(0, 10)) + '.xlsx'; // the server sends a real Excel file now, not CSV
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     } catch (err) {
@@ -14008,13 +14132,16 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="np-bar">
           <div class="np-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="search" id="npSearch" placeholder="Search a title or order ID" autocomplete="off" /></div>
           <select id="npStore" class="dv-select" aria-label="Store"><option value="">All stores</option></select>
-          <select id="npRange" class="dv-select" aria-label="Date">
-            <option value="all">All time</option><option value="today">Today</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="month">This month</option><option value="custom">Choose dates\u2026</option>
-          </select>
-          <span class="np-custom" id="npCustom" hidden><input type="date" id="npFrom" aria-label="From" /><span>to</span><input type="date" id="npTo" aria-label="To" /></span>
+          <span class="np-range">
+            <select id="npRange" class="dv-select" aria-label="Quick date range">
+              <option value="all">All time</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="month">This month</option><option value="lastmonth">Last month</option><option value="year">This year</option><option value="custom">Custom dates</option>
+            </select>
+            <span class="np-dates"><label>From <input type="date" id="npFrom" aria-label="From date" /></label><label>To <input type="date" id="npTo" aria-label="To date" /></label><button type="button" class="np-clear" id="npClear" hidden>Clear dates</button><span class="np-hint" id="npDateHint" role="alert" hidden>The start date is after the end date.</span></span>
+          </span>
           <label class="np-switch"><input type="checkbox" id="npCancelled" /> Show cancelled</label>
           <button type="button" class="dv-btn np-export" id="npExport">Export Excel</button>
         </div>
+        <div class="np-period" id="npPeriod" role="status" aria-live="polite" hidden><div class="np-period-when"><b id="npPeriodDates"></b><span id="npPeriodDays"></span></div><div class="np-period-nums" id="npPeriodNums"></div></div>
         <div class="np-card">
           <table class="np-table">
             <colgroup><col style="width:16.4%"><col style="width:12.1%"><col style="width:12.3%"><col style="width:10.4%"><col style="width:7.3%"><col style="width:13.8%"><col style="width:10%"><col style="width:7.2%"><col style="width:10.5%"></colgroup>
@@ -14028,8 +14155,10 @@ async function autoSuggestEmptyDraftCategories() {
       let timer = null;
       document.getElementById('npSearch').addEventListener('input', (e) => { clearTimeout(timer); timer = setTimeout(() => { npFilters.q = e.target.value.trim(); npFetch(false); }, 350); });
       document.getElementById('npStore').addEventListener('change', (e) => { npFilters.accountId = e.target.value; npFetch(false); });
-      document.getElementById('npRange').addEventListener('change', (e) => { npFilters.range = e.target.value; document.getElementById('npCustom').hidden = npFilters.range !== 'custom'; if (npFilters.range !== 'custom' || npFilters.from || npFilters.to) npFetch(false); });
-      ['npFrom', 'npTo'].forEach((id) => document.getElementById(id).addEventListener('change', (e) => { npFilters[id === 'npFrom' ? 'from' : 'to'] = e.target.value; npFetch(false); }));
+      document.getElementById('npRange').addEventListener('change', (e) => npPickRange(e.target.value));
+      document.getElementById('npFrom').addEventListener('change', () => npDatesEdited());
+      document.getElementById('npTo').addEventListener('change', () => npDatesEdited());
+      document.getElementById('npClear').addEventListener('click', () => npPickRange('all'));
       document.getElementById('npCancelled').addEventListener('change', (e) => { npFilters.cancelled = e.target.checked; npFetch(false); });
       document.getElementById('npExport').addEventListener('click', (e) => npExport(e.currentTarget));
       document.getElementById('npMore').addEventListener('click', async (e) => {
