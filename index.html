@@ -8768,7 +8768,7 @@ B0EXAMPLE2"></textarea></div>
         .join('');
       selectEl.style.display = 'block';
       connectBtn.style.display = 'none';
-      addBtn.style.display = 'block';
+      addBtn.style.display = data.limit && data.limit.max > 1 ? 'block' : 'none'; // "add another store" is only there for a seller whose limit (set by an admin) is more than one
       addBtn.disabled = !!limitReached;
       addBtn.textContent = limitReached
         ? `Account limit ${data.limit.connected}/${data.limit.max}`
@@ -13765,7 +13765,6 @@ async function autoSuggestEmptyDraftCategories() {
   let npInfo = { total: 0, paid: false, hasMore: false, locked: false, freeLines: 1000, pageSize: 1000 };
   let npFilters = { q: '', accountId: '', range: 'all', from: '', to: '', cancelled: false };
   let npSeq = 0;
-  let npAccountsLoaded = false;
 
   const npCents = (v) => { if (v === null || v === undefined || v === '') return null; const n = Number(v); if (!Number.isFinite(n)) return null; return Math.sign(n) * Math.round(Math.abs(n) * 100 + 1e-7); };
   const npSign = (currency) => CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '');
@@ -14131,7 +14130,6 @@ async function autoSuggestEmptyDraftCategories() {
       root.innerHTML = `
         <div class="np-bar">
           <div class="np-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="search" id="npSearch" placeholder="Search a title or order ID" autocomplete="off" /></div>
-          <select id="npStore" class="dv-select" aria-label="Store"><option value="">All stores</option></select>
           <span class="np-range">
             <select id="npRange" class="dv-select" aria-label="Quick date range">
               <option value="all">All time</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="month">This month</option><option value="lastmonth">Last month</option><option value="year">This year</option><option value="custom">Custom dates</option>
@@ -14154,7 +14152,6 @@ async function autoSuggestEmptyDraftCategories() {
         </div>`;
       let timer = null;
       document.getElementById('npSearch').addEventListener('input', (e) => { clearTimeout(timer); timer = setTimeout(() => { npFilters.q = e.target.value.trim(); npFetch(false); }, 350); });
-      document.getElementById('npStore').addEventListener('change', (e) => { npFilters.accountId = e.target.value; npFetch(false); });
       document.getElementById('npRange').addEventListener('change', (e) => npPickRange(e.target.value));
       document.getElementById('npFrom').addEventListener('change', () => npDatesEdited());
       document.getElementById('npTo').addEventListener('change', () => npDatesEdited());
@@ -14175,15 +14172,6 @@ async function autoSuggestEmptyDraftCategories() {
         if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
         else if (e.key === 'Escape') { const line = npLines.find((x) => x.id === inp.closest('tr').getAttribute('data-np-id')); const v = line && (inp.getAttribute('data-np-field') === 'amazon' ? line.amazon_price : line.order_earning); inp.value = v === null || v === undefined ? '' : Number(v).toFixed(2); npPreviewRow(inp.closest('tr')); inp.blur(); }
       });
-    }
-    if (!npAccountsLoaded) {
-      npAccountsLoaded = true;
-      apiFetch('/api/ebay-accounts').then((r) => r.json()).then((d) => {
-        const sel = document.getElementById('npStore');
-        if (!sel || !d.success) return;
-        sel.insertAdjacentHTML('beforeend', (d.accounts || []).map((a) => '<option value="' + escapeAttr(a.id) + '">' + escapeHtml(a.label || a.displayName || a.username || 'Store') + '</option>').join(''));
-        sel.value = npFilters.accountId;
-      }).catch(() => { npAccountsLoaded = false; });
     }
     npFetch(false);
   }
@@ -15729,7 +15717,8 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   function prStoreCurrency() {
-    const account = (currentEbayAccounts || []).find((a) => a.isActive) || (currentEbayAccounts || [])[0];
+    const connectedStores = (currentEbayAccounts || []).filter((a) => a.connected !== false);
+    const account = connectedStores.find((a) => a.isActive) || connectedStores[0];
     return account ? PR_MARKET_CURRENCY[account.marketplaceId] || null : null;
   }
 
@@ -16564,13 +16553,24 @@ async function autoSuggestEmptyDraftCategories() {
     }
   });
 
+  /** The stores that are connected: the only ones that are ever shown, picked, published with or synced (a disconnected store is hidden). */
+  const connectedEbayAccounts = () => (currentEbayAccounts || []).filter((a) => a.connected !== false);
+  /** What Settings says about a disconnected store: hidden, its data is kept until a day and then deleted, drafts stay, and reconnecting brings it all back. */
+  function storeDataKeptText(acc) {
+    const until = acc.purgeAt && !Number.isNaN(new Date(acc.purgeAt).getTime()) ? new Date(acc.purgeAt) : null;
+    const left = until ? Math.max(0, Math.ceil((until.getTime() - Date.now()) / 86400000)) : null;
+    return 'Hidden everywhere in ELMS. '
+      + (until ? 'Its listings, orders, messages and notes are kept until <b>' + escapeHtml(until.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + '</b> (' + left + ' day' + (left === 1 ? '' : 's') + ' left), then deleted. ' : 'Its listings, orders, messages and notes are kept for 30 days after disconnecting, then deleted. ')
+      + 'Your drafts are kept. Reconnect the same eBay account before then and everything comes back.';
+  }
+
   async function loadEbayAccountsList() {
     const listEl = document.getElementById('ebayAccountsList');
     const limitLabelEl = document.getElementById('ebayAccountLimitLabel');
     listEl.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
 
     try {
-      const res = await apiFetch('/api/ebay-accounts');
+      const res = await apiFetch('/api/ebay-accounts?all=1'); // every store, the disconnected ones too (the other pages only get the connected ones)
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -16579,14 +16579,16 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       currentEbayAccounts = data.accounts;
-      currentEbayUserId = currentEbayAccounts.find((a) => a.isActive)?.ebayUserId
-        || currentEbayAccounts[0]?.ebayUserId
+      const connectedNow = connectedEbayAccounts();
+      currentEbayUserId = connectedNow.find((a) => a.isActive)?.ebayUserId
+        || connectedNow[0]?.ebayUserId
         || null;
 
       limitLabelEl.textContent = `${data.limit.connected} of ${data.limit.max} eBay account${data.limit.max === 1 ? '' : 's'} connected.`;
       const connectEbayBtn = document.getElementById('connectEbayBtn');
       if (connectEbayBtn) {
         const limitReached = data.limit.connected >= data.limit.max;
+        connectEbayBtn.style.display = data.limit.max > 1 || data.limit.connected < data.limit.max ? '' : 'none'; // a seller with the one store they may have is not offered another
         connectEbayBtn.disabled = limitReached;
         connectEbayBtn.textContent = limitReached ? 'eBay account limit reached' : '+ Connect an eBay account';
         connectEbayBtn.title = limitReached ? 'Ask an admin to increase your eBay account limit.' : '';
@@ -16601,7 +16603,7 @@ async function autoSuggestEmptyDraftCategories() {
             <div class="st-acct-main">
               <div class="st-acct-name">${escapeHtml(acc.label || acc.displayName || acc.username || 'eBay store')} ${acc.isActive ? '<span class="st-pill">Selected</span>' : ''} ${acc.connected === false ? '<span class="st-pill" style="background:#FEE4E2;color:#B42318;">Disconnected</span>' : ''}</div>
               ${acc.connected === false
-                ? `<div class="st-acct-meta">Hidden from Drafts, Live listings, Orders and Messages until you reconnect it. Nothing was deleted.</div>`
+                ? `<div class="st-acct-meta">${storeDataKeptText(acc)}</div>`
                 : `<div class="st-acct-meta">${acc.storeName ? `eBay Store: ${escapeHtml(acc.storeName)} &middot; ` : (acc.storeName === '' ? 'No eBay Store &middot; ' : '')}${acc.username ? `eBay username: ${escapeHtml(acc.username)} &middot; ` : ''}${escapeHtml(acc.marketplaceId || 'EBAY_US')} <a href="#" data-action="refresh-name" title="Ask eBay for the store name again" style="margin-left:6px;">Refresh from eBay</a> <a href="https://www.${LL_EBAY_DOMAINS[acc.marketplaceId] || 'ebay.com'}/mys/home" target="_blank" rel="noopener noreferrer" style="margin-left:6px;" title="Opens eBay's own My eBay page, in whichever eBay account your browser is signed into">My eBay &#8599;</a></div>
               ${acc.financesSyncError ? `<button type="button" class="ebst-chip warn" data-action="reconnect-finances" title="${escapeAttr(acc.financesSyncError)}" style="margin-top:6px;">&#9888; Order earning isn't syncing for this store &middot; Reconnect eBay</button>` : ''}
               <div class="st-acct-name-edit">
@@ -16783,8 +16785,10 @@ async function autoSuggestEmptyDraftCategories() {
         });
       }
 
-      row.querySelector('[data-action="remove-account"]').addEventListener('click', async () => {
-        if (!(await elmsConfirm('Disconnect this eBay store? Its drafts, live listings, orders and messages will be hidden until you reconnect it - nothing is deleted, and connecting the same store again brings everything back. Listings already live on eBay are not affected either way.', { danger: true }))) return;
+      // a disconnected store has no Disconnect button (it has Reconnect): wiring it unguarded broke the whole stores list for a seller who had one
+      const removeBtn = row.querySelector('[data-action="remove-account"]');
+      if (removeBtn) removeBtn.addEventListener('click', async () => {
+        if (!(await elmsConfirm('Disconnect this eBay store? It disappears from ELMS at once: its live listings, orders, messages and notes are kept for 30 days and then deleted. Connect the same eBay account again within those 30 days and everything comes back. Your drafts are kept either way. Nothing on eBay itself is changed.', { danger: true }))) return;
 
         try {
           const res = await apiFetch('/api/ebay-connect/disconnect', {
@@ -16813,21 +16817,22 @@ async function autoSuggestEmptyDraftCategories() {
   function populatePoliciesAccountSelector() {
     const selector = document.getElementById('policiesAccountSelector');
 
-    if (!currentEbayAccounts.length) {
+    const connectedStores = connectedEbayAccounts();
+    if (!connectedStores.length) {
       selector.innerHTML = '<option value="">Connect an eBay account first&hellip;</option>';
       selectedPoliciesAccountId = null;
       return;
     }
 
-    selector.innerHTML = currentEbayAccounts
+    selector.innerHTML = connectedStores
       .map((acc) => `<option value="${acc.id}">${escapeHtml(accountDisplayLabel(acc))}</option>`)
       .join('');
 
     // Keep the previously selected account if it's still connected,
     // otherwise default to the active (or first) account.
-    const stillExists = currentEbayAccounts.some((acc) => acc.id === selectedPoliciesAccountId);
+    const stillExists = connectedStores.some((acc) => acc.id === selectedPoliciesAccountId);
     if (!stillExists) {
-      selectedPoliciesAccountId = currentEbayAccounts.find((a) => a.isActive)?.id || currentEbayAccounts[0].id;
+      selectedPoliciesAccountId = connectedStores.find((a) => a.isActive)?.id || connectedStores[0].id;
     }
     selector.value = selectedPoliciesAccountId;
     loadSellerSettings();
