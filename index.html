@@ -20415,7 +20415,7 @@ async function autoSuggestEmptyDraftCategories() {
         listEl.innerHTML = '<div class="empty-state">No fetched products yet. Paste some Amazon links above and press Fetch.</div>';
         return;
       }
-      listEl.innerHTML = data.marketplaces.map((m) => catalogSectionShellHtml(m.marketplaceId, m.count, m.withoutCategory || 0)).join('');
+      listEl.innerHTML = data.marketplaces.map((m) => catalogSectionShellHtml(m.marketplaceId, m.count, m.withoutCategory || 0, m.unchecked || 0)).join('');
       let clearedSelection = false;
       data.marketplaces.forEach((m) => {
         const id = m.marketplaceId;
@@ -20433,6 +20433,7 @@ async function autoSuggestEmptyDraftCategories() {
         });
         section?.querySelector('[data-catalog-push-selected]')?.addEventListener('click', () => openCatalogBulkPushModal(id));
         section?.querySelector('[data-catalog-find-missing]')?.addEventListener('click', () => findMissingCatalogCategories(id));
+        section?.querySelector('[data-catalog-check-unchecked]')?.addEventListener('click', () => checkUncheckedCatalogCategories(id));
         loadCatalogSectionItems(id, catalogSections[id].page);
       });
       if (clearedSelection) showToast('Product Catalog', 'The list was refreshed, so the ticked products were cleared. Tick them again if you still want to push them.');
@@ -20442,7 +20443,7 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
-  function catalogSectionShellHtml(marketplaceId, count, withoutCategory) {
+  function catalogSectionShellHtml(marketplaceId, count, withoutCategory, unchecked = 0) {
     const label = CATALOG_MARKETPLACE_LABELS[marketplaceId] || marketplaceId;
     return `<div class="st-custom" data-catalog-section="${escapeAttr(marketplaceId)}" style="margin-bottom:16px;">
       <div class="st-custom-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
@@ -20451,6 +20452,7 @@ async function autoSuggestEmptyDraftCategories() {
       </div>
       <div data-catalog-allbar style="display:none;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 8px;padding:8px 12px;border-radius:8px;background:var(--grey-light);font-size:13px;"></div>
       ${withoutCategory ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 8px;"><button class="st-btn" type="button" data-catalog-find-missing>Find missing categories (${withoutCategory.toLocaleString()})</button><span class="meta-line" data-catalog-find-status>${withoutCategory.toLocaleString()} product${withoutCategory === 1 ? ' has' : 's have'} no category yet.</span></div>` : ''}
+      ${unchecked ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 8px;"><button class="st-btn" type="button" data-catalog-check-unchecked>Check categories (${unchecked.toLocaleString()})</button><span class="meta-line" data-catalog-check-status>${unchecked.toLocaleString()} categor${unchecked === 1 ? 'y was' : 'ies were'} taken from eBay without the AI check (the AI was not available). When the AI works, this looks at them and takes away the ones that do not fit.</span></div>` : ''}
       <div data-catalog-items="${escapeAttr(marketplaceId)}"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;flex-wrap:wrap;">
         <div data-catalog-section-pager="${escapeAttr(marketplaceId)}"></div>
@@ -20486,7 +20488,7 @@ async function autoSuggestEmptyDraftCategories() {
   function catalogRowHtml(marketplaceId, item) {
     const img = item.mainImage ? `<img src="${escapeAttr(item.mainImage)}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;" />` : '<div style="width:44px;height:44px;flex-shrink:0;"></div>';
     const price = item.price != null ? escapeHtml(String(item.price)) + ' ' + escapeHtml(item.currency || '') : '—';
-    const cat = item.categoryId ? escapeHtml(item.categoryName || '') + ' <span style="opacity:.7;">(' + escapeHtml(item.categoryId) + ')</span>' : `<span title="${escapeAttr(item.categoryError || '')}">No category</span>`;
+    const cat = item.categoryId ? escapeHtml(item.categoryName || '') + ' <span style="opacity:.7;">(' + escapeHtml(item.categoryId) + ')</span>' + (item.categoryUnchecked ? ' <span style="color:#B54708;" title="Taken from eBay without the AI check (the AI was not available). Check categories looks at it when the AI works.">&middot; not checked</span>' : '') : `<span title="${escapeAttr(item.categoryError || '')}">No category</span>`;
     const checked = (catalogSections[marketplaceId]?.allMarket || catalogSections[marketplaceId]?.selected.has(item.id)) ? ' checked' : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);">
       <input type="checkbox" data-catalog-check="${item.id}"${checked} />
@@ -20509,18 +20511,49 @@ async function autoSuggestEmptyDraftCategories() {
     let afterId = null;
     let tried = 0;
     let filled = 0;
+    let unchecked = 0;
     let limitHit = false;
     let aiPaused = false;
     try {
       for (;;) {
         const out = await adminPost('/api/admin/product-catalog/fill-categories', { marketplaceId, afterId });
-        tried += out.tried; filled += out.filled; afterId = out.nextAfterId;
+        tried += out.tried; filled += out.filled; unchecked += out.uncheckedFilled || 0; afterId = out.nextAfterId;
         if (out.ebayLimitReached) limitHit = true;
         if (out.budgetReached) aiPaused = true;
         if (status) status.textContent = 'Looked at ' + tried.toLocaleString() + ', found a category for ' + filled.toLocaleString() + '…';
         if (out.done || out.budgetReached) break; // the AI is paused for the day (the daily spending limit): going on would only skip every product
       }
-      showToast('Product Catalog', filled.toLocaleString() + ' of ' + tried.toLocaleString() + ' products got a category.' + (limitHit ? " eBay's daily limit for category lookups was reached - the rest can be tried again later." : '') + (aiPaused ? ' The AI is paused for today (the daily AI spending limit in Admin > AI) - the rest can be tried again tomorrow or after raising the limit.' : ''), filled ? 'success' : '');
+      showToast('Product Catalog', filled.toLocaleString() + ' of ' + tried.toLocaleString() + ' products got a category.' + (unchecked ? ' ' + unchecked.toLocaleString() + ' of them were taken from eBay without the AI check (the AI was not available) and are marked "not checked" - press Check categories when the AI works.' : '') + (limitHit ? " eBay's daily limit for category lookups was reached - the rest can be tried again later." : '') + (aiPaused ? ' The AI is paused for today (the daily AI spending limit in Admin > AI) - the rest can be tried again tomorrow or after raising the limit.' : ''), filled ? 'success' : '');
+    } catch (err) {
+      showToast('Product Catalog', err.message, 'error');
+    } finally {
+      loadCatalogSections();
+    }
+  }
+
+  // "Check categories": the AI looks at the categories that were kept from eBay WITHOUT its check (it had no credit, or was off) and takes away the ones that do not fit
+  // (the same strict question eBay's suggestion gets). The server does 40 products per call; the page repeats until it is done. When the AI cannot answer for a whole
+  // step it stops there: nothing would be checked, and the products stay marked.
+  async function checkUncheckedCatalogCategories(marketplaceId) {
+    const section = document.querySelector(`[data-catalog-section="${marketplaceId}"]`);
+    const btn = section?.querySelector('[data-catalog-check-unchecked]');
+    const status = section?.querySelector('[data-catalog-check-status]');
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    let afterId = null;
+    let kept = 0;
+    let removed = 0;
+    let couldNot = 0;
+    let aiDown = false;
+    try {
+      for (;;) {
+        const out = await adminPost('/api/admin/product-catalog/verify-categories', { marketplaceId, uncheckedOnly: true, strict: true, afterId });
+        kept += out.kept; removed += out.removed; couldNot += out.couldNotCheck; afterId = out.nextAfterId;
+        if (status) status.textContent = 'Checked ' + (kept + removed).toLocaleString() + ': ' + kept.toLocaleString() + ' fit, ' + removed.toLocaleString() + ' taken away…';
+        if (out.tried > 0 && out.couldNotCheck === out.tried) { aiDown = true; break; } // the AI did not answer for a whole step (no credit?): going on would only repeat it
+        if (out.done) break;
+      }
+      showToast('Product Catalog', kept.toLocaleString() + ' categories fit, ' + removed.toLocaleString() + ' did not fit and were taken away' + (couldNot ? ', ' + couldNot.toLocaleString() + ' could not be checked' : '') + '.' + (aiDown ? ' The AI could not answer (no credit?) - the products stay marked; recharge and press again.' : '') + (removed ? ' The ones taken away can be tried again with Find missing categories.' : ''), aiDown ? 'error' : 'success');
     } catch (err) {
       showToast('Product Catalog', err.message, 'error');
     } finally {
