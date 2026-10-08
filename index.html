@@ -20416,12 +20416,14 @@ async function autoSuggestEmptyDraftCategories() {
         return;
       }
       listEl.innerHTML = data.marketplaces.map((m) => catalogSectionShellHtml(m.marketplaceId, m.count, m.withoutCategory || 0)).join('');
+      let clearedSelection = false;
       data.marketplaces.forEach((m) => {
         const id = m.marketplaceId;
-        if (!catalogSections[id]) catalogSections[id] = { page: 1, selected: new Set() };
-        else catalogSections[id].selected.clear(); // the section was just rebuilt - any old selection points at DOM that no longer exists
+        if (!catalogSections[id]) catalogSections[id] = { page: 1, selected: new Set(), allMarket: false, total: m.count };
+        else { if (catalogSections[id].allMarket || catalogSections[id].selected.size) clearedSelection = true; catalogSections[id].selected.clear(); catalogSections[id].allMarket = false; catalogSections[id].total = m.count; } // the section was just rebuilt - any old selection points at DOM that no longer exists
         const section = document.querySelector(`[data-catalog-section="${id}"]`);
         section?.querySelector('[data-catalog-select-all]')?.addEventListener('change', (e) => {
+          if (!e.target.checked) catalogSections[id].allMarket = false; // unticking the page box also drops "all in this marketplace"
           document.querySelector(`[data-catalog-items="${id}"]`)?.querySelectorAll('[data-catalog-check]').forEach((cb) => {
             cb.checked = e.target.checked;
             if (e.target.checked) catalogSections[id].selected.add(cb.getAttribute('data-catalog-check'));
@@ -20433,6 +20435,7 @@ async function autoSuggestEmptyDraftCategories() {
         section?.querySelector('[data-catalog-find-missing]')?.addEventListener('click', () => findMissingCatalogCategories(id));
         loadCatalogSectionItems(id, catalogSections[id].page);
       });
+      if (clearedSelection) showToast('Product Catalog', 'The list was refreshed, so the ticked products were cleared. Tick them again if you still want to push them.');
     } catch (err) {
       listEl.innerHTML = '';
       statusEl.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
@@ -20446,6 +20449,7 @@ async function autoSuggestEmptyDraftCategories() {
         <span>${escapeHtml(label)} <span class="meta-line" style="display:inline;">(${count.toLocaleString()})</span></span>
         <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:13px;"><input type="checkbox" data-catalog-select-all /> Select all on this page</label>
       </div>
+      <div data-catalog-allbar style="display:none;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 8px;padding:8px 12px;border-radius:8px;background:var(--grey-light);font-size:13px;"></div>
       ${withoutCategory ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 8px;"><button class="st-btn" type="button" data-catalog-find-missing>Find missing categories (${withoutCategory.toLocaleString()})</button><span class="meta-line" data-catalog-find-status>${withoutCategory.toLocaleString()} product${withoutCategory === 1 ? ' has' : 's have'} no category yet.</span></div>` : ''}
       <div data-catalog-items="${escapeAttr(marketplaceId)}"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;flex-wrap:wrap;">
@@ -20471,6 +20475,7 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not load this section.');
       itemsEl.innerHTML = data.items.length ? data.items.map((item) => catalogRowHtml(marketplaceId, item)).join('') : '<div class="empty-state">No products here.</div>';
+      state.total = data.total; // the size of the whole section: what "select all in this marketplace" covers
       if (pagerEl) pagerEl.innerHTML = catalogPagerHtml(data.page, data.pages);
       wireCatalogSection(marketplaceId);
     } catch (err) {
@@ -20482,7 +20487,7 @@ async function autoSuggestEmptyDraftCategories() {
     const img = item.mainImage ? `<img src="${escapeAttr(item.mainImage)}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;" />` : '<div style="width:44px;height:44px;flex-shrink:0;"></div>';
     const price = item.price != null ? escapeHtml(String(item.price)) + ' ' + escapeHtml(item.currency || '') : '—';
     const cat = item.categoryId ? escapeHtml(item.categoryName || '') + ' <span style="opacity:.7;">(' + escapeHtml(item.categoryId) + ')</span>' : `<span title="${escapeAttr(item.categoryError || '')}">No category</span>`;
-    const checked = catalogSections[marketplaceId]?.selected.has(item.id) ? ' checked' : '';
+    const checked = (catalogSections[marketplaceId]?.allMarket || catalogSections[marketplaceId]?.selected.has(item.id)) ? ' checked' : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);">
       <input type="checkbox" data-catalog-check="${item.id}"${checked} />
       ${img}
@@ -20531,11 +20536,13 @@ async function autoSuggestEmptyDraftCategories() {
   function updateCatalogSelectedCount(marketplaceId) {
     const section = document.querySelector(`[data-catalog-section="${marketplaceId}"]`);
     if (!section) return;
-    const n = catalogSections[marketplaceId]?.selected.size || 0;
+    const state = catalogSections[marketplaceId];
+    const n = state?.allMarket ? (state.total || 0) : (state?.selected.size || 0);
     const countEl = section.querySelector('[data-catalog-selected-count]');
-    if (countEl) countEl.textContent = n + ' selected';
+    if (countEl) countEl.textContent = state?.allMarket ? 'All ' + n.toLocaleString() + ' selected' : n + ' selected';
     const btn = section.querySelector('[data-catalog-push-selected]');
     if (btn) btn.disabled = n === 0;
+    updateCatalogAllBar(marketplaceId);
   }
 
   function wireCatalogSection(marketplaceId) {
@@ -20543,7 +20550,12 @@ async function autoSuggestEmptyDraftCategories() {
     const itemsEl = document.querySelector(`[data-catalog-items="${marketplaceId}"]`);
     itemsEl?.querySelectorAll('[data-catalog-check]').forEach((cb) => cb.addEventListener('change', () => {
       const id = cb.getAttribute('data-catalog-check');
-      if (cb.checked) state.selected.add(id); else state.selected.delete(id);
+      if (state.allMarket && !cb.checked) {
+        // one product taken out of "all in this marketplace": the selection falls back to the products still ticked on this page
+        state.allMarket = false;
+        state.selected.clear();
+        itemsEl.querySelectorAll('[data-catalog-check]').forEach((o) => { if (o.checked) state.selected.add(o.getAttribute('data-catalog-check')); });
+      } else if (cb.checked) state.selected.add(id); else state.selected.delete(id);
       updateCatalogSelectedCount(marketplaceId);
     }));
     itemsEl?.querySelectorAll('[data-catalog-delete]').forEach((btn) => btn.addEventListener('click', async () => {
@@ -20561,7 +20573,139 @@ async function autoSuggestEmptyDraftCategories() {
     updateCatalogSelectedCount(marketplaceId);
   }
 
+  // The page box above a section ticks only the 25 products on screen. When every one of them is ticked and the section is bigger, this bar offers to
+  // take the whole marketplace (all pages) in one go - like a mailbox's "select all conversations". It also keeps the page box in step with the rows.
+  function updateCatalogAllBar(marketplaceId) {
+    const section = document.querySelector(`[data-catalog-section="${marketplaceId}"]`);
+    const state = catalogSections[marketplaceId];
+    if (!section || !state) return;
+    const boxes = [...section.querySelectorAll('[data-catalog-items] [data-catalog-check]')];
+    const allTicked = boxes.length > 0 && boxes.every((cb) => cb.checked);
+    const head = section.querySelector('[data-catalog-select-all]');
+    if (head) { head.checked = allTicked; head.indeterminate = !allTicked && boxes.some((cb) => cb.checked); }
+    const bar = section.querySelector('[data-catalog-allbar]');
+    if (!bar) return;
+    const label = CATALOG_MARKETPLACE_LABELS[marketplaceId] || marketplaceId;
+    if (state.allMarket) {
+      bar.innerHTML = `<span>All ${(state.total || 0).toLocaleString()} products in ${escapeHtml(label)} are selected.</span><button class="st-btn" type="button" data-catalog-allbar-clear>Clear selection</button>`;
+    } else if (allTicked && state.total > boxes.length) {
+      bar.innerHTML = `<span>All ${boxes.length} products on this page are selected.</span><button class="st-btn" type="button" data-catalog-allbar-all>Select all ${state.total.toLocaleString()} in ${escapeHtml(label)}</button>`;
+    } else {
+      bar.style.display = 'none';
+      bar.innerHTML = '';
+      return;
+    }
+    bar.style.display = 'flex';
+    bar.querySelector('[data-catalog-allbar-all]')?.addEventListener('click', () => {
+      state.selected.clear(); // "all" already includes whatever was ticked one by one
+      state.allMarket = true;
+      updateCatalogSelectedCount(marketplaceId);
+    });
+    bar.querySelector('[data-catalog-allbar-clear]')?.addEventListener('click', () => {
+      state.allMarket = false;
+      state.selected.clear();
+      boxes.forEach((cb) => { cb.checked = false; });
+      updateCatalogSelectedCount(marketplaceId);
+    });
+  }
+
+  // "Select all in this marketplace" then Push: the server takes the section 40 products at a time (after the last id it handled) and the page keeps asking until it is done,
+  // so a section of any size is never one long request. Stop ends it after the step in progress; what was pushed stays in the seller's Drafts, and pushing again skips it.
+  // While it runs the window cannot be closed by a stray click (that would end the run without a word): press Stop first. It ends by itself when eBay's daily category lookups
+  // or the daily AI limit run out (every product after that would only be pushed without a category) and when two steps in a row fail completely (the same failure for the
+  // whole section is not worth grinding through).
+  const catalogMarketRuns = new Set(); // the marketplaces a push-all is running for right now (a second one for the same section is refused)
+  function openCatalogMarketPushModal(marketplaceId) {
+    const state = catalogSections[marketplaceId];
+    const label = CATALOG_MARKETPLACE_LABELS[marketplaceId] || marketplaceId;
+    const total = state?.total || 0;
+    if (catalogMarketRuns.has(marketplaceId)) { showToast('Product Catalog', 'A push of ' + label + ' is still finishing. Wait a moment and try again.', 'error'); return; }
+    const m = adminModal(`
+      <div class="draft-title">Push all ${total.toLocaleString()} products of ${escapeHtml(label)} to a seller's Drafts</div>
+      <p class="meta-line" style="margin:10px 0 0;">Free - no credit is used. It goes through the whole section in small steps, so a big one takes a few minutes: keep this window open (press Stop to end it). A product the seller already has is skipped and counted - the rest still go through.</p>
+      <p class="meta-line" style="margin:8px 0 0;">The category is kept when the seller's store is on ${escapeHtml(label)}'s marketplace. For a store on another marketplace, and for a product that has no category yet, eBay's category lookup and a quick AI check are made for EACH product - they use eBay's shared daily lookups and the daily AI limit, so the push stops by itself when either runs out (what is already pushed stays). A draft without a category is like any fresh import: the seller picks it in Drafts.</p>
+      <div class="st-field" style="margin-top:14px;"><label>Seller's email</label><input class="st-input" type="email" id="catalogMarketPushEmail" placeholder="seller@example.com" /></div>
+      <div class="st-actions"><button class="st-btn primary" id="catalogMarketPushGo" type="button">Push all ${total.toLocaleString()}</button><button class="st-btn" id="catalogMarketPushStop" type="button" style="display:none;">Stop</button><button class="st-btn" id="catalogMarketPushClose" type="button" data-close>Close</button><div id="catalogMarketPushStatus" class="meta-line"></div></div>
+      <div id="catalogMarketPushResult"></div>
+    `);
+    const go = m.querySelector('#catalogMarketPushGo');
+    const stopBtn = m.querySelector('#catalogMarketPushStop');
+    const status = m.querySelector('#catalogMarketPushStatus');
+    const resultEl = m.querySelector('#catalogMarketPushResult');
+    let stopped = false;
+    let running = false;
+    // a click on the dark backdrop (or Close) while it runs would end the run and take the result away: it is refused until the run has ended
+    m.addEventListener('click', (e) => {
+      if (running && (e.target === m || e.target.closest('[data-close]'))) { e.stopImmediatePropagation(); status.textContent = 'It is still running - press Stop first.'; }
+    }, true);
+    stopBtn.addEventListener('click', () => { stopped = true; stopBtn.disabled = true; status.textContent = 'Stopping after this step…'; });
+    go.addEventListener('click', async () => {
+      const email = m.querySelector('#catalogMarketPushEmail').value.trim();
+      if (!email) { status.textContent = 'Enter an email address.'; return; }
+      if (running || catalogMarketRuns.has(marketplaceId)) return;
+      go.disabled = true; // set before anything is awaited: a second click cannot start a second run
+      if (!(await elmsConfirm(`Push ALL ${total.toLocaleString()} products of ${label} into ${email}'s Drafts?\n\nIt cannot be undone from here; the seller would have to delete them one by one.`, { title: 'Push the whole section', okText: 'Push all' }))) { go.disabled = false; return; }
+      catalogMarketRuns.add(marketplaceId);
+      running = true;
+      stopped = false;
+      stopBtn.disabled = false;
+      stopBtn.style.display = '';
+      status.textContent = '';
+      resultEl.innerHTML = '';
+      const sum = { pushed: 0, alreadyHave: 0, failed: 0, notFound: 0, withCategory: 0, withoutCategory: 0 };
+      const reasons = new Set();
+      let looked = 0;
+      let afterId = null;
+      let finished = false;
+      let ebayLimit = false;
+      let aiPaused = false;
+      let badSteps = 0;
+      let why = '';
+      let problem = '';
+      const paint = (busy) => {
+        resultEl.innerHTML = `<div class="meta-line">${looked.toLocaleString()} looked at${busy ? '…' : ''}: ${sum.pushed.toLocaleString()} pushed${sum.alreadyHave ? `, ${sum.alreadyHave.toLocaleString()} already had it` : ''}${sum.failed ? `, ${sum.failed.toLocaleString()} failed` : ''}${sum.notFound ? `, ${sum.notFound.toLocaleString()} no longer in the catalog` : ''}.${sum.pushed ? ` ${sum.withCategory.toLocaleString()} with a category${sum.withoutCategory ? `, ${sum.withoutCategory.toLocaleString()} without one` : ''}.` : ''}${reasons.size ? ` Why some failed: ${escapeHtml([...reasons].slice(0, 3).join(' / '))}${reasons.size > 3 ? ' / …' : ''}` : ''}</div>`;
+      };
+      try {
+        while (!stopped && m.isConnected) {
+          status.textContent = 'Pushing… (' + looked.toLocaleString() + ' of about ' + total.toLocaleString() + ')';
+          const out = await adminPost('/api/admin/product-catalog/push-market', { marketplaceId, email, afterId });
+          const s = out.summary || {};
+          looked += out.looked || 0;
+          for (const k of Object.keys(sum)) sum[k] += s[k] || 0;
+          if (s.ebayLimitReached) ebayLimit = true;
+          if (s.aiPaused) aiPaused = true;
+          (out.failedReasons || []).forEach((r) => reasons.add(r));
+          afterId = out.nextAfterId;
+          paint(true);
+          if (out.done) { finished = true; break; }
+          badSteps = out.looked > 0 && (s.failed || 0) === out.looked ? badSteps + 1 : 0;
+          if (badSteps >= 2) { why = 'two steps in a row failed completely (see the reason above), so going on would only repeat it.'; break; }
+          if (ebayLimit || aiPaused) {
+            why = (ebayLimit ? "eBay's daily category lookups for the catalog are used up" : "the daily AI limit (Admin > AI) is used up") + ', so the rest would only be pushed without a category. Push again after the limit restarts (tomorrow, or after the limit is raised): what is already pushed is skipped.';
+            break;
+          }
+        }
+      } catch (err) {
+        problem = err.message;
+      } finally {
+        running = false;
+        catalogMarketRuns.delete(marketplaceId);
+      }
+      status.textContent = problem
+        ? (looked ? 'Stopped: ' + problem + ' Push again to carry on - what was already pushed is skipped.' : 'Could not push: ' + problem)
+        : why ? 'Stopped: ' + why
+          : finished ? 'Done.' : 'Stopped. Push again to carry on - what was already pushed is skipped.';
+      paint(false);
+      stopBtn.style.display = 'none';
+      go.disabled = false;
+      if (sum.pushed) showToast('Pushed to Drafts', `${sum.pushed.toLocaleString()} product${sum.pushed === 1 ? '' : 's'} added to ${email}'s Drafts.`, 'success');
+      if (!problem && finished && state) { state.allMarket = false; state.selected.clear(); }
+      if (document.body.contains(document.querySelector(`[data-catalog-section="${marketplaceId}"]`))) loadCatalogSectionItems(marketplaceId, state?.page || 1);
+    });
+  }
+
   function openCatalogBulkPushModal(marketplaceId) {
+    if (catalogSections[marketplaceId]?.allMarket) return openCatalogMarketPushModal(marketplaceId);
     const ids = [...(catalogSections[marketplaceId]?.selected || [])];
     if (!ids.length) return;
     const m = adminModal(`
