@@ -22027,11 +22027,12 @@ async function autoSuggestEmptyDraftCategories() {
       low: u.role !== 'admin' && Number(u.creditBalance || 0) < AD_LOW_CREDITS,
       inactive: !u.online && (u.minutesAgo == null || u.minutesAgo > AD_INACTIVE_DAYS * 1440),
       tagged: !!(u.adminTags && u.adminTags.length) || !!u.adminNote,
+      deleting: !!(u.deletion && u.deletion.at), // an admin scheduled the account for deletion (it is mailed and has 3 days)
     };
   };
-  const adminUserRowAttrs = (u) => { const f = adminUserFlags(u); return `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended && !u.banned ? 1 : 0}" data-banned="${u.banned ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}" data-expiring="${f.expiring ? 1 : 0}" data-low="${f.low ? 1 : 0}" data-inactive="${f.inactive ? 1 : 0}" data-tagged="${f.tagged ? 1 : 0}" data-phone="${escapeAttr(String(u.phone || '').replace(/\D/g, ''))}"`; };
+  const adminUserRowAttrs = (u) => { const f = adminUserFlags(u); return `data-online="${u.online ? 1 : 0}" data-paid="${u.plan && u.plan.paid ? 1 : 0}" data-suspended="${u.suspended && !u.banned ? 1 : 0}" data-banned="${u.banned ? 1 : 0}" data-ebay="${u.ebay && u.ebay.connected ? 1 : 0}" data-expiring="${f.expiring ? 1 : 0}" data-low="${f.low ? 1 : 0}" data-inactive="${f.inactive ? 1 : 0}" data-tagged="${f.tagged ? 1 : 0}" data-deleting="${f.deleting ? 1 : 0}" data-phone="${escapeAttr(String(u.phone || '').replace(/\D/g, ''))}"`; };
   // The name cell: name, ADMIN / BANNED marks, the email and the admins' own tags. The note text is in the row (hidden) so the search box finds it.
-  const adminUserNameHtml = (u) => `${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">' + (u.banned ? 'BANNED' : 'SUSPENDED') + '</span>' : ''}${u.adminNote ? ' <span class="ad-tag free" title="' + escapeAttr(String(u.adminNote).slice(0, 300)) + '">NOTE</span><span style="display:none;"> ' + escapeHtml(u.adminNote) + '</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span>${(u.adminTags || []).length ? '<br />' + u.adminTags.map((t) => `<span class="ad-tagchip">${escapeHtml(t)}</span>`).join('') : ''}`;
+  const adminUserNameHtml = (u) => `${escapeHtml(u.name || '—')}${u.role === 'admin' ? ' <span class="ad-tag free">ADMIN</span>' : ''}${u.suspended ? ' <span class="ad-tag bad" title="' + escapeAttr(u.suspendedReason || '') + '">' + (u.banned ? 'BANNED' : 'SUSPENDED') + '</span>' : ''}${u.deletion && u.deletion.at ? ' <span class="ad-tag bad" title="Scheduled for deletion on ' + escapeAttr(new Date(u.deletion.at).toLocaleString()) + (u.deletion.claimed ? ' (being deleted now)' : '') + '">' + (u.deletion.claimed ? 'DELETING NOW' : 'DELETING ' + escapeHtml(new Date(u.deletion.at).toLocaleDateString())) + '</span>' : ''}${u.adminNote ? ' <span class="ad-tag free" title="' + escapeAttr(String(u.adminNote).slice(0, 300)) + '">NOTE</span><span style="display:none;"> ' + escapeHtml(u.adminNote) + '</span>' : ''}<br /><span style="font-weight:400; color:var(--grey); font-size:12px;">${escapeHtml(u.email)}</span>${(u.adminTags || []).length ? '<br />' + u.adminTags.map((t) => `<span class="ad-tagchip">${escapeHtml(t)}</span>`).join('') : ''}`;
   const adminUserCreditsHtml = (u) => `<b>${Number(u.creditBalance || 0).toLocaleString()}</b>${adminUserFlags(u).low ? '<br /><small style="color:#B42318;">low</small>' : ''}`;
   // Has this person connected an eBay store (how many of the number they may connect, on which eBay sites)?
   const adminUserEbayHtml = (u) => (u.ebay && u.ebay.connected
@@ -22058,7 +22059,7 @@ async function autoSuggestEmptyDraftCategories() {
     const flagged = adminUsersData.map(adminUserFlags);
     const count = (key) => flagged.filter((f) => f[key]).length;
     box.innerHTML = chip('all', 'All', summary.total) + chip('online', '● Online now', summary.online) + chip('paid', 'Bought a plan', summary.paid) + chip('free', 'Free plan', summary.free) + chip('suspended', 'Suspended', summary.suspended) + chip('banned', 'Banned', summary.banned || 0) + chip('ebay', 'eBay connected', summary.ebayConnected || 0) + chip('noebay', 'No eBay yet', summary.ebayNotConnected || 0)
-      + chip('expiring', 'Plan ends in ' + AD_EXPIRING_DAYS + ' days', count('expiring')) + chip('low', 'Under ' + AD_LOW_CREDITS + ' credits', count('low')) + chip('inactive', 'Away ' + AD_INACTIVE_DAYS + '+ days', count('inactive')) + chip('tagged', 'With note or tag', count('tagged'));
+      + chip('expiring', 'Plan ends in ' + AD_EXPIRING_DAYS + ' days', count('expiring')) + chip('low', 'Under ' + AD_LOW_CREDITS + ' credits', count('low')) + chip('inactive', 'Away ' + AD_INACTIVE_DAYS + '+ days', count('inactive')) + chip('tagged', 'With note or tag', count('tagged')) + chip('deleting', 'Being deleted', count('deleting'));
     box.querySelectorAll('[data-user-filter]').forEach((b) => b.addEventListener('click', () => { adminUserFilter = b.dataset.userFilter; renderAdminUserChips(summary); applyAdminUserSearch(); }));
   }
 
@@ -22093,7 +22094,8 @@ async function autoSuggestEmptyDraftCategories() {
         || (adminUserFilter === 'expiring' && row.dataset.expiring === '1')
         || (adminUserFilter === 'low' && row.dataset.low === '1')
         || (adminUserFilter === 'inactive' && row.dataset.inactive === '1')
-        || (adminUserFilter === 'tagged' && row.dataset.tagged === '1');
+        || (adminUserFilter === 'tagged' && row.dataset.tagged === '1')
+        || (adminUserFilter === 'deleting' && row.dataset.deleting === '1');
       // a number typed the local way (xxxxxxxxx) finds +92 xxxxxxxxx: compare digits only, without the leading 0
       const typedDigits = q.replace(/\D/g, '');
       const phoneHit = typedDigits.length >= 5 && !!row.dataset.phone && (row.dataset.phone.includes(typedDigits) || row.dataset.phone.includes(typedDigits.replace(/^0+/, '')));
@@ -22340,7 +22342,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (!row) return;
     const flags = adminUserFlags(u);
     row.setAttribute('data-online', u.online ? 1 : 0); row.setAttribute('data-paid', u.plan && u.plan.paid ? 1 : 0); row.setAttribute('data-suspended', u.suspended && !u.banned ? 1 : 0); row.setAttribute('data-banned', u.banned ? 1 : 0); row.setAttribute('data-ebay', u.ebay && u.ebay.connected ? 1 : 0); row.setAttribute('data-phone', String(u.phone || '').replace(/\D/g, ''));
-    row.setAttribute('data-expiring', flags.expiring ? 1 : 0); row.setAttribute('data-low', flags.low ? 1 : 0); row.setAttribute('data-inactive', flags.inactive ? 1 : 0); row.setAttribute('data-tagged', flags.tagged ? 1 : 0);
+    row.setAttribute('data-expiring', flags.expiring ? 1 : 0); row.setAttribute('data-low', flags.low ? 1 : 0); row.setAttribute('data-inactive', flags.inactive ? 1 : 0); row.setAttribute('data-tagged', flags.tagged ? 1 : 0); row.setAttribute('data-deleting', flags.deleting ? 1 : 0);
     row.querySelector('[data-cell="user"]').innerHTML = adminUserNameHtml(u);
     row.querySelector('[data-cell="credits"]').innerHTML = adminUserCreditsHtml(u);
     row.querySelector('[data-cell="status"]').innerHTML = adminUserStatusHtml(u);
@@ -22417,6 +22419,29 @@ async function autoSuggestEmptyDraftCategories() {
   }
   document.getElementById('adminUsersExportBtn')?.addEventListener('click', exportAdminUsersCsv);
 
+  // The "Delete account" part of the edit window (see openUserEditModal): what to do, or what is already going on. `d` is the row's deletion state from GET /api/admin/users (never undefined here:
+  // the window asks first). Only the super admin can START a deletion; any admin can cancel one.
+  const AD_DELETE_DAYS = 3;
+  function adminDeletionHtml(u, d, canStart) {
+    const when = (x) => escapeHtml(new Date(x).toLocaleString());
+    if (u.role === 'admin') return '<p class="meta-line" style="margin:0;">An admin account cannot be deleted from here.</p>';
+    if (d && d.claimed) return '<p class="meta-line" style="margin:0;color:#B42318;"><b>Being deleted right now.</b> It can no longer be cancelled.</p>';
+    if (d && d.at) {
+      const left = Math.max(0, Math.ceil((new Date(d.at).getTime() - Date.now()) / 86400000));
+      return '<p class="meta-line" style="margin:0 0 10px;color:#B42318;"><b>Scheduled for deletion on ' + when(d.at) + '</b> (' + (left === 0 ? 'less than a day left' : left + ' day' + (left === 1 ? '' : 's') + ' left') + '). '
+        + (d.by ? 'Asked by ' + escapeHtml(d.by) + '. ' : '') + 'They were told by email. If they sign in or open ELMS before then, it is cancelled by itself.' + (d.note ? '<br />Reason: ' + escapeHtml(d.note) : '') + '</p>'
+        + '<div class="st-actions"><button class="st-btn" id="ueDelCancel" type="button">Cancel the deletion</button><div id="ueDelStatus" role="status"></div></div>';
+    }
+    const history = d && d.cancelledAt ? '<p class="meta-line" style="margin:0 0 10px;">The last deletion was cancelled' + (d.cancelledBy ? ' (' + escapeHtml(d.cancelledBy) + ')' : '') + ' on ' + when(d.cancelledAt) + '.</p>' : '';
+    if (u.suspended || u.banned) return history + '<p class="meta-line" style="margin:0;">A suspended or banned account cannot be deleted: its owner could not sign in to keep it, and deleting it would erase the ban.</p>';
+    if (!canStart) return history + '<p class="meta-line" style="margin:0;">Only the super admin can delete an account. Ask them if this one has to go.</p>';
+    return history
+      + '<p class="meta-line" style="margin:0 0 10px;">The person gets an email from support now and ' + AD_DELETE_DAYS + ' days to keep the account: if they sign in (or open ELMS) before then, nothing is deleted. Otherwise the account and all its data are deleted for good.</p>'
+      + '<div class="st-field"><label for="ueDelNote">Reason (private, only admins see it)</label><input class="st-input" id="ueDelNote" maxlength="500" placeholder="e.g. asked to be deleted, spam account" /></div>'
+      + '<div class="st-field"><label for="ueDelConfirm">Type their email to confirm: <b>' + escapeHtml(u.email || '') + '</b></label><input class="st-input" id="ueDelConfirm" autocomplete="off" spellcheck="false" /></div>'
+      + '<div class="st-actions"><button class="st-btn danger" id="ueDelStart" type="button" disabled>Delete this account\u2026</button><div id="ueDelStatus" role="status"></div></div>';
+  }
+
   // The edit window of one person: credits and limits, the admins' private note and tags, and the actions. `opts.onSaved` runs after a save (the lookup page reloads itself).
   const AD_TAG_SUGGESTIONS = ['VIP', 'Refund asked', 'Watch', 'Support', 'Reseller'];
   function openUserEditModal(u, opts = {}) {
@@ -22456,6 +22481,11 @@ async function autoSuggestEmptyDraftCategories() {
           <button class="btn-small" type="button" data-ue="push" title="Push random ready-to-list drafts (with a real eBay category, Amazon link included) straight into this user's Drafts. Free, no credit is used.">Push listings…</button>
           ${opts.fromLookup ? '' : '<button class="btn-small" type="button" data-ue="lookup">Whole picture</button>'}
         </div>
+      </div>
+
+      <div class="ad-sect">
+        <div class="ad-sect-title" style="color:#B42318;">Delete account</div>
+        <div id="ueDeleteBox"></div>
       </div>
       <div class="ad-chips" style="margin:18px 0 0;"><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Close</button></div>`);
 
@@ -22522,6 +22552,66 @@ async function autoSuggestEmptyDraftCategories() {
         btn.disabled = false;
       }
     });
+
+    // Delete account: always with 3 days' notice. The person is mailed from support at once; signing in (or just opening ELMS) cancels it; otherwise the hourly job deletes the account and its data.
+    const canStartDeletion = !!(window.currentUser && window.currentUser.isSuperAdmin);
+    const liveRow = () => adminUsersData.find((x) => x.id === cur.id); // the table's row as it is NOW (the once-a-minute refresh replaces the objects)
+    const deletionState = () => { const l = liveRow(); return l && l.deletion !== undefined ? l.deletion : cur.deletion; };
+    const setDeletion = (v) => { cur.deletion = v; const l = liveRow(); if (l) l.deletion = v; };
+    const delBox = m.querySelector('#ueDeleteBox');
+    const paintDeletion = () => {
+      const state = deletionState();
+      if (state === undefined) { loadDeletionState(); return; }
+      delBox.innerHTML = adminDeletionHtml(cur, state, canStartDeletion);
+      wireDeletion();
+    };
+    // opened from the lookup page, or before the Users table was loaded: nobody knows yet whether a deletion is scheduled, so ask (never show a form that could be wrong)
+    async function loadDeletionState() {
+      delBox.innerHTML = '<p class="meta-line" style="margin:0;">Checking\u2026</p>';
+      try {
+        const res = await apiFetch('/api/admin/users');
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'That did not work.');
+        const found = (data.users || []).find((x) => x.id === cur.id);
+        setDeletion(found && found.deletion ? found.deletion : null);
+        paintDeletion();
+      } catch (err) {
+        delBox.innerHTML = '<p class="meta-line" style="margin:0;color:#B42318;">Could not check whether a deletion is scheduled (' + escapeHtml(err.message) + '). Close this window and try again.</p>';
+      }
+    }
+    function wireDeletion() {
+      const status = () => delBox.querySelector('#ueDelStatus');
+      const confirmBox = delBox.querySelector('#ueDelConfirm');
+      const startBtn = delBox.querySelector('#ueDelStart');
+      if (confirmBox && startBtn) confirmBox.addEventListener('input', () => { startBtn.disabled = confirmBox.value.trim().toLowerCase() !== String(cur.email || '').toLowerCase(); }); // typing the email is the "are you sure": a stray Enter cannot do it
+      startBtn?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        const paid = cur.plan && cur.plan.paid && cur.planExpiresAt && new Date(cur.planExpiresAt).getTime() > Date.now();
+        const text = 'Delete ' + cur.email + '?\n\nThey get an email from support now. If they do not sign in within ' + AD_DELETE_DAYS + ' days, the account is deleted for good: drafts, listings, imports, orders, messages, notes and the eBay store connections. Payment records are kept. Listings that are already live on eBay are not touched.'
+          + '\n\nThey have ' + Number(cur.creditBalance || 0).toLocaleString() + ' credits (lost)' + (cur.ebay && cur.ebay.connected ? ' and ' + cur.ebay.stores + ' connected eBay store' + (cur.ebay.stores === 1 ? '' : 's') : '') + '.'
+          + (paid ? '\n\nThey have a paid plan that runs until ' + new Date(cur.planExpiresAt).toLocaleDateString() + '. If it renews by itself, cancel it in Paddle yourself: ELMS cannot.' : '');
+        if (!(await elmsConfirm(text, { title: 'Delete this account?', okText: 'Send the notice', danger: true }))) return;
+        const note = delBox.querySelector('#ueDelNote').value.trim();
+        btn.disabled = true; status().textContent = 'Sending the email\u2026';
+        try {
+          const out = await adminPost('/api/admin/users/' + encodeURIComponent(cur.id) + '/schedule-deletion', { note });
+          setDeletion({ at: out.deletionAt, scheduledAt: new Date().toISOString(), by: null, note, claimed: false, cancelledAt: null, cancelledBy: null });
+          showToast('Deletion scheduled', (cur.name || cur.email) + ' was emailed and has ' + AD_DELETE_DAYS + ' days.', 'success');
+          paintDeletion(); done();
+        } catch (err) { status().textContent = err.message; btn.disabled = false; }
+      });
+      delBox.querySelector('#ueDelCancel')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true; status().textContent = 'Cancelling\u2026';
+        try {
+          await adminPost('/api/admin/users/' + encodeURIComponent(cur.id) + '/cancel-deletion', {});
+          setDeletion({ at: null, scheduledAt: null, by: null, note: '', claimed: false, cancelledAt: new Date().toISOString(), cancelledBy: 'an admin' });
+          showToast('Deletion cancelled', (cur.name || cur.email) + ' was told the account will not be deleted.', 'success');
+          paintDeletion(); done();
+        } catch (err) { status().textContent = err.message; btn.disabled = false; }
+      });
+    }
+    paintDeletion();
 
     m.querySelector('[data-ue="security"]').addEventListener('click', () => openUserSecurityModal(cur));
     m.querySelector('[data-ue="message"]').addEventListener('click', () => { m.remove(); setAdminTab('security'); document.getElementById('noticeTo').value = cur.email; document.getElementById('noticeTitle').focus(); });
