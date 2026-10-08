@@ -20532,31 +20532,39 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // "Check categories": the AI looks at the categories that were kept from eBay WITHOUT its check (it had no credit, or was off) and takes away the ones that do not fit
-  // (the same strict question eBay's suggestion gets). The server does 40 products per call; the page repeats until it is done. When the AI cannot answer for a whole
-  // step it stops there: nothing would be checked, and the products stay marked.
+  // (the same strict question eBay's suggestion would have got). The server does 40 products per call; the page repeats until it is done. It stops as soon as a step shows
+  // the AI cannot check at all - switched off, the daily limit used up, or no answer for a whole step (no credit?) - and says which: the products stay marked.
+  const catalogCheckRuns = new Set(); // the sections a check is running for right now (every reload rebuilds the section, so its button cannot tell a second press from the first)
   async function checkUncheckedCatalogCategories(marketplaceId) {
     const section = document.querySelector(`[data-catalog-section="${marketplaceId}"]`);
     const btn = section?.querySelector('[data-catalog-check-unchecked]');
     const status = section?.querySelector('[data-catalog-check-status]');
-    if (!btn || btn.disabled) return;
+    if (!btn || btn.disabled || catalogCheckRuns.has(marketplaceId)) return;
+    catalogCheckRuns.add(marketplaceId);
     btn.disabled = true;
     let afterId = null;
+    let looked = 0;
     let kept = 0;
     let removed = 0;
     let couldNot = 0;
-    let aiDown = false;
+    let why = '';
+    const tally = () => kept.toLocaleString() + (kept === 1 ? ' category fits, ' : ' categories fit, ') + removed.toLocaleString() + (removed === 1 ? ' did not fit and was taken away' : ' did not fit and were taken away') + (couldNot ? ', ' + couldNot.toLocaleString() + ' could not be checked' : '') + '.';
     try {
       for (;;) {
         const out = await adminPost('/api/admin/product-catalog/verify-categories', { marketplaceId, uncheckedOnly: true, strict: true, afterId });
-        kept += out.kept; removed += out.removed; couldNot += out.couldNotCheck; afterId = out.nextAfterId;
+        looked += out.tried; kept += out.kept; removed += out.removed; couldNot += out.couldNotCheck; afterId = out.nextAfterId;
         if (status) status.textContent = 'Checked ' + (kept + removed).toLocaleString() + ': ' + kept.toLocaleString() + ' fit, ' + removed.toLocaleString() + ' taken away…';
-        if (out.tried > 0 && out.couldNotCheck === out.tried) { aiDown = true; break; } // the AI did not answer for a whole step (no credit?): going on would only repeat it
+        if (out.aiOff) { why = 'The AI is switched off or not set up (Admin > Categories / AI) - the products stay marked. Switch it on and press again.'; break; }
+        if (out.budgetReached) { why = 'The daily AI spending limit is used up - the products stay marked. Try again tomorrow, or raise the limit in Admin > AI.'; break; }
+        if (out.tried > 0 && out.couldNotCheck === out.tried) { why = 'The AI could not answer (no credit?) - the products stay marked. Recharge and press again.'; break; } // a whole step without an answer: going on would only repeat it
         if (out.done) break;
       }
-      showToast('Product Catalog', kept.toLocaleString() + ' categories fit, ' + removed.toLocaleString() + ' did not fit and were taken away' + (couldNot ? ', ' + couldNot.toLocaleString() + ' could not be checked' : '') + '.' + (aiDown ? ' The AI could not answer (no credit?) - the products stay marked; recharge and press again.' : '') + (removed ? ' The ones taken away can be tried again with Find missing categories.' : ''), aiDown ? 'error' : 'success');
+      if (!looked) showToast('Product Catalog', 'Nothing to check: no category is waiting for the AI check any more.', '');
+      else showToast('Product Catalog', tally() + (why ? ' ' + why : (removed ? ' The ones taken away can be tried again with Find missing categories.' : '')), why ? 'error' : 'success');
     } catch (err) {
-      showToast('Product Catalog', err.message, 'error');
+      showToast('Product Catalog', (looked ? 'Stopped. So far: ' + tally() + ' ' : '') + err.message, 'error');
     } finally {
+      catalogCheckRuns.delete(marketplaceId);
       loadCatalogSections();
     }
   }
@@ -20685,7 +20693,7 @@ async function autoSuggestEmptyDraftCategories() {
       stopBtn.style.display = '';
       status.textContent = '';
       resultEl.innerHTML = '';
-      const sum = { pushed: 0, alreadyHave: 0, failed: 0, notFound: 0, withCategory: 0, withoutCategory: 0 };
+      const sum = { pushed: 0, alreadyHave: 0, failed: 0, notFound: 0, withCategory: 0, withoutCategory: 0, uncheckedCategories: 0 };
       const reasons = new Set();
       let looked = 0;
       let afterId = null;
@@ -20696,7 +20704,7 @@ async function autoSuggestEmptyDraftCategories() {
       let why = '';
       let problem = '';
       const paint = (busy) => {
-        resultEl.innerHTML = `<div class="meta-line">${looked.toLocaleString()} looked at${busy ? '…' : ''}: ${sum.pushed.toLocaleString()} pushed${sum.alreadyHave ? `, ${sum.alreadyHave.toLocaleString()} already had it` : ''}${sum.failed ? `, ${sum.failed.toLocaleString()} failed` : ''}${sum.notFound ? `, ${sum.notFound.toLocaleString()} no longer in the catalog` : ''}.${sum.pushed ? ` ${sum.withCategory.toLocaleString()} with a category${sum.withoutCategory ? `, ${sum.withoutCategory.toLocaleString()} without one` : ''}.` : ''}${reasons.size ? ` Why some failed: ${escapeHtml([...reasons].slice(0, 3).join(' / '))}${reasons.size > 3 ? ' / …' : ''}` : ''}</div>`;
+        resultEl.innerHTML = `<div class="meta-line">${looked.toLocaleString()} looked at${busy ? '…' : ''}: ${sum.pushed.toLocaleString()} pushed${sum.alreadyHave ? `, ${sum.alreadyHave.toLocaleString()} already had it` : ''}${sum.failed ? `, ${sum.failed.toLocaleString()} failed` : ''}${sum.notFound ? `, ${sum.notFound.toLocaleString()} no longer in the catalog` : ''}.${sum.pushed ? ` ${sum.withCategory.toLocaleString()} with a category${sum.withoutCategory ? `, ${sum.withoutCategory.toLocaleString()} without one` : ''}.${sum.uncheckedCategories ? ` ${sum.uncheckedCategories.toLocaleString()} of those categories were kept from eBay without the AI check.` : ''}` : ''}${reasons.size ? ` Why some failed: ${escapeHtml([...reasons].slice(0, 3).join(' / '))}${reasons.size > 3 ? ' / …' : ''}` : ''}</div>`;
       };
       try {
         while (!stopped && m.isConnected) {
@@ -20760,7 +20768,7 @@ async function autoSuggestEmptyDraftCategories() {
         const out = await adminPost('/api/admin/product-catalog/push-bulk', { ids, email });
         status.textContent = '';
         const s = out.summary;
-        resultEl.innerHTML = `<div class="meta-line">${s.pushed} pushed${s.alreadyHave ? `, ${s.alreadyHave} already had it` : ''}${s.failed ? `, ${s.failed} failed` : ''}${s.notFound ? `, ${s.notFound} not found` : ''}.${s.pushed ? ` ${s.withCategory || 0} with a category${s.withoutCategory ? `, ${s.withoutCategory} without one` : ''}.${s.ebayLimitReached ? " eBay's daily limit for category lookups is used up, so those could not be looked up now - use Find missing categories later." : ''}` : ''}</div>`;
+        resultEl.innerHTML = `<div class="meta-line">${s.pushed} pushed${s.alreadyHave ? `, ${s.alreadyHave} already had it` : ''}${s.failed ? `, ${s.failed} failed` : ''}${s.notFound ? `, ${s.notFound} not found` : ''}.${s.pushed ? ` ${s.withCategory || 0} with a category${s.withoutCategory ? `, ${s.withoutCategory} without one` : ''}.${s.uncheckedCategories ? ` ${s.uncheckedCategories} of those categories were kept from eBay without the AI check.` : ''}${s.ebayLimitReached ? " eBay's daily limit for category lookups is used up, so those could not be looked up now - use Find missing categories later." : ''}` : ''}</div>`;
         showToast('Pushed to Drafts', `${s.pushed} product${s.pushed === 1 ? '' : 's'} added to ${email}'s Drafts.`, 'success');
         catalogSections[marketplaceId].selected.clear();
         updateCatalogSelectedCount(marketplaceId);
