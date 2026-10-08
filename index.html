@@ -22479,6 +22479,7 @@ async function autoSuggestEmptyDraftCategories() {
           <button class="btn-small" type="button" data-ue="message">Send a message</button>
           <button class="btn-small" type="button" data-ue="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told.">Draft links (CSV)</button>
           <button class="btn-small" type="button" data-ue="push" title="Push random ready-to-list drafts (with a real eBay category, Amazon link included) straight into this user's Drafts. Free, no credit is used.">Push listings…</button>
+          <button class="btn-small" type="button" data-ue="copy" title="Give this user's current drafts and listings to another user as drafts. Nothing is fetched and no credit is used; this user keeps everything.">Copy listings to…</button>
           ${opts.fromLookup ? '' : '<button class="btn-small" type="button" data-ue="lookup">Whole picture</button>'}
         </div>
       </div>
@@ -22617,7 +22618,64 @@ async function autoSuggestEmptyDraftCategories() {
     m.querySelector('[data-ue="message"]').addEventListener('click', () => { m.remove(); setAdminTab('security'); document.getElementById('noticeTo').value = cur.email; document.getElementById('noticeTitle').focus(); });
     m.querySelector('[data-ue="draft-links"]').addEventListener('click', (e) => downloadDraftLinks(cur, e.currentTarget));
     m.querySelector('[data-ue="push"]').addEventListener('click', () => openPushListingsModal(cur));
+    m.querySelector('[data-ue="copy"]').addEventListener('click', () => openCopyListingsModal(cur));
     m.querySelector('[data-ue="lookup"]')?.addEventListener('click', () => { m.remove(); setAdminTab('lookup'); const box = document.getElementById('lookupEmail'); if (box) box.value = cur.email; openLookupById(cur.id); });
+  }
+
+  // Admin -> Users -> "Copy listings to...": this customer's CURRENT drafts and listings become DRAFTS of another user (the admin names them by email). Nothing is fetched, no credit is used,
+  // nothing is published, and the customer keeps everything. "Check first" counts what would happen (a dry run); "Copy" does it - a limit that stops a run is continued by running it again.
+  function openCopyListingsModal(user) {
+    const m = adminModal(`
+      <div class="draft-title">Copy listings from ${escapeHtml(user.name || user.email)}</div>
+      <div class="meta-line">${escapeHtml(user.email)}</div>
+      <p class="meta-line" style="margin:10px 0 0;">Gives this customer's <b>current</b> drafts and listings to another user as <b>drafts</b>. Nothing is fetched and no credit is used, nothing is published on eBay, and ${escapeHtml(user.name || 'this customer')} keeps everything. A product the other user already has is skipped, and a listing made for another eBay site than the other user's store is left out. Only Amazon products are copied.</p>
+      <div class="st-field" style="margin-top:14px;"><label for="clTarget">Email of the user who gets them</label><input class="st-input" type="email" id="clTarget" autocomplete="off" spellcheck="false" placeholder="name@example.com" /></div>
+      <div class="st-field"><label>What to copy</label>
+        <label style="display:block;font-weight:600;margin:4px 0;"><input type="checkbox" id="clDrafts" checked /> Drafts (including scheduled and failed ones)</label>
+        <label style="display:block;font-weight:600;margin:4px 0;"><input type="checkbox" id="clLive" checked /> Live listings (published and paused)</label>
+        <label style="display:block;font-weight:600;margin:4px 0;"><input type="checkbox" id="clEnded" /> Ended and sold listings</label>
+      </div>
+      <div class="st-field"><label for="clLimit">At most how many (empty = all, up to 5,000 in one go)</label><input class="st-input" type="number" id="clLimit" min="1" max="5000" step="1" placeholder="all" /></div>
+      <div class="st-actions"><button class="st-btn" id="clCheck" type="button">Check first</button><button class="st-btn primary" id="clGo" type="button" disabled>Copy</button><div id="clStatus" role="status" style="font-size:13px;"></div></div>
+    `);
+    const status = m.querySelector('#clStatus'); const go = m.querySelector('#clGo'); const check = m.querySelector('#clCheck');
+    const body = (dryRun) => {
+      const groups = [['clDrafts', 'drafts'], ['clLive', 'live'], ['clEnded', 'ended']].filter(([box]) => m.querySelector('#' + box).checked).map(([, g]) => g);
+      const limit = Math.round(Number(m.querySelector('#clLimit').value));
+      return { targetEmail: m.querySelector('#clTarget').value.trim(), groups, limit: Number.isInteger(limit) && limit > 0 ? Math.min(limit, 5000) : undefined, dryRun };
+    };
+    const num = (n) => Number(n || 0).toLocaleString();
+    // any change after a check makes the check out of date: copy only what was checked
+    m.querySelectorAll('input').forEach((el) => el.addEventListener('input', () => { go.disabled = true; }));
+    const where = (out) => (out.targetUser.name ? out.targetUser.name + ' (' + out.targetUser.email + ')' : out.targetUser.email) + (out.target && out.target.label ? ' - store ' + out.target.label : ' - no store connected yet');
+    const skipped = (c) => [c.alreadyHad ? num(c.alreadyHad) + ' already there' : '', c.otherSite ? num(c.otherSite) + ' for another eBay site' : '', c.notAmazon ? num(c.notAmazon) + ' not from Amazon' : '', c.noSku ? num(c.noSku) + ' without a product code' : ''].filter(Boolean).join(', ');
+    check.addEventListener('click', async () => {
+      const payload = body(true);
+      if (!payload.targetEmail) { status.textContent = 'Write the email of the user who gets them.'; return; }
+      if (!payload.groups.length) { status.textContent = 'Choose what to copy.'; return; }
+      check.disabled = true; go.disabled = true; status.textContent = 'Counting\u2026';
+      try {
+        const out = await adminPost('/api/admin/users/' + encodeURIComponent(user.id) + '/copy-listings', payload);
+        const c = out.counts;
+        status.innerHTML = escapeHtml(num(c.found) + ' listing' + (c.found === 1 ? '' : 's') + ' found. ' + num(c.copyable) + ' can be copied to ' + where(out) + (skipped(c) ? '. Left out: ' + skipped(c) : '') + '.');
+        go.disabled = !c.copyable;
+      } catch (err) { status.textContent = err.message; } finally { check.disabled = false; }
+    });
+    go.addEventListener('click', async () => {
+      const payload = body(false);
+      const sure = await elmsConfirm('Copy ' + (payload.limit ? 'up to ' + num(payload.limit) : 'all the') + ' listings from ' + user.email + ' to ' + payload.targetEmail + ' as drafts?\n\nNothing is published and no credit is used. A product they already have is not touched.', { title: 'Copy listings?', okText: 'Copy' });
+      if (!sure) return;
+      check.disabled = true; go.disabled = true; status.textContent = 'Copying\u2026 this can take a little while for a large number.';
+      try {
+        const out = await adminPost('/api/admin/users/' + encodeURIComponent(user.id) + '/copy-listings', payload);
+        const parts = [num(out.copied) + ' copied to ' + where(out)];
+        if (out.left) parts.push(num(out.left) + ' not looked at yet (run it again to continue)');
+        if (out.outcomes && out.outcomes.noImages) parts.push(num(out.outcomes.noImages) + ' without a usable picture');
+        if (out.failed) parts.push(num(out.failed) + ' could not be copied');
+        status.textContent = parts.join('. ') + '.';
+        showToast('Listings copied', num(out.copied) + ' draft' + (out.copied === 1 ? '' : 's') + ' added for ' + out.targetUser.email + '.', out.copied ? 'success' : 'info');
+      } catch (err) { status.textContent = err.message; } finally { check.disabled = false; }
+    });
   }
 
   // Admin -> Users -> "Push listings": pick a count, push that many random ready-to-list drafts (real eBay category,
