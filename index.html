@@ -8754,6 +8754,7 @@ B0EXAMPLE2"></textarea></div>
         selectEl.style.display = 'none';
         addBtn.style.display = 'none';
         connectBtn.style.display = 'block';
+        selectEl.innerHTML = '<option value="">Not connected</option>'; // (no stale name of a store that is gone)
         setActiveStoreId('');
         renderReconnectBanner([]);
         return;
@@ -8786,6 +8787,7 @@ B0EXAMPLE2"></textarea></div>
 
   function resetStoreScopedState() {
     try {
+      try { llSelected.clear(); } catch (_) { /* the Live listings page was never opened */ } // a ticked row of the old store must not be acted on in the new one
       ordersAll = []; ordersPage = 1; ordersAccountFilter = '';
       messageAccountFilter = ''; selectedMessageId = null;
       systemNotifications = [];
@@ -16616,7 +16618,7 @@ async function autoSuggestEmptyDraftCategories() {
             </div>
             <div class="st-acct-actions">
               ${acc.connected === false
-                ? `<button class="st-btn small primary" data-action="reconnect-account" type="button">Reconnect</button>`
+                ? `<button class="st-btn small primary" data-action="reconnect-account" type="button" ${data.limit.connected >= data.limit.max ? 'disabled title="Your eBay account limit is reached. Disconnect another store first, or ask an admin to raise your limit."' : ''}>Reconnect</button>`
                 : `${!acc.isActive ? `<button class="st-btn small" data-action="activate-account" type="button">Switch to this store</button>` : ''}
               <button class="st-btn small danger" data-action="remove-account" type="button">Disconnect</button>`
               }
