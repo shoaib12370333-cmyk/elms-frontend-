@@ -7197,7 +7197,7 @@ B0EXAMPLE2"></textarea></div>
       lines.push('<div class="csv-sum"><b>' + data.rows.length + '</b> ' + (data.rows.length === 1 ? 'product is' : 'products are') + ' ready to import' + (data.problems.length ? ' &middot; <span class="be-warn">' + data.problems.length + ' to fix</span>' : '') + '</div>');
       lines.push(data.store
         ? '<div>They will be saved as drafts in <b>' + csvEsc(data.store.label || 'your store') + '</b>. The Cost is read in <b>' + csvEsc(data.store.currency) + '</b>.</div>'
-        : '<div class="be-warn">No eBay store is connected yet. Connect one in ELMS first, or the import may be refused.</div>');
+        : '<div class="be-warn">No eBay store is connected yet. Connect one in ELMS first: the Cost in your file is read in the currency of your store, so the import cannot start without one.</div>');
       if (data.pricing.rowsWithoutSellPrice) {
         lines.push(data.pricing.ruleOn
           ? '<div>' + csvPlural(data.pricing.rowsWithoutSellPrice, 'product has', 'products have') + ' no Sell price: your Pricing rule prices ' + (data.pricing.rowsWithoutSellPrice === 1 ? 'it' : 'them') + ' from the Cost.</div>'
@@ -7208,7 +7208,7 @@ B0EXAMPLE2"></textarea></div>
       if (data.ignoredColumns && data.ignoredColumns.length) lines.push('<div class="csv-muted">Columns that ELMS does not use: ' + csvEsc(data.ignoredColumns.join(', ')) + '.</div>');
       if (data.problems.length) lines.push('<div style="margin-top:8px;"><b>These rows are not imported until you fix them in the file:</b></div>' + csvProblemsHtml(data.problems, 25));
       csvSetReport(lines.join(''));
-      if (data.rows.length) { importBtn.disabled = false; importBtn.textContent = 'Import ' + csvPlural(data.rows.length, 'product', 'products'); }
+      if (data.rows.length && data.store) { importBtn.disabled = false; importBtn.textContent = 'Import ' + csvPlural(data.rows.length, 'product', 'products'); }
     } catch (err) {
       if (seq === csvImport.seq) csvSetReport('<div class="be-err">' + csvEsc(err.message) + '</div>');
     }
@@ -7237,7 +7237,7 @@ B0EXAMPLE2"></textarea></div>
           const data = await res.json().catch(() => ({}));
           if (!res.ok || !data.success || !Array.isArray(data.results)) {
             const message = data.error || 'The import could not continue.';
-            if (res.status >= 500) throw Object.assign(new Error(message), { retry: true });
+            if (res.status >= 500 || res.status === 429) throw Object.assign(new Error(message), { retry: true });
             queue.unshift(...chunk); stopped = message; break; // a refusal (no store, bad request) is not worth repeating
           }
           results = data.results;
@@ -14915,7 +14915,8 @@ async function autoSuggestEmptyDraftCategories() {
     const chips = [];
     if (o.legacy_item_id) chips.push(`<a class="dv-chip" href="https://www.${ebayDomainFor(o)}/itm/${encodeURIComponent(o.legacy_item_id)}" target="_blank" rel="noopener noreferrer" title="Open the live eBay listing (item ${escapeAttr(o.legacy_item_id)})">eBay &#8599;</a>`);
     const asin = o.asin || '';
-    if (o.amazon_url || asin) {
+    const fromAmazon = !o.listing_source || o.listing_source === 'amazon'; // a CSV / CJ / AliExpress order's "ASIN" is the SKU of its own listing, not an Amazon product
+    if (fromAmazon && (o.amazon_url || asin)) {
       const amazonUrl = amazonUrlWithOrderTag(o.amazon_url || 'https://www.amazon.com/dp/' + encodeURIComponent(asin), o.id);
       chips.push(`<a class="dv-chip" href="${escapeAttr(amazonUrl)}" target="_blank" rel="noopener noreferrer" title="Open the Amazon product${asin ? ' (' + escapeAttr(asin) + ')' : ''}">AMAZON &#8599;</a>`);
     }
