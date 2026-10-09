@@ -12355,32 +12355,146 @@ async function autoSuggestEmptyDraftCategories() {
     loadDrafts();
   }
 
-  // ---------- Live Listings: "Relist" (Ended tab) - republishes the selected ended listings to eBay as a fresh
-  // offer, reusing the exact same claim-then-queue pipeline Drafts' "Publish all" uses (POST /api/listings/publish-batch):
-  // publishListing is safe to call again for a listing that already has a sku/offer id (it finds and reuses the
-  // existing inventory item/offer rather than erroring on a duplicate). Fire-and-forget: the same bell notification
-  // "Publish all" uses tells the seller when the whole batch is done, wherever they started it from.
-  async function bulkRelistListings(ids, btn) {
-    const n = ids.length;
-    if (!(await elmsConfirm(`Republish ${n} selected ended listing${n === 1 ? '' : 's'} to eBay?`, { title: 'Relist', okText: 'Relist' }))) return;
-    const label = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Starting…';
+  // ---------- Live Listings: "Relist" - puts sold-out and ended listings back on eBay, whatever mix of listings is selected ----------
+  // A listing that is live on eBay is left exactly as it is. A sold-out one gets a fresh quantity (the same call as the Sold tab's Restock:
+  // POST /api/listings/bulk-restock). An ended one is published to eBay again as a new listing, reusing the exact same claim-then-queue pipeline Drafts' "Publish all"
+  // uses (POST /api/listings/publish-batch; publishListing is safe to call again for a listing that already has a sku/offer id - it finds and reuses the existing
+  // inventory item/offer rather than erroring on a duplicate). That one is fire-and-forget: the bell notification "Publish all" uses tells the seller when the batch is done.
+  // Anything else (a listing that needs attention, a draft) is not touched and the window says so. The window reads the selection first and shows what will happen to each kind
+  // BEFORE anything is sent. The ticks stay when the tab is changed, but a tab shows one kind at a time, so the window can also take in every other sold-out and ended listing of the store.
+  async function openRelistDialog(ids, opts = {}) {
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box mo-box" role="dialog" aria-modal="true" aria-label="Relist">
+        <div class="elms-confirm-title">Relist <span class="be-count">${ids.length} listing${ids.length === 1 ? '' : 's'}</span></div>
+        <div id="rlBody"><div class="elms-loader sm" role="status" aria-label="Checking your selection"></div></div>
+        <div class="ord-sub bad" id="rlError"></div>
+        <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok" disabled>Relist</button></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const $ = (id) => overlay.querySelector('#' + id);
+    const okBtn = overlay.querySelector('[data-act="ok"]');
+    const cancelBtn = overlay.querySelector('[data-act="cancel"]');
+    let busy = false; // while it runs the window cannot be closed: closing would not stop it, only hide what it is doing
+    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape' && !busy) close(); };
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay && !busy) close(); });
+    cancelBtn.addEventListener('click', () => { if (!busy) close(); });
+
+    // what the selection is: the rows come from the server (the ticked listings can be on any page or tab)
+    const live = []; const sold = []; const ended = []; const other = [];
+    let moreSold = []; let moreEnded = []; // the other sold-out / ended listings of the store, not ticked
     try {
-      const res = await apiFetch('/api/listings/publish-batch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not start relisting.');
-      const notStarted = data.notStarted ? ` ${data.notStarted} could not be started${data.skipped && data.skipped[0] ? ' (' + data.skipped[0].error + ')' : ''}.` : '';
-      if (!data.started) showToast('Nothing was started', notStarted.trim() || 'The selected listings cannot be relisted right now.', 'error');
-      else showToast('Relisting started', 'Your listings are being republished to eBay. You will be notified when it is done.' + notStarted, 'info');
+      for (let i = 0; i < ids.length; i += 5000) {
+        const res = await apiFetch('/api/listings/rows', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: ids.slice(i, i + 5000) }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not read the selected listings.');
+        for (const row of data.listings || []) {
+          const st = llListingStatus(row);
+          (st === 'active' ? live : st === 'sold' ? sold : st === 'ended' ? ended : other).push(String(row.id));
+        }
+      }
     } catch (err) {
-      showToast('Could not start relisting', err.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = label;
+      $('rlBody').innerHTML = '';
+      $('rlError').textContent = err.message || 'Could not read the selected listings.';
+      return;
     }
-    llSelected.clear();
-    loadListings();
+    const readIds = new Set([...live, ...sold, ...ended, ...other]);
+    const missing = ids.length - readIds.size; // ticked, but gone from ELMS since
+    if (opts.offerMore !== false) try { // the row menu's Relist is about that one listing only
+      const askIds = async (status) => {
+        const res = await apiFetch('/api/listings/ids?status=' + status);
+        const data = await res.json();
+        return res.ok && data.success ? data.ids.map(String).filter((id) => !readIds.has(id)) : [];
+      };
+      [moreSold, moreEnded] = await Promise.all([askIds('sold'), askIds('ended')]);
+    } catch (_) { /* the window works without the extra choice */ }
+
+    const n = (count, one, many) => count + ' ' + (count === 1 ? one : many);
+    let more = false;
+    const draw = () => {
+      const soldN = sold.length + (more ? moreSold.length : 0);
+      const endedN = ended.length + (more ? moreEnded.length : 0);
+      const lines = [];
+      if (live.length) lines.push('<div><b>' + n(live.length, 'listing is', 'listings are') + ' live on eBay:</b> left exactly as ' + (live.length === 1 ? 'it is' : 'they are') + '.</div>');
+      if (soldN) lines.push('<div><b>' + n(soldN, 'listing is', 'listings are') + ' sold out:</b> put back on eBay with a new quantity.</div>');
+      if (endedN) lines.push('<div><b>' + n(endedN, 'listing has', 'listings have') + ' ended:</b> published to eBay again as new listings.</div>');
+      if (other.length) lines.push('<div><b>' + n(other.length, 'listing needs', 'listings need') + ' attention first (or ' + (other.length === 1 ? 'is a draft' : 'are drafts') + '):</b> not touched.</div>');
+      if (missing > 0) lines.push('<div>' + n(missing, 'ticked listing is', 'ticked listings are') + ' no longer in ELMS: skipped.</div>');
+      if (!soldN && !endedN) lines.push('<div class="ord-sub bad">Nothing to relist here: none of the ticked listings is sold out or ended.' + (moreSold.length + moreEnded.length ? ' Tick the box below to take in the others of your store.' : '') + '</div>');
+      const keepQty = $('rlQty') ? $('rlQty').value : '1';
+      $('rlBody').innerHTML = `
+        <div class="elms-confirm-message">${lines.join('')}</div>
+        ${soldN ? '<label class="mo-f"><span>New quantity for the sold-out ones</span><input type="number" id="rlQty" min="1" step="1" inputmode="numeric" value="' + escapeAttr(keepQty) + '" /></label>' : ''}
+        ${moreSold.length + moreEnded.length ? '<label class="bk-radio"><input type="checkbox" id="rlMore"' + (more ? ' checked' : '') + ' /> <span>Also relist the other ' + escapeHtml([moreSold.length ? n(moreSold.length, 'sold-out listing', 'sold-out listings') : '', moreEnded.length ? n(moreEnded.length, 'ended listing', 'ended listings') : ''].filter(Boolean).join(' and ')) + ' of this store</span></label>' : ''}`;
+      okBtn.disabled = busy || !(soldN + endedN);
+      okBtn.textContent = soldN + endedN ? 'Relist ' + (soldN + endedN) : 'Relist';
+      const box = $('rlMore');
+      if (box) box.addEventListener('change', () => { more = box.checked; $('rlError').textContent = ''; draw(); });
+    };
+    draw();
+
+    okBtn.addEventListener('click', async () => {
+      const soldIds = [...sold, ...(more ? moreSold : [])];
+      const endedIds = [...ended, ...(more ? moreEnded : [])];
+      let qty = 1;
+      if (soldIds.length) {
+        qty = Number($('rlQty').value);
+        if (!Number.isInteger(qty) || qty < 1) { $('rlError').textContent = 'Enter a whole number of at least 1 for the sold-out listings.'; return; }
+      }
+      busy = true;
+      okBtn.disabled = true; cancelBtn.disabled = true;
+      $('rlError').textContent = '';
+      let started = 0; let restocked = 0; let notStarted = 0;
+      const problems = [];
+      let stopped = '';
+      try {
+        // the ended ones first: one quick request each 2,000 (the server's cap), the publishing itself goes on in the background
+        for (let i = 0; i < endedIds.length && !stopped; i += 2000) {
+          okBtn.textContent = 'Starting…';
+          const res = await apiFetch('/api/listings/publish-batch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: endedIds.slice(i, i + 2000) }) });
+          const data = await res.json();
+          if (!res.ok || !data.success) { stopped = 'The ended listings could not be started: ' + (data.error || 'please try again.'); break; }
+          started += data.started || 0;
+          notStarted += data.notStarted || 0;
+          for (const s of (data.skipped || []).slice(0, 12)) problems.push((s.title || s.id || 'A listing') + ': ' + (s.error || 'could not be started.'));
+        }
+        // then the sold-out ones: each is several real eBay round trips, so 20 at a time (the server's cap)
+        const RS_CHUNK = 20;
+        for (let i = 0; i < soldIds.length && !stopped; i += RS_CHUNK) {
+          okBtn.textContent = 'Restocking ' + Math.min(i + RS_CHUNK, soldIds.length) + '/' + soldIds.length + '…';
+          const res = await apiFetch('/api/listings/bulk-restock', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: soldIds.slice(i, i + RS_CHUNK), quantity: qty }) });
+          const data = await res.json();
+          if (!res.ok || !data.success) { stopped = data.error || 'The sold-out listings could not be restocked. Please try again.'; break; }
+          for (const r of data.results || []) {
+            if (r.status === 'changed') restocked += 1;
+            else if (r.status === 'skipped') problems.push((r.title || r.id) + ': ' + r.reason);
+          }
+        }
+      } catch (err) {
+        stopped = err.message || 'Could not reach the server.';
+      }
+      busy = false;
+      close();
+      llSelected.clear();
+      loadListings();
+      const done = [];
+      if (started) done.push(n(started, 'ended listing is', 'ended listings are') + ' being published to eBay again. You will be notified when it is done.');
+      if (restocked) done.push(n(restocked, 'sold-out listing', 'sold-out listings') + ' restocked.');
+      if (live.length) done.push(n(live.length, 'live listing was', 'live listings were') + ' left as ' + (live.length === 1 ? 'it is' : 'they are') + '.');
+      const attention = [];
+      if (stopped) attention.push(stopped + ' The rest was not tried.');
+      if (notStarted && !problems.length) attention.push(n(notStarted, 'ended listing', 'ended listings') + ' could not be started.');
+      attention.push(...problems.slice(0, 12));
+      if (attention.length) {
+        // a toast is gone in seconds: this window lists what happened and the reason of each listing, and stays until OK
+        await elmsConfirm(done.concat(['', 'Not everything went through. The reason for each:'], attention.map((a) => '• ' + String(a).slice(0, 240))).join('\n'), { title: started || restocked ? 'Relisted, with problems' : 'Nothing was relisted', info: true });
+      } else showToast('Relisting', done.join(' '), 'success');
+    });
   }
 
   // ---------- Live Listings: AI removes VeRO words from the selected live (or sold-out) listings AND pushes the
@@ -13175,7 +13289,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="dv-bulk${llSelected.size ? ' has-selection' : ''}" id="llBulkBar">
           <b id="llSelectedCount">${llSelected.size} selected</b>
           ${llTab === 'sold' ? '<button class="dv-btn primary small" id="llRestockBtn" type="button" title="Put a fresh available quantity on eBay for all the selected sold-out listings">Restock</button>' : llTab === 'active' ? '<button class="dv-btn primary small" id="llChangePriceBtn" type="button" title="Change the price of all the selected live listings on eBay at once, with your Margin">Change price</button>' : ''}
-          ${llTab === 'ended' ? '<button class="dv-btn primary small" id="llRelistBtn" type="button" title="Publish the selected ended listings back to eBay as new listings">Relist</button>' : ''}
+          ${llTab !== 'issues' ? `<button class="dv-btn${llTab === 'ended' ? ' primary' : ''} small" id="llRelistBtn" type="button" title="Put sold-out and ended listings back on eBay: a sold-out one gets a new quantity, an ended one is published again. A listing that is live now is left exactly as it is.">Relist</button>` : ''}
           ${llTab !== 'ended' && llTab !== 'issues' ? `
           <button class="dv-btn small" id="llBulkSettingsBtn" type="button" title="Change price, title, brand, quantity, item location, policies, tags, note or monitoring for all the selected listings at once - pushed to eBay where it applies">Bulk edit</button>
           <button class="dv-btn small" id="llBulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected listings and pushes them to eBay">Fill specifics with AI</button>
@@ -13447,9 +13561,9 @@ async function autoSuggestEmptyDraftCategories() {
       if (!(await elmsConfirm(`Remove ${ids.length} selected listing${ids.length === 1 ? '' : 's'} from ELMS? Any that are still live on eBay will also be ended there.`, { title: 'Delete listings', danger: true }))) return;
       bulkDeleteLiveListings(ids, btn);
     });
-    root.querySelector('#llRelistBtn')?.addEventListener('click', (e) => {
+    root.querySelector('#llRelistBtn')?.addEventListener('click', () => {
       const ids = [...llSelected];
-      if (ids.length) bulkRelistListings(ids, e.currentTarget);
+      if (ids.length) openRelistDialog(ids);
     });
     root.querySelector('#llBulkAspectsBtn')?.addEventListener('click', (e) => {
       const ids = [...llSelected];
@@ -13772,7 +13886,7 @@ async function autoSuggestEmptyDraftCategories() {
           const m = ev.target.closest('[data-m]')?.getAttribute('data-m');
           llCloseMenu();
           if (m === 'ebay') window.open(llEbayUrl(l, itemId), '_blank', 'noopener,noreferrer');
-          else if (m === 'relist') bulkRelistListings([String(l.id)], row.querySelector('[data-action="menu"]'));
+          else if (m === 'relist') openRelistDialog([String(l.id)], { offerMore: false });
           else if (m === 'delete') llDeleteListing(l, row);
         });
         document.body.appendChild(menu);
