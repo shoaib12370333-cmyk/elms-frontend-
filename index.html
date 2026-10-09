@@ -2990,6 +2990,20 @@
   .imp-tip b { display:block; font-size:13px; color:var(--blue-dark); }
   .imp-tip small { display:block; margin-top:3px; font-size:12.5px; color:#475467; line-height:1.5; }
   @media (max-width:900px) { .imp-layout { grid-template-columns:minmax(0,1fr); } }
+  /* products from a CSV file + pictures from the seller's computer (Import page, Drafts "Upload images") */
+  .csv-drop { display:flex; flex-direction:column; align-items:center; gap:4px; border:2px dashed #cfd8e6; border-radius:12px; padding:22px 16px; text-align:center; color:#4b5563; cursor:pointer; background:#f8fafd; font-size:14px; }
+  .csv-drop:hover, .csv-drop:focus-visible, .csv-drop.dragover { border-color:#0064D2; background:#eef5fd; outline:none; }
+  .csv-drop small { color:#6b7280; font-size:12.5px; }
+  .csv-report { margin-top:14px; font-size:13px; line-height:1.55; color:#1f2937; }
+  .csv-report > div { margin-top:4px; }
+  .csv-sum { font-size:15px; }
+  .csv-muted { color:#6b7280; font-size:12.5px; }
+  .csv-list { margin-top:6px; max-height:220px; overflow:auto; border:1px solid #e3e9f2; border-radius:10px; padding:6px 10px; background:#fff; font-size:12.5px; }
+  .csv-list > div { padding:3px 0; border-bottom:1px solid #f0f3f8; margin-top:0; }
+  .csv-list > div:last-child { border-bottom:0; }
+  .csv-bar { height:10px; background:#e5e7eb; border-radius:8px; overflow:hidden; margin:8px 0; }
+  .csv-bar > div { height:100%; background:#0064D2; transition:width .3s; }
+  .dv-chip.nopic { background:#FEE4E2; color:#b42318; font-weight:600; }
   @media (max-width:520px) { .imp-body { padding:16px; } .imp-head h1 { font-size:24px; } .imp-urlbox { height:50px; } .imp-tab { padding:10px 14px; } }
   /* very narrow phones: the three tabs share the width instead of the last one being cut off */
   @media (max-width:420px) { .imp-tabs { gap:2px; padding:8px 6px 0; } .imp-tab { flex:1 1 0; min-width:0; padding:10px 4px; font-size:13px; text-align:center; white-space:nowrap; } }
@@ -4563,6 +4577,7 @@
           <button type="button" class="imp-tab active" id="impSourceAmazon" role="tab">Amazon</button>
           <button type="button" class="imp-tab" id="impSourceCj" role="tab">CJdropshipping</button>
           <button type="button" class="imp-tab" id="impSourceAliexpress" role="tab">AliExpress</button>
+          <button type="button" class="imp-tab" id="impSourceCsv" role="tab">CSV file</button>
         </div>
 
         <div id="impAmazonSection" class="imp-layout">
@@ -4742,6 +4757,39 @@
                 </div>
               </aside>
             </div>
+          </div>
+        </div>
+
+        <div id="impCsvSection" style="display:none;">
+          <div class="imp-layout">
+            <div class="imp-card">
+              <div class="imp-body">
+                <label class="imp-label">Products file <em>CSV, one row per product, up to 1000</em></label>
+                <div class="csv-drop" id="csvDrop" tabindex="0" role="button" aria-label="Choose a CSV file"><span><b>Choose a CSV file</b> or drop it here</span><small id="csvFileName"></small></div>
+                <input type="file" id="csvFileInput" accept=".csv,text/csv,text/plain" hidden />
+                <div class="imp-cta-row" style="margin-top:14px;">
+                  <button type="button" class="imp-cta" id="csvTemplateBtn">Download template</button>
+                  <button type="button" class="primary imp-cta" id="csvImportBtn" disabled>Import products</button>
+                  <button type="button" class="imp-cta" id="csvStopBtn" style="display:none;">Stop</button>
+                </div>
+                <div id="csvReport" class="csv-report"></div>
+              </div>
+            </div>
+
+            <aside class="imp-side">
+              <div class="imp-side-card">
+                <div class="imp-side-title">How it works</div>
+                <ol class="imp-steps">
+                  <li class="pipeline-step"><span class="dot"></span><div><b>Download the template</b><small>One row per product. SKU, Title and Cost are required; delete the two example rows.</small></div></li>
+                  <li class="pipeline-step"><span class="dot"></span><div><b>Upload your file</b><small>ELMS checks every row first and tells you what to fix. Nothing is saved until you press Import.</small></div></li>
+                  <li class="pipeline-step"><span class="dot"></span><div><b>Add the pictures</b><small>Put picture links in the Image columns, or leave them empty and add the pictures from your computer with Drafts &rarr; Upload images.</small></div></li>
+                </ol>
+              </div>
+              <div class="imp-side-card imp-tip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+                <div><b>Tip</b><small>These products have no Amazon, CJ or AliExpress link, so ELMS cannot watch their stock or price: if one sells out, end it yourself. It costs no credits. The SKU may use letters, numbers and hyphens (-) only. Without a Sell price, your Pricing rule prices the product from the Cost.</small></div>
+              </div>
+            </aside>
           </div>
         </div>
       </div>
@@ -7078,15 +7126,18 @@ B0EXAMPLE2"></textarea></div>
     amazon: { heading: 'Import a product', sub: 'Paste an Amazon link, set your margin and ELMS creates the eBay draft for you.' },
     cj: { heading: 'Import from CJdropshipping', sub: 'Paste a CJ product link/ID, or search the CJ catalog - ELMS creates the eBay draft for you.' },
     aliexpress: { heading: 'Import from AliExpress', sub: 'Paste an AliExpress product link/ID - ELMS creates the eBay draft for you.' },
+    csv: { heading: 'Import from a CSV file', sub: 'One row per product - ELMS creates the eBay drafts. Pictures come from links in the file, or from your computer afterwards.' },
   };
   function setImportSource(source) {
     document.getElementById('impAmazonSection').style.display = source === 'amazon' ? '' : 'none';
     document.getElementById('impCjSection').style.display = source === 'cj' ? '' : 'none';
     document.getElementById('impAliexpressSection').style.display = source === 'aliexpress' ? '' : 'none';
+    document.getElementById('impCsvSection').style.display = source === 'csv' ? '' : 'none';
     document.getElementById('result').style.display = source === 'amazon' ? '' : 'none';
     document.getElementById('impSourceAmazon').classList.toggle('active', source === 'amazon');
     document.getElementById('impSourceCj').classList.toggle('active', source === 'cj');
     document.getElementById('impSourceAliexpress').classList.toggle('active', source === 'aliexpress');
+    document.getElementById('impSourceCsv').classList.toggle('active', source === 'csv');
     document.getElementById('impHeading').textContent = IMP_SOURCE_META[source].heading;
     document.getElementById('impSub').textContent = IMP_SOURCE_META[source].sub;
     if (source === 'cj') refreshCjImportSection();
@@ -7095,6 +7146,159 @@ B0EXAMPLE2"></textarea></div>
   document.getElementById('impSourceAmazon').addEventListener('click', () => setImportSource('amazon'));
   document.getElementById('impSourceCj').addEventListener('click', () => setImportSource('cj'));
   document.getElementById('impSourceAliexpress').addEventListener('click', () => setImportSource('aliexpress'));
+  document.getElementById('impSourceCsv').addEventListener('click', () => setImportSource('csv'));
+
+  // ---------- Import page: products from a CSV file ----------
+  // One row per product -> a Draft (backend: services/csvImportService.js). The file is CHECKED first on the server (nothing is saved, nothing downloaded) and the page shows what is fine and what to fix;
+  // then the good rows go over 5 at a time (each can download up to 8 pictures), so a big file never has to fit in one request. Importing the same file again refreshes the drafts, it never doubles them.
+  const csvImport = { rows: [], running: false, stop: false, seq: 0 };
+  const csvEsc = (v) => escapeHtml(String(v === undefined || v === null ? '' : v));
+  const csvPlural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+
+  function csvSetReport(html) { const el = document.getElementById('csvReport'); if (el) el.innerHTML = html; }
+
+  async function csvDownloadTemplate() {
+    try {
+      const res = await apiFetch('/api/csv-import/template');
+      if (!res.ok) throw new Error('Could not make the template.');
+      saveAdminFile(await res.blob(), 'elms-products-template.csv');
+    } catch (err) { showToast('Template', err.message, 'error'); }
+  }
+
+  function csvProblemsHtml(problems, limit) {
+    if (!problems.length) return '';
+    return '<div class="csv-list">' + problems.slice(0, limit).map((p) => '<div>' + (p.line ? 'Line ' + csvEsc(p.line) + ': ' : '') + (p.sku ? '<b>' + csvEsc(p.sku) + '</b> - ' : '') + csvEsc(p.error || p.reason) + '</div>').join('') + (problems.length > limit ? '<div>and ' + (problems.length - limit) + ' more.</div>' : '') + '</div>';
+  }
+
+  // Excel's default "CSV" is Windows-1252, not UTF-8: read it as UTF-8 strictly and fall back, so a dash, an accent or the (R) sign is never turned into a broken character.
+  async function csvReadText(file) {
+    const bytes = await file.arrayBuffer();
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (_) { return new TextDecoder('windows-1252').decode(bytes); }
+  }
+
+  async function csvChooseFile(file) {
+    if (!file || csvImport.running) return;
+    const seq = ++csvImport.seq; // a slow answer for an earlier file must not replace the newest one
+    const importBtn = document.getElementById('csvImportBtn');
+    importBtn.disabled = true; importBtn.textContent = 'Import products';
+    csvImport.rows = [];
+    document.getElementById('csvFileName').textContent = file.name;
+    if (file.size > 5 * 1024 * 1024) { csvSetReport('<div class="be-err">That file is too big (over 5 MB). Split it into smaller files.</div>'); return; }
+    csvSetReport('<div class="elms-loader sm" role="status" aria-label="Checking the file"></div>');
+    try {
+      const text = await csvReadText(file);
+      const res = await apiFetch('/api/csv-import/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ csv: text }) });
+      const data = await res.json();
+      if (seq !== csvImport.seq) return;
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not read that file. Please try again.');
+      if (data.fileError) { csvSetReport('<div class="be-err">' + csvEsc(data.fileError) + '</div>'); return; }
+      csvImport.rows = data.rows;
+      const lines = [];
+      lines.push('<div class="csv-sum"><b>' + data.rows.length + '</b> ' + (data.rows.length === 1 ? 'product is' : 'products are') + ' ready to import' + (data.problems.length ? ' &middot; <span class="be-warn">' + data.problems.length + ' to fix</span>' : '') + '</div>');
+      lines.push(data.store
+        ? '<div>They will be saved as drafts in <b>' + csvEsc(data.store.label || 'your store') + '</b>. The Cost is read in <b>' + csvEsc(data.store.currency) + '</b>.</div>'
+        : '<div class="be-warn">No eBay store is connected yet. Connect one in ELMS first, or the import may be refused.</div>');
+      if (data.pricing.rowsWithoutSellPrice) {
+        lines.push(data.pricing.ruleOn
+          ? '<div>' + csvPlural(data.pricing.rowsWithoutSellPrice, 'product has', 'products have') + ' no Sell price: your Pricing rule prices ' + (data.pricing.rowsWithoutSellPrice === 1 ? 'it' : 'them') + ' from the Cost.</div>'
+          : '<div class="be-warn">' + csvPlural(data.pricing.rowsWithoutSellPrice, 'product has', 'products have') + ' no Sell price and your Pricing rule is switched off, so ' + (data.pricing.rowsWithoutSellPrice === 1 ? 'it' : 'they') + ' cannot be priced. Write a Sell price in the file, or switch the rule on in Settings &gt; Pricing.</div>');
+      }
+      const noPics = data.rows.filter((r) => !r.images.length).length;
+      if (noPics) lines.push('<div>' + csvPlural(noPics, 'product has', 'products have') + ' no picture link. Add ' + (noPics === 1 ? 'its picture' : 'their pictures') + ' afterwards with <b>Drafts &rarr; Upload images</b> (name each picture file after the SKU). A draft without a picture cannot be published.</div>');
+      if (data.ignoredColumns && data.ignoredColumns.length) lines.push('<div class="csv-muted">Columns that ELMS does not use: ' + csvEsc(data.ignoredColumns.join(', ')) + '.</div>');
+      if (data.problems.length) lines.push('<div style="margin-top:8px;"><b>These rows are not imported until you fix them in the file:</b></div>' + csvProblemsHtml(data.problems, 25));
+      csvSetReport(lines.join(''));
+      if (data.rows.length) { importBtn.disabled = false; importBtn.textContent = 'Import ' + csvPlural(data.rows.length, 'product', 'products'); }
+    } catch (err) {
+      if (seq === csvImport.seq) csvSetReport('<div class="be-err">' + csvEsc(err.message) + '</div>');
+    }
+  }
+
+  async function csvRunImport() {
+    if (csvImport.running || !csvImport.rows.length) return;
+    const total = csvImport.rows.length;
+    const queue = csvImport.rows.slice();
+    const totals = { created: 0, updated: 0, skipped: 0, failed: 0, noImage: 0, pictureErrors: 0 };
+    const problems = [];
+    const STEP = 5;
+    let handled = 0; let stopped = ''; let serverErrors = 0;
+    const importBtn = document.getElementById('csvImportBtn');
+    const stopBtn = document.getElementById('csvStopBtn');
+    csvImport.running = true; csvImport.stop = false;
+    importBtn.disabled = true; stopBtn.style.display = ''; stopBtn.disabled = false;
+    const progress = () => csvSetReport('<div class="csv-sum">Importing&hellip; <b>' + handled + '</b> of ' + total + '</div><div class="csv-bar"><div style="width:' + Math.round((handled / total) * 100) + '%"></div></div><div class="csv-muted">Keep this tab open until it finishes. Pictures are being downloaded.</div>');
+    progress();
+    try {
+      while (queue.length && !csvImport.stop) {
+        const chunk = queue.splice(0, STEP);
+        let results;
+        try {
+          const res = await apiFetch('/api/csv-import/rows', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: chunk }) });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.success || !Array.isArray(data.results)) {
+            const message = data.error || 'The import could not continue.';
+            if (res.status >= 500) throw Object.assign(new Error(message), { retry: true });
+            queue.unshift(...chunk); stopped = message; break; // a refusal (no store, bad request) is not worth repeating
+          }
+          results = data.results;
+          serverErrors = 0;
+        } catch (err) {
+          queue.unshift(...chunk);
+          serverErrors += 1;
+          if (serverErrors >= 3) { stopped = (err && err.message) || 'The connection to ELMS was lost.'; break; }
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          continue;
+        }
+        results.forEach((r, i) => {
+          if (r.status === 'later') { queue.push(chunk[i]); return; } // the server ran out of time before this row: nothing was done for it, ask again
+          handled += 1;
+          if (totals[r.status] !== undefined) totals[r.status] += 1;
+          if (r.status === 'skipped' || r.status === 'failed') problems.push({ line: r.line, sku: r.sku, reason: r.reason });
+          if (r.noImage && (r.status === 'created' || r.status === 'updated')) totals.noImage += 1;
+          (r.imagesFailed || []).forEach((f) => { totals.pictureErrors += 1; problems.push({ line: r.line, sku: r.sku, reason: 'A picture could not be downloaded (' + f.url + '): ' + f.error }); });
+        });
+        progress();
+      }
+    } catch (err) {
+      stopped = (err && err.message) || 'The import stopped unexpectedly.';
+    } finally {
+      csvImport.running = false;
+      stopBtn.style.display = 'none';
+    }
+    const left = queue.length;
+    if (csvImport.stop && left) stopped = 'You stopped it.';
+    const done = totals.created + totals.updated;
+    const parts = [];
+    if (totals.created) parts.push(csvPlural(totals.created, 'draft created', 'drafts created'));
+    if (totals.updated) parts.push(csvPlural(totals.updated, 'draft updated', 'drafts updated'));
+    if (totals.skipped) parts.push(totals.skipped + ' skipped');
+    if (totals.failed) parts.push(totals.failed + ' failed');
+    const html = ['<div class="csv-sum">' + (stopped ? '<span class="be-warn">Stopped.</span> ' : '<b>Done.</b> ') + (parts.length ? parts.join(' &middot; ') : 'Nothing was imported.') + '</div>'];
+    if (stopped) html.push('<div>' + csvEsc(stopped) + (left ? ' ' + csvPlural(left, 'product was', 'products were') + ' not tried. Choose the same file again to continue: products already imported are updated, never doubled.' : '') + '</div>');
+    if (totals.noImage) html.push('<div><b>' + csvPlural(totals.noImage, 'draft has', 'drafts have') + ' no picture yet.</b> Add them with <b>Drafts &rarr; Upload images</b>, or open the draft and add pictures there.</div>');
+    if (problems.length) html.push('<div style="margin-top:8px;"><b>Not imported, or needs a look:</b></div>' + csvProblemsHtml(problems, 40));
+    if (done) html.push('<div class="imp-cta-row" style="margin-top:12px;"><button type="button" class="primary imp-cta" id="csvOpenDraftsBtn">Open Drafts</button></div>');
+    csvSetReport(html.join(''));
+    document.getElementById('csvOpenDraftsBtn')?.addEventListener('click', () => showPage('drafts'));
+    csvImport.rows = []; importBtn.textContent = 'Import products';
+    if (done) { refreshDraftsCountBadge(); showToast('CSV import', parts.join(', ') + '.', totals.failed || totals.skipped ? 'info' : 'success'); }
+  }
+
+  (function wireCsvImport() {
+    const drop = document.getElementById('csvDrop');
+    const input = document.getElementById('csvFileInput');
+    if (!drop || !input) return;
+    drop.addEventListener('click', () => { if (!csvImport.running) input.click(); });
+    drop.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && !csvImport.running) { e.preventDefault(); input.click(); } });
+    input.addEventListener('change', () => { const f = input.files && input.files[0]; input.value = ''; csvChooseFile(f); });
+    ['dragover', 'dragenter'].forEach((evt) => drop.addEventListener(evt, (e) => { e.preventDefault(); drop.classList.add('dragover'); }));
+    ['dragleave', 'dragend', 'drop'].forEach((evt) => drop.addEventListener(evt, () => drop.classList.remove('dragover')));
+    drop.addEventListener('drop', (e) => { e.preventDefault(); csvChooseFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
+    document.getElementById('csvTemplateBtn').addEventListener('click', csvDownloadTemplate);
+    document.getElementById('csvImportBtn').addEventListener('click', csvRunImport);
+    document.getElementById('csvStopBtn').addEventListener('click', () => { csvImport.stop = true; document.getElementById('csvStopBtn').disabled = true; });
+  })();
+
 
   async function refreshCjImportSection() {
     await loadCjSettings();
@@ -10270,6 +10474,7 @@ B0EXAMPLE2"></textarea></div>
       draftFilteredIds = [];
       setTimeout(openDraftFromUrl, 0);
       let draftVeroOnly = false;
+      let draftNoImageOnly = false;
       const veroCount = () => allDrafts.filter((l) => l._vero.terms.length).length;
       const computeCounts = () => allDrafts.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
       let counts = computeCounts();
@@ -10289,7 +10494,7 @@ B0EXAMPLE2"></textarea></div>
         <div class="dv" id="elmsDraftsLayout">
           <header class="dv-hero">
             <div><h1>Drafts</h1><p>Products you imported and have not published yet. Check the numbers, open the editor, then send them to eBay.</p></div>
-            <div class="dv-hero-actions"><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div>
+            <div class="dv-hero-actions"><button class="dv-btn" id="draftUploadImagesBtn" type="button" title="Add pictures from your computer to many drafts at once. Name each picture file after the SKU of its draft.">Upload images</button><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div>
           </header>
           <div class="dv-live" id="draftsLiveBanner" style="display:none;" role="status"></div>
           <div class="dv-delnote" id="draftsDeleteNote" style="display:none;" role="status"></div>
@@ -10301,10 +10506,11 @@ B0EXAMPLE2"></textarea></div>
             <span class="dv-selectn"><input type="number" min="1" id="draftSelectFirstN" placeholder="N" aria-label="Number of products to select" /><button type="button" class="dv-btn small" id="draftSelectFirstNBtn" title="Select the first N products of this view, in the current sort order">Select first N</button></span>
             <div class="dv-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="draftProductSearch" type="search" placeholder="Search title, ASIN or SKU" /></div>
             <select id="draftSort" class="dv-select"><option value="created">Newest imported</option><option value="updated">Recently updated</option><option value="title">Title A&ndash;Z</option><option value="price">Price high&ndash;low</option><option value="profit">Profit high&ndash;low</option></select>
-            <select id="draftSourceFilter" class="dv-select" title="Filter by product source"><option value="">Every source</option><option value="amazon">Amazon</option><option value="cj">CJdropshipping</option><option value="aliexpress">AliExpress</option></select>
+            <select id="draftSourceFilter" class="dv-select" title="Filter by product source"><option value="">Every source</option><option value="amazon">Amazon</option><option value="cj">CJdropshipping</option><option value="aliexpress">AliExpress</option><option value="csv">CSV file</option></select>
             <select id="draftCountryFilter" class="dv-select" title="Filter by the Amazon site the product came from"><option value="">Every Amazon site</option><option value="UK">Amazon UK</option><option value="US">Amazon US</option><option value="AU">Amazon AU</option><option value="CA">Amazon CA</option><option value="DE">Amazon DE</option><option value="FR">Amazon FR</option><option value="IT">Amazon IT</option><option value="ES">Amazon ES</option></select>
             <span class="dv-seg" role="group" aria-label="View"><button type="button" data-dv-view="grid" class="${dvView === 'grid' ? 'on' : ''}">&#9638;<span> Cards</span></button><button type="button" data-dv-view="rows" class="${dvView === 'rows' ? 'on' : ''}">&#9776;<span> List</span></button></span>
             ${veroPattern ? '' : '<button type="button" class="dv-btn" id="draftVeroSetup" title="Add the brand names eBay removes listings for, and ELMS will warn you about them">&#9888; Set up VeRO words</button>'}
+            <button type="button" class="dv-btn vero-filter" id="draftNoImageFilter" title="Show only the drafts that have no picture. eBay does not accept a listing without one: add pictures with Upload images, or in the editor.">&#128444; No picture<b id="draftNoImageCount">${allDrafts.filter(draftHasNoImage).length}</b></button>
             ${veroPattern ? `<button type="button" class="dv-btn vero-filter" id="draftVeroFilter" title="Show only drafts that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="draftVeroCount">${veroCount()}</b></button>` : ''}
             <select id="draftStatusFilter" style="display:none;"><option value="all">All</option><option value="draft" selected>Drafts</option><option value="publishing">Publishing</option><option value="scheduled">Scheduled</option><option value="error">Failed</option></select>
           </div>
@@ -10331,6 +10537,7 @@ B0EXAMPLE2"></textarea></div>
         list.classList.toggle('dv-rows', dvView === 'rows'); list.classList.toggle('dv-grid', dvView === 'grid');
       }));
       document.getElementById('bulkClearBtn')?.addEventListener('click', () => { draftSelected.clear(); syncDraftChecks(); updateBulkBar(); });
+      document.getElementById('draftUploadImagesBtn')?.addEventListener('click', openDraftImageUploadDialog);
 
       const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 150, 200];
       let draftPageSize = 20;
@@ -10347,10 +10554,10 @@ B0EXAMPLE2"></textarea></div>
           // "Ready to publish" also shows failed items (not just the "Needs attention" tab) -
           // a listing that failed to publish still needs to be published, so it stays visible
           // where the seller is already looking, with its error badge and a Retry button.
-          const matchesStatus = draftVeroOnly || status === 'all' || l.status === status || (status === 'draft' && l.status === 'error');
+          const matchesStatus = draftVeroOnly || draftNoImageOnly || status === 'all' || l.status === status || (status === 'draft' && l.status === 'error');
           const matchesSource = !source || (l.source_platform || 'amazon') === source;
           const matchesCountry = !sourceCountry || l.supplier_country === sourceCountry;
-          return (!query || haystack.includes(query)) && matchesStatus && matchesSource && matchesCountry && (!draftVeroOnly || l._vero.terms.length > 0);
+          return (!query || haystack.includes(query)) && matchesStatus && matchesSource && matchesCountry && (!draftVeroOnly || l._vero.terms.length > 0) && (!draftNoImageOnly || draftHasNoImage(l));
         }).sort((a,b) => {
           if (sort === 'title') return String(a.title || a.sku || '').localeCompare(String(b.title || b.sku || ''));
           if (sort === 'price') return Number(b.sell_price || 0) - Number(a.sell_price || 0);
@@ -10396,6 +10603,8 @@ B0EXAMPLE2"></textarea></div>
             });
           }
         }
+        const noImageCount = document.getElementById('draftNoImageCount');
+        if (noImageCount) noImageCount.textContent = String(allDrafts.filter(draftHasNoImage).length);
         wireDraftRows();
         restoreNote();
         updateBulkBar();
@@ -10419,14 +10628,30 @@ B0EXAMPLE2"></textarea></div>
         if (draftVeroOnly) {
           setVeroOnly(false);
           const value = document.getElementById('draftStatusFilter')?.value || 'draft';
-          document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item.getAttribute('data-inner-status') === value));
+          if (!draftNoImageOnly) document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item.getAttribute('data-inner-status') === value));
         } else setVeroOnly(true);
+        draftPage = 1;
+        renderDraftProductList();
+      });
+      const noImageBtn = document.getElementById('draftNoImageFilter');
+      const setNoImageOnly = (on) => {
+        draftNoImageOnly = on;
+        noImageBtn?.classList.toggle('on', on);
+        if (on) document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.remove('active'));
+      };
+      noImageBtn?.addEventListener('click', () => {
+        if (draftNoImageOnly) {
+          setNoImageOnly(false);
+          const value = document.getElementById('draftStatusFilter')?.value || 'draft';
+          if (!draftVeroOnly) document.querySelectorAll('#draftsContent [data-inner-status]').forEach((item) => item.classList.toggle('active', item.getAttribute('data-inner-status') === value));
+        } else setNoImageOnly(true);
         draftPage = 1;
         renderDraftProductList();
       });
       document.querySelectorAll('#draftsContent [data-inner-status]').forEach((btn) => {
         btn.addEventListener('click', () => {
           if (draftVeroOnly) setVeroOnly(false);
+          if (draftNoImageOnly) setNoImageOnly(false);
           const value = btn.getAttribute('data-inner-status') || 'all';
           const filter = document.getElementById('draftStatusFilter');
           if (filter) filter.value = value;
@@ -10732,6 +10957,7 @@ B0EXAMPLE2"></textarea></div>
   function draftSupplierLabel(l) {
     if (l.source_platform === 'cj') return 'CJdropshipping';
     if (l.source_platform === 'aliexpress') return 'AliExpress';
+    if (l.source_platform === 'csv') return 'CSV file';
     const raw = String(l.supplier_country || l.supplierCountry || '').trim();
     if (raw) return /^amazon/i.test(raw) ? raw : `Amazon ${raw.toUpperCase()}`;
     const url = String(l.amazon_url || '');
@@ -10742,7 +10968,7 @@ B0EXAMPLE2"></textarea></div>
   }
 
   /** A small, coloured source badge ("Amazon" / "CJ" / "AliExpress") shown on every draft and listing card, so the seller always knows which supplier a product came from. */
-  const SOURCE_BADGE = { cj: ['CJ', '#FEF3D0'], aliexpress: ['AliExpress', '#FEE4E2'], amazon: ['Amazon', '#E8F1FD'] };
+  const SOURCE_BADGE = { cj: ['CJ', '#FEF3D0'], aliexpress: ['AliExpress', '#FEE4E2'], amazon: ['Amazon', '#E8F1FD'], csv: ['CSV', '#E3F4E8'] };
   function sourceBadgeHtml(l) {
     const [label, bg] = SOURCE_BADGE[l.source_platform] || SOURCE_BADGE.amazon;
     return `<span class="dv-chip" style="background:${bg};font-weight:700;">${label}</span>`;
@@ -11444,6 +11670,152 @@ B0EXAMPLE2"></textarea></div>
     };
   }
 
+  // ---------- Drafts: "Upload images" - many pictures from the seller's computer, each put on the draft whose SKU its file name carries ----------
+  // MUG-001.jpg is the first picture of the draft with SKU MUG-001, MUG-001_2.jpg the second, and so on (upper / lower case does not matter). The server says which file belongs to which draft
+  // (POST /api/csv-import/match-files), the window shows that BEFORE anything is uploaded, then each picture is sent on its own (POST /api/csv-import/image) so a big folder never has to fit in one request.
+  function draftHasNoImage(l) { return !l.main_image && !(Array.isArray(l.images) && l.images.length); }
+
+  function openDraftImageUploadDialog() {
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box mo-box" role="dialog" aria-modal="true" aria-label="Upload images" style="max-width:560px;">
+        <div class="elms-confirm-title">Upload images</div>
+        <div class="elms-confirm-message">Name each picture after the SKU of its draft: <b>MUG-001.jpg</b> is the first picture of the draft with SKU MUG-001, <b>MUG-001_2.jpg</b> the second, <b>MUG-001_3.jpg</b> the third. ELMS adds them to the draft (24 at most). JPG, PNG, WEBP or GIF, 10 MB each.</div>
+        <div class="csv-drop" id="uiDrop" tabindex="0" role="button" aria-label="Choose the pictures"><b>Choose pictures</b> or drop them here<small id="uiPicked"></small></div>
+        <input type="file" id="uiFiles" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
+        <div id="uiReport" class="csv-report"></div>
+        <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="cancel">Close</button><button type="button" class="ord-btn primary" data-act="ok" disabled>Upload</button></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const $ = (id) => overlay.querySelector('#' + id);
+    const okBtn = overlay.querySelector('[data-act="ok"]');
+    const cancelBtn = overlay.querySelector('[data-act="cancel"]');
+    let busy = false; let stop = false; let chooseSeq = 0;
+    let plan = []; // [{ id, sku, files: [File...] }] in the order the pictures go on
+    let uploadedSomething = false;
+    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); if (uploadedSomething) loadDrafts(); };
+    const onKey = (e) => { if (e.key === 'Escape' && !busy) close(); };
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay && !busy) close(); });
+    cancelBtn.addEventListener('click', () => { if (busy) { stop = true; cancelBtn.disabled = true; cancelBtn.textContent = 'Stopping…'; } else close(); });
+
+    const MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' };
+    // The picture type comes from the file's ending, not from what the system reports (it can be empty for a .jpg or .webp).
+    const readAsDataUrl = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).replace(/^data:[^;,]*/, 'data:' + (MIME[String(file.name).split('.').pop().toLowerCase()] || file.type || 'image/jpeg')));
+      reader.onerror = () => reject(new Error('Could not read the file.'));
+      reader.readAsDataURL(file);
+    });
+    const setReport = (html) => { $('uiReport').innerHTML = html; };
+
+    async function choose(fileList) {
+      if (busy) return;
+      const chosen = Array.from(fileList || []);
+      const all = chosen.filter((f) => /\.(jpe?g|png|webp|gif)$/i.test(f.name));
+      const notPictures = chosen.length - all.length;
+      const mySeq = ++chooseSeq; // a slow answer for an earlier choice must not replace the newest one
+      plan = []; okBtn.disabled = true; okBtn.textContent = 'Upload';
+      if (!all.length) { setReport('<div class="be-err">Choose picture files (JPG, PNG, WEBP or GIF).</div>'); return; }
+      const byName = new Map();
+      let repeated = 0;
+      for (const f of all) { if (byName.has(f.name)) repeated += 1; else byName.set(f.name, f); }
+      if (byName.size > 2000) { setReport('<div class="be-err">Choose at most 2000 pictures at a time.</div>'); return; }
+      $('uiPicked').textContent = byName.size + ' picture' + (byName.size === 1 ? '' : 's') + ' chosen';
+      setReport('<div class="elms-loader sm" role="status" aria-label="Matching the pictures"></div>');
+      try {
+        const res = await apiFetch('/api/csv-import/match-files', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ names: [...byName.keys()] }) });
+        const data = await res.json();
+        if (mySeq !== chooseSeq) return;
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not match the pictures.');
+        const groups = new Map();
+        for (const m of data.matched) {
+          const file = byName.get(m.name);
+          if (!file) continue;
+          if (!groups.has(m.id)) groups.set(m.id, { id: m.id, sku: m.sku, title: m.title, had: m.imageCount, files: [] });
+          groups.get(m.id).files.push(file);
+        }
+        plan = [...groups.values()];
+        const matchedFiles = plan.reduce((n, g) => n + g.files.length, 0);
+        const lines = [];
+        lines.push('<div class="csv-sum"><b>' + matchedFiles + '</b> picture' + (matchedFiles === 1 ? '' : 's') + ' for <b>' + plan.length + '</b> draft' + (plan.length === 1 ? '' : 's') + '</div>');
+        if (plan.length) lines.push('<div class="csv-list">' + plan.slice(0, 12).map((g) => '<div><b>' + escapeHtml(g.sku) + '</b> - ' + escapeHtml(String(g.title || '').slice(0, 50)) + ': +' + g.files.length + (g.had ? ' (it has ' + g.had + ' now)' : '') + '</div>').join('') + (plan.length > 12 ? '<div>and ' + (plan.length - 12) + ' more drafts.</div>' : '') + '</div>');
+        if (data.unmatched.length) lines.push('<div style="margin-top:8px;"><b>' + data.unmatched.length + ' picture' + (data.unmatched.length === 1 ? ' matches' : 's match') + ' no draft of this store</b> (check the SKU in the file name; only drafts can get pictures):</div><div class="csv-list">' + data.unmatched.slice(0, 15).map((n) => '<div>' + escapeHtml(n) + '</div>').join('') + (data.unmatched.length > 15 ? '<div>and ' + (data.unmatched.length - 15) + ' more.</div>' : '') + '</div>');
+        if (data.ambiguousSkus && data.ambiguousSkus.length) lines.push('<div class="be-warn" style="margin-top:6px;">These SKUs exist twice in this store with only the capital letters different, so ELMS will not guess: ' + escapeHtml(data.ambiguousSkus.slice(0, 5).join(', ')) + '.</div>');
+        if (notPictures) lines.push('<div class="csv-muted">' + notPictures + ' chosen file' + (notPictures === 1 ? ' is' : 's are') + ' not JPG, PNG, WEBP or GIF and ' + (notPictures === 1 ? 'was' : 'were') + ' left out.</div>');
+        if (repeated) lines.push('<div class="csv-muted">' + repeated + ' file name' + (repeated === 1 ? ' was' : 's were') + ' chosen twice; each is used once.</div>');
+        setReport(lines.join(''));
+        if (plan.length) { okBtn.disabled = false; okBtn.textContent = 'Upload ' + matchedFiles + ' picture' + (matchedFiles === 1 ? '' : 's'); }
+      } catch (err) {
+        if (mySeq === chooseSeq) setReport('<div class="be-err">' + escapeHtml(err.message) + '</div>');
+      }
+    }
+
+    okBtn.addEventListener('click', async () => {
+      if (busy || !plan.length) return;
+      busy = true; stop = false; okBtn.disabled = true; cancelBtn.textContent = 'Stop';
+      const total = plan.reduce((n, g) => n + g.files.length, 0);
+      let finished = 0; let added = 0; let already = 0;
+      const failures = [];
+      const draw = () => setReport('<div class="csv-sum">Uploading&hellip; <b>' + finished + '</b> of ' + total + '</div><div class="csv-bar"><div style="width:' + Math.round((finished / total) * 100) + '%"></div></div><div class="csv-muted">Keep this window open until it finishes.</div>');
+      draw();
+      const queue = plan.slice();
+      const worker = async () => {
+        while (queue.length && !stop) {
+          const group = queue.shift();
+          for (let i = 0; i < group.files.length; i += 1) {
+            const file = group.files[i];
+            if (stop) break; // what is left of this draft is counted as "not tried"
+            let draftFull = false;
+            try {
+              if (file.size > 10 * 1024 * 1024) throw new Error('is bigger than 10 MB');
+              const imageData = await readAsDataUrl(file);
+              const ctl = new AbortController();
+              const timer = setTimeout(() => ctl.abort(), 180000); // a hung request must never lock the window
+              let res;
+              try { res = await apiFetch('/api/csv-import/image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: group.id, imageData }), signal: ctl.signal }); } finally { clearTimeout(timer); }
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok || !data.success) {
+                draftFull = res.status === 409;
+                failures.push(file.name + ': ' + (data.error || 'could not be uploaded'));
+              } else if (data.added) { added += 1; uploadedSomething = true; } else already += 1;
+            } catch (err) {
+              failures.push(file.name + ': ' + (err && err.name === 'AbortError' ? 'took too long' : (err && err.message) || 'could not be uploaded'));
+            }
+            finished += 1;
+            if (draftFull) { // this draft cannot take more: the rest of its pictures are not sent
+              for (let k = i + 1; k < group.files.length; k += 1) { failures.push(group.files[k].name + ': not sent, the draft is full'); finished += 1; }
+              draw();
+              break;
+            }
+            draw();
+          }
+        }
+      };
+      try { await Promise.all([worker(), worker(), worker()]); }
+      catch (err) { failures.push('The upload stopped: ' + ((err && err.message) || 'unexpected error')); }
+      finally { busy = false; cancelBtn.disabled = false; cancelBtn.textContent = 'Close'; }
+      const notTried = Math.max(0, total - finished);
+      const html = ['<div class="csv-sum">' + (stop ? '<span class="be-warn">Stopped.</span> ' : '<b>Done.</b> ') + added + ' picture' + (added === 1 ? '' : 's') + ' added' + (already ? ' &middot; ' + already + ' already on the draft' : '') + (failures.length ? ' &middot; <span class="be-warn">' + failures.length + ' failed</span>' : '') + '</div>'];
+      if (notTried) html.push('<div>' + notTried + ' picture' + (notTried === 1 ? ' was' : 's were') + ' not tried.</div>');
+      if (failures.length) html.push('<div class="csv-list">' + failures.slice(0, 25).map((f) => '<div>' + escapeHtml(f) + '</div>').join('') + (failures.length > 25 ? '<div>and ' + (failures.length - 25) + ' more.</div>' : '') + '</div>');
+      setReport(html.join(''));
+      plan = []; okBtn.textContent = 'Upload';
+      if (added) showToast('Pictures added', added + ' picture' + (added === 1 ? '' : 's') + ' added to your drafts.', 'success');
+    });
+
+    const input = $('uiFiles'); const drop = $('uiDrop');
+    drop.addEventListener('click', () => { if (!busy) input.click(); });
+    drop.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && !busy) { e.preventDefault(); input.click(); } });
+    input.addEventListener('change', () => { const files = input.files; choose(files); input.value = ''; });
+    ['dragover', 'dragenter'].forEach((evt) => drop.addEventListener(evt, (e) => { e.preventDefault(); drop.classList.add('dragover'); }));
+    ['dragleave', 'dragend', 'drop'].forEach((evt) => drop.addEventListener(evt, () => drop.classList.remove('dragover')));
+    drop.addEventListener('drop', (e) => { e.preventDefault(); choose(e.dataTransfer && e.dataTransfer.files); });
+  }
+
   function draftRowHtml(l) {
     const status = l.status || 'draft';
     const label = { draft: 'Ready', publishing: 'Publishing\u2026', scheduled: 'Scheduled', error: 'Failed' }[status] || status;
@@ -11471,6 +11843,7 @@ B0EXAMPLE2"></textarea></div>
             ${l.source_platform !== 'amazon' ? `<span class="dv-chip">${escapeHtml(l.sku || '')}</span>` : (asin ? (l.amazon_url ? `<a class="dv-chip" href="${escapeAttr(l.amazon_url)}" target="_blank" rel="noopener" data-action="stop-propagation" title="Open the Amazon product">${escapeHtml(asin)} &#8599;</a>` : `<span class="dv-chip">${escapeHtml(asin)}</span>`) : '')}
             <span class="dv-chip">${escapeHtml(draftSupplierLabel(l))}</span>
             ${(l.ebay_account_label || l.ebay_account_username) ? `<span class="dv-chip">Store: ${escapeHtml(l.ebay_account_label || l.ebay_account_username)}</span>` : ''}
+            ${draftHasNoImage(l) ? '<span class="dv-chip nopic" title="eBay does not accept a listing without a picture. Add one with Upload images, or open the draft.">No picture</span>' : ''}
             ${veroChipHtml(l, status !== 'publishing')}
             ${policyWarningChipHtml(l)}
           </div>
@@ -12975,7 +13348,10 @@ async function autoSuggestEmptyDraftCategories() {
         const res = await apiFetch('/api/listings/publish-batch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not start publishing.');
-        const notStarted = data.notStarted ? ` ${data.notStarted} could not be started${data.skipped && data.skipped[0] ? ' (' + data.skipped[0].error + ')' : ''}.` : '';
+        const noPicture = data.noImage ? ` ${data.noImage} ${data.noImage === 1 ? 'has' : 'have'} no picture, so ${data.noImage === 1 ? 'it was' : 'they were'} not started: add pictures first (Upload images).` : '';
+        const otherNot = (data.notStarted || 0) - (data.noImage || 0);
+        const firstOther = (data.skipped || []).find((x) => !/^No picture/.test(x.error || ''));
+        const notStarted = (otherNot > 0 ? ` ${otherNot} could not be started${firstOther ? ' (' + firstOther.error + ')' : ''}.` : '') + noPicture;
         if (!data.started) {
           showToast('Nothing was started', notStarted.trim() || 'The selected drafts cannot be published right now.', 'error');
         } else {
@@ -13057,7 +13433,7 @@ async function autoSuggestEmptyDraftCategories() {
   let llPage = 1;
   let llSort = 'newest';
   let llVeroOnly = false;
-  let llSource = ''; // '' = every source, 'amazon', 'cj', 'aliexpress'
+  let llSource = ''; // '' = every source, 'amazon', 'cj', 'aliexpress', 'csv'
   let llTotal = 0; // the listings of this view, on all pages
   let llPages = 1;
   let llSummary = null; // { counts, totals } from GET /api/listings/summary: the tabs' numbers and the boxes above the list
@@ -13271,7 +13647,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${[['newest', 'Newest first'], ['price', 'Price high\u2013low'], ['priceLow', 'Price low\u2013high'], ['profit', 'Profit high\u2013low'], ['profitLow', 'Profit low\u2013high'], ['views', 'Most views'], ['watchers', 'Most watchers'], ['sold', 'Most sold']].filter(([v]) => v !== 'views' || llSort === 'views' || !llNoViews()).map(([v, t]) => `<option value="${v}"${llSort === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
           <select id="llSourceSelect" class="dv-select" title="Filter by product source">
-            ${[['', 'Every source'], ['amazon', 'Amazon'], ['cj', 'CJdropshipping'], ['aliexpress', 'AliExpress']].map(([v, t]) => `<option value="${v}"${llSource === v ? ' selected' : ''}>${t}</option>`).join('')}
+            ${[['', 'Every source'], ['amazon', 'Amazon'], ['cj', 'CJdropshipping'], ['aliexpress', 'AliExpress'], ['csv', 'CSV file']].map(([v, t]) => `<option value="${v}"${llSource === v ? ' selected' : ''}>${t}</option>`).join('')}
           </select>
           ${veroPattern ? `<button type="button" class="dv-btn vero-filter${llVeroOnly ? ' on' : ''}" id="llVeroFilter" title="Show only listings that contain VeRO words (brand names eBay removes listings for)">&#9888; VeRO words<b id="llVeroCount">${llSummary ? llSummary.counts.vero : '\u2026'}</b></button>` : ''}
           <button class="dv-btn" id="llExportBtn" type="button">Export CSV</button>
