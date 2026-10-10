@@ -3743,6 +3743,29 @@
   .ad-acct { display:flex; gap:10px; align-items:center; padding:8px 12px; border-bottom:1px solid var(--line); font:500 13px Inter,sans-serif; } .ad-acct:last-child { border-bottom:none; }
   .ad-acct .grow { flex:1; min-width:0; word-break:break-word; } .ad-acct small { color:var(--grey); display:block; }
   .ad-count { display:inline-block; min-width:18px; padding:0 6px; margin-left:6px; border-radius:99px; background:#E53238; color:#fff; font-size:11px; line-height:18px; text-align:center; }
+  .ad-tag.warn { background:#FFF4E5; color:#B54708; }
+  #adminAlertsFilters { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 14px; }
+  #adminAlertsFilters:empty { display:none; }
+  .al-sep { width:1px; height:22px; background:var(--line); margin:0 4px; }
+  #adminAlertsContent { overflow-x:auto; }
+  #page-admin .al-msg { min-width:260px; max-width:560px; white-space:normal; line-height:1.45; }
+  #page-admin .al-msg > div { color:#475467; margin-top:2px; }
+  #page-admin .al-row.crit td:first-child { box-shadow:inset 3px 0 0 #E53238; }
+  .al-details { margin-top:6px; font-size:12px; color:#475467; } .al-details summary { cursor:pointer; color:var(--grey); }
+  .al-details > div { margin-top:3px; word-break:break-word; }
+  .al-user { color:#0064D2; font-weight:600; text-decoration:none; word-break:break-all; } .al-user:hover { text-decoration:underline; }
+  /* a phone: every alert is a card of its own, not a row that has to be scrolled sideways */
+  @media (max-width:700px) {
+    #page-admin #adminAlertsContent thead { display:none; }
+    #page-admin #adminAlertsContent table, #page-admin #adminAlertsContent tbody, #page-admin #adminAlertsContent tr, #page-admin #adminAlertsContent td { display:block; width:auto; box-sizing:border-box; }
+    #page-admin #adminAlertsContent tr { border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:10px; background:#fff; }
+    #page-admin #adminAlertsContent tr.crit { border-left:4px solid #E53238; }
+    #page-admin #adminAlertsContent td { border:0; padding:3px 0; white-space:normal !important; }
+    #page-admin #adminAlertsContent tr.crit td:first-child { box-shadow:none; }
+    #page-admin .al-msg { min-width:0; max-width:none; }
+    #adminAlertsFilters #adminAlertsResolveAll { margin-left:0 !important; }
+    .al-sep { display:none; }
+  }
   .ad-two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-bottom:0; }
   .ad-two .st-card { margin-bottom:18px; }
   .ad-search { max-width:260px; height:38px; }
@@ -5574,6 +5597,7 @@
 
         <div class="ad-tabs" id="adminTabs" role="tablist">
           <button class="ad-tab active" data-admin-tab="overview" type="button">Overview</button>
+          <button class="ad-tab" data-admin-tab="alerts" type="button">Alerts <span class="ad-count" id="adminAlertsCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="users" type="button">Users</button>
           <button class="ad-tab" data-admin-tab="lookup" type="button">User Lookup</button>
           <button class="ad-tab" data-admin-tab="ai" type="button">AI</button>
@@ -6187,6 +6211,18 @@ B0EXAMPLE2"></textarea></div>
               <div class="st-head-txt"><h2>Support tickets</h2><p>Open a ticket to read it, reply and resolve.</p></div>
             </div>
             <div id="adminTicketsContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
+        </div>
+
+        <!-- Alerts: what went wrong for a user, or looks suspicious (written by the background jobs, e.g. the stock monitor) -->
+        <div class="ad-panel" data-admin-panel="alerts" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico red">&#128276;</div>
+              <div class="st-head-txt"><h2>Alerts</h2><p>What went wrong for a user, or looks suspicious. The same problem seen again is one line with a count. Press Resolve once you have dealt with a line.</p></div>
+            </div>
+            <div id="adminAlertsFilters"></div>
+            <div id="adminAlertsContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           </section>
         </div>
 
@@ -20570,7 +20606,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadAdminPage() {
     loadAdminAdmins();
     loadAdminAffiliates();
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadAdminEbayRules(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog(), loadAdminService()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadAdminEbayRules(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog(), loadAdminService(), loadAdminAlerts()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -23728,6 +23764,148 @@ async function autoSuggestEmptyDraftCategories() {
       row.addEventListener('click', () => openTicketDetailModal(ticket));
     });
   }
+
+  // ---------- Admin: Alerts (what went wrong for a user, or looks suspicious - written by the background jobs, the stock monitor first) ----------
+  // The same problem seen again is ONE line with a count, not a new line each time; resolving a line says "I dealt with it" (if it happens again, a new line opens).
+  let adminAlertStatus = 'open'; // open | resolved | all
+  let adminAlertSeverity = ''; // '' (any) | critical | warning | info
+  let adminAlertsSeq = 0; // a newer request (a filter clicked quickly) wins over an older one that answers late
+  let adminAlertsCounts = { open: 0, critical: 0, warning: 0, info: 0 };
+  let adminAlertsShown = 0; // how many lines the list on the screen holds ("Resolve all shown" follows it)
+  let adminAlertsLoading = false; // a request is on its way: nothing that acts on "what is shown" is offered meanwhile
+  const ALERT_TAGS = { critical: ['bad', 'Critical'], warning: ['warn', 'Warning'], info: ['free', 'Info'] };
+  const alertAgo = (iso) => (iso ? adminUserAgo(Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))) : '—');
+  const alertLabel = (key) => String(key).replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  function alertValue(v) {
+    if (v === null || v === undefined || v === '') return '—';
+    if (Array.isArray(v)) return v.map(alertValue).join(', ');
+    if (typeof v === 'object') return Object.entries(v).map(([k, x]) => alertLabel(k) + ': ' + alertValue(x)).join('; ');
+    return String(v);
+  }
+  // The small facts behind a line (counts, a few SKUs, the reasons) as a readable list that opens on a click.
+  function alertDetailsHtml(details) {
+    const rows = Object.entries(details || {}).filter(([, v]) => v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && !v.length) && !(typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length));
+    if (!rows.length) return '';
+    return '<details class="al-details"><summary>Details</summary>' + rows.map(([k, v]) => '<div><b>' + escapeHtml(alertLabel(k)) + ':</b> ' + escapeHtml(alertValue(v).slice(0, 400)) + '</div>').join('') + '</details>';
+  }
+
+  function paintAdminAlertsBadge(counts) {
+    if (counts) adminAlertsCounts = counts;
+    const badge = document.getElementById('adminAlertsCount');
+    if (!badge) return;
+    const n = Number(adminAlertsCounts.open) || 0;
+    badge.textContent = n > 99 ? '99+' : String(n);
+    badge.style.display = n ? 'inline-block' : 'none';
+    // the chips carry the same numbers: they follow the minute-by-minute refresh too
+    const box = document.getElementById('adminAlertsFilters');
+    if (box && box.firstChild) paintAdminAlertFilters(adminAlertsLoading ? 0 : adminAlertsShown);
+  }
+
+  function paintAdminAlertFilters(shown) {
+    const box = document.getElementById('adminAlertsFilters');
+    if (!box) return;
+    const c = adminAlertsCounts;
+    const chip = (kind, key, label, n) => `<button type="button" class="ad-chipbtn${(kind === 'status' ? adminAlertStatus : adminAlertSeverity) === key ? ' on' : ''}" data-al-${kind}="${key}">${label}${n === null ? '' : `<b>${n}</b>`}</button>`;
+    box.innerHTML = chip('status', 'open', 'Open', c.open) + chip('status', 'resolved', 'Resolved', null) + chip('status', 'all', 'All', null)
+      + '<span class="al-sep"></span>'
+      + chip('severity', '', 'Any level', null) + chip('severity', 'critical', 'Critical', c.critical) + chip('severity', 'warning', 'Warning', c.warning) + chip('severity', 'info', 'Info', c.info)
+      + (adminAlertStatus === 'open' && shown ? `<button type="button" class="btn-small" id="adminAlertsResolveAll" style="margin-left:auto;">Resolve all shown (${shown})</button>` : '');
+    box.querySelectorAll('[data-al-status]').forEach((b) => b.addEventListener('click', () => { adminAlertStatus = b.dataset.alStatus; loadAdminAlerts(); }));
+    box.querySelectorAll('[data-al-severity]').forEach((b) => b.addEventListener('click', () => { adminAlertSeverity = b.dataset.alSeverity; loadAdminAlerts(); }));
+  }
+
+  function renderAdminAlerts(container, alerts, total) {
+    adminAlertsShown = alerts.length;
+    paintAdminAlertFilters(alerts.length);
+    if (!alerts.length) {
+      container.innerHTML = '<div class="empty-state">' + (adminAlertStatus === 'open' && !adminAlertSeverity
+        ? 'Nothing needs your attention. When a background job meets a problem with a user, or something looks suspicious, it shows up here.'
+        : 'No alerts match this filter.') + '</div>';
+      return;
+    }
+    // a reload (after Resolve) keeps the Details someone had opened
+    const openIds = new Set([...container.querySelectorAll('tr[data-alert-id] details[open]')].map((d) => d.closest('tr').dataset.alertId));
+    const more = total > alerts.length ? `<div class="meta-line" style="margin:0 0 10px;">Showing ${alerts.length} of ${total}. Resolve some to see the rest.</div>` : '';
+    container.innerHTML = more + `<table class="data-table">
+      <thead><tr><th>Level</th><th>What happened</th><th>User</th><th>Seen</th><th></th></tr></thead>
+      <tbody>${alerts.map((a) => {
+        const tag = ALERT_TAGS[a.severity] || ALERT_TAGS.warning;
+        return `<tr data-alert-id="${escapeAttr(a.id)}" class="al-row${a.severity === 'critical' && a.status === 'open' ? ' crit' : ''}">
+          <td><span class="ad-tag ${tag[0]}">${tag[1]}</span></td>
+          <td class="al-msg"><b>${escapeHtml(a.title)}</b>${a.message ? `<div>${escapeHtml(a.message)}</div>` : ''}${alertDetailsHtml(a.details)}</td>
+          <td>${a.userId ? `<a href="#" class="al-user" data-al-user="${escapeAttr(a.userId)}" data-al-email="${escapeAttr(a.userEmail || '')}">${escapeHtml(a.userEmail || 'Open user')}</a>` : (a.userEmail ? escapeHtml(a.userEmail) : '<span style="color:var(--grey);">All sellers</span>')}</td>
+          <td style="white-space:nowrap;">${a.count > 1 ? a.count + ' times' : 'once'}<br /><small style="color:var(--grey);" title="First seen ${escapeAttr(new Date(a.firstSeenAt).toLocaleString())}">seen ${escapeHtml(alertAgo(a.lastSeenAt))}</small></td>
+          <td style="white-space:nowrap;">${a.status === 'open' ? `<button class="btn-small" type="button" data-al-resolve="${escapeAttr(a.id)}">Resolve</button>` : `<small style="color:var(--grey);">resolved ${escapeHtml(alertAgo(a.resolvedAt))}</small>`}</td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+    openIds.forEach((id) => { const d = container.querySelector(`tr[data-alert-id="${id}"] details`); if (d) d.open = true; });
+
+    container.querySelectorAll('[data-al-resolve]').forEach((b) => b.addEventListener('click', async () => {
+      b.disabled = true;
+      try {
+        const out = await adminPost('/api/admin/alerts/' + encodeURIComponent(b.dataset.alResolve) + '/resolve', {});
+        paintAdminAlertsBadge(out.counts);
+      } catch (err) {
+        showToast('Could not resolve it', err.message, 'error');
+      }
+      loadAdminAlerts({ quiet: true }); // the list and the numbers are read again, so a line another admin already resolved goes too
+    }));
+    container.querySelectorAll('[data-al-user]').forEach((link) => link.addEventListener('click', (e) => {
+      e.preventDefault();
+      setAdminTab('lookup');
+      const box = document.getElementById('lookupEmail');
+      if (box) box.value = link.dataset.alEmail || '';
+      openLookupById(link.dataset.alUser);
+    }));
+    document.getElementById('adminAlertsResolveAll')?.addEventListener('click', async () => {
+      const ids = alerts.map((a) => a.id);
+      if (!(await elmsConfirm(`Mark these ${ids.length} alert(s) as resolved?\nThey leave the open list. If the same problem happens again, a new alert opens.`, { title: 'Resolve alerts', okText: 'Resolve all' }))) return;
+      try {
+        const out = await adminPost('/api/admin/alerts/resolve-all', { ids });
+        paintAdminAlertsBadge(out.counts);
+        showToast('Resolved', out.resolved + ' alert(s)', 'success');
+      } catch (err) {
+        showToast('Could not resolve them', err.message, 'error');
+      }
+      loadAdminAlerts({ quiet: true });
+    });
+  }
+
+  async function loadAdminAlerts(opts = {}) {
+    const container = document.getElementById('adminAlertsContent');
+    if (!container) return;
+    const seq = ++adminAlertsSeq;
+    adminAlertsLoading = true;
+    paintAdminAlertFilters(0); // the chip of the new filter lights at once, and no button acts on a list that is about to change
+    if (!opts.quiet) container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
+    try {
+      const qs = new URLSearchParams({ status: adminAlertStatus, limit: '200' });
+      if (adminAlertSeverity) qs.set('severity', adminAlertSeverity);
+      const res = await apiFetch('/api/admin/alerts?' + qs.toString());
+      const data = await res.json();
+      if (seq !== adminAlertsSeq) return;
+      adminAlertsLoading = false;
+      if (!res.ok || !data.success) { container.innerHTML = `<div class="state-msg error">${escapeHtml(data.error || 'Could not load the alerts.')}</div>`; return; }
+      paintAdminAlertsBadge(data.counts);
+      renderAdminAlerts(container, data.alerts, data.total);
+    } catch (err) {
+      if (seq === adminAlertsSeq) { adminAlertsLoading = false; container.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`; }
+    }
+  }
+
+  // The red number on the tab stays true while the admin works elsewhere (just the numbers: one tiny request a minute while the admin page is open).
+  async function refreshAdminAlertsBadge() {
+    const page = document.getElementById('page-admin');
+    if (!page || page.style.display === 'none' || document.hidden) return;
+    try { if (!localStorage.getItem('elmsSessionToken')) return; } catch (_) { return; } // signed out (the page can stay on screen behind the sign-in): nothing to ask
+    try {
+      const res = await apiFetch('/api/admin/alerts?status=open&limit=1');
+      const data = await res.json();
+      if (res.ok && data.success) paintAdminAlertsBadge(data.counts);
+    } catch (_) { /* the next minute tries again */ }
+  }
+  setInterval(refreshAdminAlertsBadge, 60000);
+  document.querySelector('#adminTabs [data-admin-tab="alerts"]')?.addEventListener('click', () => loadAdminAlerts({ quiet: true }));
 
   // ---------- Admin: appeals (people who were suspended or blocked and ask for a second look) ----------
   const appealAccountTag = (acc) => (!acc ? '<span class="ad-tag free">NO ACCOUNT</span>' : acc.permanent ? '<span class="ad-tag bad">BANNED</span>' : acc.suspended ? '<span class="ad-tag bad">SUSPENDED</span>' : '<span class="ad-tag paid">ACTIVE</span>');
