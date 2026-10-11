@@ -1,6 +1,6 @@
 (function (w, d) {
 'use strict';
-var API_HOST = 'https://elms-backend-1-tr5h.onrender.com'; /* scan-ok:api-host */
+var API_HOST = 'https://elms-backend-1-tr5h.onrender.com';
 safe(function () {
 var root = d.documentElement;
 if ((' ' + root.className + ' ').indexOf(' js ') === -1) { root.className += ' js'; }
@@ -430,12 +430,16 @@ view.appendChild(box);
 status.textContent = '';
 }
 function render(list) {
+var hadFocus = container.contains(d.activeElement);
 clear(view);
 container.setAttribute('aria-busy', 'false');
 var ul = el('ul', 'plans');
+var planNo = 0;
 each(list, function (p) {
 var li = el('li', 'plan');
-li.appendChild(el('h' + level, 'plan__name', p.name));
+var nameEl = el('h' + level, 'plan__name', p.name);
+nameEl.setAttribute('id', 'plan-name-' + (planNo += 1));
+li.appendChild(nameEl);
 var price = el('p', 'plan__price');
 price.appendChild(el('span', 'plan__cur', 'USD'));
 price.appendChild(el('span', 'plan__amount', money(p.price)));
@@ -447,11 +451,12 @@ if (isFinite(p.stores) && p.stores > 0) { feats.appendChild(el('li', null, whole
 li.appendChild(feats);
 var a = el('a', 'btn btn--primary plan__cta', ctaLabel);
 a.setAttribute('href', ctaHref);
-a.setAttribute('aria-label', ctaLabel + ' with ' + p.name);
+a.setAttribute('aria-describedby', nameEl.getAttribute('id'));
 li.appendChild(a);
 ul.appendChild(li);
 });
 view.appendChild(ul);
+if (hadFocus) { try { view.focus({ preventScroll: true }); } catch (e) { /* older browsers */ } }
 status.textContent = list.length + (list.length === 1 ? ' plan loaded' : ' plans loaded');
 if (typeof opt.onLoad === 'function') { safe(function () { opt.onLoad(list.length); }); }
 }
