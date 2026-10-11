@@ -1,145 +1,398 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Track your order — ELMS</title>
-<meta name="description" content="Check the delivery status of your order." />
-<meta name="robots" content="noindex" />
-<link rel="canonical" href="https://elmstool.com/track" />
-<meta name="theme-color" content="#0064D2" />
-<link rel="icon" href="/favicon.ico?v=2" sizes="any" />
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2" />
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Track your order - ELMS</title>
+<meta name="description" content="Check the delivery status of your order with the tracking link or code from your seller. No account and no sign-in needed.">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="canonical" href="https://elmstool.com/track">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Track your order - ELMS">
+<meta property="og:description" content="Check the delivery status of your order with the tracking link or code from your seller. No account and no sign-in needed.">
+<meta property="og:url" content="https://elmstool.com/track">
+<meta property="og:image" content="https://elmstool.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ELMS logo">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Track your order - ELMS">
+<meta name="twitter:description" content="Check the delivery status of your order with the tracking link or code from your seller. No account and no sign-in needed.">
+<meta name="twitter:image" content="https://elmstool.com/og-image.png">
+<meta name="twitter:image:alt" content="ELMS logo">
+<meta name="theme-color" content="#0064D2">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css?v=3">
 <style>
-  :root {
-    --ink: #0B1220; --ink2: #334155; --mute: #64748B; --line: #E4E9F2; --bg: #FFFFFF; --soft: #F5F8FE;
-    --red: #E53238; --blue: #0064D2; --yellow: #F5AF02; --green: #86B817; --navy: #0A1530;
-    --shadow: 0 18px 50px rgba(15, 35, 80, .12);
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--soft); color: var(--ink); font: 16px/1.6 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
-  a { color: var(--blue); text-decoration: none; }
-  .wrap { max-width: 560px; margin: 0 auto; padding: 0 20px; }
-
-  .nav { padding: 22px 0; }
-  .nav .wrap { display: flex; justify-content: center; }
-  .logo img { display: block; height: 28px; width: auto; }
-
-  main { padding: 20px 0 60px; }
-  .card { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 30px 26px; box-shadow: var(--shadow); }
-  h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: -.01em; }
-  .sub { color: var(--mute); font-size: 14.5px; margin: 0 0 22px; }
-
-  .lookup { display: flex; gap: 8px; }
-  .lookup input { flex: 1; min-width: 0; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; font: inherit; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-  .lookup input:focus { outline: none; border-color: var(--blue); }
-  .lookup button { border: none; background: var(--blue); color: #fff; font: inherit; font-weight: 700; padding: 0 20px; border-radius: 12px; cursor: pointer; }
-  .lookup button:disabled { opacity: .6; cursor: default; }
-
-  .result { margin-top: 24px; }
-  .status-row { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 14px; background: var(--soft); }
-  .status-dot { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; background: #fff; border: 1.5px solid var(--line); }
-  .status-title { font-weight: 800; font-size: 16px; }
-  .status-detail { color: var(--mute); font-size: 13.5px; margin-top: 2px; }
-  .status-row.delivered .status-dot { background: rgba(134,184,23,.15); border-color: transparent; color: var(--green); }
-  .status-row.transit .status-dot { background: rgba(0,100,210,.12); border-color: transparent; color: var(--blue); }
-  .status-row.exception .status-dot { background: rgba(229,50,56,.12); border-color: transparent; color: var(--red); }
-  .status-row.pending .status-dot { background: rgba(245,175,2,.15); border-color: transparent; color: var(--yellow); }
-
-  .msg { text-align: center; padding: 30px 10px; color: var(--mute); font-size: 14.5px; }
-  .msg.error { color: var(--red); }
-  .skel { height: 72px; border-radius: 14px; background: linear-gradient(100deg, #EEF2F9 30%, #F8FAFE 50%, #EEF2F9 70%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
-  @keyframes shimmer { to { background-position: -200% 0; } }
-
-  footer { text-align: center; padding: 0 20px 30px; color: var(--mute); font-size: 12.5px; }
-  @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+.track-page{background:var(--soft)}
+.track-top{display:flex;justify-content:center;padding:clamp(1.25rem,1rem + 1.5vw,2rem) var(--gutter) 0}
+.track-main{padding-block:clamp(1.25rem,.75rem + 2.5vw,2.75rem) clamp(2rem,1.5rem + 3vw,4rem)}
+.track-main .container{max-width:42rem}
+.track-card{display:grid;gap:1.5rem;padding:clamp(1.25rem,.75rem + 2.5vw,2.25rem);box-shadow:var(--sh-2)}
+.track-card>*{margin:0;min-width:0}
+.track-head{display:grid;gap:.625rem}
+.track-head>*{margin:0}
+.track-head .eyebrow{justify-self:start}
+.track-form{display:grid;gap:.375rem}
+.track-form__row{display:flex;flex-wrap:wrap;gap:.625rem}
+.track-form__row .input{flex:1 1 13rem;width:auto;min-width:0;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.track-form .form-hint,.track-form .form-error{margin:0}
+.track-out{display:grid;gap:1.25rem}
+.track-out>*{margin:0;min-width:0}
+.track-status{display:flex;align-items:flex-start;gap:1rem;padding:1.125rem 1.25rem;border:1px solid var(--tone-line);border-radius:var(--r-md);background:var(--tone-bg)}
+.track-status[data-tone="info"]{--tone-bg:var(--blue-50);--tone-line:var(--blue-100);--tone-fg:var(--blue-dark)}
+.track-status[data-tone="ok"]{--tone-bg:var(--ok-bg);--tone-line:var(--ok-line);--tone-fg:var(--ok)}
+.track-status[data-tone="warn"]{--tone-bg:var(--warn-bg);--tone-line:var(--warn-line);--tone-fg:var(--warn)}
+.track-status[data-tone="neutral"]{--tone-bg:var(--soft);--tone-line:var(--line-strong);--tone-fg:var(--ink-2)}
+.track-status .icon-tile{background:var(--white);color:var(--tone-fg);box-shadow:inset 0 0 0 1px var(--tone-line)}
+.track-status__body{display:grid;gap:.25rem;min-width:0}
+.track-status__body>*{margin:0}
+.track-status__label{font-size:var(--fs-h4);font-weight:700;line-height:1.3;color:var(--ink)}
+.track-status__text{color:var(--ink-2)}
+.track-status__time{font-size:var(--fs-sm);color:var(--mute)}
+.track-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem}
+.track-steps li{--bar:var(--line-strong);display:flex;align-items:flex-start;gap:.25rem;padding-top:.625rem;border-top:4px solid var(--bar);font-size:var(--fs-sm);font-weight:500;line-height:1.35;color:var(--mute)}
+.track-steps li.is-done,.track-steps li[aria-current="step"]{--bar:var(--blue);color:var(--ink)}
+.track-steps li[aria-current="step"]{font-weight:700}
+.track-steps .icon{margin-top:.125rem;color:var(--blue)}
+.track-steps.is-delivered li{--bar:var(--ok)}
+.track-steps.is-delivered .icon{color:var(--ok)}
+@media (max-width:40em){.track-steps{grid-template-columns:1fr;gap:.5rem}.track-steps li{padding:.125rem 0 .125rem .75rem;border-top:0;border-left:4px solid var(--bar)}}
+.track-msg{display:grid;gap:.5rem;justify-items:center;padding:1.75rem 1.25rem}
+.track-msg>*{margin:0}
+.track-msg__title{font-size:var(--fs-h4);font-weight:700;color:var(--ink)}
+.track-msg .btn{margin-top:.5rem}
+.track-note{margin:1rem 0 0;text-align:center}
+.track-foot{padding:0 var(--gutter) 2rem;text-align:center;font-size:var(--fs-sm);color:var(--mute)}
+.track-foot p{margin:0}
+.track-foot a{color:var(--mute)}
 </style>
+<script src="/site.js?v=3" defer></script>
 </head>
-<body>
-<div class="nav"><div class="wrap"><a class="logo" href="/" aria-label="ELMS home"><img src="/logo-wordmark.png" alt="ELMS" width="107" height="28"></a></div></div>
+<body class="track-page">
 
-<main>
-  <div class="wrap">
-    <div class="card">
-      <h1>Track your order</h1>
-      <p class="sub">Enter the tracking code from your order to see its delivery status.</p>
-      <form class="lookup" id="lookupForm">
-        <input id="codeInput" type="text" placeholder="e.g. ELM12345" autocomplete="off" autocapitalize="characters" spellcheck="false" />
-        <button type="submit" id="lookupBtn">Track</button>
+<header class="track-top"><a class="brand" href="/"><img src="/logo-wordmark.png" width="106" height="28" alt="ELMS home"></a></header>
+
+<main id="main" tabindex="-1" class="track-main">
+  <div class="container container--narrow">
+    <section class="card track-card">
+      <div class="track-head">
+        <span class="eyebrow">Delivery status</span>
+        <h1 class="t-h2">Track your order</h1>
+        <p class="muted">Your seller uses ELMS to share delivery updates with you. Enter the tracking code, or open the tracking link your seller sent you. You do not need an account.</p>
+      </div>
+      <form class="track-form" id="track-form" novalidate>
+        <label class="field__label" for="track-code">Tracking code</label>
+        <div class="track-form__row">
+          <input class="input" id="track-code" name="code" type="text" inputmode="text" enterkeyhint="search" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="100" aria-describedby="track-hint track-error">
+          <button class="btn btn--primary" type="submit" id="track-btn">Track order</button>
+        </div>
+        <p class="form-hint" id="track-hint">Capital letters do not matter. Spaces and dashes are ignored.</p>
+        <p class="form-error" id="track-error" hidden></p>
       </form>
-      <div class="result" id="result"></div>
-    </div>
+      <div class="track-out" id="track-out" role="status" aria-live="polite" aria-atomic="true" aria-busy="false"></div>
+      <noscript><p class="empty">Turn on JavaScript in your browser to look up your order.</p></noscript>
+    </section>
+    <p class="track-note small muted">This page shows a general delivery status only. For anything about your order, contact the seller you bought from.</p>
   </div>
 </main>
 
-<footer>&copy; <span id="yr"></span> ELMS</footer>
+<footer class="track-foot">
+  <p>&copy; <span data-year>2026</span> ELMS &middot; <a href="/privacy">Privacy Policy</a> &middot; <a href="/terms">Terms of Service</a></p>
+</footer>
 
 <script>
 (function () {
-  var API = 'https://elms-backend-1-tr5h.onrender.com';
-  var $ = function (id) { return document.getElementById(id); };
-  $('yr').textContent = new Date().getFullYear();
+  'use strict';
+  var doc = document;
+  var win = window;
 
-  // Generic, carrier/source-agnostic labels - the API itself never says which supplier or carrier this is.
-  var LABELS = {
-    Pending: ['pending', '⏳', 'On its way', 'We are waiting for the first update on this order.'],
-    NotAvailable: ['pending', '⏳', 'Not available yet', 'This order has not shipped yet, or its tracking has not started.'],
-    NotFound: ['pending', '⏳', 'Not available yet', 'No update yet. Please check back later.'],
-    InfoReceived: ['pending', '📦', 'Preparing to ship', 'The order is being prepared for shipment.'],
-    InTransit: ['transit', '🚚', 'On its way', 'Your order is in transit.'],
-    Expired: ['exception', '⚠️', 'No recent update', 'There has been no tracking update for a while.'],
-    AvailableForPickup: ['transit', '📍', 'Ready for pickup', 'Your order is available for pickup.'],
-    OutForDelivery: ['transit', '🚚', 'Out for delivery', 'Your order is out for delivery today.'],
-    DeliveryFailure: ['exception', '⚠️', 'Delivery attempt failed', 'A delivery attempt was made but did not succeed.'],
-    Delivered: ['delivered', '✓', 'Delivered', 'Your order has been delivered.'],
-    Exception: ['exception', '⚠️', 'Delivery exception', 'There is an issue with this shipment.'],
+  var STATES = {
+    processing: { tone: 'info', icon: 'i-box', step: 0, label: 'Being prepared', text: 'Your order is being prepared for delivery. The first delivery update has not arrived yet.' },
+    in_transit: { tone: 'info', icon: 'i-truck', step: 1, label: 'On its way', text: 'Your order is on its way to you.' },
+    out_for_delivery: { tone: 'info', icon: 'i-truck', step: 2, label: 'Out for delivery', text: 'Your order is on the last part of its journey. It is out for delivery or ready for you to collect.' },
+    delivered: { tone: 'ok', icon: 'i-check', step: 3, label: 'Delivered', text: 'Your order has been delivered.' },
+    problem: { tone: 'warn', icon: 'i-alert', step: -1, label: 'Delivery problem', text: 'There is a problem with the delivery of this order, or there has been no update for some time. Please contact the seller you bought from.' },
+    not_found: { tone: 'neutral', icon: 'i-clock', step: -1, label: 'Not available yet', text: 'Delivery tracking has not started for this order, or it has no updates yet. Please check again later, or ask the seller.' },
+    unavailable: { tone: 'neutral', icon: 'i-info', step: -1, label: 'Status unavailable', text: 'We cannot show a delivery status for this order right now. Please check again later.' }
   };
+  var STEP_LABELS = ['Being prepared', 'On its way', 'Out for delivery', 'Delivered'];
 
-  function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-
-  function render(status, detail, at) {
-    var info = LABELS[status] || LABELS.Pending;
-    var when = at ? new Date(at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '';
-    $('result').innerHTML =
-      '<div class="status-row ' + info[0] + '"><div class="status-dot">' + info[1] + '</div><div>' +
-      '<div class="status-title">' + esc(info[2]) + '</div>' +
-      '<div class="status-detail">' + esc(detail || info[3]) + (when ? ' &middot; ' + esc(when) : '') + '</div>' +
-      '</div></div>';
+  function kindOf(raw) {
+    var k = typeof raw === 'string' ? raw.toLowerCase().replace(/[^a-z_]/g, '') : '';
+    return Object.prototype.hasOwnProperty.call(STATES, k) ? k : 'unavailable';
   }
 
-  function showMessage(text, isError) {
-    $('result').innerHTML = '<div class="msg' + (isError ? ' error' : '') + '">' + esc(text) + '</div>';
+  function cleanCode(raw) {
+    var t = String(raw == null ? '' : raw).split(/[?#]/)[0];
+    var slash = t.lastIndexOf('/');
+    if (slash >= 0) t = t.slice(slash + 1);
+    return t.replace(/[\s-]/g, '').toUpperCase();
   }
 
-  function lookup(code) {
-    code = String(code || '').trim().toUpperCase();
-    if (!code) return;
-    $('codeInput').value = code;
-    $('lookupBtn').disabled = true;
-    $('result').innerHTML = '<div class="skel"></div>';
-    fetch(API + '/api/track/' + encodeURIComponent(code))
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
-      .then(function (res) {
-        if (!res.ok || !res.d.success) { showMessage("We could not find that tracking code. Please check it and try again.", true); return; }
-        render(res.d.status, res.d.statusDetail, res.d.statusAt);
-        try { history.replaceState(null, '', '/track/' + code); } catch (e) { /* fine without it */ }
-      })
-      .catch(function () { showMessage('Could not connect right now. Please try again in a moment.', true); })
-      .then(function () { $('lookupBtn').disabled = false; });
+  function codeFromAddress() {
+    var m = /^\/track\/([^\/]+)\/?$/.exec(win.location.pathname);
+    if (m) {
+      try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+    }
+    try { return new URLSearchParams(win.location.search).get('code') || ''; } catch (e2) { return ''; }
   }
 
-  $('lookupForm').addEventListener('submit', function (e) { e.preventDefault(); lookup($('codeInput').value); });
+  function el(tag, cls, text) {
+    var n = doc.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
 
-  var fromPath = (location.pathname.match(/\/track\/([A-Za-z0-9]+)/) || [])[1];
-  var fromQuery = new URLSearchParams(location.search).get('code');
-  var initial = fromPath || fromQuery;
-  if (initial) lookup(initial); else showMessage('Enter your tracking code above.');
+  function icon(id) {
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = doc.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'icon');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    var use = doc.createElementNS(ns, 'use');
+    use.setAttribute('href', '#' + id);
+    svg.appendChild(use);
+    return svg;
+  }
+
+  function start() {
+    var form = doc.getElementById('track-form');
+    var input = doc.getElementById('track-code');
+    var button = doc.getElementById('track-btn');
+    var error = doc.getElementById('track-error');
+    var out = doc.getElementById('track-out');
+    if (!form || !input || !button || !error || !out) return;
+
+    var ticket = 0;
+    var lastCode = '';
+    var slowTimer = 0;
+    var busy = false;
+
+    function setBusy(on) {
+      busy = on;
+      if (on) button.setAttribute('aria-disabled', 'true');
+      else button.removeAttribute('aria-disabled');
+      out.setAttribute('aria-busy', on ? 'true' : 'false');
+    }
+
+    function clearOut() {
+      while (out.firstChild) out.removeChild(out.firstChild);
+    }
+
+    function showFieldError(text) {
+      error.textContent = text;
+      error.hidden = false;
+      input.setAttribute('aria-invalid', 'true');
+    }
+
+    function clearFieldError() {
+      error.hidden = true;
+      error.textContent = '';
+      input.removeAttribute('aria-invalid');
+    }
+
+    function showIdle() {
+      clearOut();
+      out.appendChild(el('p', 'empty', 'Your delivery status will appear here.'));
+    }
+
+    function showBusy(text) {
+      clearOut();
+      out.appendChild(el('p', 'status status--busy', text));
+    }
+
+    function showMessage(title, text, retry) {
+      clearOut();
+      var box = el('div', 'empty track-msg');
+      box.appendChild(el('p', 'track-msg__title', title));
+      box.appendChild(el('p', null, text));
+      if (retry) {
+        var again = el('button', 'btn btn--secondary btn--sm', 'Try again');
+        again.type = 'button';
+        again.addEventListener('click', function () { lookup(lastCode, false); });
+        box.appendChild(again);
+      }
+      out.appendChild(box);
+    }
+
+    function showResult(raw, at) {
+      var s = STATES[kindOf(raw)];
+      clearOut();
+      var wrap = el('div', 'track-result track-out');
+      var card = el('div', 'track-status');
+      card.setAttribute('data-tone', s.tone);
+      var tile = el('span', 'icon-tile');
+      tile.appendChild(icon(s.icon));
+      card.appendChild(tile);
+      var body = el('div', 'track-status__body');
+      body.appendChild(el('h2', 'track-status__label', s.label));
+      body.appendChild(el('p', 'track-status__text', s.text));
+      var when = null;
+      if (typeof at === 'string' || typeof at === 'number') {
+        var dt = new Date(at);
+        if (!isNaN(dt.getTime())) {
+          var shown = '';
+          try { shown = dt.toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { shown = dt.toISOString().slice(0, 10); }
+          when = el('p', 'track-status__time');
+          when.appendChild(doc.createTextNode('Last update: '));
+          var t = el('time', null, shown);
+          t.setAttribute('datetime', dt.toISOString());
+          when.appendChild(t);
+        }
+      }
+      if (when) body.appendChild(when);
+      card.appendChild(body);
+      wrap.appendChild(card);
+
+      if (s.step >= 0) {
+        var list = el('ol', 'track-steps' + (s.step === 3 ? ' is-delivered' : ''));
+        list.setAttribute('aria-label', 'Delivery progress');
+        for (var i = 0; i < STEP_LABELS.length; i++) {
+          var li = el('li', i < s.step ? 'is-done' : '');
+          if (i < s.step) {
+            var tick = icon('i-check');
+            tick.setAttribute('class', 'icon icon--sm');
+            li.appendChild(tick);
+          }
+          li.appendChild(doc.createTextNode(STEP_LABELS[i]));
+          if (i === s.step) li.setAttribute('aria-current', 'step');
+          if (i < s.step) li.appendChild(el('span', 'sr-only', ' (done)'));
+          list.appendChild(li);
+        }
+        wrap.appendChild(list);
+      }
+      out.appendChild(wrap);
+    }
+
+    function setAddress(code) {
+      try {
+        win.history.replaceState(null, '', code ? '/track/' + encodeURIComponent(code) : '/track');
+      } catch (e) { /* the address stays as it is */ }
+    }
+
+    function finish(my) {
+      if (my !== ticket) return false;
+      win.clearTimeout(slowTimer);
+      setBusy(false);
+      return true;
+    }
+
+    function lookup(raw, typed) {
+      var code = cleanCode(raw);
+      lastCode = code;
+      ticket += 1;
+      var my = ticket;
+      win.clearTimeout(slowTimer);
+      clearFieldError();
+
+      if (!code) {
+        setBusy(false);
+        showFieldError('Enter your tracking code.');
+        showIdle();
+        input.focus();
+        return;
+      }
+      input.value = code;
+      if (!/^[A-Z0-9]{1,40}$/.test(code)) {
+        setBusy(false);
+        showMessage('We could not find that code', 'Check it for typing mistakes, or use the link your seller sent you.', false);
+        if (typed) setAddress('');
+        return;
+      }
+      if (typeof win.ELMS_API !== 'string' || typeof win.fetch !== 'function') {
+        setBusy(false);
+        showMessage('We could not load this right now', 'Please try again in a moment.', true);
+        return;
+      }
+
+      setBusy(true);
+      showBusy('Looking up your order');
+      slowTimer = win.setTimeout(function () {
+        if (my === ticket) showBusy('Still working on it. Thank you for waiting.');
+      }, 7000);
+
+      var controller = typeof win.AbortController === 'function' ? new win.AbortController() : null;
+      var abortTimer = controller ? win.setTimeout(function () { controller.abort(); }, 45000) : 0;
+      var options = { headers: { Accept: 'application/json' } };
+      if (controller) options.signal = controller.signal;
+
+      function attempt(retriesLeft) {
+        win.fetch(win.ELMS_API + '/api/track/' + encodeURIComponent(code), options).then(function (res) {
+          var status = res.status;
+          if (status === 429) { win.clearTimeout(abortTimer); if (finish(my)) showMessage('Too many lookups', 'Please wait a while, then try again.', true); return; }
+          if (status === 404 || status === 400) { win.clearTimeout(abortTimer); if (finish(my)) { showMessage('We could not find that code', 'Check it for typing mistakes, or use the link your seller sent you.', false); if (typed) setAddress(''); } return; }
+          if (status === 503 && retriesLeft > 0 && my === ticket) { win.setTimeout(function () { if (my === ticket) attempt(retriesLeft - 1); }, 2500); return; }
+          if (!res.ok) { win.clearTimeout(abortTimer); if (finish(my)) showMessage('We could not load this right now', 'Please try again in a moment.', true); return; }
+          return res.json().then(function (data) {
+            win.clearTimeout(abortTimer);
+            if (!finish(my)) return;
+            if (!data || data.success !== true) { showMessage('We could not load this right now', 'Please try again in a moment.', true); return; }
+            showResult(data.status, data.statusAt);
+            if (typed) setAddress(code);
+          });
+        }).catch(function () {
+          if (my !== ticket) return;
+          if (retriesLeft > 0) { win.setTimeout(function () { if (my === ticket) attempt(retriesLeft - 1); }, 2500); return; }
+          win.clearTimeout(abortTimer);
+          if (finish(my)) showMessage('We could not load this right now', 'Please try again in a moment.', true);
+        });
+      }
+      attempt(1);
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (busy && cleanCode(input.value) === lastCode) return;
+      lookup(input.value, true);
+    });
+
+    var first = codeFromAddress();
+    if (first) {
+      lookup(first, false);
+    } else {
+      showIdle();
+    }
+  }
+
+  if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start);
+  else start();
 })();
 </script>
+
+<svg style="display:none" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-import" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 16v2.5A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5V16"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20l1.2-4.3L16.4 4.5a2.1 2.1 0 0 1 3 3L8.2 18.8 4 20z"/><path d="M14.5 6.5l3 3"/></symbol>
+  <symbol id="i-publish" viewBox="0 0 24 24"><path d="M12 20V9"/><path d="M7.5 13.5L12 9l4.5 4.5"/><path d="M5 4.5h14"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M8 20h8"/><path d="M12 16.5V20"/><path d="M6.5 11h2.4l1.6-3 2.5 6 1.6-3h2.9"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M5 5h14a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 17h-8.5L6 20.5V17H5a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 5 5z"/><path d="M8 9.5h8"/><path d="M8 12.5h5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 20v-6"/><path d="M12 20V8.5"/><path d="M17 20v-9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8-7.5 9.5-4.3-1.5-7.5-5-7.5-9.5V6L12 3z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15L6 16.5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-3.6 3.4-5.5 7-5.5s6.5 1.9 7 5.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7.5l8 6 8-6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 15.5H3L12 4z"/><path d="M12 10v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6.5h11V16H3z"/><path d="M14 9.5h4l3 3.5V16h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v13H7.5A2.5 2.5 0 0 1 5 17.5v-13z"/><path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H18"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 8h9"/><path d="M17 8h3"/><circle cx="15" cy="8" r="2"/><path d="M4 16h3"/><path d="M11 16h9"/><circle cx="9" cy="16" r="2"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9l1.5-4.5h13L20 9"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0A2.7 2.7 0 0 0 20 9"/><path d="M5.5 12.5V20h13v-7.5"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M11 4l1.9 5.1L18 11l-5.1 1.9L11 18l-1.9-5.1L4 11l5.1-1.9L11 4z"/><path d="M19 15v4"/><path d="M17 17h4"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 5L4.5 9.5 9 14"/><path d="M4.5 9.5H14a5 5 0 0 1 0 10h-3"/></symbol>
+</svg>
 </body>
 </html>

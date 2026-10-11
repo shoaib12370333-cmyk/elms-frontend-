@@ -1,189 +1,371 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pricing — ELMS</title>
-<meta name="description" content="ELMS pricing: buy a credit plan and use it to import products from Amazon, write listings with AI and publish to eBay. Prices and credits are shown below." />
-<link rel="canonical" href="https://elmstool.com/plans" />
-<meta property="og:type" content="website" />
-<meta property="og:title" content="Pricing — ELMS" />
-<meta property="og:description" content="Credit plans for ELMS: import from Amazon, AI-written listings, publish to eBay, orders and profit." />
-<meta property="og:url" content="https://elmstool.com/plans" />
-<meta property="og:image" content="https://elmstool.com/og-image.png" />
-<meta name="theme-color" content="#0064D2" />
-<link rel="icon" href="/favicon.ico?v=2" sizes="any" />
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2" />
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-<style>
-  :root {
-    --ink: #0B1220; --ink2: #334155; --mute: #64748B; --line: #E4E9F2; --bg: #FFFFFF; --soft: #F5F8FE;
-    --red: #E53238; --blue: #0064D2; --yellow: #F5AF02; --green: #86B817; --navy: #0A1530;
-    --shadow: 0 18px 50px rgba(15, 35, 80, .12);
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-  a { color: inherit; text-decoration: none; }
-  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 22px; }
-  .grad { background: linear-gradient(90deg, var(--blue), #2E8BFF 45%, var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-
-  .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.88); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
-  .nav-in { display: flex; align-items: center; gap: 22px; height: 68px; }
-  .logo { display: flex; align-items: center; }
-  .logo img { display: block; height: 30px; width: auto; }
-  .links { display: flex; gap: 4px; margin-left: 18px; }
-  .links a { padding: 8px 14px; border-radius: 99px; font-weight: 600; font-size: 14.5px; color: var(--ink2); }
-  .links a:hover, .links a.on { background: var(--soft); color: var(--blue); }
-  .nav-cta { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 700 15px Inter, sans-serif; padding: 12px 22px; border-radius: 14px; border: 1.5px solid transparent; cursor: pointer; transition: transform .15s, box-shadow .2s; white-space: nowrap; }
-  .btn:hover { transform: translateY(-2px); }
-  .btn.primary { background: linear-gradient(135deg, #0064D2, #1E7CF0); color: #fff; box-shadow: 0 10px 26px rgba(0,100,210,.35); }
-  .btn.ghost { background: #fff; border-color: var(--line); color: var(--ink); }
-  .btn.ghost:hover { border-color: var(--blue); color: var(--blue); }
-  .btn.sm { padding: 9px 16px; font-size: 14px; border-radius: 12px; }
-
-  .top { padding: 64px 0 26px; text-align: center; }
-  .eyebrow { font-weight: 800; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
-  h1 { font-size: clamp(34px, 5vw, 54px); line-height: 1.08; letter-spacing: -.03em; margin: 10px 0 14px; font-weight: 900; }
-  .sub { color: var(--ink2); font-size: 18px; max-width: 680px; margin: 0 auto; }
-  section { padding: 30px 0 46px; }
-
-  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; align-items: stretch; }
-  .plan { position: relative; background: #fff; border: 1.5px solid var(--line); border-radius: 24px; padding: 30px 26px; display: flex; flex-direction: column; }
-  .plan.best { border-color: var(--blue); box-shadow: 0 20px 60px rgba(0,100,210,.2); }
-  .plan .badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--blue), #2E8BFF); color: #fff; font-size: 12px; font-weight: 800; padding: 5px 14px; border-radius: 99px; letter-spacing: .04em; }
-  .plan h3 { margin: 0; font-size: 20px; }
-  .price { font-size: 46px; font-weight: 900; letter-spacing: -.03em; margin: 10px 0 2px; }
-  .price small { font-size: 16px; color: var(--mute); font-weight: 700; letter-spacing: 0; }
-  .per { color: var(--mute); font-weight: 600; font-size: 14px; margin-bottom: 16px; }
-  .plan ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; flex: 1; }
-  .plan li { display: flex; gap: 10px; color: var(--ink2); font-weight: 600; }
-  .plan li::before { content: '\2713'; color: var(--green); font-weight: 900; }
-  .skel { height: 300px; border-radius: 24px; background: linear-gradient(100deg, #EEF2F9 30%, #F8FAFE 50%, #EEF2F9 70%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
-  @keyframes shimmer { to { background-position: -200% 0; } }
-  .note { text-align: center; color: var(--mute); margin: 26px auto 0; font-weight: 600; max-width: 720px; }
-  .note a { color: var(--blue); font-weight: 800; }
-
-  .info { background: var(--soft); }
-  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-  .info-card { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
-  .info-card h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: -.01em; }
-  .info-card p { margin: 0; color: var(--ink2); font-size: 15px; }
-  .info-card a { color: var(--blue); font-weight: 700; }
-  .info { padding: 46px 0 56px; }
-
-  footer { border-top: 1px solid var(--line); padding: 34px 0 44px; color: var(--mute); font-size: 14px; }
-  .foot { display: flex; gap: 18px 30px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
-  .foot nav { display: flex; gap: 20px; flex-wrap: wrap; } .foot nav a:hover { color: var(--blue); }
-  .legal { margin-top: 14px; font-size: 12.5px; max-width: 760px; }
-  @media (max-width: 900px) { .links { display: none; } }
-  @media (max-width: 720px) { .nav-cta .ghost { display: none; } .top { padding-top: 40px; } }
-  @media (prefers-reduced-motion: reduce) { .skel { animation: none; } .btn { transition: none; } }
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pricing and credit plans - ELMS</title>
+<meta name="description" content="ELMS plans give you credits to import, edit and publish eBay listings. See how credits work, how you pay and when a refund applies.">
+<link rel="canonical" href="https://elmstool.com/plans">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pricing and credit plans - ELMS">
+<meta property="og:description" content="Compare ELMS plans by price, credits and eBay stores. See how credits work, how you pay and when a refund applies.">
+<meta property="og:url" content="https://elmstool.com/plans">
+<meta property="og:image" content="https://elmstool.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ELMS logo">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pricing and credit plans - ELMS">
+<meta name="twitter:description" content="Compare ELMS plans by price, credits and eBay stores. See how credits work, how you pay and when a refund applies.">
+<meta name="twitter:image" content="https://elmstool.com/og-image.png">
+<meta name="twitter:image:alt" content="ELMS logo">
+<meta name="theme-color" content="#0064D2">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css?v=3">
+<script src="/site.js?v=3" defer></script>
+<script src="/social.js?v=2" defer></script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Can I connect more than one eBay store?","acceptedAnswer":{"@type":"Answer","text":"That depends on your plan. Each plan card shows how many eBay stores it lets you connect. Inside ELMS you choose which store you are working in."}},
+{"@type":"Question","name":"Do I need to connect my eBay store?","acceptedAnswer":{"@type":"Answer","text":"To publish a listing, you connect your eBay store from inside ELMS. eBay asks you to approve the connection on its own page, and ELMS does not see your eBay password."}},
+{"@type":"Question","name":"What happens when I run out of credits?","acceptedAnswer":{"@type":"Answer","text":"Actions that use credits do not run until your balance covers them. Open Buy Credits in the app and pick a plan to add more."}},
+{"@type":"Question","name":"Where can I see my credits?","acceptedAnswer":{"@type":"Answer","text":"The top bar of the app shows your balance, and the Buy Credits page shows it too."}},
+{"@type":"Question","name":"What is a term?","acceptedAnswer":{"@type":"Answer","text":"A term is the fixed period a plan is paid for. The credits that come with the plan last until the term ends, and the app shows the exact length of each plan before you pay."}},
+{"@type":"Question","name":"How do I pay?","acceptedAnswer":{"@type":"Answer","text":"Payments are handled by our payment partner. ELMS never sees your card or wallet details. You can pay by card or popular digital wallets, in US dollars. Taxes may be added at checkout where they apply."}},
+{"@type":"Question","name":"Can I get a refund?","acceptedAnswer":{"@type":"Answer","text":"Refunds are given only if you ask within 7 days of the purchase and none of that purchase's credits have been used. A credit counts as used as soon as any action has been charged for it, including by an automatic feature such as monitoring. The Refund Policy explains how to ask."}}
+]}
+</script>
 </head>
 <body>
-<header class="nav">
-  <div class="wrap nav-in">
-    <a class="logo" href="/" aria-label="ELMS home"><img src="/logo-wordmark.png" alt="ELMS" width="114" height="30"></a>
-    <nav class="links" aria-label="Main">
-      <a href="/">Home</a><a class="on" href="/plans" aria-current="page">Pricing</a><a href="/user-guide.html">User guide</a><a href="mailto:support@elmstool.com">Contact</a>
-    </nav>
-    <div class="nav-cta">
-      <a class="btn ghost sm" href="/signin">Sign in</a>
-      <a class="btn primary sm" href="/signup">Get started free</a>
+<!--chrome:header-->
+<script>(function(h){h.className+=" js";setTimeout(function(){if(window.ELMS_API===undefined){h.className=h.className.replace(/\s*\bjs\b/,"")}},5000)})(document.documentElement)</script>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header" data-site-header>
+  <div class="site-header__bar container">
+    <a class="brand" href="/"><img src="/logo-wordmark.png" width="106" height="28" alt="ELMS home"></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-btn><span class="menu-btn__bars" aria-hidden="true"></span><span class="menu-btn__label">Menu</span></button>
+    <div class="site-nav" id="site-nav" data-site-nav>
+      <nav aria-label="Main">
+        <ul class="site-nav__list">
+          <li><a class="site-nav__link" href="/#features">Features</a></li>
+          <li><a class="site-nav__link" href="/#how">How it works</a></li>
+          <li><a class="site-nav__link" href="/plans">Pricing</a></li>
+          <li><a class="site-nav__link" href="/user-guide.html">User guide</a></li>
+          <li><a class="site-nav__link" href="/contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="site-nav__actions">
+        <a class="btn btn--ghost btn--sm" href="/signin">Sign in</a>
+        <a class="btn btn--primary btn--sm" href="/signup">Get started</a>
+      </div>
+    </div>
+  </div>
+</header>
+<!--/chrome:header-->
+<main id="main" tabindex="-1">
+
+<header class="page-hero">
+  <div class="container">
+    <div class="page-hero__inner">
+      <span class="eyebrow">Pricing</span>
+      <h1 class="t-h1">ELMS plans and credits</h1>
+      <p class="lead">ELMS turns Amazon product links into eBay listings and helps you run them. A plan gives you credits for its term. You spend credits on actions such as importing products from links, AI help and publishing.</p>
+      <div class="cluster">
+        <a class="btn btn--secondary btn--lg" href="#credits">How credits work</a>
+      </div>
     </div>
   </div>
 </header>
 
-<main>
-  <div class="top">
-    <div class="wrap">
-      <div class="eyebrow">Pricing</div>
-      <h1>Credit plans for <span class="grad">ELMS</span></h1>
-      <p class="sub">ELMS imports products from Amazon, writes the eBay listing with AI, publishes it to eBay and tracks your orders and profit. You pay for credits, and credits are used when an action succeeds: an import, a publish or an AI touch-up.</p>
+<section class="section" id="choose">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <span class="eyebrow">Plans</span>
+      <h2>Choose a plan</h2>
+      <p>Prices are in US dollars.</p>
+    </div>
+    <div id="plans" data-elms-plans data-heading-level="3" data-term-note="Paid for one term. Its credits last until the term ends.">
+      <p class="plans__note">The plans load here. If they do not appear, <a href="/signup">create your account</a> to see them.</p>
+    </div>
+    <p class="plans__note">A term is a fixed period. The app shows the exact length of each plan before you pay. <a href="#refunds">How refunds work</a>.</p>
+  </div>
+</section>
+
+<section class="section section--soft" id="credits">
+  <div class="container">
+    <div class="split split--top">
+      <div class="stack">
+        <span class="eyebrow">Credits</span>
+        <h2>How credits work</h2>
+        <p class="lead">Credits are used when an action completes. If an action fails, the credits come back automatically.</p>
+      </div>
+      <ul class="check-list reveal">
+        <li>All your credits sit in one balance, and you can see it in the app at any time.</li>
+        <li>Credits pay for actions such as importing products from links, AI help and publishing.</li>
+        <li>Automatic features, such as stock and price monitoring, can use credits when they run. You control monitoring with a switch on each listing.</li>
+        <li>Credits are a balance you spend inside ELMS. They have no cash value and cannot be transferred.</li>
+        <li>If a returned credit is missing, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> and we restore it.</li>
+      </ul>
     </div>
   </div>
+</section>
 
-  <section>
-    <div class="wrap">
-      <div class="plans" id="plans" aria-live="polite"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
-      <p class="note" id="note">Loading the latest plans…</p>
+<section class="section" id="included">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Included</span>
+      <h2>What every plan includes</h2>
+      <p>The tools below are available on every plan. Each plan has its own name, price, credits and number of eBay stores you can connect.</p>
     </div>
-  </section>
-
-  <div class="info">
-    <div class="wrap">
-      <div class="info-grid">
-        <div class="info-card"><h2>What a credit does</h2><p>Importing a product, publishing a listing and AI tools use credits. The cost of each action is listed in the <a href="/user-guide.html">User guide</a>, and the price you see when you act is the price you pay.</p></div>
-        <div class="info-card"><h2>How long credits last</h2><p>A plan is bought for one term: one month, or one year where a yearly option is offered. The credits that came with it end when the term ends; credits you already had before it stay. We email you 3 days before a monthly plan ends (7 for a yearly one), and if you buy again before then the new term starts when the old one ends.</p></div>
-        <div class="info-card"><h2>If an action fails</h2><p>If an action fails because of a problem on our side, the credits it used are returned. Purchase refunds are described in our <a href="/refund.html">Refund policy</a> and in our <a href="/terms#credits">Terms (credits and payments)</a>.</p></div>
-        <div class="info-card"><h2>How you pay</h2><p id="howPay">You create a free account first, then buy a plan from inside ELMS. Checkout is handled by our payment provider, which also sends your receipt. We never see or store your full card details.</p></div>
-        <div class="info-card"><h2>Questions</h2><p>Write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> for help, or <a href="mailto:billing@elmstool.com">billing@elmstool.com</a> about a payment.</p></div>
+    <div class="bento">
+      <div class="bento__item bento__item--wide reveal">
+        <article class="feature feature--blue">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg></span>
+          <h3 class="feature__title">Drafts with AI help</h3>
+          <p class="feature__text">ELMS uses AI services to help write and improve titles, descriptions, item details and message drafts. You decide what is published or sent: you review drafts before they go live, bulk actions ask you to confirm first, and automatic replies stay off until you turn them on.</p>
+        </article>
+      </div>
+      <div class="bento__item reveal reveal--d1">
+        <article class="feature">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-import"/></svg></span>
+          <h3 class="feature__title">Import from a link, a list or a file</h3>
+          <p class="feature__text">Paste an Amazon link or a list of links, use the Chrome extension, or upload a CSV file.</p>
+        </article>
+      </div>
+      <div class="bento__item reveal reveal--d2">
+        <article class="feature">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg></span>
+          <h3 class="feature__title">Your pricing rule</h3>
+          <p class="feature__text">Set a pricing rule once and ELMS applies it to your drafts. You can change any price before you publish.</p>
+        </article>
+      </div>
+      <div class="bento__item reveal">
+        <article class="feature">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-publish"/></svg></span>
+          <h3 class="feature__title">Publish and schedule</h3>
+          <p class="feature__text">Publish to eBay now or schedule a listing for later. A failed publish shows its reason, and you can retry it. A bell in the app tells you when a publish has finished or needs your attention.</p>
+        </article>
+      </div>
+      <div class="bento__item reveal reveal--d1">
+        <article class="feature">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-store"/></svg></span>
+          <h3 class="feature__title">Live listings and bulk edit</h3>
+          <p class="feature__text">See your live listings, change many at once, relist items or end the ones you no longer want.</p>
+        </article>
+      </div>
+      <div class="bento__item bento__item--wide reveal reveal--d2">
+        <article class="feature feature--soft">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-monitor"/></svg></span>
+          <h3 class="feature__title">Stock and price monitoring</h3>
+          <p class="feature__text">ELMS can watch the source products of your listings: when the source clearly says a product is out of stock, ELMS can end the listing for you, and when the source price changes it can update your eBay price to follow it. Both are switches you control per listing.</p>
+        </article>
+      </div>
+      <div class="bento__item reveal">
+        <article class="feature">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-truck"/></svg></span>
+          <h3 class="feature__title">Orders and tracking</h3>
+          <p class="feature__text">Follow orders by stage, mark them as ordered or shipped, and send a tracking number to eBay.</p>
+        </article>
+      </div>
+      <div class="bento__item reveal reveal--d1">
+        <article class="feature">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg></span>
+          <h3 class="feature__title">Buyer messages</h3>
+          <p class="feature__text">Answer buyers from one inbox, with saved replies and private notes. Automatic buyer messages are optional and stay off until you switch them on.</p>
+        </article>
+      </div>
+      <div class="bento__item reveal reveal--d2">
+        <article class="feature">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg></span>
+          <h3 class="feature__title">Net Profit view</h3>
+          <p class="feature__text">Compare what each order earned with what you paid for the product. Filter by date and export to a spreadsheet file.</p>
+        </article>
+      </div>
+      <div class="bento__item reveal">
+        <article class="feature">
+          <span class="icon-tile"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg></span>
+          <h3 class="feature__title">eBay policy helpers</h3>
+          <p class="feature__text">ELMS checks drafts for products that eBay prohibits outright and stops the ones it finds before they reach eBay. It also warns you about brand words (VeRO). These checks are aids, not clearance. You decide what to publish.</p>
+        </article>
       </div>
     </div>
+    <p class="mt-6 muted">The app also has research tools: check keyword ranks, reviews, bestsellers and categories, grade a listing and test a price with the calculator.</p>
   </div>
-</main>
+</section>
 
-<footer>
-  <div class="wrap">
-    <div class="foot">
-      <a class="logo" href="/" aria-label="ELMS home"><img src="/logo-wordmark.png" alt="ELMS" width="114" height="30"></a>
-      <nav aria-label="Footer"><a href="/">Home</a><a href="/user-guide.html">User guide</a><a href="/terms">Terms of service</a><a href="/refund.html">Refunds</a><a href="/privacy">Privacy policy</a><a href="mailto:support@elmstool.com">Contact</a></nav>
+<section class="section section--soft" id="pay">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <span class="eyebrow">Payment</span>
+      <h2>How you pay</h2>
+      <p>Payments are handled by our payment partner. ELMS never sees your card or wallet details.</p>
+      <p>You can pay by card or popular digital wallets. Prices are in US dollars, and taxes may be added at checkout where they apply. After each plan purchase we send you an invoice by e-mail.</p>
     </div>
-    <p class="legal">&copy; <span id="yr"></span> ELMS. ELMS is an independent tool and is not affiliated with, endorsed by or sponsored by Amazon or eBay. Amazon and eBay are trademarks of their respective owners.</p>
+    <ol class="steps steps--3 reveal">
+      <li class="step">
+        <h3 class="step__title">Create your account</h3>
+        <p class="step__text">You buy a plan inside ELMS, not on this page.</p>
+      </li>
+      <li class="step">
+        <h3 class="step__title">Pick your plan</h3>
+        <p class="step__text">Open <span class="term">Buy Credits</span> in the app and pick a plan. The length of its term is shown before you pay.</p>
+      </li>
+      <li class="step">
+        <h3 class="step__title">Pay and start</h3>
+        <p class="step__text">Pay at checkout. Your credits are added when the payment is confirmed.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="refunds">
+  <div class="container container--narrow">
+    <div class="section-head">
+      <span class="eyebrow">Policy</span>
+      <h2>Refunds</h2>
+    </div>
+    <div class="callout callout--brief callout--lg" role="note">
+      <p class="callout__title">In brief</p>
+      <p>Refunds are given only if you ask within 7 days of the purchase and none of that purchase's credits have been used.</p>
+    </div>
+    <div class="stack mt-6">
+      <p>A credit counts as used as soon as any action has been charged for it. It does not matter who started the action: you, a person on your team or an automatic feature. Some automatic features, such as stock and price monitoring, start on for each listing that has a source link and stay on until you switch them off. They can use credits when they run. So a purchase can count as used without you clicking anything.</p>
+      <p>Your credits sit in one balance, so a purchase counts as unused only if no credit has been charged to your account since the purchase. Credits that were charged and then returned because an action failed do not count as used.</p>
+      <p>To ask, write to <a href="mailto:billing@elmstool.com">billing@elmstool.com</a> from your account's e-mail, or open a ticket in <span class="term">Support</span> in the app, and say which purchase it is. We reply by e-mail with the decision.</p>
+      <p>The Refund Policy explains how the time limit is counted, what cannot be refunded and your legal rights.</p>
+      <a class="link-arrow" href="/refund.html"><span>Read the Refund Policy</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft" id="plan-ending">
+  <div class="container container--narrow">
+    <div class="section-head">
+      <span class="eyebrow">Plan ending</span>
+      <h2>When a plan ends</h2>
+      <p>A plan is paid for one term; the credits that come with a plan are valid until the term ends, and we e-mail you before it ends. Credits you had before a plan are not affected.</p>
+    </div>
+    <dl class="dl">
+      <dt>What ends</dt>
+      <dd>The credits that came with the plan. The number of eBay stores you can connect goes back to what it was before the plan.</dd>
+      <dt>What stays</dt>
+      <dd>Credits you had before the plan, and your listings, drafts and orders.</dd>
+      <dt>Buying again</dt>
+      <dd>If you buy a plan while one is running, the new term starts when the current one ends.</dd>
+      <dt>Renewals</dt>
+      <dd>If your payment method renews your plan, you can stop the renewal before the renewal date from your receipt or by writing to <a href="mailto:billing@elmstool.com">billing@elmstool.com</a>.</dd>
+    </dl>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container container--narrow">
+    <div class="section-head">
+      <span class="eyebrow">FAQ</span>
+      <h2>Questions about plans and payments</h2>
+    </div>
+    <div class="faq">
+      <details class="faq__item"><summary>Can I connect more than one eBay store?</summary><div class="faq__body"><p>That depends on your plan. Each plan card shows how many eBay stores it lets you connect. Inside ELMS you choose which store you are working in.</p></div></details>
+      <details class="faq__item"><summary>Do I need to connect my eBay store?</summary><div class="faq__body"><p>To publish a listing, you connect your eBay store from inside ELMS. eBay asks you to approve the connection on its own page, and ELMS does not see your eBay password.</p></div></details>
+      <details class="faq__item"><summary>What happens when I run out of credits?</summary><div class="faq__body"><p>Actions that use credits do not run until your balance covers them. Open <span class="term">Buy Credits</span> in the app and pick a plan to add more.</p></div></details>
+      <details class="faq__item"><summary>Where can I see my credits?</summary><div class="faq__body"><p>The top bar of the app shows your balance, and the <span class="term">Buy Credits</span> page shows it too.</p></div></details>
+      <details class="faq__item"><summary>What is a term?</summary><div class="faq__body"><p>A term is the fixed period a plan is paid for. The credits that come with the plan last until the term ends, and the app shows the exact length of each plan before you pay.</p></div></details>
+      <details class="faq__item"><summary>How do I pay?</summary><div class="faq__body"><p>Payments are handled by our payment partner. ELMS never sees your card or wallet details. You can pay by card or popular digital wallets, in US dollars. Taxes may be added at checkout where they apply.</p></div></details>
+      <details class="faq__item"><summary>Can I get a refund?</summary><div class="faq__body"><p>Refunds are given only if you ask within 7 days of the purchase and none of that purchase's credits have been used. A credit counts as used as soon as any action has been charged for it, including by an automatic feature such as monitoring. The <a href="/refund.html">Refund Policy</a> explains how to ask.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<div class="band reveal">
+  <div class="band__inner">
+    <h2 class="band__title">Ready to start, or still have a question?</h2>
+    <p class="band__text">Create your account and choose a plan inside ELMS. Questions about a plan: <a href="mailto:support@elmstool.com">support@elmstool.com</a>. Payments, invoices and refunds: <a href="mailto:billing@elmstool.com">billing@elmstool.com</a>.</p>
+    <div class="band__actions">
+      <a class="btn btn--primary btn--lg" href="/signup">Get started</a>
+      <a class="btn btn--secondary btn--lg" href="/contact.html">Contact us</a>
+    </div>
+  </div>
+</div>
+
+</main>
+<!--chrome:footer-->
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <a class="brand" href="/"><img src="/logo-wordmark.png" width="106" height="28" alt="ELMS home"></a>
+        <p>Listing and store tools for eBay sellers.</p>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title" id="footer-product">Product</p>
+        <ul class="footer-links" aria-labelledby="footer-product">
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/plans">Pricing</a></li>
+          <li><a href="/user-guide.html">User guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title" id="footer-support">Support</p>
+        <ul class="footer-links" aria-labelledby="footer-support">
+          <li><a href="/contact.html">Contact</a></li>
+          <li><a href="/signin">Sign in</a></li>
+          <li><a href="/signup">Get started</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title" id="footer-legal">Legal</p>
+        <ul class="footer-links" aria-labelledby="footer-legal">
+          <li><a href="/terms">Terms of Service</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/refund.html">Refund Policy</a></li>
+          <li><a href="/affiliate-terms.html">Affiliate Terms</a></li>
+          <li><a href="/copyright.html">Copyright and content complaints</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title">Follow ELMS</p>
+        <div data-elms-social="row" hidden></div>
+      </div>
+    </div>
+    <div class="site-footer__legal">
+      <p>ELMS is an independent product. It is not affiliated with, endorsed, sponsored or approved by eBay Inc., Amazon.com, Inc., or any other marketplace or supplier named. eBay, Amazon and other product and company names are trademarks of their respective owners and are used only to describe compatibility.</p>
+      <p class="site-footer__copy">&copy; <span data-year>2026</span> ELMS</p>
+    </div>
   </div>
 </footer>
-
-<script>
-(function () {
-  var API = 'https://elms-backend-1-tr5h.onrender.com';
-  var $ = function (id) { return document.getElementById(id); };
-  $('yr').textContent = new Date().getFullYear();
-  function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function money(n) { n = Number(n); return '$' + (n % 1 ? n.toFixed(2) : String(n)); }
-
-  function render(plans, card) {
-    var box = $('plans');
-    if (!plans.length) {
-      box.innerHTML = '';
-      $('note').innerHTML = 'Plans are being updated. Please check back soon, or write to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.';
-      return;
-    }
-    var per = function (p) { return p.priceUsd / p.credits; };
-    var best = plans.length > 1 ? plans.reduce(function (a, b) { return per(b) < per(a) ? b : a; }) : null;
-    box.innerHTML = plans.map(function (p) {
-      var isBest = best && p === best;
-      var perCredit = per(p) < 0.1 ? (per(p) * 100).toFixed(1) + '¢' : '$' + per(p).toFixed(2);
-      return '<div class="plan' + (isBest ? ' best' : '') + '">' + (isBest ? '<span class="badge">BEST VALUE</span>' : '') +
-        '<h3>' + esc(p.name) + '</h3><div class="price">' + money(p.priceUsd) + ' <small>USD a month + tax</small></div>' +
-        '<div class="per">about ' + perCredit + ' per credit</div><ul><li>' + Number(p.credits).toLocaleString('en-US') + ' credits</li>' +
-        '<li>' + (p.maxEbayAccounts ? 'Connect up to ' + p.maxEbayAccounts + ' eBay account' + (p.maxEbayAccounts === 1 ? '' : 's') : 'Connect your eBay accounts') + '</li>' +
-        '<li>Credits valid for 1 month from purchase</li><li>Imports, publishing and AI tools</li><li>Credits back if an action fails</li></ul>' +
-        '<a class="btn ' + (isBest ? 'primary' : 'ghost') + '" href="/signup">Get started</a></div>';
-    }).join('');
-    if (card) $('howPay').textContent = 'You create a free account first, then buy a plan from inside ELMS. Pay with Cash App, or with a card (Visa, Mastercard, American Express and more), PayPal, Apple Pay or Google Pay where they are offered at checkout. Checkout is handled by our payment providers, who also send your receipt. We never see or store your full card details.';
-    $('note').textContent = 'Prices are in US dollars. Create a free account first, then buy the plan you want from inside ELMS. Each plan is one term (one month; a yearly option is offered on some plans) and its credits last for that term.';
-  }
-
-  function fail() {
-    $('plans').innerHTML = '';
-    $('note').innerHTML = 'Plans could not be loaded right now. <a href="" onclick="location.reload();return false">Try again</a>, or <a href="/signup">create your free account</a> and see them inside ELMS.';
-  }
-
-  function load(attempt) {
-    var ctl = window.AbortController ? new AbortController() : null;
-    var giveUp = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
-    fetch(API + '/api/payments/public-plans', ctl ? { signal: ctl.signal } : undefined)
-      .then(function (r) { return r.json(); })
-      .then(function (d) { clearTimeout(giveUp); if (!d || !d.success) throw new Error('no plans'); render(d.plans || [], !!d.card); })
-      .catch(function () { clearTimeout(giveUp); if (attempt < 2) load(attempt + 1); else fail(); });
-  }
-  load(1);
-})();
-</script>
+<!--/chrome:footer-->
+<svg style="display:none" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-import" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 16v2.5A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5V16"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20l1.2-4.3L16.4 4.5a2.1 2.1 0 0 1 3 3L8.2 18.8 4 20z"/><path d="M14.5 6.5l3 3"/></symbol>
+  <symbol id="i-publish" viewBox="0 0 24 24"><path d="M12 20V9"/><path d="M7.5 13.5L12 9l4.5 4.5"/><path d="M5 4.5h14"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M8 20h8"/><path d="M12 16.5V20"/><path d="M6.5 11h2.4l1.6-3 2.5 6 1.6-3h2.9"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M5 5h14a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 17h-8.5L6 20.5V17H5a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 5 5z"/><path d="M8 9.5h8"/><path d="M8 12.5h5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 20v-6"/><path d="M12 20V8.5"/><path d="M17 20v-9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8-7.5 9.5-4.3-1.5-7.5-5-7.5-9.5V6L12 3z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15L6 16.5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-3.6 3.4-5.5 7-5.5s6.5 1.9 7 5.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7.5l8 6 8-6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 15.5H3L12 4z"/><path d="M12 10v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6.5h11V16H3z"/><path d="M14 9.5h4l3 3.5V16h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v13H7.5A2.5 2.5 0 0 1 5 17.5v-13z"/><path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H18"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 8h9"/><path d="M17 8h3"/><circle cx="15" cy="8" r="2"/><path d="M4 16h3"/><path d="M11 16h9"/><circle cx="9" cy="16" r="2"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9l1.5-4.5h13L20 9"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0A2.7 2.7 0 0 0 20 9"/><path d="M5.5 12.5V20h13v-7.5"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M11 4l1.9 5.1L18 11l-5.1 1.9L11 18l-1.9-5.1L4 11l5.1-1.9L11 4z"/><path d="M19 15v4"/><path d="M17 17h4"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 5L4.5 9.5 9 14"/><path d="M4.5 9.5H14a5 5 0 0 1 0 10h-3"/></symbol>
+</svg>
 </body>
 </html>
