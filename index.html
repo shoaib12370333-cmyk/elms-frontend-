@@ -36,6 +36,8 @@
 <meta name="twitter:image" content="https://elmstool.com/og-image.png" />
 <meta name="twitter:image:alt" content="ELMS logo" />
 <meta name="theme-color" content="#0064D2" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ELMS","url":"https://elmstool.com/","logo":"https://elmstool.com/logo.png"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"ELMS","url":"https://elmstool.com/"}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ELMS","url":"https://elmstool.com/","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"ELMS turns product links into eBay listings. Import from Amazon, edit drafts with AI help, publish, and manage orders and buyer messages in one place."}</script>
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
@@ -25295,7 +25297,7 @@ async function autoSuggestEmptyDraftCategories() {
       const topDiscount = data.custom && data.custom.yearlyDiscountPercent > 0 ? ` &middot; the custom plan saves ${fmtPct(data.custom.yearlyDiscountPercent)}% a year` : '';
       const billingSwitch = offersYearly ? `<div class="bc-billing"><span class="dv-seg" role="group" aria-label="Billing"><button type="button" data-billing="monthly" class="${pricingBilling === 'monthly' ? 'on' : ''}">Monthly</button><button type="button" data-billing="yearly" class="${pricingBilling === 'yearly' ? 'on' : ''}">Yearly</button></span><span class="bc-billing-note">One payment buys one ${pricingBilling === 'yearly' ? 'year' : 'month'}${pricingBilling === 'yearly' ? topDiscount : ''}.</span></div>` : '';
       const staysClause = data.myPlan && !data.myPlan.keepsEarlierCredits ? '' : ', and the credits you already had stay'; // a term from before this was remembered ends with everything in the account
-      const termNote = `<p class="bc-term-note">Credits last for the term you buy: ${offersYearly ? 'one month, or one year on a yearly plan' : 'one month'}. When the term ends, the credits that came with the plan end with it${staysClause}. We email you before it ends. Buy again before then and the new term starts when this one ends.</p>`;
+      const termNote = `<p class="bc-term-note">Credits last for the term you buy: ${offersYearly ? 'one month, or one year on a yearly plan' : 'one month'}. When the term ends, the credits that came with the plan end with it${staysClause}. We email you before it ends. Buy again before then: the new credits are added at once and the plan runs for one more term after this one ends.</p>`;
       const cs = data.custom;
       const customCard = cs ? `
         <div class="bc-custom" id="bcCustom">
