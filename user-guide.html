@@ -1,189 +1,870 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>User Guide · ELMS</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User guide - ELMS</title>
+<meta name="description" content="Step-by-step help for ELMS: connect your eBay store, import products, edit and publish listings, handle orders and messages, and manage credits.">
+<link rel="canonical" href="https://elmstool.com/user-guide.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="User guide - ELMS">
+<meta property="og:description" content="Step-by-step help for ELMS: connect your eBay store, import products, edit and publish listings, handle orders and messages, and manage credits.">
+<meta property="og:url" content="https://elmstool.com/user-guide.html">
+<meta property="og:image" content="https://elmstool.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ELMS logo">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="User guide - ELMS">
+<meta name="twitter:description" content="Step-by-step help for ELMS: connect your eBay store, import products, edit and publish listings, handle orders and messages, and manage credits.">
+<meta name="twitter:image" content="https://elmstool.com/og-image.png">
+<meta name="twitter:image:alt" content="ELMS logo">
+<meta name="theme-color" content="#0064D2">
+<meta name="color-scheme" content="light">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{--ink:#0B1220;--ink2:#334155;--muted:#64748B;--line:#E4E9F2;--bg:#FFFFFF;--soft:#F5F8FE;--card:#fff;--red:#E53238;--blue:#0064D2;--yellow:#F5AF02;--green:#86B817;--shadow:0 18px 50px rgba(15,35,80,.12);--radius:20px}
-@media (prefers-color-scheme:dark){:root{--ink:#E5EAF3;--ink2:#C7D2E4;--muted:#94A3B8;--line:#26314A;--bg:#0B1220;--soft:#111A2E;--card:#111A2E;--blue:#5AA7FF;--shadow:0 18px 50px rgba(0,0,0,.4)}}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:88px}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:var(--blue);text-decoration:none}
-.grad{background:linear-gradient(90deg,var(--blue),#2E8BFF 45%,var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
-.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--card) 86%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .2s,box-shadow .2s}
-.top.stuck{border-color:var(--line);box-shadow:0 6px 24px rgba(15,35,80,.06)}
-.top-in{max-width:1160px;margin:0 auto;padding:0 20px;height:66px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.logo{display:flex;align-items:center}.logo img{display:block;height:26px;width:auto}
-.nav{display:flex;gap:4px;margin-left:8px;flex-wrap:wrap}
-.nav a{padding:8px 14px;border-radius:99px;font-weight:600;font-size:13.5px;color:var(--muted);transition:background .15s,color .15s}
-.nav a:hover{background:var(--soft);color:var(--blue)}
-.nav a.on{background:var(--blue);color:#fff}
-.back{margin-left:auto;font-weight:700;font-size:13.5px;padding:9px 16px;border:1.5px solid var(--line);border-radius:99px;color:var(--ink);transition:transform .15s,border-color .15s,color .15s;white-space:nowrap}
-.back:hover{transform:translateY(-1px);border-color:var(--blue);color:var(--blue)}
-.hero{position:relative;max-width:1160px;margin:0 auto;padding:54px 20px 14px;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:-40% -10% auto -10%;height:180%;z-index:-1;background:radial-gradient(480px 240px at 12% 20%,rgba(0,100,210,.12),transparent 70%),radial-gradient(420px 220px at 90% 0%,rgba(134,184,23,.12),transparent 70%)}
-.hero h1{margin:0;font-size:clamp(30px,5vw,44px);letter-spacing:-.03em;line-height:1.12;font-weight:900}
-.hero p{margin:12px 0 0;color:var(--ink2);max-width:660px;font-size:16.5px}
-.stamp{display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:12.5px;font-weight:800;padding:6px 13px;border-radius:99px;background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--ink)}
-.stamp::before{content:'✓';color:var(--green)}
-.wrap{max-width:1160px;margin:0 auto;padding:26px 20px 64px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}
-.toc{position:sticky;top:86px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;font-size:13.5px;box-shadow:0 8px 24px rgba(15,35,80,.05)}
-.toc h4{margin:0 0 8px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--ink2);font-weight:600;transition:background .15s,color .15s}
-.toc a:hover{background:var(--soft);color:var(--blue)}
-.toc a.cur{background:var(--soft);color:var(--blue)}
-.doc{min-width:0}
-.sec{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:18px;opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1),box-shadow .25s}
-.sec.in{opacity:1;transform:none}
-.sec:hover{box-shadow:var(--shadow)}
-.sec::before{content:'';position:absolute;left:0;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--red) 0 25%,var(--blue) 25% 50%,var(--yellow) 50% 75%,var(--green) 75%)}
-.sec h2{margin:0 0 12px;font-size:21px;letter-spacing:-.01em;font-weight:800;display:flex;gap:12px;align-items:center}
-.sec h2 i{font-style:normal;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:color-mix(in srgb,var(--blue) 14%,transparent);font-size:13px;font-weight:900;color:var(--blue);flex:none}
-.sec h3{margin:20px 0 6px;font-size:15.5px;font-weight:800}
-.sec p,.sec li{color:var(--ink2)}.sec p{margin:9px 0}
-.sec ul,.sec ol{padding-left:22px;margin:9px 0}.sec li{margin:5px 0}
-.sec strong{color:var(--ink)}
-.callout{margin:16px 0;padding:14px 16px;border-radius:12px;border:1px solid var(--line);border-left:4px solid var(--blue);background:color-mix(in srgb,var(--blue) 7%,transparent);color:var(--ink);font-size:14px;font-weight:500}
-.callout.warn{border-left-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 12%,transparent)}
-.callout.ok{border-left-color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent)}
-table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
-th{text-align:left;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:9px 10px;border-bottom:1.5px solid var(--line)}
-td{padding:11px 10px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:top}td:first-child{color:var(--ink);font-weight:700}
-.tw{overflow-x:auto;border-radius:12px}
-.steps{counter-reset:s;list-style:none;padding:0}
-.steps li{counter-increment:s;position:relative;padding:4px 0 4px 44px;margin:12px 0}
-.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#2E8BFF);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,100,210,.3)}
-details{border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:12px 0;background:var(--soft);transition:border-color .2s,box-shadow .2s}
-details[open]{border-color:var(--blue);box-shadow:0 8px 24px rgba(0,100,210,.08)}
-summary{cursor:pointer;font-weight:700;color:var(--ink);list-style:none}
-summary::-webkit-details-marker{display:none}
-code{background:color-mix(in srgb,var(--blue) 10%,transparent);padding:2px 7px;border-radius:6px;font-size:13px}
-.foot{border-top:1px solid var(--line)}
-.foot-in{max-width:1160px;margin:0 auto;padding:34px 20px 44px;display:flex;flex-direction:column;gap:14px}
-.foot-top{display:flex;gap:18px 26px;flex-wrap:wrap;justify-content:space-between;align-items:center}
-.foot-nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;font-weight:600;color:var(--muted)}
-.foot-nav a{color:var(--muted)}.foot-nav a:hover{color:var(--blue)}
-.foot-legal{color:var(--muted);font-size:12.5px}
-@media(max-width:860px){.wrap{grid-template-columns:1fr}.toc{position:static}.nav{display:none}.sec{padding:22px 20px}}
-@media (prefers-reduced-motion:reduce){.sec{opacity:1!important;transform:none!important;transition:none!important}html{scroll-behavior:auto}}
-</style>
-<noscript><style>.sec{opacity:1!important;transform:none!important}</style></noscript>
-</head><body>
-<header class="top"><div class="top-in">
-<a class="logo" href="/" aria-label="ELMS"><img src="/logo-wordmark.png" alt="ELMS" width="99" height="26"></a>
-<nav class="nav"><a href="/plans">Pricing</a><a href="./user-guide.html" class="on">User Guide</a><a href="/terms">Terms of Service</a><a href="/privacy">Privacy Policy</a></nav>
-<a class="back" href="/dashboard">&larr; Back to app</a>
-</div></header>
-<div class="hero"><h1>User <span class="grad">Guide</span></h1><p>Everything you need to go from an Amazon, AliExpress or CJdropshipping link to a live eBay listing, and to run your stores day to day.</p></div>
-<div class="wrap"><aside class="toc"><h4>On this page</h4><a href="#start">1. Getting started</a><a href="#stores">2. Working with more than one store</a><a href="#import">3. Importing products</a><a href="#drafts">4. Drafts and the listing editor</a><a href="#location">5. Item location and postal codes</a><a href="#publish">6. Publishing and live listings</a><a href="#orders">7. Orders and fulfillment</a><a href="#security">8. Security and devices</a><a href="#messages">9. Messages</a><a href="#credits">10. Credits</a><a href="#trouble">11. Troubleshooting</a></aside><main class="doc">
-<section class="sec" id="start"><h2><i>1</i>Getting started</h2>
-<p>ELMS turns an Amazon product link into an eBay listing and then helps you keep it running: stock, price, orders and buyer messages live in one place.</p>
-<ol class="steps">
-<li><strong>Connect your eBay store.</strong> Open <em>Settings &rarr; Connect an eBay account</em> and approve the permissions on eBay.</li>
-<li><strong>Set your selling defaults.</strong> In <em>Settings &rarr; Selling settings</em> press <em>Fetch from eBay</em>, then choose your payment, fulfillment and return policies and your item location.</li>
-<li><strong>Import a product.</strong> Paste an Amazon link on the <em>Import</em> page (or use the browser extension).</li>
-<li><strong>Review the draft and publish.</strong> Open the draft, check title, price, images and item specifics, then publish.</li>
+<link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css?v=3">
+<script src="/site.js?v=3" defer></script>
+<script src="/social.js?v=2" defer></script>
+</head>
+<body>
+<!--chrome:header-->
+<script>(function(h){h.className+=" js";setTimeout(function(){if(window.ELMS_API===undefined){h.className=h.className.replace(/\s*\bjs\b/,"")}},5000)})(document.documentElement)</script>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header" data-site-header>
+  <div class="site-header__bar container">
+    <a class="brand" href="/"><img src="/logo-wordmark.png" width="106" height="28" alt="ELMS home"></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-btn><span class="menu-btn__bars" aria-hidden="true"></span><span class="menu-btn__label">Menu</span></button>
+    <div class="site-nav" id="site-nav" data-site-nav>
+      <nav aria-label="Main">
+        <ul class="site-nav__list">
+          <li><a class="site-nav__link" href="/#features">Features</a></li>
+          <li><a class="site-nav__link" href="/#how">How it works</a></li>
+          <li><a class="site-nav__link" href="/plans">Pricing</a></li>
+          <li><a class="site-nav__link" href="/user-guide.html">User guide</a></li>
+          <li><a class="site-nav__link" href="/contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="site-nav__actions">
+        <a class="btn btn--ghost btn--sm" href="/signin">Sign in</a>
+        <a class="btn btn--primary btn--sm" href="/signup">Get started</a>
+      </div>
+    </div>
+  </div>
+</header>
+<!--/chrome:header-->
+
+<main id="main" tabindex="-1">
+
+<header class="page-hero">
+  <div class="container">
+    <div class="page-hero__inner">
+      <span class="eyebrow">Help</span>
+      <h1 class="t-h1">User guide</h1>
+      <p class="lead">ELMS turns Amazon product links into eBay listings and helps you run your store afterwards. This guide takes you from a new account to your first listing, then covers the main parts of the app. Pick a topic from the contents.</p>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="doc">
+    <div class="doc__aside">
+      <div class="guide-filter" data-guide-filter hidden>
+        <label class="guide-filter__label" for="guide-q">Find in this guide</label>
+        <div class="input-wrap"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><input class="input" id="guide-q" type="search" autocomplete="off" placeholder="Search topics" data-guide-input></div>
+        <p class="guide-filter__status" role="status" aria-live="polite" data-guide-status></p>
+      </div>
+      <a class="skip-link" href="#guide-content">Skip to guide content</a>
+      <nav class="toc" aria-label="Contents">
+        <details class="toc__details" open data-toc>
+          <summary class="toc__summary">Contents</summary>
+          <ul class="toc__list">
+            <li><a class="toc__link" href="#quick-start">Quick start</a></li>
+            <li><a class="toc__link" href="#getting-started">Getting started</a></li>
+            <li><a class="toc__link" href="#importing">Importing</a></li>
+            <li><a class="toc__link" href="#drafts">Drafts and the listing editor</a></li>
+            <li><a class="toc__link" href="#publishing">Publishing</a></li>
+            <li><a class="toc__link" href="#live-listings">Live listings</a></li>
+            <li><a class="toc__link" href="#monitoring">Monitoring stock and price</a></li>
+            <li><a class="toc__link" href="#orders">Orders and tracking</a></li>
+            <li><a class="toc__link" href="#messages">Buyer messages</a></li>
+            <li><a class="toc__link" href="#net-profit">Net Profit</a></li>
+            <li><a class="toc__link" href="#research">Research tools</a></li>
+            <li><a class="toc__link" href="#notifications">Notifications</a></li>
+            <li><a class="toc__link" href="#credits">Credits and plans</a></li>
+            <li><a class="toc__link" href="#referrals">Referrals and affiliates</a></li>
+            <li><a class="toc__link" href="#account">Account and security</a></li>
+            <li><a class="toc__link" href="#troubleshooting">Troubleshooting</a></li>
+            <li><a class="toc__link" href="#glossary">Glossary</a></li>
+          </ul>
+        </details>
+      </nav>
+    </div>
+    <div class="doc__main prose" id="guide-content" tabindex="-1">
+
+<section class="doc-section" data-filter-item>
+<h2 id="quick-start">Quick start</h2>
+<p>Six steps from a new account to your first listing. Buttons and tabs are written as the app shows them, for example <span class="term">Publish</span>.</p>
+<ol class="howto">
+<li><a href="/signup">Create your account</a> and confirm your e-mail with the code ELMS sends you (<a href="#getting-started-account">see how to create your account</a>).</li>
+<li><a href="#getting-started-connect">Connect your eBay store</a>. You approve the connection on eBay&rsquo;s own page.</li>
+<li><a href="#getting-started-defaults">Save your selling defaults</a>: your payment, fulfillment and return policies and your item location.</li>
+<li><a href="#drafts-margin">Set your margin</a>, so ELMS adds your fees and profit to a product&rsquo;s cost. Without a margin, a draft is priced at the Amazon price.</li>
+<li><a href="#importing-single">Import a product</a> from an Amazon link. It arrives as a draft in <span class="term">Drafts</span>.</li>
+<li>Check the draft in <a href="#drafts-editor">the listing editor</a>, then <a href="#publishing-one">publish it</a>.</li>
 </ol>
-<div class="callout">Publishing needs a payment policy, a fulfillment policy, a return policy and an item location. If one is missing ELMS tells you which.</div></section>
-<section class="sec" id="stores"><h2><i>2</i>Working with more than one store</h2>
-<p>You can connect several eBay stores (for example a US and a UK store). The store selected in the sidebar decides what every page shows.</p>
-<ul>
-<li><strong>Drafts, Live listings, Orders, Messages, notifications, Import history and the Dashboard</strong> only show the selected store.</li>
-<li>Switching store does not delete anything. The other store's data is kept and comes back when you switch back.</li>
-<li>The same Amazon product can be drafted separately in each store.</li>
-<li>Stores show their marketplace tag, e.g. <code>[UK]</code> or <code>[US]</code>. Give each store a clear name in <em>Settings</em>.</li>
-</ul>
-<div class="callout warn"><strong>Disconnecting a store deletes its data from ELMS</strong> (drafts, live listings, orders, messages, notifications and import history). Listings that are already live on eBay are not touched. This cannot be undone.</div></section>
-<section class="sec" id="import"><h2><i>3</i>Importing products</h2>
-<p>Paste an Amazon product link on the <strong>Import</strong> page and choose a markup percentage. ELMS fetches the title, images, price, description and specifications and saves a draft in the selected store.</p>
-<ul>
-<li><strong>Bulk import:</strong> switch to the bulk tab and paste one link per line.</li>
-<li><strong>Browser extension:</strong> copy your extension key from <em>Settings</em>, then import straight from an Amazon page.</li>
-<li><strong>Import history</strong> lists everything you fetched for the selected store.</li>
-</ul></section>
-<section class="sec" id="drafts"><h2><i>4</i>Drafts and the listing editor</h2>
-<p>Every fetched product waits on the <strong>Drafts</strong> page. Click a draft to open the full editor.</p>
-<div class="tw"><table><tr><th>Tab</th><th>What you do there</th></tr>
-<tr><td>Product</td><td>Title (with an AI title suggestion), price, quantity, category, tags and shipping method.</td></tr>
-<tr><td>Description</td><td>Edit the description and bullet points.</td></tr>
-<tr><td>Variants</td><td>Review variation options.</td></tr>
-<tr><td>Images</td><td>Reorder, remove or add images from a URL.</td></tr>
-<tr><td>Item specifications</td><td>Fill in eBay item specifics for the chosen category.</td></tr>
-<tr><td>Settings</td><td>Per-product policies, item location, stock and price monitoring.</td></tr></table></div>
-<h3>Per-product settings</h3>
-<p>With <em>Use dynamic policies</em> on, the store's default policies are used. Turn it off to pick different policies for just this product. A country + postal code saved on the product overrides the store's item location.</p></section>
-<section class="sec" id="location"><h2><i>5</i>Item location and postal codes</h2>
-<p>eBay needs a <strong>complete</strong> postal code for the item location. For the UK that means the full code, for example <code>SW1A 1AA</code>, not just <code>SW1A</code>.</p>
-<ol class="steps">
-<li>In <em>Settings &rarr; Selling settings</em> choose <em>Product location &rarr; Custom</em>.</li>
-<li>Pick the country, type a city and press <strong>Generate valid code</strong>.</li>
-<li>ELMS finds a real postal code for that city and saves it as your inventory location.</li>
+<p>Imports and publishing use credits. Your balance is the credits chip in the top bar; if it is empty, see <a href="#credits">Credits and plans</a> before you import. If something goes wrong, see <a href="#troubleshooting">Troubleshooting</a>.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="getting-started">Getting started</h2>
+<p>Create your account, connect your eBay store, save your selling defaults and choose the store you work in.</p>
+
+<h3 id="getting-started-account">Create your account</h3>
+<p>Open the <a href="/signup">sign-up page</a>. If you see the login form, choose <span class="term">Sign Up</span> below it.</p>
+<ol class="howto">
+<li>Fill in <span class="term">Username</span>, <span class="term">Email</span>, <span class="term">Password</span> and <span class="term">Confirm password</span>.</li>
+<li>Pick the country of your phone number and type the number in <span class="term">Phone number</span>. ELMS uses it for account contact and security.</li>
+<li>If a friend invited you, enter their code in <span class="term">Referral code</span>. The field exists only at sign-up.</li>
+<li>Tick the box that accepts the Terms of Service, Privacy Policy and Refund Policy, then press <span class="term">Sign Up</span>.</li>
+<li>Type the 6-digit code from your e-mail in <span class="term">Confirmation code</span> and press <span class="term">Confirm and create my account</span>.</li>
 </ol>
-<div class="callout ok">If you type only the first part of a UK postcode, ELMS completes it to a real full postcode when it can, and shows a clear error when it cannot.</div>
-<p>Hong Kong has no postal codes, so none is needed there.</p></section>
-<section class="sec" id="publish"><h2><i>6</i>Publishing and live listings</h2>
-<p>Press <strong>Publish</strong> on a draft, or schedule it. Publishing runs in the background and you get a notification when it succeeds or fails.</p>
-<p>The <strong>Live listings</strong> page shows stock, price, profit, watchers and item IDs (views too, when eBay shares them: its listing service does not at the moment, so the page shows a dash instead of a made-up 0). Click the Amazon or eBay link to open the source or the live eBay listing. Use <em>Sync from eBay</em> to refresh the watchers (the server also does it every 2 hours), and the edit button to change a live listing in the full editor.</p>
-<div class="callout">Views and watchers come from eBay. If eBay does not return a number for an item, ELMS leaves it blank instead of guessing.</div></section>
-<section class="sec" id="orders"><h2><i>7</i>Orders and fulfillment</h2>
-<p>Orders from the selected store are synced automatically and grouped like Seller Hub: awaiting payment, awaiting shipment, shipped, delivered and cancelled.</p>
+<p>No account exists until you enter the code. If the e-mail is slow, check spam and use <span class="term">Resend code</span>; if you mistyped the address, choose <span class="term">Use another email</span>.</p>
+
+<h3 id="getting-started-signin">Sign in, and other ways in</h3>
 <ul>
-<li><strong>Sync from eBay</strong> reads recent changes. <strong>Full sync (90 days)</strong> re-reads everything from the last 90 days. Run a full sync once after connecting a store.</li>
-<li>Open an order to see payment, shipping address, tracking and notes.</li>
-<li>Add the Amazon order number and the <strong>tracking number</strong>; ELMS sends the tracking to eBay so the order is marked shipped.</li>
-</ul></section>
-<section class="sec" id="security"><h2><i>8</i>Security and devices</h2>
-<p>Open <em>Settings &rarr; Security</em> to see where your account is signed in and what happened recently.</p>
-<ul>
-<li><strong>Devices signed in:</strong> browser, system, approximate place and last activity. Press <em>Log out</em> to end one device, <em>Log out other devices</em> to keep only this one, or <em>Log out everywhere</em> if you think someone else has your account.</li>
-<li><strong>New-device alerts:</strong> when your account signs in from a device it has not used before you get a notification in ELMS and, if you keep the switch on, an email.</li>
-<li><strong>Login activity:</strong> your recent sign-ins and failed password attempts (kept for 180 days). Places are approximate and come from the IP address.</li>
+<li><strong>Email or username.</strong> Type it in <span class="term">Email or username</span>, add your password and press <span class="term">Login</span>.</li>
+<li><strong>Continue with eBay.</strong> Choose your eBay site beside the button, press <span class="term">Continue with eBay</span> and approve on eBay. Back in ELMS, choose a username and password and give your e-mail and phone. Your store connects when you enter the e-mail code.</li>
+<li><strong>Sign-in provider.</strong> A button on the same form signs you in without typing a password.</li>
+<li><strong>Forgot password.</strong> Press <span class="term">Forgot password?</span>, enter your e-mail and press <span class="term">Send code</span>. Enter the <span class="term">Verification code</span> and a <span class="term">New password</span>, then press <span class="term">Reset password</span>.</li>
 </ul>
-<div class="callout warn">If you see a sign-in you do not recognise: press <em>Log out everywhere</em>, then change your password.</div></section>
-<section class="sec" id="messages"><h2><i>9</i>Messages</h2>
-<p>Buyer conversations for the selected store appear in one inbox. Filter by unread, needs reply, archived or trash, reply through eBay, add private notes that only you can see, and save reusable replies. Use <em>Sync</em> for an immediate refresh; new messages can also arrive automatically.</p></section>
-<section class="sec" id="credits"><h2><i>10</i>Credits</h2>
-<p>Credits pay for actions that use paid data or eBay automation. Your balance is always shown in the top bar; buy more from <strong>Buy Credits</strong>.</p>
-<p>Credits come with a plan, and a plan lasts one term: one month, or one year on a yearly plan. When the term ends, the credits that came with it end too; credits you had before the plan started stay. We email you 3 days before a monthly plan ends (7 days before a yearly one), and if you buy a plan again before then, the new term starts when the old one ends.</p>
-<div class="tw"><table><tr><th>Action</th><th>Cost</th></tr>
-<tr><td>Import a product (link, bulk or extension)</td><td>1 credit</td></tr>
-<tr><td>Publish, scheduled publish or republish</td><td>1 credit each</td></tr>
-<tr><td>Amazon stock check for a live listing</td><td>1 credit per check</td></tr>
-<tr><td>Amazon price check</td><td>Free (comes with the stock check)</td></tr>
-<tr><td>Refreshing variant data</td><td>Free</td></tr>
-<tr><td>Real-time order sync</td><td>Free</td></tr>
-<tr><td>Custom-interval (polling) order sync</td><td>5 credits per day</td></tr>
-<tr><td>Research tools (rank checker, review analyzer, bestsellers, category finder, listing grader)</td><td>1 credit per lookup</td></tr></table></div>
-<p>If an import or publish fails on our side, the credit is refunded.</p></section>
-<section class="sec" id="trouble"><h2><i>11</i>Troubleshooting</h2>
-<details><summary>"Invalid inventory location" or "full inventory location" on publish</summary><p>The postal code is incomplete. Open <em>Settings &rarr; Selling settings</em>, choose a custom location and press <strong>Generate valid code</strong>, or enter the full postcode. Then publish again.</p></details>
-<details><summary>I can't see my other store's listings</summary><p>Every page shows the store selected in the sidebar. Switch the store there.</p></details>
-<details><summary>Orders are missing</summary><p>Make sure the right store is selected, then use <em>Orders &rarr; Full sync (90 days)</em>. Reconnect the store in Settings if eBay reports the connection has expired.</p></details>
-<details><summary>Views or watchers are empty</summary><p>eBay only returns them for some items. Press <em>Sync from eBay</em> on Live listings and try again later.</p></details>
-<details><summary>Publish failed</summary><p>Check the notification for eBay's exact reason (missing category, policy, item specific or image). Fix the draft and publish again; the credit is refunded automatically.</p></details>
-<p>Still stuck? Open <strong>Support</strong> in the sidebar and send a ticket.</p></section>
-</main></div>
-<footer class="foot"><div class="foot-in"><div class="foot-top"><a class="logo" href="/" aria-label="ELMS"><img src="/logo-wordmark.png" alt="ELMS" width="99" height="24"></a><nav class="foot-nav"><a href="/plans">Pricing</a><a href="./user-guide.html">User Guide</a><a href="/terms">Terms</a><a href="/refund.html">Refunds</a><a href="/privacy">Privacy</a></nav></div><div class="foot-legal">&copy; 2026 ELMS &middot; Amazon-to-eBay listing manager</div></div></footer>
-<script>
-(function(){
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var top = document.querySelector('.top');
-  var onScroll = function(){ top.classList.toggle('stuck', window.scrollY > 6); };
-  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
-  var secs = document.querySelectorAll('.sec');
-  if ('IntersectionObserver' in window && !reduce) {
-    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, {threshold:.08});
-    secs.forEach(function(s){ io.observe(s); });
-  } else secs.forEach(function(s){ s.classList.add('in'); });
-  var tocLinks = {}; document.querySelectorAll('.toc a').forEach(function(a){ tocLinks[a.getAttribute('href').slice(1)] = a; });
-  if ('IntersectionObserver' in window) {
-    var cur = null;
-    var so = new IntersectionObserver(function(es){ es.forEach(function(e){ if (!e.isIntersecting) return; var id = e.target.id; if (!tocLinks[id] || cur === id) return; if (cur && tocLinks[cur]) tocLinks[cur].classList.remove('cur'); tocLinks[id].classList.add('cur'); cur = id; }); }, {rootMargin:'-20% 0px -70% 0px'});
-    Object.keys(tocLinks).forEach(function(id){ var el = document.getElementById(id); if (el) so.observe(el); });
-  }
-})();
-</script>
-</body></html>
+
+<h3 id="getting-started-connect">Connect your eBay store</h3>
+<p>You approve the connection on eBay&rsquo;s own page, so ELMS does not see your eBay password.</p>
+<ol class="howto">
+<li>In the sidebar, under <span class="term">eBay account</span>, press <span class="term">+ Connect eBay account</span>.</li>
+<li>In <span class="term">Choose your eBay marketplace</span>, pick the eBay site your listings go to and press <span class="term">Continue to eBay</span>.</li>
+<li>Sign in on eBay and approve. eBay lists the exact permissions on its own page; ELMS asks only for what its features need.</li>
+<li>Back in ELMS, your store appears under <span class="term">eBay stores</span> in <span class="term">Settings</span>.</li>
+</ol>
+
+<h3 id="getting-started-defaults">Save your selling defaults</h3>
+<ol class="howto">
+<li>Open <span class="term">Settings</span> and find <span class="term">Selling settings</span>.</li>
+<li>Under <span class="term">Editing settings for</span>, choose the store and press <span class="term">Fetch from eBay</span>.</li>
+<li>Choose your <span class="term">Payment policy</span>, <span class="term">Fulfillment policy</span>, <span class="term">Return policy</span> and <span class="term">Product location</span>.</li>
+<li>Press <span class="term">Save settings</span>.</li>
+</ol>
+<div class="callout callout--important" role="note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><div class="callout__body"><p class="callout__title">All four are needed to publish</p><p>If a list says none were found, create that policy in your eBay account, then press <span class="term">Fetch from eBay</span> again.</p></div></div>
+
+<h3 id="getting-started-stores">Select, rename or disconnect a store</h3>
+<p>ELMS shows one store at a time, the one chosen under <span class="term">eBay account</span> in the sidebar. Drafts, Live listings, Orders and Messages follow it. Switching deletes nothing.</p>
+<ul>
+<li><strong>Add another.</strong> Press <span class="term">+ Add eBay account</span>. How many stores you can connect comes with your plan.</li>
+<li><strong>Rename.</strong> Type a name on the store&rsquo;s row in Settings and press <span class="term">Save name</span>.</li>
+<li><strong>Disconnect.</strong> <span class="term">Disconnect</span> hides the store. Its live listings, orders, messages and notes are kept for 30 days, then deleted; drafts stay and eBay is untouched. <span class="term">Reconnect</span> the same eBay account within 30 days and everything returns.</li>
+</ul>
+
+<h3 id="getting-started-basics">Account basics</h3>
+<p>In the top bar, the bell opens your notifications, the credits chip shows your balance and opens <span class="term">Buy Credits</span> (see <a href="#credits">Credits and plans</a>), and your name opens a menu with <span class="term">Connect eBay</span>, <span class="term">Settings</span> and <span class="term">Logout</span>. To change your phone number, press <span class="term">Change</span> on the <span class="term">Phone number</span> card in Settings.</p>
+
+<h3 id="getting-started-around">Find your way around</h3>
+<p>The sidebar lists <span class="term">Dashboard</span>, <span class="term">Import</span>, <span class="term">Drafts</span>, <span class="term">Live listings</span>, <span class="term">Orders</span>, <span class="term">Net Profit</span> and <span class="term">Messages</span>. Under Tools you find <span class="term">Research Tools</span> and <span class="term">Price Calculator</span>. Under Account you find <span class="term">Settings</span>, <span class="term">Vouchers</span>, <span class="term">Refer &amp; Earn</span>, <span class="term">Affiliate</span>, <span class="term">Buy Credits</span> and <span class="term">Support</span>.</p>
+<p>The <span class="term">Dashboard</span> opens first. It shows <span class="term">Profit</span>, <span class="term">Total revenue</span>, <span class="term">Orders</span> and <span class="term">New products</span>, a <span class="term">Net Profit</span> strip with buttons for the period, your <span class="term">Recent publish activity</span> and your latest notifications. <span class="term">Open the sheet</span> goes to Net Profit.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="importing">Importing</h2>
+<p>ELMS turns a product link into a draft with title, pictures, description, item details and a price from your margin. Nothing reaches eBay until you publish.</p>
+
+<h3 id="importing-single">Import one product from a link</h3>
+<ol class="howto">
+<li>Open <span class="term">Import</span>. Stay on the <span class="term">Amazon</span> tab and choose <span class="term">Single link</span>.</li>
+<li>Paste the product page address into <span class="term">Amazon product link</span>.</li>
+<li>Press <span class="term">Fetch product</span>.</li>
+</ol>
+<p>The field clears, so you can paste the next link at once. ELMS fetches in the background, tells you when the draft is ready and shows it in <span class="term">Drafts</span>. Credits are used when the import completes. Your <span class="term">Margin</span> prices the draft. If you have not set one, press <span class="term">Margin</span> on this page before you import: without a margin, ELMS prices the draft at the Amazon price. See <a href="#drafts-margin">Pricing rule and margin</a>.</p>
+<ul>
+<li><strong>One link, one draft.</strong> ELMS imports the product you linked. For another colour or size, import its own link.</li>
+<li><strong>The Amazon site must fit your store.</strong> A UK store takes amazon.co.uk links, a US store amazon.com links, and so on. If a link does not fit, ELMS says so and imports nothing.</li>
+</ul>
+
+<h3 id="importing-lists">Import a list of links</h3>
+<p>Both tabs take one Amazon link per line in <span class="term">Amazon links</span>.</p>
+<ul>
+<li><span class="term">Bulk import</span> suits a short list. Press <span class="term">Fetch all</span> and keep the tab open. ELMS reports which links became drafts and why others failed.</li>
+<li><span class="term">Large import</span> suits a long list. Press <span class="term">Start background import</span>. A bar shows progress and you can close the tab; reopen <span class="term">Large import</span> and the bar returns. <span class="term">Cancel</span> keeps the drafts already saved, <span class="term">Retry failed</span> repeats the failed links and <span class="term">View drafts</span> opens the results.</li>
+</ul>
+<p>Large import skips any line that is not a valid Amazon link.</p>
+
+<h3 id="importing-extension">Import with the Chrome extension</h3>
+<p>The ELMS extension adds a panel to Amazon product pages, so you can check profit and import without leaving the page. It works in Chrome on Amazon .com, .co.uk, .ca, .de, .fr, .it, .es, .in and .com.au.</p>
+<h4>Connect it once</h4>
+<ol class="howto">
+<li>Install the ELMS extension in Chrome. If you do not have it yet, open a <span class="term">Support</span> ticket and ask for it.</li>
+<li>In ELMS, open <span class="term">Settings</span>, find the <span class="term">Browser extension</span> card and press <span class="term">Copy</span> to copy <span class="term">Your extension key</span>.</li>
+<li>Click the ELMS icon in the Chrome toolbar, paste the key into <span class="term">ELMS Extension Key</span> and press <span class="term">Connect ELMS Account</span>.</li>
+</ol>
+<div class="callout callout--note" role="note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><div class="callout__body"><p class="callout__title">Treat the key like a password</p><p><span class="term">Regenerate</span> makes a new key, and the old one stops working.</p></div></div>
+<h4>What the panel shows</h4>
+<p>On a product page, click the ELMS chip (for example Profit with a warning count) to open the panel.</p>
+<ul>
+<li><strong>Profit.</strong> The Amazon price, your eBay price at your markup, eBay fees, what you keep, break-even and the price for your wanted profit. <span class="term">Use N%</span> sets the markup that reaches it.</li>
+<li><span class="term">Market on eBay</span> shows the lowest, typical and highest price of similar listings in your store&rsquo;s marketplace.</li>
+<li><span class="term">Checks</span> flag your VeRO words, products you already have, an Amazon site that does not fit your store, a missing price, deal prices, third-party sellers, slow delivery, low ratings, a loss at your markup and too few credits.</li>
+</ul>
+<p>Set your fees and wanted profit under <span class="term">Profit settings</span> in the extension popup.</p>
+<h4>Import a product</h4>
+<ol class="howto">
+<li>Open an Amazon product page. Pick the colour or size first if the page asks.</li>
+<li>In <span class="term">Your markup %</span>, type a percentage, or leave it empty so your margin prices the product when it is on. A percentage you type wins.</li>
+<li>Press <span class="term">Import to Drafts</span>, which shows the cost. The popup button <span class="term">Import current Amazon product</span> and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd> do the same.</li>
+<li>Press <span class="term">Open the draft in ELMS</span>, or switch on <span class="term">Open the draft in ELMS after an import</span> under <span class="term">Options</span>.</li>
+</ol>
+<p>Warnings do not stop an import. An import does stop when you are not connected to ELMS, when the Amazon site does not fit your store, when you lack credits, or when the product is already live, scheduled or being published. A product already in Drafts shows <span class="term">Refresh the draft</span>.</p>
+<p>On search and bestseller pages, tick the <span class="term">+ ELMS</span> badges, then open the ELMS chip (it reads <span class="term">Bulk import</span>, and <span class="term">N products selected</span> once you have ticked some) and press <span class="term">Import N products</span>. Products you already have in ELMS show <span class="term">In Drafts</span> or <span class="term">In ELMS</span>.</p>
+
+<h3 id="importing-csv">Import from a CSV file</h3>
+<p>Use a CSV file for products without an Amazon link, such as your own stock. Each row becomes a draft. You need a connected store, because ELMS reads the Cost in your store&rsquo;s currency.</p>
+<ol class="howto">
+<li>Open <span class="term">Import</span> and choose the <span class="term">CSV file</span> tab.</li>
+<li>Press <span class="term">Download template</span>, delete its two example rows and add one row per product.</li>
+<li>Save as CSV and pick the file with <span class="term">Choose a CSV file</span>, or drop it on the box. ELMS checks every row and lists what to fix. Nothing is saved yet.</li>
+<li>Press <span class="term">Import N products</span> (the button shows how many rows passed the check) and keep the tab open. <span class="term">Stop</span> ends it early; choose the same file again to continue, and imported products are updated, not doubled.</li>
+</ol>
+<div class="table-wrap" role="region" aria-labelledby="tbl-importing-csv" tabindex="0">
+<table class="table"><caption id="tbl-importing-csv">Columns of the CSV file</caption>
+<thead><tr><th scope="col">Column</th><th scope="col">Needed</th><th scope="col">What it holds</th></tr></thead>
+<tbody>
+<tr><th scope="row">SKU</th><td>Yes</td><td>Your own code: letters, numbers and hyphens, once per file.</td></tr>
+<tr><th scope="row">Title</th><td>Yes</td><td>The listing title.</td></tr>
+<tr><th scope="row">Cost</th><td>Yes</td><td>What you pay, in your store&rsquo;s currency.</td></tr>
+<tr><th scope="row">Sell price</th><td>No</td><td>Your eBay price. Empty means your margin prices it from the Cost, if it is on.</td></tr>
+<tr><th scope="row">Quantity, Brand, Category ID, Description</th><td>No</td><td>Saved on the draft. Brand becomes the Brand item specific.</td></tr>
+<tr><th scope="row">Image 1, Image 2 and so on</th><td>No</td><td>Web links to pictures.</td></tr>
+</tbody></table>
+</div>
+<pre tabindex="0">SKU,Title,Cost,Sell price,Quantity,Image 1
+MUG-001,Ceramic Coffee Mug Blue,4.50,,1,https://example.invalid/mug-1.jpg</pre>
+<p>If a text contains a comma, put it in quotes.</p>
+<h4>Add the pictures</h4>
+<p>Pictures come from the Image links or from your computer: in <span class="term">Drafts</span>, press <span class="term">Upload images</span> and name each file after its draft&rsquo;s SKU. <code>MUG-001.jpg</code> is the first picture and <code>MUG-001_2.jpg</code> the second. ELMS shows which draft each file matches before it uploads. A draft without a picture cannot be published; <span class="term">No picture</span> in Drafts lists them.</p>
+<p>A CSV product has no source link, so ELMS leaves its stock and price monitoring off and you decide when to reprice or end it.</p>
+
+<h3 id="importing-nostore">Import before you connect a store</h3>
+<p>You can start before your store is connected. The product becomes a draft that belongs to you, and it shows in Drafts either way. When you connect a store, ELMS attaches these drafts to it, so connect one before you publish. If ELMS asks for a store first, it imports nothing and uses no credit. A CSV import needs a store.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="drafts">Drafts and the listing editor</h2>
+<p>Every imported product waits in Drafts until you publish it. Check it, change what you want, then publish. Publishing has its own section.</p>
+
+<h3 id="drafts-list">The Drafts page</h3>
+<p>Each product is a card with its picture, title, source, <span class="term">Cost</span>, <span class="term">Sell price</span>, <span class="term">Qty</span> and <span class="term">Profit</span>.</p>
+<ul>
+<li><strong>Stages.</strong> <span class="term">Ready to publish</span>, <span class="term">Publishing now</span>, <span class="term">Scheduled</span> and <span class="term">Needs attention</span> filter the list. A failed publish shows its reason.</li>
+<li><strong>Quick edits.</strong> Change <span class="term">Sell price</span> or <span class="term">Qty</span> on the card and the profit updates. When your margin priced the draft, Profit is what is left after eBay fees; otherwise it is sell price minus cost. With <span class="term">Stock Monitoring</span> on, ELMS sets the quantity of an Amazon listing itself once it is live; see <a href="#monitoring">Monitoring stock and price</a>.</li>
+<li><strong>Find.</strong> Search by title, ASIN or SKU, sort, filter by source, and switch between <span class="term">Cards</span> and <span class="term">List</span>. <span class="term">No picture</span> and <span class="term">VeRO words</span> show the drafts that need work.</li>
+<li><strong>Card buttons.</strong> <span class="term">Edit</span>, <span class="term">Publish</span>, and a three-dot menu with <span class="term">Schedule listing</span> and <span class="term">Delete draft</span>. <span class="term">+ Add note</span> keeps a private note; ELMS does not send it to eBay or Amazon.</li>
+</ul>
+
+<h3 id="drafts-editor">The listing editor, tab by tab</h3>
+<p>Press <span class="term">Edit</span>, or click the picture or title. Set <span class="term">Sell price</span> and <span class="term">Quantity</span> at the top. The draft saves itself as you work, and the footer says <span class="term">All changes saved</span>.</p>
+<div class="table-wrap" role="region" aria-labelledby="tbl-drafts-tabs" tabindex="0">
+<table class="table"><caption id="tbl-drafts-tabs">The tabs of the listing editor</caption>
+<thead><tr><th scope="col">Tab</th><th scope="col">What you do there</th></tr></thead>
+<tbody>
+<tr><th scope="row">Product</th><td>Edit the title and category, set policies and item location, and switch <span class="term">Stock Monitoring</span> and <span class="term">Price Monitoring</span> on or off.</td></tr>
+<tr><th scope="row">Description</th><td>Edit the description, which holds simple HTML, and check the <span class="term">Preview</span>.</td></tr>
+<tr><th scope="row">Variants (1)</th><td>Shows the product you imported.</td></tr>
+<tr><th scope="row">Images</th><td>Remove a picture with its cross, or add one with <span class="term">Add from URL</span>. Every listing needs one.</td></tr>
+<tr><th scope="row">Item Specifications</th><td>Fill in the item specifics eBay asks for in your category; the <em>Required</em> ones are marked. Add your own with <span class="term">+ Add custom specification</span>.</td></tr>
+</tbody></table>
+</div>
+<p>ELMS suggests categories from your title and lists them in the <span class="term">Category</span> box. Choose one before you publish; the item specifics load from it. The counter beside <span class="term">Title</span> shows how much of eBay&rsquo;s title space you have used.</p>
+
+<h3 id="drafts-ai">AI helpers</h3>
+<p>ELMS uses AI services to help write and improve titles, descriptions, item details and message drafts. You decide what is published or sent: you review drafts before they go live, bulk actions ask you to confirm first, and automatic replies stay off until you turn them on.</p>
+<ul>
+<li><span class="term">Optimize Title With AI</span> (Product tab) rewrites your title using the category and description.</li>
+<li><span class="term">Generate Description With AI</span> writes a clean description from the product&rsquo;s facts. <span class="term">Beautify With AI</span> restructures the text in the box into your Description Template.</li>
+<li><span class="term">Fill with AI</span> (Item Specifications) fills the empty item specifics it can answer and keeps what you typed. Choose a category first.</li>
+</ul>
+<p>AI helpers can use credits when they finish, and your balance in the top bar updates. Read the result: AI can make mistakes. A few steps use AI output without a separate look at each result, so know where they are:</p>
+<ul>
+<li>The AI tools in <span class="term">Live listings</span> change listings that are already on eBay. They push their result to eBay when you confirm, so check your selection and read the window first.</li>
+<li>When you publish a draft that has no eBay category, ELMS can pick one for it with the help of AI and save it on the draft.</li>
+<li><span class="term">Auto-send</span> in Messages sends drafted replies on its own. It stays off until you turn it on; see <a href="#messages-ai">AI drafts and reply modes</a>.</li>
+</ul>
+
+<h3 id="drafts-policies">Policies</h3>
+<p>Every listing needs a payment, a shipping (fulfillment) and a return policy, created in your eBay account. Your store defaults live in <span class="term">Selling settings</span>. For one product, switch off <span class="term">Use Dynamic Policies (Shipping, Payment, Returns)</span> on the Product tab and choose <span class="term">Payment Policy</span>, <span class="term">Shipping Policy</span> and <span class="term">Return Policy</span>; <span class="term">Account default</span> keeps the store default. For many drafts, tick <span class="term">Policies</span> in <span class="term">Bulk edit</span>.</p>
+
+<h3 id="drafts-location">Item location and postal code</h3>
+<p>eBay needs the place the item ships from, with a full postal code: in the UK the whole code, such as M1 1AE. Countries without postal codes, such as Hong Kong, need none.</p>
+<ol class="howto">
+<li>In <span class="term">Selling settings</span>, open <span class="term">Product location</span>. Choose a location from eBay, or <span class="term">Custom location&hellip;</span>, the last entry of the list.</li>
+<li>For a custom location, choose the <span class="term">Country</span>, type the <span class="term">City</span> and press <span class="term">Generate valid code</span>. ELMS looks up a real postal code in that city. If you know your own, type it in <span class="term">Postal code</span> and press <span class="term">Use my own code</span>; ELMS checks it.</li>
+<li>Press <span class="term">Save settings</span>.</li>
+</ol>
+<p>One product can ship from elsewhere. On its Product tab, set <span class="term">Country Location</span>, <span class="term">City</span> and <span class="term">Zip code</span>, or press <span class="term">Generate</span>. A country and code saved on a product replace the store location for it.</p>
+
+<h3 id="drafts-margin">Pricing rule and margin</h3>
+<p>Your margin turns a product&rsquo;s cost into an eBay price, and every new import follows it. eBay takes its fees from what the buyer pays in total, so the margin adds your fees and profit to the cost.</p>
+<ol class="howto">
+<li>Press <span class="term">Margin</span> on the Import page or in Settings. Switch on <span class="term">Use this margin for new imports</span> and pick the currency in <span class="term">Amounts are in</span>.</li>
+<li>Enter your fees in <span class="term">Fees %</span> and <span class="term">Fixed fee per order</span> (<span class="term">Help me calculate</span> opens the Price Calculator), and your profit in <span class="term">Additional profit %</span> and <span class="term">Additional profit</span>. Add <span class="term">Minimum profit per product</span> for a floor.</li>
+<li>Optional: <span class="term">Include shipping price</span> adds delivery to the cost, <span class="term">Set price cents value</span> rounds prices up to those cents, and <span class="term">Use different profit for cost ranges</span> sets a profit per cost range (<span class="term">+ Add a range</span>).</li>
+<li>Type a cost under <span class="term">Try your rule</span> to see the price and its breakdown. Press <span class="term">Save pricing</span>.</li>
+</ol>
+<p>A rule applies to products you import from now on; drafts keep their price. To reprice drafts, use <span class="term">Bulk edit</span>, tick <span class="term">Price</span> and choose <span class="term">Use my pricing rule</span>. With no margin, or with it off, products come in at the Amazon price.</p>
+
+<h3 id="drafts-calculator">Price Calculator</h3>
+<p><span class="term">Price Calculator</span> in the sidebar, under Tools, finds the price that leaves the profit you want after eBay&rsquo;s fees, or shows what a price you already have earns you. Fill in <span class="term">What it costs you</span>, <span class="term">eBay fees</span> and <span class="term">What you want</span>, or type a price under <span class="term">Or test a price you have</span>. <span class="term">Price one of your drafts</span> uses a draft&rsquo;s Amazon cost and saves the result straight back to that draft.</p>
+
+<h3 id="drafts-template">Description template</h3>
+<p>In <span class="term">Settings</span>, open <span class="term">Description Template</span>. Pick a <span class="term">Starting style</span>, tick the <span class="term">Blocks to include</span> and add your branding: <span class="term">Store name (shown in the description)</span>, <span class="term">Logo URL (optional)</span> and <span class="term">Accent color</span>. You can add a <span class="term">Custom HTML block (optional)</span>, a <span class="term">Size chart HTML (optional)</span> and a <span class="term">Product video URL (optional)</span>. Press <span class="term">Save</span>. <span class="term">Beautify With AI</span> and <span class="term">Beautify descriptions with AI</span> use it.</p>
+
+<h3 id="drafts-vero">Brand-word (VeRO) warnings</h3>
+<p>VeRO is eBay&rsquo;s programme for brand owners to report listings that carry their names. eBay can remove such a listing and suspend accounts that repeat it. ELMS helps you check: you keep a list of words, and ELMS warns you when a draft or live listing uses one.</p>
+<ol class="howto">
+<li>In <span class="term">Settings</span>, find the <span class="term">VeRO words</span> card and press <span class="term">VeRO words</span>.</li>
+<li>Type a word and press <kbd>Enter</kbd>, or paste several separated by commas. <span class="term">Use ELMS&rsquo;s words</span> adds a suggested list, <span class="term">Import from PDF</span> adds the usable words of a PDF list and <span class="term">Clear all</span> empties yours. Only words you save are used.</li>
+</ol>
+<p>A draft with one of your words shows a VeRO chip, and the editor shows <span class="term">VeRO words found</span>. The check covers the whole listing text, item specifics and brand. The <span class="term">VeRO words</span> button in Drafts lists those drafts.</p>
+<p>Press <span class="term">Remove with AI</span> on the card or in the editor, or <span class="term">Remove VeRO words</span> in the bulk bar. ELMS removes the words and names them, so open the draft to check. A word used in its ordinary meaning may stay for you to judge. Publishing a draft that still has VeRO words asks you to confirm first; see <a href="#publishing-one">Publish one draft</a>.</p>
+<div class="callout callout--important" role="note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><div class="callout__body"><p class="callout__title">Warnings are aids, not clearance</p><p>ELMS can warn only about the words you saved, and eBay can still act on a listing that passes. You are the seller, and you are responsible for what you list. For items eBay prohibits outright, see <a href="#publishing-policy-stop">The prohibited-items stop</a>.</p></div></div>
+
+<h3 id="drafts-bulk">Work on many drafts at once</h3>
+<p>Tick drafts and a bar appears at the bottom. <span class="term">Select</span> ticks the page, <span class="term">Select all N</span> takes the whole view and <span class="term">Select first N</span> takes the first N.</p>
+<div class="table-wrap" role="region" aria-labelledby="tbl-drafts-bulk" tabindex="0">
+<table class="table"><caption id="tbl-drafts-bulk">Buttons of the Drafts bulk bar</caption>
+<thead><tr><th scope="col">Button</th><th scope="col">What it does</th></tr></thead>
+<tbody>
+<tr><th scope="row">Publish all</th><td>Sends the selected drafts to eBay.</td></tr>
+<tr><th scope="row">Bulk edit</th><td>Changes price, title, brand, quantity, tags, note, monitoring, item location or policies. A draft that cannot take a change is skipped, with the reason.</td></tr>
+<tr><th scope="row">Fill category</th><td>Chooses a category for selected drafts that have none.</td></tr>
+<tr><th scope="row">Fill specifics with AI</th><td>Fills and saves item specifics.</td></tr>
+<tr><th scope="row">Beautify descriptions with AI</th><td>Applies your template.</td></tr>
+<tr><th scope="row">Remove VeRO words</th><td>Takes your VeRO words out.</td></tr>
+<tr><th scope="row">Remove</th><td>Deletes the selected drafts after you confirm.</td></tr>
+<tr><th scope="row">Clear</th><td>Clears the selection.</td></tr>
+</tbody></table>
+</div>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="publishing">Publishing</h2>
+<p>Publishing turns a draft into a live eBay listing in your selected store. You can publish one draft, publish a selection, or set a time for a draft to go live. ELMS works in the background, so you can keep using the app.</p>
+<div class="callout callout--brief" role="note"><p class="callout__title">In brief</p><p>Press <span class="term">Publish</span> on a draft, or select drafts and press <span class="term">Publish all</span>. Credits are used when a listing is published and come back if the publish fails.</p></div>
+
+<h3 id="publishing-before">Before you publish</h3>
+<p>Publishing needs a payment policy, a fulfillment policy, a return policy and an item location for the store. You set them once in <span class="term">Selling settings</span>; the steps are in <a href="#getting-started-defaults">Save your selling defaults</a>. To use other policies or another location for one draft, see <a href="#drafts-policies">Policies</a> and <a href="#drafts-location">Item location and postal code</a>.</p>
+<p>Each draft also needs a selling price, an eBay category with the item specifics it requires, and at least one picture. A draft without a picture is marked <span class="term">No picture</span>. If a draft has no category when you publish it, ELMS can pick one with the help of AI and save it on the draft; choose your own in the editor if you want to decide.</p>
+
+<h3 id="publishing-one">Publish one draft</h3>
+<ol class="howto">
+<li>Open <span class="term">Drafts</span> and check the card: <span class="term">Cost</span>, <span class="term">Sell price</span>, <span class="term">Qty</span> and the profit line.</li>
+<li>Press <span class="term">Publish</span>. If the draft contains VeRO words, ELMS shows <span class="term">VeRO words found</span>. Choose <span class="term">Publish anyway</span> or <span class="term">Go back</span>.</li>
+<li>The draft is counted under <span class="term">Publishing now</span>. When eBay accepts it, you get a notification and the listing appears in <span class="term">Live listings</span>.</li>
+</ol>
+
+<h3 id="publishing-many">Publish many drafts</h3>
+<ol class="howto">
+<li>Tick the drafts, as described in <a href="#drafts-bulk">Work on many drafts at once</a>.</li>
+<li>Press <span class="term">Publish all</span> in the bar at the bottom and confirm.</li>
+<li>ELMS publishes in the background. A progress line at the top of Drafts shows how far it has got, and a notification tells you when the batch is done.</li>
+</ol>
+<p>Drafts that eBay does not allow and drafts with no picture are left out, and ELMS tells you about them. If some drafts contain VeRO words, you confirm once for the selection.</p>
+
+<h3 id="publishing-schedule">Schedule a draft</h3>
+<ol class="howto">
+<li>On the card open the three-dot menu (<span class="term">More actions</span>) and choose <span class="term">Schedule listing</span>.</li>
+<li>Choose the store in <span class="term">Publish to</span> (hidden when you have one store), set <span class="term">Publish date &amp; time</span> and press <span class="term">Schedule</span>.</li>
+</ol>
+<p>The card moves to <span class="term">Scheduled</span> and shows when it goes live, in your computer&rsquo;s time. ELMS publishes at that time or shortly after, with the same checks as a normal publish, and credits are used then. Press <span class="term">Cancel schedule</span> on the card to send the draft back to draft.</p>
+
+<h3 id="publishing-failure">When a publish fails</h3>
+<p>A publish can fail because of the draft or because of eBay, for example a missing policy, a required item specific, no usable picture or a store that needs to be reconnected. Then:</p>
+<ul>
+<li>the credits come back automatically;</li>
+<li>the card shows <span class="term">Failed</span> with the reason, and the draft is counted under <span class="term">Needs attention</span>;</li>
+<li>you get a <span class="term">Publish failed</span> notification.</li>
+</ul>
+<p>If eBay answers with a temporary error, ELMS tries again on its own before it reports a failure. To publish a failed draft again:</p>
+<ol class="howto">
+<li>Press <span class="term">Retry</span> on the card. ELMS clears the failure and opens the <span class="term">Edit draft</span> window.</li>
+<li>Fix what the reason names. In this window you can add a picture with <span class="term">Add images</span> or <span class="term">Add from URL</span>, set the <span class="term">eBay category ID</span> or correct the <span class="term">Sell price</span>, then press <span class="term">Save changes</span>. If the reason is a policy or the item location, close the window, press <span class="term">Edit</span> on the card and use the Product tab (see <a href="#drafts-policies">Policies</a> and <a href="#drafts-location">Item location and postal code</a>).</li>
+<li>Open Drafts again, or reload the page, so the card refreshes. Then press <span class="term">Publish</span>.</li>
+</ol>
+
+<h3 id="publishing-policy-stop">The prohibited-items stop</h3>
+<p>eBay prohibits some products outright. Before a draft goes to eBay, ELMS checks its text against its own list of those products. On a match the card shows <span class="term">Not allowed on eBay</span> with the area it matched, and ELMS will not publish it. Nothing is sent to eBay and nothing is charged. A window explains why when you press <span class="term">Publish</span>, and <span class="term">Publish all</span> leaves those drafts out and offers to publish the rest. If you think a match is a mistake, change the title or description, or write to support.</p>
+<div class="callout callout--note" role="note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><div class="callout__body"><p class="callout__title">An aid, not clearance</p><p>The stop and the VeRO warnings are aids, not clearance; see <a href="#drafts-vero">Brand-word (VeRO) warnings</a>.</p></div></div>
+
+<h3 id="publishing-again">Publishing again</h3>
+<p>A sold-out or ended listing goes back on eBay with <span class="term">Relist</span>. See <a href="#live-listings-relist">Relist sold-out and ended listings</a>.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="live-listings">Live listings</h2>
+<p><span class="term">Live listings</span> shows what you published to eBay from the selected store: price, profit, stock and watchers. Boxes above the list add up the store, for example <span class="term">Live now</span>, <span class="term">Units sold</span>, <span class="term">Watchers</span>, <span class="term">Average margin</span> and <span class="term">Need attention</span>.</p>
+
+<h3 id="live-listings-sync">Sync from eBay</h3>
+<p>Press <span class="term">Sync from eBay</span> to refresh the numbers that come from eBay, such as watchers. A line beside the button says when they were last synced; ELMS also refreshes them on its own. <span class="term">Edit</span> reads the listing&rsquo;s current details from eBay first, and <span class="term">Save changes</span> updates the listing on eBay.</p>
+
+<h3 id="live-listings-columns">What you see on each listing</h3>
+<div class="table-wrap" role="region" aria-labelledby="ll-cols" tabindex="0">
+<table class="table"><caption id="ll-cols">What a live listing shows</caption>
+<thead><tr><th scope="col">Part</th><th scope="col">What it means</th></tr></thead>
+<tbody>
+<tr><th scope="row">Status label</th><td><span class="term">Active</span> is live. <span class="term">Sold out</span> means every unit sold. <span class="term">Ended</span> is no longer live on eBay. <span class="term">Needs attention</span> means something is wrong, and a red box says what.</td></tr>
+<tr><th scope="row">Price</th><td>Your eBay selling price. Under it, <span class="term">cost</span> is what the product costs you on Amazon.</td></tr>
+<tr><th scope="row">Profit</th><td>With your pricing rule: what is left after that rule&rsquo;s eBay fees (<span class="term">% profit</span>). Without a saved rule: selling price minus cost, before fees (<span class="term">% margin</span>). Hover to see which. Here <span class="term">% margin</span> is the plain gap between price and cost, not your <span class="term">Margin</span> setting.</td></tr>
+<tr><th scope="row">Stock</th><td>The quantity available on eBay.</td></tr>
+<tr><th scope="row">Sold</th><td>Units sold, counted from your synced orders.</td></tr>
+<tr><th scope="row">Watchers</th><td>People watching the item on eBay.</td></tr>
+<tr><th scope="row">Labels</th><td>The eBay and Amazon labels open the live listing and the source product. VeRO and policy labels warn about words eBay may act on. Your private note sits on the card.</td></tr>
+</tbody></table>
+</div>
+
+<h3 id="live-listings-find">Find your listings</h3>
+<p>The tabs are <span class="term">All</span>, <span class="term">Active</span>, <span class="term">Sold</span>, <span class="term">Ended</span> and <span class="term">Issues</span>, each with a count. <span class="term">Issues</span> holds listings that need you, and the red box says why. If eBay reports live listings that break a rule, a banner above the list names the problems. Search by title, SKU or item ID, sort, filter by source or by VeRO words, switch between <span class="term">Cards</span> and <span class="term">List</span>, and press <span class="term">Export CSV</span> to download the view. A <span class="term">Policy risk</span> label on a live listing is a warning only.</p>
+
+<h3 id="live-listings-bulk">Change many listings at once</h3>
+<p>Tick the <span class="term">Select</span> box to take in the page, then press <span class="term">Select all N</span> to take in the whole view. You can also tick listings one by one. The bar offers what fits the tab:</p>
+<ul>
+<li><span class="term">Change price</span> (Active tab) reprices the selection on eBay with <span class="term">Use my pricing rule</span> or numbers you enter, from each listing&rsquo;s own Amazon price. A listing without one is skipped, with the reason.</li>
+<li><span class="term">Restock</span> (Sold tab) puts a new quantity on eBay.</li>
+<li><span class="term">Bulk edit</span> lets you tick what to change: <span class="term">Price</span>, <span class="term">Title</span>, <span class="term">Brand</span>, <span class="term">Quantity</span>, <span class="term">Tags</span>, <span class="term">Note</span>, <span class="term">Stock monitoring</span>, <span class="term">Price monitoring</span>, <span class="term">Item location</span> or <span class="term">Policies</span>. Price, title, brand, quantity, location and policies go to eBay; tags, note and monitoring stay in ELMS. ELMS asks you to confirm and lists every listing it skipped, with the reason.</li>
+<li><span class="term">Fill specifics with AI</span>, <span class="term">Beautify descriptions with AI</span> and <span class="term">Remove VeRO words</span> push their result to eBay and can use credits. Read the window before you confirm.</li>
+<li><span class="term">Fit titles to eBay</span> cuts a title that ends mid-word back to the last whole word. Only the title changes, and no credits are used.</li>
+</ul>
+
+<h3 id="live-listings-relist">Relist sold-out and ended listings</h3>
+<p>Select listings and press <span class="term">Relist</span>, or use the three-dot menu on an ended listing. A window first shows what happens to each kind: a live listing is left as it is, a sold-out listing gets the quantity you type, an ended listing is published again as a new listing, and a listing that needs attention is not touched. Tick <span class="term">Also relist the other</span> listings to include the rest of the store. Relisting an ended listing goes through the publishing steps above, so it uses credits like any publish.</p>
+
+<h3 id="live-listings-end">End and delete</h3>
+<p>Select listings and press <span class="term">Delete &amp; end on eBay</span>, or choose <span class="term">Delete</span> in the three-dot menu of one listing. ELMS ends a live listing on eBay and then removes it from ELMS. You confirm first, and it cannot be undone. On the Ended and Issues tabs the button reads <span class="term">Delete</span>.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="monitoring">Monitoring stock and price</h2>
+<p>ELMS can watch the source products of your listings: when the source clearly says a product is out of stock, ELMS can end the listing for you, and when the source price changes it can update your eBay price to follow it. Both are switches you control per listing.</p>
+
+<h3 id="monitoring-what">What monitoring does</h3>
+<ul>
+<li><strong>Stock.</strong> ELMS looks at the Amazon product the listing was created from. If it clearly says the product is out of stock, ELMS ends the listing on eBay. While the source shows the product in stock, ELMS keeps the listing available on eBay and sets the eBay quantity itself, and a listing that sold out can be put back on eBay the same way. To set the quantity yourself, switch <span class="term">Stock Monitoring</span> off for that listing.</li>
+<li><strong>Price.</strong> When the source price moves, ELMS recalculates your eBay price. A listing that was priced with your <span class="term">Margin</span> keeps the rule it was priced with, so changing the Margin card later does not change it. A listing priced without a rule keeps the same gap between its source price and its eBay price. To price a live listing again with your current Margin, use <span class="term">Change price</span> in Live listings and choose <span class="term">Use my pricing rule</span>.</li>
+<li><strong>Credits.</strong> Stock checks use credits. A check with no clear answer is not charged: the credit is returned. If your balance cannot cover a check, ELMS skips it, ends nothing and sends you a notification.</li>
+</ul>
+<p>A listing is watched through the supplier link it was created from. A product added from a CSV file has no such link, so there is nothing to watch.</p>
+
+<h3 id="monitoring-switch">Switch it on or off for a listing</h3>
+<p>Both switches start on, so monitoring uses credits when it runs even if you click nothing. If you switch both off, ELMS leaves that listing alone.</p>
+<ol class="howto">
+<li>Open <span class="term">Live listings</span> and press <span class="term">Edit</span> on the listing. For a draft, press <span class="term">Edit</span> on its card in Drafts; the switches apply once it is published.</li>
+<li>On the <span class="term">Product</span> tab go to <span class="term">Monitoring</span>.</li>
+<li>Switch <span class="term">Stock Monitoring</span> and <span class="term">Price Monitoring</span> on or off, then press <span class="term">Save changes</span>.</li>
+</ol>
+<p>For many listings, select them, press <span class="term">Bulk edit</span>, tick <span class="term">Stock monitoring</span> or <span class="term">Price monitoring</span>, and choose <span class="term">On</span> or <span class="term">Off</span> in <span class="term">Watch Amazon stock</span> or <span class="term">Follow Amazon price changes</span>.</p>
+
+<h3 id="monitoring-seen">What you see when ELMS acts</h3>
+<p>When ELMS ends a listing because the source is out of stock, you get a notification and the listing moves to the <span class="term">Ended</span> tab. Relist it when the product is back. When the price changes, the new selling price and cost show on the listing.</p>
+
+<h3 id="monitoring-never">What monitoring does not do</h3>
+<ul>
+<li>Monitoring ends a listing only when the source clearly says the product is out of stock. If the source does not answer, or does not say whether the product is in stock, the listing stays as it is.</li>
+<li>Monitoring does not relist a listing on the <span class="term">Ended</span> tab. You do that yourself.</li>
+<li>Monitoring does not order anything from the source for you.</li>
+<li>Monitoring does not change a title, a description or pictures. It can only end a listing, change its quantity or change its price.</li>
+<li>Monitoring leaves alone a listing whose two switches are off, and a store that needs to be reconnected.</li>
+</ul>
+<div class="callout callout--info" role="note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><div class="callout__body"><p class="callout__title">Good to know</p><p>ELMS acts on what the source shows when it checks. Source data can be late or wrong, so keep an eye on your orders.</p></div></div>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="orders">Orders and tracking</h2>
+<p><span class="term">Orders</span> lists the eBay orders ELMS has loaded for the selected store, with their payment, address, tracking and your notes. New and changed orders arrive on their own. Press <span class="term">Sync from eBay</span> to look right away; the first time, it loads your recent orders. <span class="term">Full sync</span> re-reads all recent orders, not only the changes.</p>
+
+<h3 id="orders-find">Find and group your orders</h3>
+<p>The tabs group orders by where they stand: <span class="term">All</span>, <span class="term">Awaiting shipment</span>, <span class="term">Awaiting payment</span>, <span class="term">Shipped</span>, <span class="term">Delivered</span> and <span class="term">Cancelled</span>, each with a count. The cards on top add up the period you chose in the box beside the search: orders awaiting shipment, revenue, profit and cancelled orders. On <span class="term">Awaiting shipment</span> a filter shows <span class="term">Not ordered yet</span> or <span class="term">Ordered</span>. You can search by order ID, buyer, item or tracking number.</p>
+
+<h3 id="orders-work">Work through an order</h3>
+<ol class="howto">
+<li>Press <span class="term">Fulfil</span> on the row (<span class="term">View</span> for other orders). The order window shows the item, payment, the address with <span class="term">Copy address</span>, fulfillment and your private note, plus <span class="term">View on eBay</span>, <span class="term">Refresh from eBay</span>, <span class="term">Message buyer</span> and <span class="term">Packing slip</span>.</li>
+<li>Buy the item from your source yourself. The <span class="term">AMAZON</span> label on the row opens the product, and the <a href="#orders-helper">order helper extension</a> can help at this step. ELMS never places Amazon orders.</li>
+<li>Mark the order as ordered, then as shipped.</li>
+</ol>
+
+<h3 id="orders-ordered">Mark as ordered</h3>
+<ol class="howto">
+<li>On an order awaiting shipment, open the arrow beside the status (<span class="term">Order actions</span>) and choose <span class="term">Mark as ordered</span>.</li>
+<li>Enter the <span class="term">Delivery date</span> (when the parcel arrives) and your <span class="term">Buying price</span>. Both are optional.</li>
+<li>Press <span class="term">Mark as ordered</span>.</li>
+</ol>
+<p>The row shows <span class="term">Ordered</span> with the arrival date. It is only a reminder for you: nothing goes to eBay or Amazon unless you switch on the eBay note below or the ordered message in Settings. ELMS adds <span class="term">ELMS: ordered</span> and the date to the order&rsquo;s private note, and the buying price goes to the Net Profit sheet. To remove the mark choose <span class="term">Undo &ldquo;ordered&rdquo; mark</span>. If you switched on the ordered message under <span class="term">Auto buyer messages</span> in Settings, ELMS sends it the first time you mark the order.</p>
+<p>You can also type the buying price on the order itself. The <span class="term">Buying cost</span> box on the row and <span class="term">Buying price</span> in the order window are the same figure as <span class="term">Buying price</span> on the Net Profit sheet. <span class="term">Cost per item</span> in the order window is separate: it only sets the profit shown on Orders. <span class="term">Amazon order ID</span> is a field for your own record; saving it also marks the order as ordered.</p>
+
+<h3 id="orders-helper">The order helper extension</h3>
+<p>The order helper is a second browser extension, separate from the Chrome extension that imports products; it shows its name as ELMS Order Sync. It works on Amazon pages, and only in a tab you opened with the <span class="term">AMAZON</span> label on an order row. It never clicks, types or submits anything for you: you place the order yourself.</p>
+<ul>
+<li><strong>Before you buy.</strong> A small panel, <span class="term">ELMS buyer address</span>, shows the buyer&rsquo;s delivery details from the order. Press <span class="term">Copy</span> beside a field, or <span class="term">Copy full address</span>, and paste it into Amazon&rsquo;s own form yourself.</li>
+<li><strong>After you buy.</strong> When Amazon shows its order confirmation, the helper reads the order total and, when it can, the estimated arrival date, and saves them on the ELMS order as <a href="#orders-ordered">Mark as ordered</a> does. If it cannot read the total, it saves nothing, and you mark the order yourself.</li>
+</ul>
+<p>It uses the same extension key as the product extension. Copy the key from the <span class="term">Browser extension</span> card in Settings, paste it into <span class="term">ELMS Extension Key</span> in the helper&rsquo;s popup and press <span class="term">Connect ELMS Account</span>. There is no separate switch for it in Settings. <span class="term">Disconnect ELMS</span> in the popup removes the key from the browser.</p>
+
+<h3 id="orders-shipped">Mark as shipped and add tracking</h3>
+<ol class="howto">
+<li>Open <span class="term">Order actions</span> and choose <span class="term">Mark as shipped</span>, or press it in the order window.</li>
+<li>Choose the <span class="term">Carrier</span> and type the <span class="term">Tracking number</span>. If your carrier is not listed, choose <span class="term">Other</span>.</li>
+<li>Press <span class="term">Mark as shipped</span>.</li>
+</ol>
+<p>The tracking number is optional. With one, ELMS sends it to eBay and the buyer sees it there. Without one, the order is marked shipped on eBay with no tracking number, and <span class="term">Update tracking</span> adds it later. If eBay refuses the update, ELMS says <span class="term">Saved in ELMS only</span> and shows the reason. A shipped message you switched on in Settings is sent now, once per order.</p>
+
+<h3 id="orders-tracking-page">The buyer tracking page</h3>
+<p>When you save a tracking number, the order window shows a link to a tracking page for the buyer, with <span class="term">Copy link</span>. The page shows a general status of the parcel. You can share the link with the buyer.</p>
+
+<h3 id="orders-note">The order note</h3>
+<p>Every order has a private note that only you see. Press <span class="term">+ Add note</span> on the row, or use <span class="term">Private note</span> in the order window, and save. It stays in ELMS. Two switches above the list can also write to the private note of the order on eBay. Both are off until you switch them on, and ELMS asks you to confirm.</p>
+<ul>
+<li><span class="term">Also write &ldquo;ordered&rdquo; in the eBay note</span> adds <span class="term">ELMS: ordered</span> and the delivery date to eBay&rsquo;s private note when you mark an order. Your own text there is kept.</li>
+<li><span class="term">Also copy my order note to eBay</span> puts the note you save into eBay&rsquo;s private note and replaces what is there. An empty note clears it. eBay keeps only a short note, so a long one is cut.</li>
+</ul>
+<p>The eBay note can be written only while eBay lists the order as awaiting shipment.</p>
+
+<h3 id="orders-delivered">Delivered</h3>
+<p>Press <span class="term">Mark delivered</span> in the order window when the parcel has arrived. ELMS also moves a shipped order to <span class="term">Delivered</span> once eBay&rsquo;s estimated delivery date has passed. An order with no estimated date stays in <span class="term">Shipped</span> until you mark it.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="messages">Buyer messages</h2>
+<p><span class="term">Messages</span> gathers the buyer conversations of the selected store in one inbox. You read and answer buyers, keep private notes and reuse saved replies. ELMS can also draft replies and send a few automatic messages. It sends nothing to a buyer unless you press <span class="term">Send</span>, or you switched on <span class="term">Auto-send</span> or an automatic buyer message.</p>
+
+<h3 id="messages-inbox">The inbox</h3>
+<p>The page follows the store chosen in the sidebar. New buyer messages arrive in the inbox on their own, and <span class="term">Sync</span> looks right away.</p>
+<ul>
+<li><strong>Tabs.</strong> <span class="term">From buyers</span>, <span class="term">From eBay</span> (notices from eBay itself) and <span class="term">Needs reply</span>. The box under them switches between <span class="term">Inbox</span>, <span class="term">Unread only</span>, <span class="term">Archived</span> and <span class="term">Trash</span>. You can sort and search.</li>
+<li><strong>Rows.</strong> Unread conversations are bold. A tag such as <span class="term">AI draft</span> shows what ELMS prepared. <span class="term">Buyer unknown</span> means eBay did not name the recipient.</li>
+<li><strong>Many at once.</strong> Tick several rows to <span class="term">Mark as read</span> or <span class="term">Archive</span> them.</li>
+</ul>
+
+<h3 id="messages-reply">Read and reply</h3>
+<ol class="howto">
+<li>Select a conversation. When eBay links it to an order, <span class="term">View order details</span> opens Orders.</li>
+<li>Type in the box at the bottom. The buttons beside it attach a file or a photo and add an emoji.</li>
+<li>Press <span class="term">Send</span>. ELMS sends the reply through eBay.</li>
+</ol>
+<p>The three-dot menu of a thread offers <span class="term">Archive</span>, <span class="term">Mark unread</span> and <span class="term">Move to Trash</span>; from Trash you can <span class="term">Restore</span> it.</p>
+
+<h3 id="messages-saved">Saved replies</h3>
+<p>Press <span class="term">Saved replies</span> at the top to add a reusable reply or delete one. In a conversation, choose it from the <span class="term">Saved replies</span> list and it fills the box for you to edit. To keep a reply you just wrote, press <span class="term">Save reply</span> and name it. Placeholders such as <code>{{buyer_name}}</code> and <code>{{order_id}}</code> are filled in when you use the reply.</p>
+
+<h3 id="messages-notes">Private notes</h3>
+<p>Open <span class="term">Private note</span>, write it and press <span class="term">Add note</span>. Only you see a note. It is not sent to the buyer.</p>
+
+<h3 id="messages-ai">AI drafts and reply modes</h3>
+<p>The <span class="term">AI replies</span> bar has three modes. The note beside it says how many credits a reply uses.</p>
+<ul>
+<li><span class="term">Off</span>: you write every reply. <span class="term">Draft with AI</span> in a conversation still gives you one draft.</li>
+<li><span class="term">Draft for me</span>: when a new buyer message arrives, ELMS puts a draft in the reply box and tags the row <span class="term">AI draft</span>. Edit it and press <span class="term">Send</span>, or press <span class="term">Discard</span>.</li>
+<li><span class="term">Auto-send</span>: after you confirm <span class="term">Turn on Auto-send?</span>, ELMS answers messages that look simple without asking. It tries to keep messages about refunds, returns, damage and complaints as drafts for you, but it cannot catch every wording, so switch Auto-send on only if you accept that a reply can go out before you have read it. The row gets the tag <span class="term">AI replied</span>, and the thread shows what was sent.</li>
+</ul>
+<p>Only messages that arrive after you switch a mode on are handled. If a draft cannot be written, the credits come back. If your balance is too low, ELMS skips the draft and notifies you.</p>
+<div class="callout callout--important" role="note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><div class="callout__body"><p class="callout__title">Check before you send</p><p>AI can make mistakes. Check names, dates and promises. Automatic replies stay off until you turn them on.</p></div></div>
+
+<h3 id="messages-auto">Automatic buyer messages</h3>
+<p>In <span class="term">Settings</span>, the <span class="term">Auto buyer messages</span> card has four switches, all off at the start. Each message goes through eBay&rsquo;s own messaging and is sent once per order.</p>
+<div class="table-wrap" role="region" aria-labelledby="tbl-messages-auto" tabindex="0">
+<table class="table"><caption id="tbl-messages-auto">Automatic buyer messages and when each one is sent</caption>
+<thead><tr><th scope="col">Switch</th><th scope="col">Sent when</th></tr></thead>
+<tbody>
+<tr><th scope="row">Thank-you message</th><td>The order is first seen as paid. Orders paid long ago get nothing.</td></tr>
+<tr><th scope="row">&ldquo;Ordered&rdquo; update</th><td>You mark the order as ordered.</td></tr>
+<tr><th scope="row">&ldquo;Shipped&rdquo; update</th><td>You mark the order as shipped. With tracking, it also gives the tracking number and carrier.</td></tr>
+<tr><th scope="row">&ldquo;Shipped&rdquo; + review request</th><td>Tracking is saved for the first time.</td></tr>
+</tbody></table>
+</div>
+<p>For the ordered and shipped messages you can write your own text under <span class="term">Your own wording (optional)</span> and press <span class="term">Save wording</span>.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="net-profit">Net Profit</h2>
+<p><span class="term">Net Profit</span> is a sheet with one line for each order of the selected store that came from a listing made in ELMS. You type the buying price. ELMS reads the order earning from eBay once the payout is settled and works out the rest.</p>
+
+<h3 id="net-profit-columns">What each column means</h3>
+<div class="table-wrap" role="region" aria-labelledby="tbl-net-profit" tabindex="0">
+<table class="table"><caption id="tbl-net-profit">The money columns of the Net Profit sheet</caption>
+<thead><tr><th scope="col">Column</th><th scope="col">Where it comes from</th></tr></thead>
+<tbody>
+<tr><th scope="row">Buying price</th><td>You type it. <span class="term">Mark as ordered</span> can fill it too.</td></tr>
+<tr><th scope="row">eBay price</th><td>What the buyer paid for the item.</td></tr>
+<tr><th scope="row">Profit</th><td>eBay price minus Buying price.</td></tr>
+<tr><th scope="row">Order earning</th><td>What eBay pays out for the order, read from eBay when the payout is settled. A dash means eBay has not paid it out yet. You cannot type it.</td></tr>
+<tr><th scope="row">eBay cost</th><td>eBay price minus Order earning: what eBay kept.</td></tr>
+<tr><th scope="row">Ad fee</th><td>The Promoted Listings fee, read from eBay. It is already part of eBay cost, so it is not subtracted again.</td></tr>
+<tr><th scope="row">Net profit</th><td>Order earning minus Buying price.</td></tr>
+</tbody></table>
+</div>
+
+<h3 id="net-profit-type">What you type</h3>
+<p>Click the <span class="term">Buying price</span> cell of a line and type what the whole order cost you, for example 12.50. Press <kbd>Enter</kbd> or <kbd>Tab</kbd>, and ELMS saves it and updates the other columns. Until you type it, Net profit stays empty instead of showing a zero. A total row for each currency adds only lines that have a figure. Orders that do not come from an ELMS listing are not on the sheet.</p>
+
+<h3 id="net-profit-find">Find, filter and export</h3>
+<p>Search by title or order ID. Pick one of the quick ranges, or set <span class="term">From</span> and <span class="term">To</span>; a strip above the sheet adds up the net profit of that range. <span class="term">Show cancelled</span> includes cancelled orders, <span class="term">Export Excel</span> downloads the view, and <span class="term">Add lines</span> loads more lines when only part are shown.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="research">Research tools</h2>
+<p><span class="term">Research Tools</span> looks products up on Amazon, so you can judge a niche before you import. Pick a tab, enter an ASIN or an Amazon product link and press the button. A lookup can use credits. A figure Amazon does not give is shown as unavailable.</p>
+
+<h3 id="research-tabs">The six tabs</h3>
+<div class="table-wrap" role="region" aria-labelledby="tbl-research" tabindex="0">
+<table class="table"><caption id="tbl-research">The Research Tools tabs</caption>
+<thead><tr><th scope="col">Tab and button</th><th scope="col">You enter</th><th scope="col">You get</th></tr></thead>
+<tbody>
+<tr><th scope="row">Keyword Rank: <span class="term">Check rank</span></th><td>A keyword and an ASIN or link</td><td>Its position in Amazon search results for the keyword</td></tr>
+<tr><th scope="row">Reviews: <span class="term">Analyze reviews</span></th><td>An ASIN or link</td><td>Average rating, the spread across the stars and a few reviews</td></tr>
+<tr><th scope="row">Categories: <span class="term">Find categories</span></th><td>An ASIN or link</td><td>Its categories and rank in each; <span class="term">Browse</span> sends one to Bestsellers</td></tr>
+<tr><th scope="row">Bestsellers: <span class="term">Browse category</span></th><td>A <span class="term">Category ID</span></td><td>The top products of the category</td></tr>
+<tr><th scope="row">Images: <span class="term">Extract images</span></th><td>An ASIN or link</td><td>The product images, each openable in full size</td></tr>
+<tr><th scope="row">Listing Grade: <span class="term">Grade listing</span></th><td>An ASIN or link</td><td>A score out of 100 with a suggestion for each part</td></tr>
+</tbody></table>
+</div>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="notifications">Notifications</h2>
+<p>Notices sit behind the bell in the top bar, and a number on the bell counts the unread ones. The list follows the store you selected.</p>
+
+<h3 id="notifications-bell">The bell and the Notification Center</h3>
+<ol class="howto">
+<li>Press the bell to see the latest notices. <span class="term">Mark all read</span> clears the count.</li>
+<li>Press <span class="term">View all notifications</span> to open the <span class="term">Notification Center</span>, with tabs <span class="term">All</span>, <span class="term">Unread</span>, <span class="term">Publishing</span>, <span class="term">Orders</span>, <span class="term">Messages</span> and <span class="term">System</span>.</li>
+<li>Press a notice to read it. Opening it marks it as read, and <span class="term">Mark unread</span> brings it back.</li>
+</ol>
+
+<h3 id="notifications-what">What you are told about</h3>
+<ul>
+<li>A listing was published, a publish failed or a batch finished.</li>
+<li>A store was connected and its first orders and messages loaded.</li>
+<li>Listings were ended because the source is out of stock, or could not be ended, or are no longer live on eBay.</li>
+<li>Stock monitoring stopped because you ran out of credits. The listings it has not reached are checked once you have credits again.</li>
+<li>An AI draft was skipped for lack of credits.</li>
+<li>Someone signed in from a new device.</li>
+<li>A message from the ELMS team opens as a window; press <span class="term">OK</span>.</li>
+</ul>
+<p>Service e-mails (receipts, a plan that is ending, new devices, ticket replies) are sent even if you unsubscribe from news.</p>
+
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="credits">Credits and plans</h2>
+<p>Credits are used when an action completes. If an action fails, the credits come back automatically. A plan is paid for one term; the credits that come with a plan are valid until the term ends, and we e-mail you before it ends. Credits you had before a plan are not affected.</p>
+
+<h3 id="credits-balance">Where to see your balance, and where a cost is shown</h3>
+<p>Your balance is shown at the top of the app: the credits chip in the top bar shows it and opens <span class="term">Buy Credits</span>, which also shows <span class="term">Your balance</span>. Some windows show the cost before you confirm, and a few other places show it beside the action:</p>
+<ul>
+<li>A window that asks you to confirm a bulk action, such as filling categories, item details or descriptions with AI for a selection, states the cost first. An item that is skipped or fails is not charged.</li>
+<li>On Messages, the note beside the <span class="term">AI replies</span> modes says what a reply uses.</li>
+<li>In the Chrome extension, <span class="term">Import to Drafts</span> shows the cost on the button.</li>
+</ul>
+<p>Other actions, such as an import from the Import page, a publish, a monitoring check or a research lookup, use credits when they complete, and the credits chip shows your new balance.</p>
+<p>When your balance is too low, ELMS stops and shows <span class="term">Out of credits</span> with a <span class="term">Buy credits</span> button. Nothing you built is lost.</p>
+
+<h3 id="credits-buy">Buy a plan</h3>
+<ol class="howto">
+<li>Open <span class="term">Buy Credits</span>. Each plan card shows its name, credits, price and the number of eBay stores it includes.</li>
+<li>If you see a switch between terms, choose the term first. If you have a voucher, pick it from the list above the plans. <span class="term">Build your own plan</span>, when it is shown, lets you choose an amount, a term and extra stores, and shows the price before you buy.</li>
+<li>Press the plan&rsquo;s buy button. A plan card has one buy button, or two when you can pay with a wallet or by card: press the one you want, and read the note under the buttons, which says what a voucher or discount applies to. <span class="term">Review your order</span> lists plan, credits, stores and price, with the refund rule below. Press <span class="term">Continue to payment</span>, or <span class="term">Cancel</span>.</li>
+<li>Pay on the payment page. When the payment is confirmed, a message tells you and the credits are in your balance.</li>
+</ol>
+<p>Payments are handled by our payment partner. ELMS never sees your card or wallet details. You can pay by card or popular digital wallets. Taxes may be added at checkout where they apply.</p>
+
+<h3 id="credits-end">When a plan ends</h3>
+<p>While a plan runs, Buy Credits shows when it ends. When the term ends, the credits that came with the plan end with it. The credits you had before stay, and so do your listings, drafts and orders. The number of stores you can connect goes back to what it was before the plan. After the end, a window offers <span class="term">See plans</span>. If you buy again before the end, the new term starts when the current one ends.</p>
+
+<h3 id="credits-invoices">Purchase history and invoices</h3>
+<p>The <span class="term">Purchase history</span> card lists each plan with its date, amount, credits and status. Press <span class="term">Invoice</span> on a line to download the PDF. A receipt is also sent to your e-mail.</p>
+
+<h3 id="credits-vouchers">Vouchers</h3>
+<p>A voucher from ELMS appears under <span class="term">Vouchers</span>. It works once and only for you. Press <span class="term">Redeem</span>, or <span class="term">Use on Buy credits</span> for money off a plan.</p>
+
+<h3 id="credits-refunds">Refunds</h3>
+<p>Refunds are given only if you ask within 7 days of the purchase and none of that purchase&rsquo;s credits have been used.</p>
+<p>A credit is used as soon as any action has been charged for it, by you, a person on your team or an automatic feature. Stock and price monitoring starts on for each listing that has a source link, stays on until you switch it off and uses credits when it runs, so a purchase can count as used without a click from you. A listing pack or one-off service counts as used as soon as any part of it has been delivered; if you received fewer drafts than you bought, write to <a href="mailto:billing@elmstool.com">billing@elmstool.com</a>.</p>
+<p>To ask for a refund, write to <a href="mailto:billing@elmstool.com">billing@elmstool.com</a> from your account&rsquo;s e-mail address, or open a <span class="term">Support</span> ticket with the topic <span class="term">Billing</span>, and name the purchase. A request counts from when it reaches billing@elmstool.com or becomes a ticket. Credits that come back after a failed action are returned to your balance, not refunded, and they do not count as used. The <a href="/refund.html">Refund Policy</a> explains how the days and the use of credits are counted.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="referrals">Referrals and affiliates</h2>
+<p>Two programmes can reward you for bringing other sellers to ELMS. ELMS sets the rewards and can change them, so the app shows what applies now.</p>
+
+<h3 id="referrals-refer">Refer &amp; Earn</h3>
+<p>Every account has a referral code and a link on the <span class="term">Refer &amp; Earn</span> page, with share buttons. A friend joins with your link, or types your code in <span class="term">Referral code</span> on the sign-up form; a code works once, at sign-up. The page describes the current offer and counts <span class="term">Friends joined</span>, <span class="term">Friends who bought</span> and <span class="term">Credits you earned</span>.</p>
+
+<h3 id="referrals-affiliate">Affiliate</h3>
+<p>The <span class="term">Affiliate</span> page is for people who promote ELMS to an audience. Press <span class="term">Apply to be an affiliate</span>. We review each application and e-mail the decision. After approval the page gives you your own link and shows sign-ups, paying customers and earnings. You save your payout details and press <span class="term">Request payout</span> there; the page shows the minimum and the method.</p>
+<p>Self-referrals, fake sign-ups and spam are not allowed and can cancel commissions. The <a href="/affiliate-terms.html">Affiliate Terms</a> set out the rules.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="account">Account and security</h2>
+<p>Passwords are stored as one-way hashes, eBay and supplier access tokens are stored encrypted, and data is encrypted in transit. No system is completely secure.</p>
+
+<h3 id="account-devices">Devices signed in</h3>
+<p>In <span class="term">Settings</span>, the <span class="term">Devices signed in</span> card lists each device where your account is open, with its browser, an approximate place taken from the IP address, and when it was last active. Yours carries <span class="term">This device</span>. <span class="term">Log out</span> on a row ends that device, <span class="term">Log out other devices</span> ends all but this one, and <span class="term">Log out everywhere</span> ends every device, including this one.</p>
+
+<h3 id="account-alerts">New-device alerts and login activity</h3>
+<p>When someone signs in from a device ELMS has not seen, you get a notification. Unless you switch off <span class="term">Email me when someone signs in from a new device</span>, you also get an e-mail. The <span class="term">Login activity</span> card lists recent sign-ins and wrong-password attempts.</p>
+
+<h3 id="account-lost">If someone else may have your account</h3>
+<p>Set a new password first. It signs out every device that was signed in, including any you do not know, and the old password stops working. If you press <span class="term">Log out everywhere</span> first, someone who knows the old password can sign in again.</p>
+<ol class="howto">
+<li>Log out on your own device: your name in the top bar, then <span class="term">Logout</span>. On the sign-in form press <span class="term">Forgot password?</span> and set a new password with the code ELMS e-mails you (<a href="#getting-started-signin">see how to reset your password</a>). The code goes to your e-mail address, so make sure that mailbox is safe first.</li>
+<li>If you use the Chrome extension or the order helper, open <span class="term">Settings</span>, find the <span class="term">Browser extension</span> card and press <span class="term">Regenerate</span>. A new password does not end the extension key; regenerating stops the old key at once. Paste the new key into the extension.</li>
+<li>Sign in with the new password and check <span class="term">Devices signed in</span> and <span class="term">Login activity</span> in Settings. Press <span class="term">Log out</span> on any device you do not recognise.</li>
+<li>To report a security problem, write to <a href="mailto:security@elmstool.com">security@elmstool.com</a>.</li>
+</ol>
+
+<h3 id="account-leaving">Leaving ELMS</h3>
+<p>To stop using a store, press <span class="term">Disconnect</span> on it in Settings (see <a href="#getting-started-stores">Select, rename or disconnect a store</a>). To delete the account, open a <span class="term">Support</span> ticket, or write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> from your account&rsquo;s e-mail address. We may ask you to confirm, then e-mail you and give a short notice. Signing in during that time cancels the deletion.</p>
+<p>Deleting removes your drafts, listings, orders, messages and notes from ELMS. Listings that are live on eBay stay there. We keep purchase and invoice records, and unused credits are lost. If your payment method renews your plan, stop the renewal first, as the <a href="/refund.html">Refund Policy</a> explains. See <a href="/terms#deleting">Deleting your account</a> in the Terms.</p>
+
+<h3 id="account-suspension">Suspension, bans and appeals</h3>
+<ul>
+<li><strong>Suspended.</strong> The screen <span class="term">Your account is suspended</span> shows the reason. Enter <span class="term">Your ELMS account email</span>, tell us <span class="term">What happened?</span> and press <span class="term">Send appeal</span>. A person reads it and answers by e-mail. An appeal does not lift a suspension by itself.</li>
+<li><strong>Blocked network.</strong> <span class="term">Access from this network is blocked</span> has the same form.</li>
+<li><strong>Permanent ban.</strong> <span class="term">Your account has been permanently banned</span> is final and has no appeal form.</li>
+</ul>
+<p>Making a new account to get around a suspension or a ban breaks the Terms. See <a href="/terms#ending">Suspension, bans and ending</a>.</p>
+
+<h3 id="account-support">Support tickets</h3>
+<p>Open <span class="term">Support</span>, pick a topic under <span class="term">New ticket</span> or write your own <span class="term">Subject</span>, and in <span class="term">Message</span> give the store, the product and the exact message you saw. Press <span class="term">Submit ticket</span>. The first reply to a ticket may be written with the help of an AI service; the app labels it <span class="term">ELMS assistant</span>. A person handles serious matters, money questions and appeals: messages that look like they are about refunds, payments, security, privacy, legal matters or access to your account are passed to a person, and appeals are read only by people. <span class="term">Talk to admin</span> brings in the team yourself, and <span class="term">Solved &mdash; close ticket</span> ends the ticket. We do not promise a response time. For privacy or legal requests, see <a href="/contact.html">Contact</a>.</p>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>Find the message you see. If a fix does not work, open a <span class="term">Support</span> ticket and include the exact message.</p>
+<div class="faq">
+<details class="faq__item" data-filter-item><summary>An import fails</summary><div class="faq__body"><p>For <span class="term">That does not look like a valid Amazon product URL.</span>, paste the product page address itself. If ELMS says the link is from a different Amazon site, use a link from the site that fits the selected store. For <span class="term">ELMS could not reach the product source right now. Nothing was charged.</span>, try again in a moment.</p></div></details>
+<details class="faq__item" data-filter-item><summary>A store needs reconnecting</summary><div class="faq__body"><p>A red banner says <span class="term">Reconnect your eBay store.</span> and names what is not coming in, such as new orders or buyer messages. Press <span class="term">Reconnect eBay</span> and agree on eBay&rsquo;s page. Your listings and data stay as they are.</p></div></details>
+<details class="faq__item" data-filter-item><summary>A publish fails</summary><div class="faq__body"><p>The card shows <span class="term">Failed</span> with the reason, and the credits come back. Press <span class="term">Retry</span>, fix what the reason names and save, then open Drafts again and press <span class="term">Publish</span>. See <a href="#publishing-failure">When a publish fails</a>.</p></div></details>
+<details class="faq__item" data-filter-item><summary>Credits seem to be missing</summary><div class="faq__body"><p>Credits from a failed action come back on their own, normally within moments. Reload the page and check the credits chip. A plan&rsquo;s credits end with its term. If one is still missing, open a ticket with the topic <span class="term">Credits</span> and name the action and the time.</p></div></details>
+<details class="faq__item" data-filter-item><summary>I paid and my plan is not active</summary><div class="faq__body"><p>Stay on Buy Credits for a moment. ELMS adds the plan once the payment is confirmed and then tells you. If nothing changes, open a ticket with the topic <span class="term">Billing</span> and give the date and amount.</p></div></details>
+<details class="faq__item" data-filter-item><summary>A check cannot run right now</summary><div class="faq__body"><p>The message <span class="term">This check cannot run right now. Please try again later.</span> means the request was held back. Try again later. If an action fails, its credits come back.</p></div></details>
+<details class="faq__item" data-filter-item><summary>Orders or messages do not show up</summary><div class="faq__body"><p>Check that the right store is selected in the sidebar, because every page follows it, and look for the reconnect banner. Then press <span class="term">Sync from eBay</span> on Orders or <span class="term">Sync</span> on Messages. Still missing? Open a ticket with the topic <span class="term">Orders / messages</span>.</p></div></details>
+<details class="faq__item" data-filter-item><summary>Order earning stays empty in Net Profit</summary><div class="faq__body"><p>A dash means eBay has not paid that order out yet. If it stays empty for paid-out orders, look at your store under <span class="term">eBay stores</span> in Settings. A chip reading <span class="term">Order earning isn&rsquo;t syncing for this store</span> has a <span class="term">Reconnect eBay</span> button.</p></div></details>
+<details class="faq__item" data-filter-item><summary>The AI helper is not available</summary><div class="faq__body"><p>For <span class="term">The AI helper is not available right now. Please try again in a moment. No credits were used.</span>, try again shortly or write the text yourself.</p></div></details>
+<details class="faq__item" data-filter-item><summary>I cannot sign in</summary><div class="faq__body"><p>Press <span class="term">Forgot password?</span> to set a new password. A blocked screen gives the reason and, where it applies, an appeal form; see <a href="#account-suspension">Suspension, bans and appeals</a>.</p></div></details>
+</div>
+</section>
+
+<section class="doc-section" data-filter-item>
+<h2 id="glossary">Glossary</h2>
+<dl class="dl">
+<dt>Affiliate</dt><dd>A person approved to promote ELMS who earns a commission on the purchases of people they bring.</dd>
+<dt>ASIN</dt><dd>The ten-character product code Amazon uses. It sits in the product link after <code>/dp/</code>.</dd>
+<dt>Credits</dt><dd>The balance that pays for actions such as imports, publishing and AI help.</dd>
+<dt>Draft</dt><dd>A product prepared in ELMS that is not on eBay yet.</dd>
+<dt>Item specifics</dt><dd>The details eBay asks for in a category, such as brand or size. The editor tab is called Item Specifications.</dd>
+<dt>Live listing</dt><dd>A listing published to eBay from ELMS.</dd>
+<dt>Margin</dt><dd>Your pricing rule: the fees and profit ELMS adds to a product&rsquo;s cost to get its eBay price.</dd>
+<dt>Net profit</dt><dd>Order earning minus buying price.</dd>
+<dt>Order earning</dt><dd>What eBay pays out for an order after its fees.</dd>
+<dt>Store</dt><dd>An eBay seller account connected to ELMS. ELMS shows one selected store at a time.</dd>
+<dt>Term</dt><dd>The period a plan is paid for. Plan credits are valid until it ends.</dd>
+<dt>VeRO</dt><dd>eBay&rsquo;s programme for brand owners to report listings. ELMS warns you about words on your VeRO list.</dd>
+</dl>
+</section>
+
+<p class="guide-empty" data-guide-empty hidden>No sections match your search. Try a shorter word.</p>
+
+<div class="callout callout--info" role="note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><div class="callout__body"><p class="callout__title">Still stuck?</p><p>Open a <span class="term">Support</span> ticket in ELMS and include the exact message you saw, or read how to reach us on the <a href="/contact.html">Contact page</a>.</p></div></div>
+
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!--chrome:footer-->
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <a class="brand" href="/"><img src="/logo-wordmark.png" width="106" height="28" alt="ELMS home"></a>
+        <p>Listing and store tools for eBay sellers.</p>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title" id="footer-product">Product</p>
+        <ul class="footer-links" aria-labelledby="footer-product">
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/plans">Pricing</a></li>
+          <li><a href="/user-guide.html">User guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title" id="footer-support">Support</p>
+        <ul class="footer-links" aria-labelledby="footer-support">
+          <li><a href="/contact.html">Contact</a></li>
+          <li><a href="/signin">Sign in</a></li>
+          <li><a href="/signup">Get started</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title" id="footer-legal">Legal</p>
+        <ul class="footer-links" aria-labelledby="footer-legal">
+          <li><a href="/terms">Terms of Service</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/refund.html">Refund Policy</a></li>
+          <li><a href="/affiliate-terms.html">Affiliate Terms</a></li>
+          <li><a href="/copyright.html">Copyright and content complaints</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title">Follow ELMS</p>
+        <div data-elms-social="row" hidden></div>
+      </div>
+    </div>
+    <div class="site-footer__legal">
+      <p>ELMS is an independent product. It is not affiliated with, endorsed, sponsored or approved by eBay Inc., Amazon.com, Inc., or any other marketplace or supplier named. eBay, Amazon and other product and company names are trademarks of their respective owners and are used only to describe compatibility.</p>
+      <p class="site-footer__copy">&copy; <span data-year>2026</span> ELMS</p>
+    </div>
+  </div>
+</footer>
+<!--/chrome:footer-->
+
+<svg style="display:none" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-import" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 16v2.5A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5V16"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20l1.2-4.3L16.4 4.5a2.1 2.1 0 0 1 3 3L8.2 18.8 4 20z"/><path d="M14.5 6.5l3 3"/></symbol>
+  <symbol id="i-publish" viewBox="0 0 24 24"><path d="M12 20V9"/><path d="M7.5 13.5L12 9l4.5 4.5"/><path d="M5 4.5h14"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M8 20h8"/><path d="M12 16.5V20"/><path d="M6.5 11h2.4l1.6-3 2.5 6 1.6-3h2.9"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M5 5h14a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 17h-8.5L6 20.5V17H5a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 5 5z"/><path d="M8 9.5h8"/><path d="M8 12.5h5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 20v-6"/><path d="M12 20V8.5"/><path d="M17 20v-9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8-7.5 9.5-4.3-1.5-7.5-5-7.5-9.5V6L12 3z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15L6 16.5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-3.6 3.4-5.5 7-5.5s6.5 1.9 7 5.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7.5l8 6 8-6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 15.5H3L12 4z"/><path d="M12 10v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6.5h11V16H3z"/><path d="M14 9.5h4l3 3.5V16h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v13H7.5A2.5 2.5 0 0 1 5 17.5v-13z"/><path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H18"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 8h9"/><path d="M17 8h3"/><circle cx="15" cy="8" r="2"/><path d="M4 16h3"/><path d="M11 16h9"/><circle cx="9" cy="16" r="2"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9l1.5-4.5h13L20 9"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0A2.7 2.7 0 0 0 20 9"/><path d="M5.5 12.5V20h13v-7.5"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M11 4l1.9 5.1L18 11l-5.1 1.9L11 18l-1.9-5.1L4 11l5.1-1.9L11 4z"/><path d="M19 15v4"/><path d="M17 17h4"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 5L4.5 9.5 9 14"/><path d="M4.5 9.5H14a5 5 0 0 1 0 10h-3"/></symbol>
+</svg>
+</body>
+</html>
