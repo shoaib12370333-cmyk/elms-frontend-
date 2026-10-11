@@ -72,7 +72,8 @@
 .track-note{margin:1rem 0 0;text-align:center}
 .track-foot{padding:0 var(--gutter) 2rem;text-align:center;font-size:var(--fs-sm);color:var(--mute)}
 .track-foot p{margin:0}
-.track-foot a{color:var(--mute)}
+.track-foot a{color:var(--mute);white-space:nowrap}
+.track-steps li:not(.is-done)::before{content:"";flex:none;width:1rem}
 </style>
 <script src="/site.js?v=3" defer></script>
 </head>
@@ -257,15 +258,16 @@
         var list = el('ol', 'track-steps' + (s.step === 3 ? ' is-delivered' : ''));
         list.setAttribute('aria-label', 'Delivery progress');
         for (var i = 0; i < STEP_LABELS.length; i++) {
-          var li = el('li', i < s.step ? 'is-done' : '');
-          if (i < s.step) {
+          var done = i < s.step || s.step === 3;
+          var li = el('li', done ? 'is-done' : '');
+          if (done) {
             var tick = icon('i-check');
             tick.setAttribute('class', 'icon icon--sm');
             li.appendChild(tick);
           }
           li.appendChild(doc.createTextNode(STEP_LABELS[i]));
           if (i === s.step) li.setAttribute('aria-current', 'step');
-          if (i < s.step) li.appendChild(el('span', 'sr-only', ' (done)'));
+          if (done) li.appendChild(el('span', 'sr-only', ' (done)'));
           list.appendChild(li);
         }
         wrap.appendChild(list);
