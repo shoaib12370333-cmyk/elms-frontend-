@@ -1,6 +1,6 @@
 (function (w, d) {
 'use strict';
-var API_HOST = 'https://elms-backend-1-tr5h.onrender.com'; /* scan-ok:api-host */
+var API_HOST = 'https://elms-backend-1-tr5h.onrender.com';
 safe(function () {
 var root = d.documentElement;
 if ((' ' + root.className + ' ').indexOf(' js ') === -1) { root.className += ' js'; }

@@ -15255,7 +15255,7 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#ordersEbayNoteSwitch')?.addEventListener('change', async (e) => {
       const box = e.target;
       const on = box.checked;
-      if (on && !(await elmsConfirm('When you mark an order as ordered, ELMS will also add \u201cELMS: ordered <date>\u201d to the private note of that order on eBay (only you see it). Your own note text there is kept, and Undo takes out only the ELMS mark.\n\nEach mark uses 2 of eBay\'s daily calls, and it only works for orders eBay still lists as awaiting shipment. This is new: after the first one, look at the order on eBay to see it.', { title: 'Write the eBay note too', okText: 'Switch on' }))) { box.checked = false; return; }
+      if (on && !(await elmsConfirm('When you mark an order as ordered, ELMS will also add \u201cELMS: ordered <date>\u201d to the private note of that order on eBay (only you see it). Your own note text there is kept, and Undo takes out only the ELMS mark.\n\nIt only works for orders eBay still lists as awaiting shipment. After the first one, look at the order on eBay to check it.', { title: 'Write the eBay note too', okText: 'Switch on' }))) { box.checked = false; return; }
       box.disabled = true;
       try {
         const res = await apiFetch('/api/orders/ebay-note-setting', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: on }) });
@@ -15272,7 +15272,7 @@ async function autoSuggestEmptyDraftCategories() {
     root.querySelector('#ordersEbayNoteCopySwitch')?.addEventListener('change', async (e) => {
       const box = e.target;
       const on = box.checked;
-      if (on && !(await elmsConfirm('From now on, when you save a note on an order in ELMS (the note beside the order, or in the order window), ELMS also puts the same note in the private note of that order on eBay (only you see it).\n\nIt REPLACES what is on eBay: text you typed there yourself is overwritten, and an empty note in ELMS removes the eBay note. eBay keeps only 255 characters of a note.\n\nEach copy uses 2 of eBay\'s daily calls, and it only works for orders eBay still lists as awaiting shipment.', { title: 'Copy my order note to eBay', okText: 'Switch on' }))) { box.checked = false; return; }
+      if (on && !(await elmsConfirm('From now on, when you save a note on an order in ELMS (the note beside the order, or in the order window), ELMS also puts the same note in the private note of that order on eBay (only you see it).\n\nIt REPLACES what is on eBay: text you typed there yourself is overwritten, and an empty note in ELMS removes the eBay note. eBay keeps only 255 characters of a note.\n\nIt only works for orders eBay still lists as awaiting shipment.', { title: 'Copy my order note to eBay', okText: 'Switch on' }))) { box.checked = false; return; }
       box.disabled = true;
       try {
         const res = await apiFetch('/api/orders/ebay-note-copy-setting', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: on }) });

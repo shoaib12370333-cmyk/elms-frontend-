@@ -4,7 +4,7 @@
 
 :root{
   color-scheme:light;
-  --full:100%; /* scan-ok:css-percent */
+  --full:100%;
   --font:"Inter","Inter Fallback",ui-sans-serif,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 
