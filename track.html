@@ -29,7 +29,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/site.css?v=3">
+<link rel="stylesheet" href="/site.css?v=5">
 <style>
 .track-page{background:var(--soft)}
 .track-top{display:flex;justify-content:center;padding:clamp(1.25rem,1rem + 1.5vw,2rem) var(--gutter) 0}
@@ -58,13 +58,15 @@
 .track-status__text{color:var(--ink-2)}
 .track-status__time{font-size:var(--fs-sm);color:var(--mute)}
 .track-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem}
-.track-steps li{--bar:var(--line-strong);display:flex;align-items:flex-start;gap:.25rem;padding-top:.625rem;border-top:4px solid var(--bar);font-size:var(--fs-sm);font-weight:500;line-height:1.35;color:var(--mute)}
-.track-steps li.is-done,.track-steps li[aria-current="step"]{--bar:var(--blue);color:var(--ink)}
+.track-steps li{--fill:var(--blue);position:relative;display:flex;align-items:flex-start;gap:.25rem;padding-top:.625rem;border-top:4px solid var(--line-strong);font-size:var(--fs-sm);font-weight:500;line-height:1.35;color:var(--mute)}
+.track-steps li::after{content:"";position:absolute;left:0;right:0;top:-4px;height:4px;background:var(--fill);transform-origin:0 50%;opacity:0}
+.track-steps li.is-done::after,.track-steps li[aria-current="step"]::after{opacity:1}
+.track-steps li.is-done,.track-steps li[aria-current="step"]{color:var(--ink)}
 .track-steps li[aria-current="step"]{font-weight:700}
 .track-steps .icon{margin-top:.125rem;color:var(--blue)}
-.track-steps.is-delivered li{--bar:var(--ok)}
+.track-steps.is-delivered li{--fill:var(--ok)}
 .track-steps.is-delivered .icon{color:var(--ok)}
-@media (max-width:40em){.track-steps{grid-template-columns:1fr;gap:.5rem}.track-steps li{padding:.125rem 0 .125rem .75rem;border-top:0;border-left:4px solid var(--bar)}}
+@media (max-width:40em){.track-steps{grid-template-columns:1fr;gap:.5rem}.track-steps li{padding:.125rem 0 .125rem .75rem;border-top:0;border-left:4px solid var(--line-strong)}.track-steps li::after{left:-4px;right:auto;top:0;bottom:0;width:4px;height:auto;transform-origin:50% 0}}
 .track-msg{display:grid;gap:.5rem;justify-items:center;padding:1.75rem 1.25rem}
 .track-msg>*{margin:0}
 .track-msg__title{font-size:var(--fs-h4);font-weight:700;color:var(--ink)}
@@ -74,8 +76,10 @@
 .track-foot p{margin:0}
 .track-foot a{color:var(--mute);white-space:nowrap}
 .track-steps li:not(.is-done)::before{content:"";flex:none;width:1rem}
+.track-steps li[aria-current="step"]:not(.is-done)::before{width:.625rem;height:.625rem;margin:.3rem .1875rem 0;border-radius:50%;background:var(--blue)}
+.track-steps li::after,.track-steps li[aria-current="step"]:not(.is-done)::before{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 </style>
-<script src="/site.js?v=3" defer></script>
+<script src="/site.js?v=5" defer></script>
 </head>
 <body class="track-page">
 

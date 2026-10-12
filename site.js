@@ -97,32 +97,155 @@ if (href.indexOf('#') !== -1 || href.charAt(0) !== '/') { return; }
 if (norm(href) === path) { a.setAttribute('aria-current', 'page'); }
 });
 }
+/* Scroll reveals. Blocks below the first screen start hidden and settle in once they are seen; blocks that enter together follow each other by a short delay. Everything stays visible without script, with reduced motion, in print, and when the observer does not report. */
+function showPending() {
+each(qsa('.reveal--pending'), function (n) { n.classList.remove('reveal--pending'); n.classList.add('is-in'); });
+}
 function initReveal() {
-var items = qsa('.reveal');
-if (!items.length || !('IntersectionObserver' in w) || matches('(prefers-reduced-motion: reduce)')) { return; }
-var vh = w.innerHeight || d.documentElement.clientHeight || 800;
-var io = new w.IntersectionObserver(function (entries) {
-each(entries, function (en) {
-if (!en.isIntersecting) { return; }
-en.target.classList.remove('reveal--pending');
-en.target.classList.add('is-in');
-io.unobserve(en.target);
+if (!('IntersectionObserver' in w) || matches('(prefers-reduced-motion: reduce)')) { return; }
+var skip = '.reveal, .reveal-seq, .hero, .page-hero, .site-header, [data-demo]';
+each(qsa('.section-head, .bento__item, .cards > *, .mailboxes > *, .split > *, .faq__item, .callout--brief, .band, .steps, .howto, .site-footer__grid > *, .site-footer__legal'), function (n) {
+if (n.classList.contains('howto') && n.closest('.doc__main')) { return; }
+if (!n.closest(skip)) { n.classList.add('reveal'); }
 });
-}, { rootMargin: '0px 0px -6% 0px', threshold: 0.04 });
+each(qsa('.conditions, .table-wrap'), function (n) {
+if (n.parentElement && n.parentElement.closest('.reveal, .reveal-seq')) { return; }
+n.classList.remove('reveal');
+n.classList.add('reveal-seq');
+each(n.classList.contains('table-wrap') ? qsa('tbody tr', n) : n.children, function (k, i) { k.style.setProperty('--i', Math.min(i, 8)); });
+});
+var items = qsa('.reveal, .reveal-seq');
+if (!items.length) { return; }
+var vh = w.innerHeight || d.documentElement.clientHeight || 800;
+var fired = false;
+var io = new w.IntersectionObserver(function (entries) {
+var seen = [];
+fired = true;
+each(entries, function (en) { if (en.isIntersecting) { seen.push(en); } });
+seen.sort(function (a, b) {
+var ra = Math.round(a.boundingClientRect.top / 8);
+var rb = Math.round(b.boundingClientRect.top / 8);
+return ra - rb || a.boundingClientRect.left - b.boundingClientRect.left;
+});
+each(seen, function (en, i) {
+var n = en.target;
+if (!/(^| )reveal--d\d/.test(n.className)) { n.style.setProperty('--rd', Math.min(i, 5) * 0.07 + 's'); }
+n.classList.remove('reveal--pending');
+n.classList.add('is-in');
+io.unobserve(n);
+});
+}, { rootMargin: '0px 0px -' + Math.min(Math.round(vh * 0.06), 40) + 'px 0px', threshold: 0.04 });
+var hold = [];
 each(items, function (n) {
 if (n.getBoundingClientRect().top > vh * 0.92) {
+n.style.transition = 'none';
 n.classList.add('reveal--pending');
+hold.push(n);
 io.observe(n);
 } else {
 n.classList.add('is-in');
 }
 });
+void d.documentElement.offsetWidth;
+each(hold, function (n) { n.style.transition = ''; });
 w.setTimeout(function () {
 each(qsa('.reveal--pending'), function (n) {
 var r = n.getBoundingClientRect();
-if (r.top < vh && r.bottom > 0) { n.classList.remove('reveal--pending'); }
+if (!fired || (r.top < vh && r.bottom > 0)) { n.classList.remove('reveal--pending'); n.classList.add('is-in'); }
 });
 }, 3000);
+}
+/* The header pill glides to the hovered, focused or current link (a pill built from two round caps and a stretched middle, so it keeps its shape at any width). */
+function initNavGlide() {
+var nav = d.querySelector('[data-site-nav]');
+var links = qsa('[data-site-nav] .site-nav__link');
+var wide = w.matchMedia ? w.matchMedia('(min-width: 60em)') : null;
+if (!nav || !links.length || !wide || matches('(prefers-reduced-motion: reduce)')) { return; }
+var glide = el('span', 'site-nav__glide');
+glide.setAttribute('aria-hidden', 'true');
+var caps = [el('i'), el('i'), el('i')];
+each(caps, function (c) { glide.appendChild(c); });
+nav.insertBefore(glide, nav.firstChild);
+var cur = null;
+var at = null;
+function current() {
+for (var i = 0; i < links.length; i++) { if (links[i].getAttribute('aria-current') === 'page') { return links[i]; } }
+return null;
+}
+function put(a, snap) {
+if (!a || !wide.matches) { glide.classList.remove('is-on'); nav.classList.remove('has-glide'); at = null; return; }
+var nr = nav.getBoundingClientRect();
+var r = a.getBoundingClientRect();
+var h = r.height;
+if (!r.width || !h) { return; }
+if (snap || !glide.classList.contains('is-on')) { glide.classList.add('is-snap'); }
+glide.style.height = h + 'px';
+glide.style.transform = 'translate3d(' + (r.left - nr.left) + 'px,' + (r.top - nr.top) + 'px,0)';
+caps[0].style.width = caps[2].style.width = h + 'px';
+caps[1].style.left = (h / 2) + 'px';
+caps[1].style.transform = 'scaleX(' + Math.max(r.width - h, 0) + ')';
+caps[2].style.transform = 'translateX(' + Math.max(r.width - h, 0) + 'px)';
+if (a === cur) { glide.setAttribute('data-cur', ''); } else { glide.removeAttribute('data-cur'); }
+nav.classList.add('has-glide');
+glide.classList.add('is-on');
+at = a;
+if (glide.classList.contains('is-snap')) { void glide.offsetWidth; glide.classList.remove('is-snap'); }
+}
+function rest(snap) {
+cur = current();
+if (cur) { put(cur, snap); } else { glide.classList.remove('is-on'); nav.classList.remove('has-glide'); at = null; }
+}
+each(links, function (a) {
+a.addEventListener('mouseenter', function () { put(a, false); });
+a.addEventListener('focus', function () { put(a, false); });
+a.addEventListener('blur', function () { rest(false); });
+});
+nav.addEventListener('mouseleave', function () { rest(false); });
+onChange(wide, function () { rest(true); });
+w.addEventListener('resize', function () { if (at) { put(at, true); } });
+w.addEventListener('load', function () { rest(true); });
+if (d.fonts && d.fonts.ready) { d.fonts.ready.then(function () { rest(true); }); }
+rest(true);
+}
+/* A thin bar under the header shows how far a long page has been read. */
+function initProgress() {
+var main = d.querySelector('.doc__main');
+var header = d.querySelector('[data-site-header]');
+if (!main || !header) { return; }
+var bar = el('div', 'read-progress');
+var fill = el('i');
+var queued = false;
+bar.setAttribute('aria-hidden', 'true');
+bar.appendChild(fill);
+header.appendChild(bar);
+function update() {
+queued = false;
+var top = header.offsetHeight;
+var r = main.getBoundingClientRect();
+var total = r.height - ((w.innerHeight || 800) - top);
+var p = total > 0 ? (top - r.top) / total : 0;
+p = p < 0 ? 0 : (p > 1 ? 1 : p);
+fill.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+bar.style.opacity = (total > 0 && p > 0.002) ? '1' : '0';
+}
+function schedule() {
+if (queued) { return; }
+queued = true;
+if (w.requestAnimationFrame) { w.requestAnimationFrame(update); } else { update(); }
+}
+w.addEventListener('scroll', schedule, { passive: true });
+w.addEventListener('resize', schedule);
+d.addEventListener('elms:layout', schedule);
+update();
+}
+/* The soft glow and grid behind a hero or a dark band drift slowly; they rest while scrolled out of view. */
+function initAmbient() {
+var els = qsa('.hero, .page-hero, .band--navy, .section--navy');
+if (!els.length || !('IntersectionObserver' in w)) { return; }
+var io = new w.IntersectionObserver(function (entries) {
+each(entries, function (en) { en.target.classList.toggle('amb-off', !en.isIntersecting); });
+}, { rootMargin: '80px' });
+each(els, function (n) { io.observe(n); });
 }
 function initToc() {
 var boxes = qsa('[data-toc]');
@@ -163,6 +286,31 @@ if (target) { pairs.push({ id: id, link: a, target: target }); }
 });
 if (!pairs.length) { return; }
 var current = '';
+var list = d.querySelector('.toc__list');
+var marker = null;
+if (list && !matches('(prefers-reduced-motion: reduce)')) {
+marker = el('span', 'toc__marker');
+marker.setAttribute('aria-hidden', 'true');
+list.appendChild(marker);
+list.classList.add('has-marker');
+}
+/* The blue marker slides from one contents link to the next. */
+function place() {
+if (!marker) { return; }
+var a = list.querySelector('.toc__link.is-active');
+var lr = list.getBoundingClientRect();
+var r = a ? a.getBoundingClientRect() : null;
+if (!r || !r.height || !lr.height) { marker.classList.remove('is-on'); return; }
+var snap = !marker.classList.contains('is-on');
+if (snap) { marker.classList.add('is-snap'); }
+marker.style.transform = 'translate(' + (r.left - lr.left - list.clientLeft) + 'px,' + (r.top - lr.top - list.clientTop) + 'px) scaleY(' + r.height + ')';
+marker.classList.add('is-on');
+if (snap) { void marker.offsetWidth; marker.classList.remove('is-snap'); }
+}
+each(boxes, function (box) { box.addEventListener('toggle', place); });
+w.addEventListener('resize', place);
+w.addEventListener('load', place);
+d.addEventListener('elms:layout', place);
 function keepInView(a) {
 var box = a.closest ? a.closest('.doc__aside') : null;
 if (!box || box.scrollHeight <= box.clientHeight) { return; }
@@ -177,6 +325,7 @@ if (!id) { each(qsa('.doc__aside'), function (n) { n.scrollTop = 0; }); }
 each(pairs, function (p) {
 if (p.id === id) { p.link.classList.add('is-active'); p.link.setAttribute('aria-current', 'true'); keepInView(p.link); } else { p.link.classList.remove('is-active'); p.link.removeAttribute('aria-current'); }
 });
+place();
 }
 function line() { return (header ? header.offsetHeight : 64) + 28; }
 function recompute() {
@@ -216,6 +365,7 @@ h.appendChild(a);
 });
 var note = null;
 var timer = 0;
+var fade = 0;
 d.addEventListener('click', function (e) {
 var a = e.target && e.target.closest ? e.target.closest('a.anchor') : null;
 if (!a || !w.navigator || !w.navigator.clipboard || !w.navigator.clipboard.writeText) { return; }
@@ -225,8 +375,12 @@ if (!note) {
 note = el('div', 'copy-note', 'Link copied');
 note.setAttribute('role', 'status');
 }
+note.classList.remove('is-out');
 d.body.appendChild(note);
+a.classList.add('is-copied');
 w.clearTimeout(timer);
+w.clearTimeout(fade);
+fade = w.setTimeout(function () { note.classList.add('is-out'); a.classList.remove('is-copied'); }, 1550);
 timer = w.setTimeout(function () { if (note && note.parentNode) { note.parentNode.removeChild(note); } }, 1800);
 }, function () {});
 });
@@ -301,6 +455,7 @@ var li = a.closest ? a.closest('li') : null;
 if (li && holder) { li.hidden = holder.hidden; }
 });
 if (empty) { empty.hidden = !(terms.length && !shown); }
+safe(function () { d.dispatchEvent(new w.Event('elms:layout')); });
 if (status) {
 if (!terms.length) { status.textContent = ''; } else if (!shown) { status.textContent = 'No sections match "' + raw.trim() + '".'; } else { status.textContent = shown + (shown === 1 ? ' section matches' : ' sections match') + ' "' + raw.trim() + '".'; }
 }
@@ -326,6 +481,7 @@ w.addEventListener('hashchange', function () { safe(function () { showTarget(w.l
 function initPrint() {
 var opened = [];
 w.addEventListener('beforeprint', function () {
+showPending();
 opened = [];
 each(qsa('details'), function (n) { if (!n.open) { n.open = true; opened.push(n); } });
 });
@@ -517,18 +673,40 @@ sync();
 w.addEventListener('resize', function () { safe(sync); });
 w.addEventListener('load', function () { safe(sync); });
 }
+/* The landing illustration only runs while it can be seen: it pauses when scrolled away or when the tab is hidden. */
+function initDemo() {
+var els = qsa('[data-demo]');
+var seen = [];
+if (!els.length) { return; }
+function paint() {
+each(els, function (n, i) { n.classList.toggle('demo-off', !!d.hidden || seen[i] === false); });
+}
+if ('IntersectionObserver' in w) {
+var io = new w.IntersectionObserver(function (entries) {
+each(entries, function (en) { seen[Array.prototype.indexOf.call(els, en.target)] = en.isIntersecting; });
+paint();
+}, { rootMargin: '60px' });
+each(els, function (n) { io.observe(n); });
+}
+d.addEventListener('visibilitychange', paint);
+paint();
+}
 safe(initPrint);
 ready(function () {
 safe(initYear);
 safe(initMenu);
 safe(initHeader);
 safe(initCurrentLink);
+safe(initNavGlide);
 safe(initReveal);
+safe(initProgress);
+safe(initAmbient);
 safe(initToc);
 safe(initAnchors);
 safe(initOpenTarget);
 safe(initFilter);
 safe(initPlans);
 safe(initTableFocus);
+safe(initDemo);
 });
 }(window, document));
