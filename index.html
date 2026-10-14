@@ -15404,10 +15404,13 @@ async function autoSuggestEmptyDraftCategories() {
    * seller write about an item that buyer bought (backend: POST /api/orders/:id/message-buyer). Saved replies fill in the same {{words}} as in Messages. Nothing is sent
    * until the seller presses Send. When it is sent, the conversation is in Messages and can be opened from here.
    */
+  let messageBuyerOpening = false; // one window at a time: the saved replies are fetched first, and a second click meanwhile must not open a second window
   async function openMessageBuyerDialog(o) {
+    if (messageBuyerOpening || document.querySelector('.mb-box')) return;
     const buyer = String(o.buyer_username || '').trim();
     if (!buyer) { showToast('No buyer', 'This order has no buyer username, so there is nobody to write to.', 'error'); return; }
-    if (!messageSnippets.length) await loadMessageSnippets();
+    messageBuyerOpening = true;
+    try { if (!messageSnippets.length) await loadMessageSnippets(); } finally { messageBuyerOpening = false; }
     const full = String((o.shipping_address && o.shipping_address.fullName) || '').trim();
     const words = { buyer_name: full ? full.split(/\s+/)[0] : 'there', buyer_username: buyer, order_id: o.ebay_order_id || '', product_name: o.item_title || 'your item', tracking_number: o.tracking_number || '' };
     const fill = (text) => String(text || '').replace(/\{\{\s*(buyer_name|buyer_username|order_id|product_name|tracking_number)\s*\}\}/gi, (m, k) => words[k.toLowerCase()]);
@@ -15431,14 +15434,13 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="ord-sub bad" id="mbError"></div>
         <div class="elms-confirm-actions"><button type="button" class="ord-link mb-earlier" data-act="earlier">Earlier messages with this buyer</button><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok">Send message</button></div>
       </div>`;
-    document.body.appendChild(overlay);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.body.appendChild(overlay); // the order window behind it already holds the page's scroll
     const $ = (id) => overlay.querySelector('#' + id);
     let busy = false; // while a message is on its way the window stays: closing it would hide whether it went out
-    const close = () => { overlay.remove(); document.body.style.overflow = prevOverflow; document.removeEventListener('keydown', onKey); };
-    const onKey = (e) => { if (e.key === 'Escape' && !busy) close(); };
-    document.addEventListener('keydown', onKey);
+    const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey, true); };
+    // Escape closes THIS window only (the order window behind it stays), and not at all while a message is on its way
+    const onKey = (e) => { if (e.key !== 'Escape') return; e.stopImmediatePropagation(); if (!busy) close(); };
+    document.addEventListener('keydown', onKey, true);
     overlay.addEventListener('click', (e) => { if (e.target === overlay && !busy) close(); });
     const text = $('mbText');
     const count = () => { const n = text.value.length; $('mbCount').textContent = n + ' / ' + MAX; $('mbCount').classList.toggle('over', n >= MAX); };
@@ -15457,6 +15459,7 @@ async function autoSuggestEmptyDraftCategories() {
       if (!content) return err('Write a message first.');
       busy = true; send.disabled = true; send.textContent = 'Sending\u2026'; err('');
       let res = null;
+      let unsure = false;
       try {
         res = await apiFetch(`/api/orders/${encodeURIComponent(o.id)}/message-buyer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) });
         const data = await apiJson(res);
@@ -15475,8 +15478,9 @@ async function autoSuggestEmptyDraftCategories() {
           openMessageThread(id);
         });
       } catch (e) {
-        // no answer at all (the connection dropped): the message may have gone out - the seller looks in Messages before sending it again
-        err((e && e.message ? e.message : 'Could not send this message.') + (res ? '' : ' If you are not sure it went out, look in Messages before you send it again.'));
+        // no clear answer (the connection dropped, or ELMS answered with a page instead of its own reply): the message may have gone out - the seller looks in Messages before sending it again
+        unsure = !res || !!(e && e.isBadResponse);
+        err((!res ? 'The connection to ELMS was lost.' : (e && e.message) || 'Could not send this message.') + (unsure ? ' If you are not sure it went out, look in Messages before you send it again.' : ''));
         busy = false; send.disabled = false; send.textContent = 'Send message';
       }
     });
