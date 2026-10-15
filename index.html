@@ -3220,6 +3220,19 @@
   .mo-money { position:relative; display:block; } .mo-money i { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94A3B8; font-style:normal; font-weight:600; pointer-events:none; } .mo-money input { padding-left:24px; text-align:right; }
   .mo-calc { min-height:20px; margin:8px 0 2px; font:700 13px Inter,sans-serif; color:#0F172A; text-align:left; } .mo-calc .good { color:#3F6208; } .mo-calc .bad { color:#B42318; }
   @media (max-width: 560px) { .mo-grid { grid-template-columns:1fr; } }
+  /* an empty page still says what to do next: real steps with real buttons, never made-up data */
+  .eg { margin:14px 0 0; padding:18px 18px 16px; border:1px solid #E6EAF0; border-radius:14px; background:#fff; text-align:left; }
+  .eg-title { margin-bottom:12px; font:800 12px Inter,sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#64748B; }
+  .eg-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  .eg-step { display:flex; gap:12px; padding:14px; border:1px solid #EEF1F5; border-radius:12px; background:#F8FAFC; }
+  .eg-n { flex:0 0 28px; width:28px; height:28px; border-radius:50%; background:#E8F0FE; color:#0064D2; font:800 13px Inter,sans-serif; display:grid; place-items:center; }
+  .eg-body b { display:block; margin-bottom:4px; font:800 14px Inter,sans-serif; color:#0F172A; }
+  .eg-body p { margin:0 0 8px; font:500 13px/1.5 Inter,sans-serif; color:#475569; }
+  .eg-go { border:0; background:none; padding:0; color:#0064D2; font:700 13px Inter,sans-serif; cursor:pointer; } .eg-go:hover { text-decoration:underline; }
+  .eg-foot { margin-top:12px; font:500 12.5px/1.5 Inter,sans-serif; color:#64748B; }
+  .np-empty + .eg { margin:0 14px 14px; }
+  @media (max-width: 900px) { .eg-steps { grid-template-columns:1fr; } }
+  .msg-skel-caption .msg-skel-stats { margin-top:8px; font-weight:700; color:#475569; }
   .mb-box { width:min(560px,100%); text-align:left; } .mb-box .elms-confirm-message { margin-bottom:6px; }
   .mb-box select, .mb-box textarea { width:100%; box-sizing:border-box; border:1.5px solid #E2E8F0; border-radius:10px; background:#fff; color:#0F172A; margin-top:10px; }
   .mb-box select { height:38px; padding:0 10px; font:600 13px Inter,sans-serif; }
@@ -8539,6 +8552,44 @@ B0EXAMPLE2"></textarea></div>
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  /**
+   * What an empty page shows under its "nothing here yet" line, so it is not a blank screen: numbered steps (title, text and an optional button that opens a page of
+   * the app) and one line of advice. Only true statements about what the app really does, never made-up data.
+   * @param {string} title  @param {{title: string, text: string, page?: string, button?: string}[]} steps  @param {string} [foot]
+   */
+  function emptyGuideHtml(title, steps, foot) {
+    return `<div class="eg"><div class="eg-title">${escapeHtml(title)}</div><div class="eg-steps">${steps.map((st, i) => `<div class="eg-step"><span class="eg-n">${i + 1}</span><div class="eg-body"><b>${escapeHtml(st.title)}</b><p>${escapeHtml(st.text)}</p>${st.page ? `<button type="button" class="eg-go" data-eg-page="${escapeAttr(st.page)}">${escapeHtml(st.button || 'Open')} &rarr;</button>` : ''}</div></div>`).join('')}</div>${foot ? `<div class="eg-foot">${escapeHtml(foot)}</div>` : ''}</div>`;
+  }
+  // the buttons of those steps open their page (one listener for every page that has such a guide)
+  document.addEventListener('click', (e) => { const go = e.target.closest && e.target.closest('[data-eg-page]'); if (go) showPage(go.getAttribute('data-eg-page')); });
+  const EMPTY_GUIDES = {
+    drafts: () => emptyGuideHtml('How a product becomes a sale', [
+      { title: 'Import', text: 'Paste an Amazon link, or use Bulk, Large or CSV import. ELMS builds the eBay draft from the product page, with your Margin on the price.', page: 'import', button: 'Go to Import' },
+      { title: 'Review', text: 'Open a draft to check the title, pictures, category and price. Select many drafts to edit or clean them together.' },
+      { title: 'Publish', text: 'Publish one draft, or select several and publish them together. Published products move to Live listings.', page: 'listings', button: 'Live listings' },
+    ], 'The ELMS browser extension can also send a product you are looking at on Amazon straight into your Drafts.'),
+    listings: () => emptyGuideHtml('What this page will show you', [
+      { title: 'Price and profit', text: 'Every live listing shows its eBay price, what the product costs you and the margin between them.' },
+      { title: 'Stock watching', text: 'ELMS can watch the supplier\u2019s stock and end a listing that is clearly out of stock, so you never sell what you cannot buy. Each listing has its own Stock Monitoring switch.' },
+      { title: 'Buyer interest', text: 'Watchers show how many people follow a listing, and the Issues tab lists listings that need your attention.' },
+    ], 'Nothing is live yet. Publish a draft, or press Sync from eBay at the top to bring in what you already sell.'),
+    orders: () => emptyGuideHtml('What happens after a sale', [
+      { title: 'Sync', text: 'New orders come in from eBay. Press Sync from eBay any time; your recent orders are imported the first time.' },
+      { title: 'Order it', text: 'Mark an order as ordered with your buying price and the delivery date. Your net profit is worked out for you.', page: 'netprofit', button: 'Net Profit' },
+      { title: 'Ship and write', text: 'Add the tracking number or Mark as shipped, and write to the buyer with Message buyer. Automatic buyer messages are in Settings.', page: 'settings', button: 'Settings' },
+    ]),
+    netprofit: () => emptyGuideHtml('How each line is worked out', [
+      { title: 'Buying price', text: 'What you paid for the product. Type it when you mark an order as ordered, or right in this sheet.', page: 'orders', button: 'Go to Orders' },
+      { title: 'eBay price and costs', text: 'The sale price, eBay\u2019s fees and the ad fee come from eBay for every order.' },
+      { title: 'Net profit', text: 'What really stays with you after the buying price and all the eBay costs.' },
+    ]),
+    vouchers: () => emptyGuideHtml('While you wait', [
+      { title: 'Credits', text: 'Credits are used for imports, the stock monitor and other actions. You can add more at any time.', page: 'pricing', button: 'Buy Credits' },
+      { title: 'Refer & Earn', text: 'Share your link with other sellers and see what you earn when they join and buy.', page: 'referrals', button: 'Refer & Earn' },
+      { title: 'Need something?', text: 'Ask for credits or help with a store, a publish error or billing. A person answers.', page: 'support', button: 'Support' },
+    ]),
+  };
+
   // Maps a currency code to its common symbol - used so prices show with a
   // recognizable sign (e.g. "£12.99") instead of just a bare number, and
   // instead of always assuming USD regardless of which Amazon marketplace
@@ -10668,7 +10719,7 @@ B0EXAMPLE2"></textarea></div>
       const computeCounts = () => allDrafts.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
       let counts = computeCounts();
       if (!allDrafts.length) {
-        container.innerHTML = '<div class="dv"><div class="dv-empty"><b>No drafts yet</b>Import an Amazon product and it appears here, ready to review and publish.<br><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div></div>';
+        container.innerHTML = '<div class="dv"><div class="dv-empty"><b>No drafts yet</b>Import an Amazon product and it appears here, ready to review and publish.<br><button class="dv-btn primary" id="draftAddProductBtn" type="button">+ Import product</button></div>' + EMPTY_GUIDES.drafts() + '</div>';
         document.getElementById('draftAddProductBtn')?.addEventListener('click', () => { showPage('import'); setTimeout(() => document.getElementById('amazonUrl')?.focus(), 50); });
         return;
       }
@@ -13850,7 +13901,7 @@ async function autoSuggestEmptyDraftCategories() {
             ${llPaginationHtml(llPage, pages)}
             <label class="dv-pagesize">Show <select id="llPageSizeSelect" class="dv-select">${LL_PAGE_SIZE_OPTIONS.map((n) => `<option value="${n}"${n === llPageSize ? ' selected' : ''}>${n}</option>`).join('')}</select> per page</label>
           </div>
-        </div>` : `<div class="dv-empty"><b>${anyFilter ? 'No listings in this view' : 'No live listings yet'}</b>${anyFilter ? 'Try another tab or clear the search.' : 'Publish a draft and it appears here with its price, profit and stats.'}</div>`}
+        </div>` : `<div class="dv-empty"><b>${anyFilter ? 'No listings in this view' : 'No live listings yet'}</b>${anyFilter ? 'Try another tab or clear the search.' : 'Publish a draft and it appears here with its price, profit and stats.'}</div>${anyFilter ? '' : EMPTY_GUIDES.listings()}`}
         <div class="dv-bulk${llSelected.size ? ' has-selection' : ''}" id="llBulkBar">
           <b id="llSelectedCount">${llSelected.size} selected</b>
           ${llTab === 'sold' ? '<button class="dv-btn primary small" id="llRestockBtn" type="button" title="Put a fresh available quantity on eBay for all the selected sold-out listings">Restock</button>' : llTab === 'active' ? '<button class="dv-btn primary small" id="llChangePriceBtn" type="button" title="Change the price of all the selected live listings on eBay at once, with your Margin">Change price</button>' : ''}
@@ -14567,7 +14618,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (!body) return;
     if (!npLines.length) {
       const filtered = npFilters.q || npFilters.accountId || npFilters.range !== 'all';
-      body.innerHTML = '<tr><td colspan="9" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date range.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div></td></tr>';
+      body.innerHTML = '<tr><td colspan="9" style="padding:0;border:0;"><div class="np-empty"><b>' + (filtered ? 'No orders match' : 'No orders yet') + '</b>' + (filtered ? 'Try another search, store or date range.' : 'Every order of a product you listed with ELMS appears here as one line.') + '</div>' + (filtered ? '' : EMPTY_GUIDES.netprofit()) + '</td></tr>';
     } else body.innerHTML = npLines.map(npRowHtml).join('');
     npRenderTotals();
     npRenderFoot();
@@ -15081,7 +15132,7 @@ async function autoSuggestEmptyDraftCategories() {
           <label class="ord-pagesize">Show <select class="ord-select" id="ordersPageSizeSelect">${ORDERS_PAGE_SIZE_OPTIONS.map((n) => `<option value="${n}"${n === ordersPageSize ? ' selected' : ''}>${n}</option>`).join('')}</select> per page</label>
         </div>
       </div>`
-      : `<div class="empty-state">${ordersAll.length ? 'No orders match these filters.' : 'No orders yet. Click "Sync from eBay" to load your orders (your recent orders are imported the first time).'}</div>`}
+      : `<div class="empty-state">${ordersAll.length ? 'No orders match these filters.' : 'No orders yet. Click "Sync from eBay" to load your orders (your recent orders are imported the first time).'}</div>${ordersAll.length ? '' : EMPTY_GUIDES.orders()}`}
     `;
     wireOrdersPage();
   }
@@ -19069,6 +19120,12 @@ async function autoSuggestEmptyDraftCategories() {
     const text = !none ? 'Pick a buyer from the list to read the thread, reply, add a private note or open the linked order.'
       : noStore ? 'Your buyers’ messages open here like a chat. Connect a store in Settings to start.'
       : 'New buyer messages open here after a sync.';
+    // what is really in the inbox (counted from the conversations on screen), or what is ready for when messages arrive
+    const inbox = messageRows.filter((r) => r.conversation_status === 'ACTIVE');
+    const needsReply = inbox.filter((r) => r.conversation_type === 'FROM_MEMBERS' && !r.last_message_from_self).length;
+    const unreadNow = inbox.filter((r) => r.is_read === false).length;
+    const extra = !none ? `${needsReply} need a reply \u00b7 ${unreadNow} unread \u00b7 ${inbox.length} in the inbox`
+      : noStore ? '' : 'Saved replies, AI replies and Message buyer (from an order) are ready for when they do.';
     return `
       <div class="msg-thread-head skel" aria-hidden="true"><span class="sk sk-av big"></span><div class="msg-thread-title"><span class="sk sk-line" style="width:38%"></span><span class="sk sk-line" style="width:56%"></span></div><span class="sk sk-pill"></span></div>
       <div class="msg-context skel" aria-hidden="true"><span class="sk sk-sq"></span><div class="msg-context-txt"><span class="sk sk-line" style="width:64%"></span><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span></div></div>
@@ -19080,14 +19137,14 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="sk-brow r"><span class="sk sk-b r" style="width:36%"></span></div>
       </div>
       <div class="msg-compose skel" aria-hidden="true"><div class="msg-compose-row"><textarea rows="1" disabled placeholder="Type a message&hellip;"></textarea><span class="sk sk-ic"></span><span class="sk sk-ic"></span><span class="sk sk-ic"></span><button class="msg-btn primary send" type="button" disabled>Send</button></div></div>
-      <div class="msg-skel-caption"><div class="msg-empty-icon">&#128172;</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></div>`;
+      <div class="msg-skel-caption"><div class="msg-empty-icon">&#128172;</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p>${extra ? `<p class="msg-skel-stats">${escapeHtml(extra)}</p>` : ''}</div>`;
   }
 
   /** Puts that placeholder conversation in the right-hand pane whenever no conversation is open (only when it would change). */
   function syncEmptyDetail() {
     const pane = document.getElementById('messageDetail');
     if (!pane || selectedMessageId) return; // a conversation is open (or loading): leave it alone
-    const key = `${messageRows.length === 0}|${msgHasStore}`;
+    const key = `${messageRows.length}|${messageRows.filter((r) => r.is_read === false).length}|${messageRows.filter((r) => !r.last_message_from_self).length}|${msgHasStore}`;
     if (pane.dataset.emptyKey === key && pane.querySelector('.msg-skel-caption')) return;
     pane.dataset.emptyKey = key;
     pane.innerHTML = emptyDetailHtml();
@@ -20478,7 +20535,7 @@ async function autoSuggestEmptyDraftCategories() {
     const active = list.filter((v) => v.state === 'active');
     const rest = list.filter((v) => v.state !== 'active');
     if (!list.length) {
-      el.innerHTML = '<section class="st-card"><div class="rf-empty"><b>No vouchers yet</b>When ELMS gives you a voucher (free credits, a plan, or a discount) it appears here, and you get an email.</div></section>';
+      el.innerHTML = '<section class="st-card"><div class="rf-empty"><b>No vouchers yet</b>When ELMS gives you a voucher (free credits, a plan, or a discount) it appears here, and you get an email.</div></section>' + EMPTY_GUIDES.vouchers();
       return;
     }
     el.innerHTML = `
