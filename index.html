@@ -3220,6 +3220,13 @@
   .mo-money { position:relative; display:block; } .mo-money i { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94A3B8; font-style:normal; font-weight:600; pointer-events:none; } .mo-money input { padding-left:24px; text-align:right; }
   .mo-calc { min-height:20px; margin:8px 0 2px; font:700 13px Inter,sans-serif; color:#0F172A; text-align:left; } .mo-calc .good { color:#3F6208; } .mo-calc .bad { color:#B42318; }
   @media (max-width: 560px) { .mo-grid { grid-template-columns:1fr; } }
+  .mb-box { width:min(560px,100%); text-align:left; } .mb-box .elms-confirm-message { margin-bottom:6px; }
+  .mb-box select, .mb-box textarea { width:100%; box-sizing:border-box; border:1.5px solid #E2E8F0; border-radius:10px; background:#fff; color:#0F172A; margin-top:10px; }
+  .mb-box select { height:38px; padding:0 10px; font:600 13px Inter,sans-serif; }
+  .mb-box textarea { padding:10px 12px; min-height:140px; resize:vertical; font:500 14px/1.45 Inter,sans-serif; }
+  .mb-box select:focus, .mb-box textarea:focus { outline:none; border-color:#0064D2; box-shadow:0 0 0 3px rgba(0,100,210,.14); }
+  .mb-count { margin-top:4px; text-align:right; font:600 11.5px Inter,sans-serif; color:#94A3B8; } .mb-count.over { color:#B42318; }
+  .mb-box .elms-confirm-actions { align-items:center; flex-wrap:wrap; } .mb-box .mb-earlier { margin-right:auto; }
   .ord-ordered { display:inline-block; padding:3px 9px; border-radius:999px; background:#EEF6DF; color:#3F6208; font-size:11.5px; font-weight:800; white-space:nowrap; }
   .ord-orderedbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:11px 14px; border-radius:10px; border:1.5px dashed #BFD4F2; background:#F7FAFF; margin-bottom:12px; }
   .ord-orderedbar.on { border-style:solid; border-color:#C5E08E; background:#F4FAE9; }
@@ -15392,6 +15399,94 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
+  /**
+   * The window that opens on "Message buyer" in the order window: a message to the buyer of THIS order. The buyer does not have to have written to you first - eBay lets a
+   * seller write about an item that buyer bought (backend: POST /api/orders/:id/message-buyer). Saved replies fill in the same {{words}} as in Messages. Nothing is sent
+   * until the seller presses Send. When it is sent, the conversation is in Messages and can be opened from here.
+   */
+  let messageBuyerOpening = false; // one window at a time: the saved replies are fetched first, and a second click meanwhile must not open a second window
+  async function openMessageBuyerDialog(o) {
+    if (messageBuyerOpening || document.querySelector('.mb-box')) return;
+    const buyer = String(o.buyer_username || '').trim();
+    if (!buyer) { showToast('No buyer', 'This order has no buyer username, so there is nobody to write to.', 'error'); return; }
+    messageBuyerOpening = true;
+    try { if (!messageSnippets.length) await loadMessageSnippets(); } finally { messageBuyerOpening = false; }
+    const full = String((o.shipping_address && o.shipping_address.fullName) || '').trim();
+    const words = { buyer_name: full ? full.split(/\s+/)[0] : 'there', buyer_username: buyer, order_id: o.ebay_order_id || '', product_name: o.item_title || 'your item', tracking_number: o.tracking_number || '' };
+    const fill = (text) => String(text || '').replace(/\{\{\s*(buyer_name|buyer_username|order_id|product_name|tracking_number)\s*\}\}/gi, (m, k) => words[k.toLowerCase()]);
+    const MAX = 2000;
+    const showEarlier = () => {
+      closeOrderDrawer();
+      showPage('messages');
+      const input = document.getElementById('messageSearch');
+      if (input) { input.value = buyer; messageSearchTerm = buyer; setTimeout(() => renderMessageList(), 400); }
+    };
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box mo-box mb-box" role="dialog" aria-modal="true" aria-label="Message buyer">
+        <div class="elms-confirm-title">Message ${escapeHtml(buyer)}</div>
+        <div class="elms-confirm-message">The buyer does not have to have written to you first. eBay does not allow phone numbers, e-mail addresses, links or offers outside eBay in messages.</div>
+        ${o.item_title ? `<div class="ord-sub">About: ${escapeHtml(o.item_title)}${o.ebay_order_id ? ' &middot; order ' + escapeHtml(o.ebay_order_id) : ''}</div>` : ''}
+        ${messageSnippets.length ? `<select id="mbSaved" aria-label="Saved replies"><option value="">Saved replies&hellip;</option>${messageSnippets.map((x) => `<option value="${escapeAttr(x.id)}">${escapeHtml(x.name)}</option>`).join('')}</select>` : ''}
+        <textarea id="mbText" rows="6" maxlength="${MAX}" placeholder="Write your message to ${escapeAttr(buyer)}&hellip;"></textarea>
+        <div class="mb-count" id="mbCount">0 / ${MAX}</div>
+        <div class="ord-sub bad" id="mbError"></div>
+        <div class="elms-confirm-actions"><button type="button" class="ord-link mb-earlier" data-act="earlier">Earlier messages with this buyer</button><button type="button" class="ord-btn" data-act="cancel">Cancel</button><button type="button" class="ord-btn primary" data-act="ok">Send message</button></div>
+      </div>`;
+    document.body.appendChild(overlay); // the order window behind it already holds the page's scroll
+    const $ = (id) => overlay.querySelector('#' + id);
+    let busy = false; // while a message is on its way the window stays: closing it would hide whether it went out
+    const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey, true); };
+    // Escape closes THIS window only (the order window behind it stays), and not at all while a message is on its way
+    const onKey = (e) => { if (e.key !== 'Escape') return; e.stopImmediatePropagation(); if (!busy) close(); };
+    document.addEventListener('keydown', onKey, true);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay && !busy) close(); });
+    const text = $('mbText');
+    const count = () => { const n = text.value.length; $('mbCount').textContent = n + ' / ' + MAX; $('mbCount').classList.toggle('over', n >= MAX); };
+    text.addEventListener('input', count);
+    $('mbSaved')?.addEventListener('change', (e) => {
+      const sn = messageSnippets.find((x) => x.id === e.target.value);
+      if (sn) { text.value = fill(sn.content).slice(0, MAX); count(); text.focus(); }
+      e.target.value = '';
+    });
+    overlay.querySelector('[data-act="cancel"]').addEventListener('click', () => { if (!busy) close(); });
+    overlay.querySelector('[data-act="earlier"]').addEventListener('click', () => { if (busy) return; close(); showEarlier(); });
+    const send = overlay.querySelector('[data-act="ok"]');
+    send.addEventListener('click', async () => {
+      const content = text.value.trim();
+      const err = (m) => { $('mbError').textContent = m; };
+      if (!content) return err('Write a message first.');
+      busy = true; send.disabled = true; send.textContent = 'Sending\u2026'; err('');
+      let res = null;
+      let unsure = false;
+      try {
+        res = await apiFetch(`/api/orders/${encodeURIComponent(o.id)}/message-buyer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) });
+        const data = await apiJson(res);
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not send this message.');
+        const id = data.conversationId || null;
+        const box = overlay.querySelector('.mb-box');
+        box.innerHTML = `
+          <div class="elms-confirm-title">Message sent</div>
+          <div class="elms-confirm-message">Your message to ${escapeHtml(buyer)} was sent through eBay.${id ? '' : ' It shows in Messages within a few minutes.'}</div>
+          <div class="elms-confirm-actions"><button type="button" class="ord-btn" data-act="done">Close</button>${id ? '<button type="button" class="ord-btn primary" data-act="open">Open the conversation</button>' : ''}</div>`;
+        busy = false;
+        box.querySelector('[data-act="done"]').addEventListener('click', close);
+        box.querySelector('[data-act="open"]')?.addEventListener('click', async () => {
+          close(); closeOrderDrawer(); showPage('messages');
+          await loadMessages();
+          openMessageThread(id);
+        });
+      } catch (e) {
+        // no clear answer (the connection dropped, or ELMS answered with a page instead of its own reply): the message may have gone out - the seller looks in Messages before sending it again
+        unsure = !res || !!(e && e.isBadResponse);
+        err((!res ? 'The connection to ELMS was lost.' : (e && e.message) || 'Could not send this message.') + (unsure ? ' If you are not sure it went out, look in Messages before you send it again.' : ''));
+        busy = false; send.disabled = false; send.textContent = 'Send message';
+      }
+    });
+    text.focus();
+  }
+
   // ---------- Buying an order's item from AliExpress (backend: routes/aliexpressOrders.js) ----------
   // Three separate, confirmed steps, none automatic: 1) the window below shows the item, the delivery, the total and whether it would
   // lose money, and places the order UNPAID; 2) "Pay" pays exactly the amount AliExpress asks (the server stops if it changed);
@@ -16029,13 +16124,7 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('Refreshed', 'Order updated from eBay.', 'success');
       apply(data.order);
     }));
-    $('ordMessage').addEventListener('click', () => {
-      closeOrderDrawer();
-      showPage('messages');
-      const term = o.buyer_username || '';
-      const input = document.getElementById('messageSearch');
-      if (input && term) { input.value = term; messageSearchTerm = term; setTimeout(() => renderMessageList(), 400); }
-    });
+    $('ordMessage').addEventListener('click', () => openMessageBuyerDialog(o));
     $('ordPrint').addEventListener('click', () => {
       const w = window.open('', '_blank', 'width=640,height=800');
       if (!w) { showToast('Popup blocked', 'Allow popups to print the packing slip.', 'error'); return; }
