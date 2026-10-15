@@ -28,7 +28,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
 <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/site.css?v=5">
+<link rel="stylesheet" href="/site.css?v=6">
 <script src="/site.js?v=5" defer></script>
 <script src="/social.js?v=2" defer></script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ELMS","url":"https://elmstool.com/","logo":"https://elmstool.com/logo.png"}</script>
@@ -86,6 +86,7 @@
         <div class="ui-window__bar">
           <span class="ui-dots"><i></i><i></i><i></i></span>
           <span class="ui-url"><svg class="icon" focusable="false"><use href="#i-link"/></svg><span class="demo-sc"><span class="demo-k"><span class="demo-type">amazon.com/dp/B0XXXXXXX1</span></span><span class="demo-k"><span class="demo-type">amazon.com/dp/B0XXXXXXX2</span></span><span class="demo-k"><span class="demo-type">amazon.com/dp/B0XXXXXXX3</span></span><span class="demo-k"><span class="demo-type">amazon.com/dp/B0XXXXXXX4</span></span></span></span>
+          <span class="ui-eg">Example</span>
         </div>
         <div class="ui-window__body">
           <div class="ui-draft">
@@ -104,14 +105,14 @@
       </div>
       <div class="ui-float ui-float--a">
         <div class="ui-float__head"><span>Stock and price monitoring</span><span class="ui-switch ui-switch--on"></span></div>
-        <div class="ui-list"><div class="ui-row"><span class="demo-mini demo-sc"><img class="demo-img demo-ph demo-pa" src="/img/demo-a.jpg" width="692" height="900" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-ph demo-pb" src="/img/demo-b.jpg" width="720" height="720" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-ph demo-pc" src="/img/demo-c.jpg" width="760" height="760" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-ph demo-pd" src="/img/demo-d.jpg" width="880" height="880" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-row__main"><span class="ui-line ui-line--dark ui-line--m"></span><span class="ui-line ui-line--s"></span></span></div></div>
+        <div class="ui-list"><div class="ui-row"><span class="demo-mini demo-sc"><img class="demo-img demo-ph demo-pa" src="/img/demo-a.jpg" width="692" height="900" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-ph demo-pb" src="/img/demo-b.jpg" width="720" height="720" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-ph demo-pc" src="/img/demo-c.jpg" width="760" height="760" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-ph demo-pd" src="/img/demo-d.jpg" width="880" height="880" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-row__main"><span class="demo-sc"><span class="demo-k"><span class="ui-t">Glass Candle Warmer Lamp with Timer</span><span class="ui-s">eBay price 34.99</span></span><span class="demo-k"><span class="ui-t">Pumpkin Texture Throw Pillow Covers, Set of 2</span><span class="ui-s">eBay price 19.99</span></span><span class="demo-k"><span class="ui-t">Colourful Contact Lens Cases, Pack of 24</span><span class="ui-s">eBay price 12.99</span></span><span class="demo-k"><span class="ui-t">Inflatable Pumpkin Patch with LED Lights</span><span class="ui-s">eBay price 39.99</span></span></span></span></div></div>
         <div class="mt-4"><span class="ui-chip ui-chip--ok demo-live"><i></i>In stock</span></div>
       </div>
       <div class="ui-float ui-float--b">
         <div class="ui-float__head"><span>Buyer messages</span><span class="ui-chip ui-chip--blue">New</span></div>
         <div class="ui-list">
-          <div class="ui-row"><span class="ui-avatar"></span><span class="ui-row__main"><span class="ui-line ui-line--s ui-line--dark"></span><span class="ui-line ui-line--l"></span></span><span class="ui-dot"></span></div>
-          <div class="ui-row"><span class="ui-avatar ui-avatar--b"></span><span class="demo-stack ui-row__main"><span class="demo-typing"><i></i><i></i><i></i></span><span class="demo-reply"><span class="ui-line ui-line--dark ui-line--m"></span><span class="ui-line ui-line--l"></span></span></span><span class="demo-tick"><svg class="icon icon--sm" focusable="false"><use href="#i-check"/></svg></span></div>
+          <div class="ui-row"><span class="ui-avatar"></span><span class="ui-row__main"><span class="ui-t">Emma R.</span><span class="ui-s">Is this still available?</span></span><span class="ui-dot"></span></div>
+          <div class="ui-row"><span class="ui-avatar ui-avatar--b"></span><span class="demo-stack ui-row__main"><span class="demo-typing"><i></i><i></i><i></i></span><span class="demo-reply"><span class="ui-t">You</span><span class="ui-s">Yes, it is in stock!</span></span></span><span class="demo-tick"><svg class="icon icon--sm" focusable="false"><use href="#i-check"/></svg></span></div>
         </div>
       </div>
     </div>
@@ -157,9 +158,9 @@
           <h3 class="feature__title">Import from a link, a list or a file</h3>
           <p class="feature__text">Paste one Amazon link or a whole list, or use the ELMS Chrome extension while you browse. Already have your products in a spreadsheet? Import a CSV file, with pictures from links or from your computer. Long lists import in the background, so you can close the tab.</p>
           <div class="feature__visual ui" aria-hidden="true">
-            <div class="ui-card"><span class="ui-url"><svg class="icon" focusable="false"><use href="#i-link"/></svg><span class="ui-line ui-line--l"></span></span><span class="ui-btn ui-btn--primary">Import</span></div>
+            <div class="ui-card"><span class="ui-url"><svg class="icon" focusable="false"><use href="#i-link"/></svg><span class="ui-s">amazon.com/dp/B0XXXXXXX3</span></span><span class="ui-btn ui-btn--primary">Import</span></div>
             <div class="ui-flow"></div>
-            <div class="ui-card"><span class="ui-thumb ui-thumb--ph"><img class="demo-img demo-pc" src="/img/demo-c.jpg" width="760" height="760" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-card__main"><span class="ui-line ui-line--dark ui-line--l"></span><span class="ui-line ui-line--m"></span><span><span class="ui-chip ui-chip--blue">Draft</span></span></span></div>
+            <div class="ui-card"><span class="ui-thumb ui-thumb--ph"><img class="demo-img demo-pc" src="/img/demo-c.jpg" width="760" height="760" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-card__main"><span class="ui-t">Colourful Contact Lens Cases, Pack of 24</span><span class="ui-s">Price 12.99 from your pricing rule</span><span><span class="ui-chip ui-chip--blue">Draft</span></span></span></div>
           </div>
         </article>
       </div>
@@ -169,7 +170,7 @@
           <h3 class="feature__title">Drafts with AI help</h3>
           <p class="feature__text">Edit the title, description, pictures, item specifics, policies and item location in one editor. AI can suggest titles, descriptions and item specifics. Pick a description template with your own branding, and AI can lay out your descriptions with it. You review drafts before they go live, and bulk actions ask you to confirm first.</p>
           <div class="feature__visual ui" aria-hidden="true">
-            <div class="ui-card"><span class="ui-thumb ui-thumb--ph"><img class="demo-img demo-pb" src="/img/demo-b.jpg" width="720" height="720" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-card__main"><span class="ui-line ui-line--dark ui-line--l"></span><span class="ui-line ui-line--m"></span><span class="demo-chips"><span class="ui-chip ui-chip--blue">AI draft</span><span class="ui-chip">Colour: Rust</span><span class="ui-chip">Pack: 2</span></span></span></div>
+            <div class="ui-card"><span class="ui-thumb ui-thumb--ph"><img class="demo-img demo-pb" src="/img/demo-b.jpg" width="720" height="720" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-card__main"><span class="ui-t">Pumpkin Texture Throw Pillow Covers, Set of 2</span><span class="ui-s">Suggested by AI, checked by you</span><span class="demo-chips"><span class="ui-chip ui-chip--blue">AI draft</span><span class="ui-chip">Colour: Rust</span><span class="ui-chip">Pack: 2</span></span></span></div>
           </div>
         </article>
       </div>
@@ -201,8 +202,8 @@
           <p class="feature__text">ELMS can watch the source products of your listings. When the source clearly says a product is out of stock, ELMS can end the listing for you. When the source price changes, it can update your eBay price to follow it. Both are switches you control per listing, and they start on for each listing that has a source link.</p>
           <div class="feature__visual ui" aria-hidden="true">
             <div class="ui-list">
-              <div class="ui-row"><span class="ui-thumb ui-thumb--sm ui-thumb--ph"><img class="demo-img demo-pa" src="/img/demo-a.jpg" width="692" height="900" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-row__main"><span class="ui-line ui-line--dark ui-line--m"></span><span class="ui-line ui-line--s"></span></span><svg class="ui-spark" viewBox="0 0 72 24"><polyline points="2,18 14,14 24,16 36,8 48,11 60,5 70,7"/></svg><span class="ui-chip ui-chip--ok demo-live"><i></i>In stock</span><span class="ui-switch ui-switch--on"></span></div>
-              <div class="ui-row"><span class="ui-thumb ui-thumb--sm ui-thumb--ph"><img class="demo-img demo-pd" src="/img/demo-d.jpg" width="880" height="880" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-row__main"><span class="ui-line ui-line--dark ui-line--l"></span><span class="ui-line ui-line--xs"></span></span><svg class="ui-spark" viewBox="0 0 72 24"><polyline points="2,6 14,9 24,8 36,14 48,12 60,17 70,16"/></svg><span class="ui-chip ui-chip--warn"><i></i>Out of stock</span><span class="ui-switch ui-switch--on"></span></div>
+              <div class="ui-row"><span class="ui-thumb ui-thumb--sm ui-thumb--ph"><img class="demo-img demo-pa" src="/img/demo-a.jpg" width="692" height="900" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-row__main"><span class="ui-t">Glass Candle Warmer Lamp with Timer</span><span class="ui-s">eBay price 34.99</span></span><svg class="ui-spark" viewBox="0 0 72 24"><polyline points="2,18 14,14 24,16 36,8 48,11 60,5 70,7"/></svg><span class="ui-chip ui-chip--ok demo-live"><i></i>In stock</span><span class="ui-switch ui-switch--on"></span></div>
+              <div class="ui-row"><span class="ui-thumb ui-thumb--sm ui-thumb--ph"><img class="demo-img demo-pd" src="/img/demo-d.jpg" width="880" height="880" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-row__main"><span class="ui-t">Inflatable Pumpkin Patch with LED Lights</span><span class="ui-s">eBay price 39.99</span></span><svg class="ui-spark" viewBox="0 0 72 24"><polyline points="2,6 14,9 24,8 36,14 48,12 60,17 70,16"/></svg><span class="ui-chip ui-chip--warn"><i></i>Out of stock</span><span class="ui-switch ui-switch--on"></span></div>
             </div>
           </div>
         </article>
@@ -214,7 +215,7 @@
           <p class="feature__text">Your eBay orders arrive grouped by stage, from awaiting payment to delivered. Mark an order as ordered or shipped, add a tracking number when you have one and ELMS passes it to eBay. A private note keeps the details with the order.</p>
           <div class="feature__visual ui" aria-hidden="true">
             <div class="ui-list">
-              <div class="ui-row"><span class="ui-thumb ui-thumb--sm ui-thumb--ph"><img class="demo-img demo-pb" src="/img/demo-b.jpg" width="720" height="720" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-row__main"><span class="ui-line ui-line--dark ui-line--m"></span></span><span class="ui-steps"><i class="is-done"></i><i class="is-done"></i><i></i></span></div>
+              <div class="ui-row"><span class="ui-thumb ui-thumb--sm ui-thumb--ph"><img class="demo-img demo-pb" src="/img/demo-b.jpg" width="720" height="720" alt="" loading="lazy" fetchpriority="low" decoding="async"></span><span class="ui-row__main"><span class="ui-t">Pumpkin Texture Throw Pillow Covers</span><span class="ui-s">Shipped, tracking sent to eBay</span></span><span class="ui-steps"><i class="is-done"></i><i class="is-done"></i><i></i></span></div>
             </div>
           </div>
         </article>
@@ -233,8 +234,8 @@
           <p class="feature__text">Read and answer buyer messages for the store you are working in. Use saved replies, add private notes and let AI draft an answer for you to check. Automatic messages, such as a thank-you or a shipping update, stay off until you turn them on.</p>
           <div class="feature__visual ui" aria-hidden="true">
             <div class="ui-list">
-              <div class="ui-row"><span class="ui-avatar"></span><span class="ui-row__main"><span class="ui-line ui-line--s ui-line--dark"></span><span class="ui-line ui-line--l"></span></span><span class="ui-dot"></span></div>
-              <div class="ui-row"><span class="ui-avatar ui-avatar--c"></span><span class="ui-row__main"><span class="ui-line ui-line--m ui-line--dark"></span><span class="ui-line ui-line--m"></span></span><span class="ui-dot ui-dot--mute"></span></div>
+              <div class="ui-row"><span class="ui-avatar"></span><span class="ui-row__main"><span class="ui-t">Emma R.</span><span class="ui-s">Is this still available?</span></span><span class="ui-dot"></span></div>
+              <div class="ui-row"><span class="ui-avatar ui-avatar--c"></span><span class="ui-row__main"><span class="ui-t">Daniel K.</span><span class="ui-s">Thanks, it arrived today!</span></span><span class="ui-dot ui-dot--mute"></span></div>
             </div>
           </div>
         </article>
@@ -283,24 +284,25 @@
         <div class="ui-window">
           <div class="ui-window__bar">
             <span class="ui-dots"><i></i><i></i><i></i></span>
-            <span class="ui-url"><svg class="icon" focusable="false"><use href="#i-link"/></svg><span class="ui-line ui-line--m"></span></span>
+            <span class="ui-url"><svg class="icon" focusable="false"><use href="#i-link"/></svg><span class="ui-s">amazon.com/dp/B0XXXXXXX1</span></span>
+            <span class="ui-eg">Example</span>
           </div>
           <div class="ui-window__body">
             <div class="ui-draft">
               <div class="ui-draft__gallery demo-tiles"><img class="demo-img demo-pb" src="/img/demo-b.jpg" width="720" height="720" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-pa" src="/img/demo-a.jpg" width="692" height="900" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-pc" src="/img/demo-c.jpg" width="760" height="760" alt="" loading="lazy" fetchpriority="low" decoding="async"><img class="demo-img demo-pd" src="/img/demo-d.jpg" width="880" height="880" alt="" loading="lazy" fetchpriority="low" decoding="async"></div>
               <div class="ui-fields">
-                <span class="ui-line ui-line--dark ui-line--l"></span>
-                <span class="ui-line ui-line--m"></span>
-                <span class="ui-line ui-line--xs ui-line--dark"></span>
-                <span class="ui-line ui-line--l"></span>
-                <span class="ui-line ui-line--m"></span>
+                <span class="ui-t">Pumpkin Texture Throw Pillow Covers, 18 x 18 in</span>
+                <span class="ui-s">Set of 2 &middot; Rust &middot; Soft textured fabric</span>
+                <span class="ui-t">12.99</span>
+                <span class="ui-s">In stock</span>
+                <span class="ui-s">Rated 4.6 out of 5</span>
               </div>
             </div>
           </div>
         </div>
         <div class="ui-float ui-float--a">
           <div class="ui-float__head"><span>ELMS panel</span><span class="ui-chip ui-chip--blue">Chrome</span></div>
-          <div class="ui-lines"><span class="ui-line ui-line--dark"></span><span class="ui-line ui-line--m"></span></div>
+          <div class="ui-lines"><span class="ui-t">Leaves you 4.20 after eBay fees</span><span class="ui-s">From your pricing rule</span></div>
           <div class="demo-chk mt-4"><span class="demo-meter"></span><span class="demo-tick"><svg class="icon icon--sm" focusable="false"><use href="#i-check"/></svg></span></div>
           <div class="mt-4"><span class="ui-chip ui-chip--warn"><i></i>Brand word</span> <span class="ui-chip ui-chip--teal"><i></i>In your Drafts</span></div>
           <div class="ui-actions mt-4"><span class="ui-btn ui-btn--primary">Import to Drafts</span></div>
