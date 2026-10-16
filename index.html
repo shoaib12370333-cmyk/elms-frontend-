@@ -23579,6 +23579,69 @@ async function autoSuggestEmptyDraftCategories() {
       + '<div class="st-actions"><button class="st-btn danger" id="ueDelStart" type="button" disabled>Delete this account\u2026</button><div id="ueDelStatus" role="status"></div></div>';
   }
 
+  // The credit history of one person (the three dots > Credit history): the totals (how credits came in, which admin added or took how many, what they were spent on),
+  // every line newest first, and - for the time before lines were kept - what the older records say (payments, vouchers, welcome credits, AI calls).
+  async function openCreditHistoryModal(u) {
+    const m = adminModal('<div class="elms-loader" role="status" aria-label="Loading"></div>', true);
+    const box = m.querySelector('.modal-box');
+    const num = (n) => Number(n || 0).toLocaleString();
+    const signed = (n) => (n > 0 ? '+' : '') + num(n);
+    const delta = (n) => '<b style="color:' + (n > 0 ? '#067647' : '#B42318') + ';">' + signed(n) + '</b>';
+    const closeRow = '<div class="ad-chips" style="margin:18px 0 0;"><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Close</button></div>';
+    const load = async (before) => {
+      const res = await apiFetch('/api/admin/users/' + encodeURIComponent(u.id) + '/credit-history?limit=100' + (before ? '&before=' + encodeURIComponent(before) : ''));
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the credit history.');
+      return data;
+    };
+    const lineRow = (e) => '<tr><td>' + adEsc(adDateTime(e.at)) + '</td><td>' + adEsc(e.reason || e.kindText) + '<br><small style="color:var(--grey);">' + adEsc(e.kindText) + '</small></td><td style="text-align:right;">' + delta(e.delta) + '</td><td style="text-align:right;">' + (e.balanceAfter == null ? '—' : num(e.balanceAfter)) + '</td><td>' + ([e.actorEmail ? 'by ' + adEsc(e.actorEmail) : '', adEsc(e.note)].filter(Boolean).join(' · ') || '—') + '</td></tr>';
+    try {
+      const data = await load(null);
+      const sum = data.summary || { kinds: {}, byAction: [], byAdmin: [], netSpent: 0, earned: 0 };
+      const older = data.older || {};
+      const who = adEsc(data.user.email) + (data.user.isAdmin ? ' <span class="ad-tag free">ADMIN</span>' : '');
+      const inRows = Object.keys(sum.kinds).filter((k) => sum.kinds[k].gained > 0 && k !== 'refund').map((k) => [adEsc(sum.kinds[k].text), delta(sum.kinds[k].gained), num(sum.kinds[k].lines)]);
+      const actionRows = sum.byAction.map((a) => [adEsc(a.reason), '<b>' + num(a.credits) + '</b>', num(a.lines)]);
+      const adminRows = sum.byAdmin.map((a) => [adEsc(a.admin), delta(a.added), delta(-a.removed), num(a.lines)]);
+      const olderPurchases = (older.purchases || []).map((p) => [adEsc(adDate(p.at)), adEsc(p.plan || 'Credit pack') + (p.status === 'refunded' ? ' <span class="ad-tag bad">REFUNDED</span>' : ''), delta(p.credits), p.priceUsd ? adEsc(adUsd(p.priceUsd)) : 'free', adEsc(p.provider || '')]);
+      const olderVouchers = (older.vouchers || []).map((v) => [adEsc(adDate(v.at)), adEsc(v.kind === 'free_plan' ? 'Free plan' : 'Credits') + (v.note ? ': ' + adEsc(v.note) : ''), v.credits ? delta(v.credits) : '—', adEsc(v.givenBy || '')]);
+      const olderAi = (older.aiSpent || []).map((a) => [adEsc(a.kind), '<b>' + num(a.credits) + '</b>', num(a.calls)]);
+      const startNote = data.historyStartedAt
+        ? 'Lines are kept from ' + adEsc(adDateTime(data.historyStartedAt)) + ' on. Imports, publishes and stock checks before that were not written down one by one.'
+        : 'Lines are kept from now on: nothing is written down yet.';
+      box.innerHTML = `
+        <div class="draft-title">Credit history</div>
+        <div class="meta-line">${who}</div>
+        ${adKv([['Balance now', '<b>' + (data.user.isAdmin ? 'unlimited' : num(data.user.balance)) + '</b>'], ['Came in (since lines are kept)', delta(sum.earned || 0)], ['Spent on actions, net of refunds', '<b>' + num(sum.netSpent || 0) + '</b>'], ['Taken away (admin / plan ended)', '<b>' + num(sum.takenAway || 0) + '</b>'], ['Lines', num((data.entries || []).length) + (data.more ? '+' : '')]])}
+        <p class="meta-line" style="margin:8px 0 14px;">${startNote}</p>
+        ${adSection('How credits came in', adTable(['Way', 'Credits', 'Times'], inRows, 'Nothing came in since lines are kept.'))}
+        ${adSection('Admin changes', adTable(['Admin', 'Added', 'Taken away', 'Changes'], adminRows, 'No admin has changed this balance since lines are kept.'), 'Who set this balance by hand, and by how much.')}
+        ${adSection('Where the credits went', adTable(['Action', 'Credits', 'Times'], actionRows, 'Nothing was spent since lines are kept.'), 'Per action, after the credits given back when it failed.')}
+        <details class="st-custom" open><summary class="st-custom-title" style="cursor:pointer;">Every line, newest first</summary>
+          <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>When</th><th>What</th><th style="text-align:right;">Credits</th><th style="text-align:right;">Balance after</th><th>Who / note</th></tr></thead><tbody id="chRows">${(data.entries || []).map(lineRow).join('') || '<tr><td colspan="5" style="color:var(--grey);">No lines yet.</td></tr>'}</tbody></table></div>
+          <div class="st-actions" id="chMoreBox" style="${data.more ? '' : 'display:none;'}"><button class="st-btn" id="chMore" type="button">Show older lines</button><div id="chMoreStatus" role="status"></div></div>
+        </details>
+        ${adSection('Before lines were kept (older records)', (data.user.isAdmin ? '' : adKv([['Welcome credits', older.welcomeCredits ? delta(older.welcomeCredits) : '—'], ['Joined', adEsc(adDate(older.joinedAt))]])) + '<h4 style="margin:12px 0 6px;">Payments and plans</h4>' + adTable(['Date', 'What', 'Credits', 'Paid', 'Provider'], olderPurchases, 'No payment before that.') + '<h4 style="margin:12px 0 6px;">Vouchers used</h4>' + adTable(['Date', 'What', 'Credits', 'Given by'], olderVouchers, 'No voucher before that.') + '<h4 style="margin:12px 0 6px;">AI credits spent</h4>' + adTable(['AI tool', 'Credits', 'Calls'], olderAi, 'No AI use before that.'), 'This is what the older records still say. It is not a full history: the plain spends of that time (imports, publishes, stock checks) were never written down.')}
+        ${closeRow}`;
+      let last = (data.entries || []).length ? data.entries[data.entries.length - 1].at : null;
+      const more = box.querySelector('#chMore');
+      if (more) more.addEventListener('click', async () => {
+        const status = box.querySelector('#chMoreStatus');
+        more.disabled = true; status.textContent = 'Loading…';
+        try {
+          const next = await load(last);
+          box.querySelector('#chRows').insertAdjacentHTML('beforeend', (next.entries || []).map(lineRow).join(''));
+          if (next.entries && next.entries.length) last = next.entries[next.entries.length - 1].at;
+          status.textContent = '';
+          if (!next.more) box.querySelector('#chMoreBox').style.display = 'none';
+        } catch (err) { status.textContent = err.message; }
+        finally { more.disabled = false; }
+      });
+    } catch (err) {
+      box.innerHTML = '<div class="state-msg error">' + adEsc(err.message) + '</div>' + closeRow;
+    }
+  }
+
   // The edit window of one person: credits and limits, the admins' private note and tags, and the actions. `opts.onSaved` runs after a save (the lookup page reloads itself).
   const AD_TAG_SUGGESTIONS = ['VIP', 'Refund asked', 'Watch', 'Support', 'Reseller'];
   function openUserEditModal(u, opts = {}) {
@@ -23613,6 +23676,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="ad-sect-title">Actions</div>
         <div class="ad-edit-actions">
           <button class="btn-small" type="button" data-ue="security">Security and sign-ins…</button>
+          <button class="btn-small" type="button" data-ue="credit-history" title="Every credit this person got and spent: what on, which admin added or took how many.">Credit history…</button>
           <button class="btn-small" type="button" data-ue="message">Send a message</button>
           <button class="btn-small" type="button" data-ue="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told.">Draft links (CSV)</button>
           <button class="btn-small" type="button" data-ue="push" title="Add drafts to this user's Drafts. Free, no credit is used.">Add listings…</button>
@@ -23752,6 +23816,7 @@ async function autoSuggestEmptyDraftCategories() {
     paintDeletion();
 
     m.querySelector('[data-ue="security"]').addEventListener('click', () => openUserSecurityModal(cur));
+    m.querySelector('[data-ue="credit-history"]').addEventListener('click', () => openCreditHistoryModal(cur));
     m.querySelector('[data-ue="message"]').addEventListener('click', () => { m.remove(); setAdminTab('security'); document.getElementById('noticeTo').value = cur.email; document.getElementById('noticeTitle').focus(); });
     m.querySelector('[data-ue="draft-links"]').addEventListener('click', (e) => downloadDraftLinks(cur, e.currentTarget));
     m.querySelector('[data-ue="push"]').addEventListener('click', () => openPushListingsModal(cur));
