@@ -23600,7 +23600,7 @@ async function autoSuggestEmptyDraftCategories() {
       const sum = data.summary || { kinds: {}, byAction: [], byAdmin: [], netSpent: 0, earned: 0 };
       const older = data.older || {};
       const who = adEsc(data.user.email) + (data.user.isAdmin ? ' <span class="ad-tag free">ADMIN</span>' : '');
-      const inRows = Object.keys(sum.kinds).filter((k) => sum.kinds[k].gained > 0 && k !== 'refund').map((k) => [adEsc(sum.kinds[k].text), delta(sum.kinds[k].gained), num(sum.kinds[k].lines)]);
+      const inRows = Object.keys(sum.kinds).filter((k) => sum.kinds[k].gained > 0 && k !== 'refund').map((k) => [adEsc(sum.kinds[k].text), delta(sum.kinds[k].gained), num(sum.kinds[k].gainLines != null ? sum.kinds[k].gainLines : sum.kinds[k].lines)]);
       const actionRows = sum.byAction.map((a) => [adEsc(a.reason), '<b>' + num(a.credits) + '</b>', num(a.lines)]);
       const adminRows = sum.byAdmin.map((a) => [adEsc(a.admin), delta(a.added), delta(-a.removed), num(a.lines)]);
       const olderPurchases = (older.purchases || []).map((p) => [adEsc(adDate(p.at)), adEsc(p.plan || 'Credit pack') + (p.status === 'refunded' ? ' <span class="ad-tag bad">REFUNDED</span>' : ''), delta(p.credits), p.priceUsd ? adEsc(adUsd(p.priceUsd)) : 'free', adEsc(p.provider || '')]);
@@ -23623,7 +23623,7 @@ async function autoSuggestEmptyDraftCategories() {
         </details>
         ${adSection('Before lines were kept (older records)', (data.user.isAdmin ? '' : adKv([['Welcome credits', older.welcomeCredits ? delta(older.welcomeCredits) : '—'], ['Joined', adEsc(adDate(older.joinedAt))]])) + '<h4 style="margin:12px 0 6px;">Payments and plans</h4>' + adTable(['Date', 'What', 'Credits', 'Paid', 'Provider'], olderPurchases, 'No payment before that.') + '<h4 style="margin:12px 0 6px;">Vouchers used</h4>' + adTable(['Date', 'What', 'Credits', 'Given by'], olderVouchers, 'No voucher before that.') + '<h4 style="margin:12px 0 6px;">AI credits spent</h4>' + adTable(['AI tool', 'Credits', 'Calls'], olderAi, 'No AI use before that.'), 'This is what the older records still say. It is not a full history: the plain spends of that time (imports, publishes, stock checks) were never written down.')}
         ${closeRow}`;
-      let last = (data.entries || []).length ? data.entries[data.entries.length - 1].at : null;
+      let last = (data.entries || []).length ? data.entries[data.entries.length - 1].id : null;
       const more = box.querySelector('#chMore');
       if (more) more.addEventListener('click', async () => {
         const status = box.querySelector('#chMoreStatus');
@@ -23631,7 +23631,7 @@ async function autoSuggestEmptyDraftCategories() {
         try {
           const next = await load(last);
           box.querySelector('#chRows').insertAdjacentHTML('beforeend', (next.entries || []).map(lineRow).join(''));
-          if (next.entries && next.entries.length) last = next.entries[next.entries.length - 1].at;
+          if (next.entries && next.entries.length) last = next.entries[next.entries.length - 1].id;
           status.textContent = '';
           if (!next.more) box.querySelector('#chMoreBox').style.display = 'none';
         } catch (err) { status.textContent = err.message; }
@@ -23993,6 +23993,91 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
+  // "Listings and drafts" of the lookup page (details.listingActivity from services/adminListingActivityService.js): what the person has now, what they made and
+  // removed, what failed, and each store. Words match the seller's own pages: a DRAFT is status draft only; scheduled, publishing and failed are counted apart, because
+  // a failed row can be a listing that was live before. Removals are counted only from the day the removal log started (listings are removed for good).
+  function listingActivityHtml(la, stores) {
+    const num = (v) => Number(v || 0).toLocaleString();
+    const now = la && la.now;
+    if (!now) return adSection('Listings and drafts', '<p class="meta-line" style="margin:0;color:#B42318;">The listing numbers could not be read right now. Open the page again in a moment.</p>');
+    const b = now.byStatus || {};
+    const rm = la.removed || null;
+    const since = rm && rm.since ? adDate(rm.since) : null;
+    const parts = [];
+
+    parts.push('<h4 style="margin:0 0 6px;">What they have now</h4>' + adKv([
+      ['Listings in total', '<b>' + num(now.total) + '</b>'],
+      ['Drafts', '<b>' + num(b.draft) + '</b>'],
+      ['Scheduled', num(b.scheduled)],
+      ['Publishing now', num(b.publishing)],
+      ['Failed to publish', num(b.error)],
+      ['Live on eBay', '<b>' + num(b.published) + '</b>'],
+      ['Sold out', num(b.sold)],
+      ['Ended', num(b.ended)],
+      ['Paused', num(b.paused)],
+      ...(b.other ? [['Other status', num(b.other)]] : []),
+    ]));
+
+    parts.push('<h4 style="margin:14px 0 6px;">What they made</h4>' + adKv([
+      ['Ever published (has an eBay offer)', num(now.everPublished)],
+      ['Added in the last 7 days', num(now.last7)],
+      ['Added in the last 30 days', num(now.last30)],
+      ['First added', adEsc(adDate(now.firstAt))],
+      ['Last added', adEsc(adDate(now.lastAt))],
+      ['Imports made (every import, re-imports too)', la.importOperations == null ? '—' : num(la.importOperations)],
+      ...(rm ? [['Made in total (now + removed)', '<b>' + num(now.total + rm.total) + '</b>' + (since ? '<br /><small>removals before ' + adEsc(since) + ' are not in this</small>' : '')]] : []),
+    ]));
+
+    if (rm) {
+      parts.push('<h4 style="margin:14px 0 6px;">What they removed</h4>' + adKv([
+        ['Removed in total', '<b>' + num(rm.total) + '</b>'],
+        ['Drafts removed', '<b>' + num(rm.drafts) + '</b>'],
+        ['Failed, scheduled or publishing removed', num(rm.failedOrScheduled)],
+        ['Live, sold out or ended removed', num(rm.live) + '<br /><small>one the seller deleted is ended on eBay too; a store cleared after it was disconnected is not touched on eBay</small>'],
+        ['By the seller', num(rm.bySeller) + '<br /><small>one at a time ' + num(rm.bySellerOne) + ' &middot; several at once ' + num(rm.bySellerMany) + '</small>'],
+        ['Cleared with a disconnected store', num(rm.storeCleared)],
+        ['Duplicate drafts dropped by ELMS', num(rm.duplicatesDropped)],
+        ...(rm.unknown ? [['Status not known', num(rm.unknown)]] : []),
+        ['Last 7 days', num(rm.last7)],
+        ['Last 30 days', num(rm.last30)],
+        ['Last removal', adEsc(adDate(rm.lastAt))],
+      ]) + '<p class="meta-line" style="margin:6px 0 0;">' + (since
+        ? 'Counted from ' + adEsc(since) + '. Listings are removed for good, so anything removed before that day cannot be counted.'
+        : 'Counting starts with the first removal after this log was added. Listings are removed for good, so earlier removals cannot be counted.') + '</p>');
+    } else {
+      parts.push('<h4 style="margin:14px 0 6px;">What they removed</h4><p class="meta-line" style="margin:0;color:#B42318;">The removal log could not be read right now.</p>');
+    }
+
+    parts.push('<h4 style="margin:14px 0 6px;">Health and traffic</h4>' + adKv([
+      ['Drafts without a category', num(now.draftsNoCategory)],
+      ['Drafts without a picture', num(now.draftsNoPicture)],
+      ['Live ones with stock monitoring off', num(now.monitoringOff)],
+      ['Views of live ones', now.viewsKnown ? num(now.views) : '—<br /><small>eBay has not given any yet</small>'],
+      ['Watchers of live ones', now.watchersKnown ? num(now.watchers) : '—<br /><small>not read yet</small>'],
+      ['Units sold since the last restock', num(now.unitsSold)],
+    ]) + '<p class="meta-line" style="margin:6px 0 0;">Views, watchers and units sold count what is live on eBay, sold out and paused. Views and watchers are as last read from eBay (a dash: never read).</p>');
+
+    const failures = la.failures || [];
+    if (failures.length) {
+      parts.push('<h4 style="margin:14px 0 6px;">Why publishes failed (listings in Failed now)</h4>' + adTable(['Message', 'Listings', 'Latest'], failures.map((f) => [adEsc(f.message), num(f.count), adEsc(adDate(f.lastAt))]), ''));
+    }
+
+    // each store, and what belongs to no store (drafts a disconnected store set free). A disconnected store is hidden from the seller until it is reconnected or cleared.
+    const rows = (stores || []).map((st) => {
+      const l = st.listings || {};
+      const total = Object.keys(l).reduce((t, k) => t + (Number(l[k]) || 0), 0);
+      const shown = ['draft', 'published', 'sold', 'ended', 'error'].reduce((t, k) => t + (Number(l[k]) || 0), 0);
+      return { total, html: [adEsc(st.label || st.ebayUsername || st.id || 'Store'), st.connected === false ? '<span class="ad-tag bad">DISCONNECTED</span>' : '<span class="ad-tag paid">CONNECTED</span>', '<b>' + num(total) + '</b>', num(l.draft), num(l.published), num(l.sold), num(l.ended), num(l.error), num(Math.max(0, total - shown))] };
+    });
+    const inStores = rows.reduce((t, r) => t + r.total, 0);
+    const noStore = Math.max(0, now.total - inStores);
+    const tableRows = rows.map((r) => r.html);
+    if (noStore) tableRows.push(['Not in a store', '<span class="ad-tag free">NO STORE</span>', '<b>' + num(noStore) + '</b>', '', '', '', '', '', '']);
+    if (tableRows.length) parts.push('<h4 style="margin:14px 0 6px;">By store</h4>' + adTable(['Store', 'Status', 'Listings', 'Drafts', 'Live on eBay', 'Sold out', 'Ended', 'Failed', 'Other'], tableRows, '') + '<p class="meta-line" style="margin:6px 0 0;">Other = scheduled, publishing now and paused. A disconnected store is hidden from the seller; its listings stay for 30 days and are then cleared.</p>');
+
+    return adSection('Listings and drafts', parts.join(''));
+  }
+
   function renderUserLookup({ user: u, listings, orders, netProfit, stores, tickets, recentTickets, details }) {
     const container = document.getElementById('userLookupContent');
     const cSign = (currency) => CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '$');
@@ -24157,6 +24242,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (d.ai) {
       parts.push(adSection('AI use (last 30 days)', adTable(['What', 'Calls', 'Failed', 'Credits', 'Tokens in', 'Tokens out', 'Last'], d.ai.byKind.map((k) => [adEsc(k.kind), adEsc(k.calls), adEsc(k.failed), adEsc(k.credits), Number(k.inputTokens).toLocaleString(), Number(k.outputTokens).toLocaleString(), adEsc(adDate(k.lastAt))]).concat(d.ai.byKind.length ? [[`<b>Total</b>`, `<b>${adEsc(d.ai.total.calls)}</b>`, adEsc(d.ai.total.failed), `<b>${adEsc(d.ai.total.credits)}</b>`, Number(d.ai.total.inputTokens).toLocaleString(), Number(d.ai.total.outputTokens).toLocaleString(), '']] : []), 'No AI use in the last 30 days.'), 'What the AI did for this person, from the AI log. Imports and publishes also cost credits but are not itemised anywhere.'));
     }
+    if (d.listingActivity) parts.push(listingActivityHtml(d.listingActivity, stores));
     if (d.imports) parts.push(adSection('Imports', adTable(['From', 'Total', 'Last 7 days', 'Last 30 days', 'Last import'], (d.imports || []).map((r) => [adEsc(r.source), Number(r.total).toLocaleString(), adEsc(r.last7), adEsc(r.last30), adEsc(adDate(r.lastAt))]), 'Nothing imported yet.')));
 
     // support
