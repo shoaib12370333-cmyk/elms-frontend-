@@ -7869,7 +7869,7 @@ B0EXAMPLE2"></textarea></div>
       if (res.ok && data.success) {
         const btn = document.getElementById('largeImportBtn');
         const statusEl = document.getElementById('largeImportStatus');
-        if (!data.easyparserConfigured) {
+        if (!data.backgroundImport) {
           btn.disabled = true;
           statusEl.className = 'error';
           statusEl.textContent = 'Background import is not available right now. Please try again later.';
