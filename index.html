@@ -1389,6 +1389,10 @@
   .elms-confirm-box { background:#fff; width:min(400px,100%); border-radius:14px; padding:22px 22px 18px; border-top:4px solid; border-image:linear-gradient(90deg,#E53238 0 25%,#0064D2 25% 50%,#F5AF02 50% 75%,#86B817 75% 100%) 1; box-shadow:0 20px 50px rgba(15,23,42,.25); animation:modalBoxIn .2s cubic-bezier(.2,.8,.2,1); }
   .elms-confirm-title { font-size:16px; font-weight:800; color:var(--ink); margin-bottom:8px; }
   .elms-confirm-message { font-size:13.5px; line-height:1.55; color:#4b5563; white-space:pre-line; }
+  .elms-confirm-overlay { overflow-y:auto; align-items:flex-start; } .elms-confirm-overlay > .elms-confirm-box { margin:auto; } /* a window taller than the screen scrolls from its top; a short one stays centred */
+  .elms-confirm-tick { display:flex; gap:10px; align-items:flex-start; margin:14px 0 0; padding:10px 12px; border-radius:10px; background:#FFF8E6; border:1px solid #F2D58A; font-size:13px; line-height:1.45; color:#4b3a05; cursor:pointer; }
+  .elms-confirm-tick input { margin-top:2px; flex:none; width:16px; height:16px; cursor:pointer; }
+  .elms-confirm-links { margin:10px 0 0; font-size:12.5px; } .elms-confirm-links a { color:var(--blue); }
   .elms-confirm-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
   .pricing-breakdown { margin-top:12px; padding:10px 12px; border-radius:10px; background:#F3F7FF; font-size:13px; color:#334155; } .pricing-breakdown .good { color:#3F6208; } .pricing-breakdown .bad { color:#B42318; }
   .pricing-note { display:block; margin-top:6px; color:#64748B; font-size:12px; }
@@ -5822,7 +5826,7 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico red">&#128737;</div>
-              <div class="st-head-txt"><h2>VeRO clean</h2><p>"Remove VeRO words" on Drafts and Live Listings. The AI is the expensive part of a clean, so you choose how much of it does. Whatever you choose, every word of the seller's list is gone from the result: what the AI does not rewrite is cut out by rule.</p></div>
+              <div class="st-head-txt"><h2>Brand-word removal</h2><p>"Remove brand words" on Drafts and Live Listings takes the words of your own VeRO list out of the text. It changes text only (never pictures), and it does not give you the right to sell a branded item: you confirm that each time. The AI is the expensive part of a clean, so you choose how much of it does. Whatever you choose, every word of the seller's list is gone from the result: what the AI does not rewrite is cut out by rule.</p></div>
             </div>
             <div class="st-field">
               <label>What the AI rewrites</label>
@@ -7190,8 +7194,11 @@ B0EXAMPLE2"></textarea></div>
    * off-brand). Returns a Promise<boolean> so call sites just become
    * `if (!(await elmsConfirm('...'))) return;` in place of `if (!confirm('...'))`.
    */
+  // The tick behind every brand-word removal (the server refuses a removal without it: services/brandWordConfirm.js).
+  const VERO_TICK = 'I understand that taking a brand word out of the text does not give me the right to sell a branded item. I am responsible for the products I list.';
+  // `tick`: a sentence the person must tick before the OK button works (Enter does nothing until then).
   function elmsConfirm(message, opts = {}) {
-    const { title = 'Please confirm', okText = 'OK', cancelText = 'Cancel', danger = false, info = false } = opts;
+    const { title = 'Please confirm', okText = 'OK', cancelText = 'Cancel', danger = false, info = false, tick = '' } = opts;
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
       overlay.className = 'elms-confirm-overlay';
@@ -7199,9 +7206,10 @@ B0EXAMPLE2"></textarea></div>
         <div class="elms-confirm-box" role="alertdialog" aria-modal="true" aria-label="${escapeAttr(title)}">
           <div class="elms-confirm-title">${escapeHtml(title)}</div>
           <div class="elms-confirm-message">${escapeHtml(message).replace(/\n/g, '<br>')}</div>
+          ${tick ? `<label class="elms-confirm-tick"><input type="checkbox" data-act="tick"><span>${escapeHtml(tick)}</span></label>` : ''}
           <div class="elms-confirm-actions">
             ${info ? '' : `<button type="button" class="ord-btn" data-act="cancel">${escapeHtml(cancelText)}</button>`}
-            <button type="button" class="ord-btn primary${danger ? ' elms-confirm-danger' : ''}" data-act="ok">${escapeHtml(okText)}</button>
+            <button type="button" class="ord-btn primary${danger ? ' elms-confirm-danger' : ''}" data-act="ok"${tick ? ' disabled' : ''}>${escapeHtml(okText)}</button>
           </div>
         </div>`;
       document.body.appendChild(overlay);
@@ -7213,15 +7221,18 @@ B0EXAMPLE2"></textarea></div>
         document.removeEventListener('keydown', onKey);
         resolve(result);
       };
+      const tickBox = overlay.querySelector('[data-act="tick"]');
+      const okBtn = overlay.querySelector('[data-act="ok"]');
       const onKey = (e) => {
         if (e.key === 'Escape') done(false);
-        else if (e.key === 'Enter') done(true);
+        else if (e.key === 'Enter' && !(tickBox && !tickBox.checked) && !(e.target && e.target.closest && e.target.closest('[data-act="cancel"]'))) done(true);
       };
       document.addEventListener('keydown', onKey);
       overlay.addEventListener('click', (e) => { if (e.target === overlay) done(false); });
       overlay.querySelector('[data-act="cancel"]')?.addEventListener('click', () => done(false));
-      overlay.querySelector('[data-act="ok"]').addEventListener('click', () => done(true));
-      overlay.querySelector('[data-act="ok"]').focus();
+      if (tickBox) tickBox.addEventListener('change', () => { okBtn.disabled = !tickBox.checked; });
+      okBtn.addEventListener('click', () => { if (!okBtn.disabled) done(true); });
+      (tickBox || okBtn).focus();
     });
   }
 
@@ -8927,12 +8938,64 @@ B0EXAMPLE2"></textarea></div>
 
     // An account with no phone number is asked for one first (one made with "Continue with Google" must add it; an older account may skip); the notices follow.
     const showNotices = () => {
-      // A brand-new account sees, once, how many free credits it was given.
-      setTimeout(() => maybeShowWelcomePopup(user), 500);
-      // A plan that ended since the seller was last here - until now the only sign of this was an email.
-      setTimeout(() => maybeShowPlanExpiredNotice(user), 500);
+      const go = () => {
+        // A brand-new account sees, once, how many free credits it was given.
+        setTimeout(() => maybeShowWelcomePopup(user), 500);
+        // A plan that ended since the seller was last here - until now the only sign of this was an email.
+        setTimeout(() => maybeShowPlanExpiredNotice(user), 500);
+      };
+      // The content-rights window comes first (once per wording of it); the notices follow it.
+      if (!maybeShowContentRights(user, go)) go();
     };
     setTimeout(() => { if (!maybeShowPhoneScreen(user, showNotices)) showNotices(); }, 400);
+  }
+
+  /**
+   * The content-rights window (user.needsContentRights, set by the server once per wording and never for staff): the person confirms that they have the right to use the
+   * text and pictures they import and publish, or will change what they may not use. It cannot be closed without the tick (or by signing out); the date and the
+   * wording are kept on the account. Returns true when it was opened; `done` runs after the confirmation.
+   */
+  let rightsWindowOpen = false;
+  function maybeShowContentRights(user, done) {
+    if (!user || !user.needsContentRights || rightsWindowOpen) return false;
+    rightsWindowOpen = true;
+    const overlay = document.createElement('div');
+    overlay.className = 'elms-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="elms-confirm-box" role="alertdialog" aria-modal="true" aria-label="Before you import and publish" style="width:min(480px,100%);">
+        <div class="elms-confirm-title">Before you import and publish</div>
+        <div class="elms-confirm-message">Product text and pictures on supplier pages usually belong to someone else. ELMS imports them for you and lets you publish them, but it cannot tell whether you may use them.\n\n&bull; You decide what you may use. Change or replace any text or picture you have no right to use.\n&bull; Do not list counterfeit, fake or infringing items. A brand word that ELMS warns about, or takes out of the text, does not give you the right to sell a branded item.\n&bull; eBay and rights owners can act on a listing that passes ELMS's checks.</div>
+        <label class="elms-confirm-tick"><input type="checkbox" data-act="tick"><span>I have the right to use the text and pictures I import and publish, or I will change or replace them. I am responsible for the products I list.</span></label>
+        <div class="elms-confirm-links"><a href="/terms#imported-content" target="_blank" rel="noopener">Read &ldquo;Content you import&rdquo; in the Terms</a></div>
+        <div class="elms-confirm-actions">
+          <button type="button" class="ord-btn" data-act="out">Sign out</button>
+          <button type="button" class="ord-btn primary" data-act="ok" disabled>I confirm</button>
+        </div>
+        <div class="state-msg error" data-ui-error hidden style="margin-top:10px;"></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const tick = overlay.querySelector('[data-act="tick"]');
+    const ok = overlay.querySelector('[data-act="ok"]');
+    const err = overlay.querySelector('[data-ui-error]');
+    tick.addEventListener('change', () => { ok.disabled = !tick.checked; });
+    overlay.querySelector('[data-act="out"]').addEventListener('click', () => { overlay.remove(); document.body.style.overflow = prevOverflow; rightsWindowOpen = false; const out = document.getElementById('signOutBtn'); if (out) out.click(); });
+    ok.addEventListener('click', async () => {
+      if (ok.disabled) return;
+      ok.disabled = true; err.hidden = true;
+      try {
+        const res = await apiFetch('/api/auth/content-rights-ack', { method: 'POST' });
+        if (res.status === 401) { overlay.remove(); document.body.style.overflow = prevOverflow; rightsWindowOpen = false; return; }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save your confirmation. Please try again.');
+        user.needsContentRights = false;
+        overlay.remove(); document.body.style.overflow = prevOverflow; rightsWindowOpen = false;
+        if (typeof done === 'function') done();
+      } catch (e) { err.textContent = e.message; err.hidden = false; ok.disabled = !tick.checked; }
+    });
+    tick.focus();
+    return true;
   }
 
   /**
@@ -9132,7 +9195,7 @@ B0EXAMPLE2"></textarea></div>
     try { sessionStorage.setItem('elmsReconnectPopup', key); } catch (_) { /* nothing stored */ }
     // let the other first-sign-in popups (welcome, plan ended, phone number) go first: this one waits until they are closed
     const show = () => {
-      if (document.querySelector('.welcome-overlay')) { setTimeout(show, 1500); return; }
+      if (document.querySelector('.welcome-overlay') || rightsWindowOpen) { setTimeout(show, 1500); return; }
       if (document.getElementById('reconnectPopup')) return;
       const names = stuck.map((a) => '<b>' + escapeHtml(accountDisplayLabel(a)) + '</b>');
       const what = [...new Set(stuck.flatMap((a) => (Array.isArray(a.reconnectIssues) ? a.reconnectIssues : [])).map((k) => RECONNECT_WHAT[k]).filter(Boolean))];
@@ -10763,7 +10826,7 @@ B0EXAMPLE2"></textarea></div>
             <button class="dv-btn small" id="bulkCategoryBtn" type="button" title="Chooses the eBay category of the selected drafts that have none. As the admin has set it up: the AI from the category list of each draft's own eBay site (a US store uses the US list, a UK store the UK list), or eBay's own category suggestion">Fill category</button>
             <button class="dv-btn small" id="bulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected drafts and saves them, so publishing does not stop on a missing one">Fill specifics with AI</button>
             <button class="dv-btn small" id="bulkBeautifyBtn" type="button" title="AI restructures the description of the selected drafts into your saved Description Template (Settings &gt; Description Template) and saves it">Beautify descriptions with AI</button>
-            <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the VeRO words out of the selected drafts">Remove VeRO words</button>
+            <button class="dv-btn small" id="bulkVeroBtn" type="button" title="Take the words of your VeRO list out of the text of the selected drafts. This does not give you the right to sell a branded item.">Remove brand words</button>
             <button class="dv-btn small" id="bulkDeleteBtn" type="button">Remove</button>
             <button class="dv-btn small" id="bulkClearBtn" type="button">Clear</button>
           </div>
@@ -11150,7 +11213,7 @@ B0EXAMPLE2"></textarea></div>
     const terms = (l._vero && l._vero.terms) || [];
     if (!terms.length) return '';
     const shown = terms.slice(0, 3).join(', ') + (terms.length > 3 ? ` +${terms.length - 3}` : '');
-    return `<span class="dv-chip vero" title="${escapeAttr('VeRO words found: ' + terms.join(', ') + '. eBay can remove a listing with these words and suspend accounts that repeat it.')}">&#9888; VeRO: ${escapeHtml(shown)}</span>${withFix ? '<button type="button" class="dv-chip vero" data-action="vero-fix" title="Remove these words with AI">Remove with AI</button>' : ''}`;
+    return `<span class="dv-chip vero" title="${escapeAttr('VeRO words found: ' + terms.join(', ') + '. eBay can remove a listing with these words and suspend accounts that repeat it.')}">&#9888; VeRO: ${escapeHtml(shown)}</span>${withFix ? '<button type="button" class="dv-chip vero" data-action="vero-fix" title="Take these words out of the text. This does not give you the right to sell a branded item.">Remove brand words</button>' : ''}`;
   }
   const veroConfirmPublish = (terms, count) => elmsConfirm(
     `${count > 1 ? count + ' of these listings contain' : 'This listing contains'} VeRO words${terms.length ? ': ' + terms.slice(0, 8).join(', ') : ''}.\neBay can remove ${count > 1 ? 'them' : 'it'} and suspend your account if the brand owner reports it.\n\nPublish anyway?`,
@@ -11165,7 +11228,7 @@ B0EXAMPLE2"></textarea></div>
   async function veroCleanAndSave(l) {
     const res = await apiFetch('/api/list-on-ebay/vero-clean', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: l.title || '', description: l.description || '', bulletPoints: l.bullet_points || [], specifications: l.specifications || [], aspects: l.ebay_aspects || {}, brand: veroScanValues({ aspects: l.ebay_aspects, brand: l.brand }).fields.brand ? l.brand : '' }),
+      body: JSON.stringify({ confirmRights: true, title: l.title || '', description: l.description || '', bulletPoints: l.bullet_points || [], specifications: l.specifications || [], aspects: l.ebay_aspects || {}, brand: veroScanValues({ aspects: l.ebay_aspects, brand: l.brand }).fields.brand ? l.brand : '' }),
     });
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.error || 'Could not remove the VeRO words.');
@@ -11278,8 +11341,8 @@ B0EXAMPLE2"></textarea></div>
     return `
       <div class="elms-editor" data-ui-editor data-listing-id="${escapeAttr(l.id)}">
         <div class="elms-vero" data-ui-vero hidden>
-          <div><b>&#9888; VeRO words found</b><em data-ui-vero-terms></em><small>eBay can remove a listing with these words and suspend accounts that repeat it. Remove them before publishing.</small></div>
-          <button type="button" class="elms-ed-btn danger" data-ui-action="vero-clean">Remove with AI</button>
+          <div><b>&#9888; VeRO words found</b><em data-ui-vero-terms></em><small>eBay can remove a listing with these words and suspend accounts that repeat it. Taking a word out of the text does not give you the right to sell a branded item.</small></div>
+          <button type="button" class="elms-ed-btn danger" data-ui-action="vero-clean">Remove brand words</button>
         </div>
         <div class="elms-editor-tabs" role="tablist">
           <button type="button" class="elms-editor-tab active" data-ui-tab="product" role="tab">Product</button>
@@ -11650,13 +11713,13 @@ B0EXAMPLE2"></textarea></div>
     const scan = veroScanValues(values);
     if (!scan.terms.length) { showToast('VeRO words', 'No VeRO words found.', 'info'); return; }
     if (String(values.title || '').trim().length < 3) { showToast('Title needed', 'Type a title first.', 'error'); return; }
-    if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${scan.terms.join(', ')}\n\nOne AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free. The result goes into the editor so you can check it; press Save changes to keep it.`, { title: 'Remove VeRO words', okText: 'Remove words' }))) return;
+    if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${scan.terms.join(', ')}\n\nOne AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free. The result goes into the editor so you can check it; press Save changes to keep it.`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
     const label = btn.textContent;
     btn.disabled = true; btn.textContent = 'Removing…';
     try {
       const res = await apiFetch('/api/list-on-ebay/vero-clean', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, brand: scan.fields.brand ? values.brand : '' }),
+        body: JSON.stringify({ confirmRights: true, ...values, brand: scan.fields.brand ? values.brand : '' }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Could not remove the VeRO words.');
@@ -12147,7 +12210,7 @@ async function autoSuggestEmptyDraftCategories() {
         const btn = e.currentTarget;
         const l = draftListingMap.get(String(id));
         if (!l || !l._vero.terms.length) return;
-        if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${l._vero.terms.join(', ')}\n\nOne AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free.`, { title: 'Remove VeRO words', okText: 'Remove words' }))) return;
+        if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${l._vero.terms.join(', ')}\n\nOne AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free.`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
         const label = btn.textContent;
         btn.disabled = true; btn.textContent = 'Removing…';
         try {
@@ -13117,7 +13180,7 @@ async function autoSuggestEmptyDraftCategories() {
   // instead of being refused outright - the button's own label shows progress across the whole selection.
   async function bulkRemoveLiveVero(ids, btn) {
     const n = ids.length;
-    const ok = await elmsConfirm(`ELMS will check ${n} selected live listing${n === 1 ? '' : 's'} for VeRO words (brand names eBay removes listings for), take them out of the title, description, bullet points and item specifics, and push the change to eBay.\n\nOnly a listing that actually has VeRO words is changed; a credit is used for it only when the AI is needed (otherwise it is free); the rest are left alone at no cost.${n > 20 ? ' A selection this size is sent in batches of 20, so this can take a while - leave this tab open until it finishes.' : ''}`, { title: 'Remove VeRO words', okText: 'Check and clean' });
+    const ok = await elmsConfirm(`ELMS will check ${n} selected live listing${n === 1 ? '' : 's'} for VeRO words (brand names eBay removes listings for), take them out of the title, description, bullet points and item specifics, and push the change to eBay.\n\nOnly a listing that actually has VeRO words is changed; a credit is used for it only when the AI is needed (otherwise it is free); the rest are left alone at no cost.${n > 20 ? ' A selection this size is sent in batches of 20, so this can take a while - leave this tab open until it finishes.' : ''}`, { title: 'Remove brand words', okText: 'Check and clean', tick: VERO_TICK });
     if (!ok) return;
 
     const VERO_CHUNK = 20;
@@ -13129,7 +13192,7 @@ async function autoSuggestEmptyDraftCategories() {
     try {
       for (let i = 0; i < ids.length && !stop; i += VERO_CHUNK) {
         if (n > VERO_CHUNK) btn.textContent = `Cleaning ${Math.min(i + VERO_CHUNK, n)}/${n}…`;
-        const res = await apiFetch('/api/listings/bulk-vero-clean', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: ids.slice(i, i + VERO_CHUNK) }) });
+        const res = await apiFetch('/api/listings/bulk-vero-clean', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmRights: true, ids: ids.slice(i, i + VERO_CHUNK) }) });
         const data = await res.json();
         if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
         all.push(...data.results);
@@ -13635,7 +13698,7 @@ async function autoSuggestEmptyDraftCategories() {
     bulkVeroBtn?.addEventListener('click', async () => {
       const chosen = getSelectedIds().map((id) => draftListingMap.get(String(id))).filter((l) => l && l._vero && l._vero.terms.length);
       if (!chosen.length) { showToast('VeRO words', 'None of the selected drafts contain VeRO words.', 'info'); return; }
-      if (!(await elmsConfirm(`${chosen.length} selected draft(s) contain VeRO words.\nThe words will be taken out of their title, description, bullet points and item specifics.\n\nAt most ${chosen.length} AI credit${chosen.length === 1 ? '' : 's'} (one per draft, and only when the AI is needed, for example to rewrite the title); a clean done without the AI is free.`, { title: 'Remove VeRO words', okText: 'Remove words' }))) return;
+      if (!(await elmsConfirm(`${chosen.length} selected draft(s) contain VeRO words.\nThe words will be taken out of their title, description, bullet points and item specifics.\n\nAt most ${chosen.length} AI credit${chosen.length === 1 ? '' : 's'} (one per draft, and only when the AI is needed, for example to rewrite the title); a clean done without the AI is free.`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
       const label = bulkVeroBtn.textContent;
       bulkVeroBtn.disabled = true;
       let done = 0; let failed = 0; let firstError = '';
@@ -13910,7 +13973,7 @@ async function autoSuggestEmptyDraftCategories() {
           <button class="dv-btn small" id="llBulkSettingsBtn" type="button" title="Change price, title, brand, quantity, item location, policies, tags, note or monitoring for all the selected listings at once - pushed to eBay where it applies">Bulk edit</button>
           <button class="dv-btn small" id="llBulkAspectsBtn" type="button" title="AI fills the eBay item specifics of the selected listings and pushes them to eBay">Fill specifics with AI</button>
           <button class="dv-btn small" id="llBulkBeautifyBtn" type="button" title="AI restructures the description of the selected listings into your saved Description Template and pushes it to eBay">Beautify descriptions with AI</button>
-          <button class="dv-btn small" id="llBulkVeroBtn" type="button" title="AI checks the selected listings for VeRO words (brand names eBay removes listings for), takes them out of the title, description and item specifics, and pushes the change to eBay">Remove VeRO words</button>
+          <button class="dv-btn small" id="llBulkVeroBtn" type="button" title="Checks the selected listings for the words of your VeRO list (brand names eBay removes listings for), takes them out of the title, description and item specifics, and pushes the change to eBay. This does not give you the right to sell a branded item.">Remove brand words</button>
           <button class="dv-btn small" id="llBulkFitTitlesBtn" type="button" title="An eBay title is 80 characters at most. A title that ends in the middle of a word is cut at the last whole word instead, on eBay and in ELMS. Only the title is changed - not the price, the stock or the description. No credits.">Fit titles to eBay</button>` : ''}
           <button class="dv-btn small${llTab === 'ended' || llTab === 'issues' ? '' : ' end'}" id="llBulkDeleteBtn" type="button" title="Removes the selected listings from ELMS - a live one is also ended on eBay">${llTab === 'ended' || llTab === 'issues' ? 'Delete' : 'Delete &amp; end on eBay'}</button>
           <button class="dv-btn small" id="llClearBtn" type="button">Clear</button>
@@ -24158,6 +24221,8 @@ async function autoSuggestEmptyDraftCategories() {
         ['Password', acc.hasPassword ? (acc.passwordUnproven ? 'Set, but the owner never proved the mailbox' : 'Set') : 'None (Google sign-in only)'],
         ['Phone (typed, not verified)', u.phone ? adEsc(u.phoneDisplay || u.phone) + (u.phoneCountry ? ' &middot; ' + adEsc(u.phoneCountry) : '') : (u.phoneRequired ? '<span class="ad-tag bad">MUST ADD</span>' : '—')],
         ['Welcome credits given', acc.welcomeCredits == null ? '—' : adEsc(acc.welcomeCredits)],
+        ['Content-rights confirmation', acc.contentRightsAckAt ? adEsc(adDate(acc.contentRightsAckAt)) + '<br /><small>wording ' + adEsc(acc.contentRightsAckVersion || '—') + '</small>' : (u.role === 'admin' ? '<span class="ad-tag free">STAFF: NOT ASKED</span>' : '<span class="ad-tag free">NOT YET</span>')],
+        ['Last brand-word removal (ticked)', acc.veroRemovalConfirmedAt ? adEsc(adDateTime(acc.veroRemovalConfirmedAt)) : '—'],
         ['Referral code', acc.referralCode ? adEsc(acc.referralCode) + (acc.referralBlocked ? ' <span class="ad-tag bad">BLOCKED</span>' : '') : '—'],
         ['Suspension note (private)', acc.suspendedNote ? adEsc(acc.suspendedNote) : '—'],
       ])));
