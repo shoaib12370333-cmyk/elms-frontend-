@@ -15204,7 +15204,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // Tags the Amazon link with this order's own id (?elms_order=<id>, or &elms_order= if the link already has a
   // query string) - Amazon receives it as part of the address and ignores it; the ELMS Order Sync extension's content script reads it back so
-  // it knows which ELMS order's buyer address to show in that same browser tab. Without the extension installed
+  // it knows which ELMS order's buyer address to show, and which order to mark as ordered, in that same browser tab. Without the extension installed
   // this param is simply never read by anyone.
   function amazonUrlWithOrderTag(url, orderId) {
     if (!orderId) return url;
