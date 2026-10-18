@@ -6302,10 +6302,18 @@ B0EXAMPLE2"></textarea></div>
               <div class="st-field"><label>Import repeat window (days)</label><input class="st-input" type="number" min="1" max="90" id="limProductCacheDays" /></div>
             </div>
             <p class="st-hint">Bulk import: keep the number within your plan limit.</p>
+            <p class="st-hint">Import repeat window: a product that was fetched before (by any seller, one link or a long list) is taken from ELMS's own copy for this many days instead of being asked from the Amazon data service again. The seller still pays the credit; the data-service call is saved. A longer window saves more, but the Amazon price on the new draft can be that many days old. The Product Catalog only reuses a copy that is at most one day old.</p>
             <div class="st-actions">
               <button class="st-btn primary" id="limSaveBtn" type="button">Save limits</button>
               <div id="limStatus"></div>
             </div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128200;</div>
+              <div class="st-head-txt"><h2>Amazon data calls</h2><p>How often ELMS asked the paid Amazon data services, and how many calls it did not have to make. Counted per UTC day.</p></div>
+            </div>
+            <div id="adminVendorUsage"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           </section>
         </div>
 
@@ -22385,6 +22393,28 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel: Mail (announcements + limits) ----------
   let annTimer = null;
+  /** Admin > Mail > "Amazon data calls": the calls made to the paid Amazon data services per day, and the ones that were not needed (ELMS's own copy of a product, a stock answer shared between sellers). */
+  async function loadAdminVendorUsage() {
+    const el = document.getElementById('adminVendorUsage'); if (!el) return;
+    try {
+      const res = await apiFetch('/api/admin/vendor-usage?days=7');
+      const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not read the Amazon data calls.');
+      const num = (n) => Number(n || 0).toLocaleString();
+      const labels = d.labels || {};
+      const saved = new Set(d.savedKinds || []);
+      const days = Array.isArray(d.days) ? d.days : [];
+      const countOf = (day, k) => (day && day.counts && day.counts[k]) || 0;
+      const weekOf = (k) => days.reduce((sum, day) => sum + countOf(day, k), 0);
+      const weekSaved = days.reduce((sum, day) => sum + (day.saved || 0), 0);
+      const dayRows = days.map((day) => `<tr><td>${escapeHtml(day.day)}</td><td>${num(countOf(day, 'canopy.calls'))}</td><td>${num(countOf(day, 'easyparser.submitted'))}</td><td><b>${num(day.saved)}</b></td></tr>`).join('');
+      const kindRows = Object.keys(labels).map((k) => `<tr><td>${escapeHtml(labels[k])}${saved.has(k) ? ' <b>(not needed)</b>' : ''}</td><td>${num(countOf(days[0], k))}</td><td>${num(weekOf(k))}</td></tr>`).join('');
+      el.innerHTML = `<p><b>Last ${days.length} days:</b> ${num(weekSaved)} calls were not needed (an import or a stock check was answered without asking the data service).</p>
+        <div class="st-table-wrap"><table class="st-table"><thead><tr><th>Day (UTC)</th><th>Canopy requests</th><th>Easyparser products</th><th>Calls not needed</th></tr></thead><tbody>${dayRows}</tbody></table></div>
+        <div class="st-table-wrap" style="margin-top:12px;"><table class="st-table"><thead><tr><th>Where</th><th>Today</th><th>Last ${days.length} days</th></tr></thead><tbody>${kindRows}</tbody></table></div>
+        <p class="st-hint">Counting starts the day this was switched on: earlier days show 0. "Canopy requests" and "Easyparser products" are every call of every feature, so the second table shows where they came from. A stock check answered from another seller's check still costs that seller the credit; only the data-service call is saved.</p>`;
+    } catch (err) { el.innerHTML = '<p class="st-hint">' + escapeHtml(err.message) + '</p>'; }
+  }
   async function loadAdminMail() {
     const banner = document.getElementById('adminMailStatus'); if (!banner) return;
     try {
@@ -22411,6 +22441,7 @@ async function autoSuggestEmptyDraftCategories() {
         document.getElementById('limNetProfitFree').value = l.limits.netProfitFreeLines;
         document.getElementById('limProductCacheDays').value = l.limits.productCacheDays;
       }
+      loadAdminVendorUsage();
       const label = { sending: 'Sending', paused: 'Paused', done: 'Done', cancelled: 'Cancelled' };
       const active = d.announcements.some((a) => a.status === 'sending' || a.status === 'paused');
       document.getElementById('annList').innerHTML = d.announcements.length ? `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Subject</th><th>Status</th><th>Sent</th><th>Failed</th><th></th></tr></thead><tbody>${d.announcements.map((a) => `<tr><td>${escapeHtml(a.subject)}<br><small>${new Date(a.createdAt).toLocaleString()}</small>${a.lastError ? `<br><small style="color:#b91c1c;">Error: ${escapeHtml(a.lastError)}</small>` : ""}</td><td>${label[a.status] || a.status}</td><td>${a.sent} / ${a.total}</td><td>${a.failed}</td><td>${a.status === 'sending' ? `<button class="st-btn" data-ann="pause" data-id="${a.id}">Pause</button>` : ''}${a.status === 'paused' ? `<button class="st-btn" data-ann="resume" data-id="${a.id}">Resume</button>` : ''}${(a.status === 'sending' || a.status === 'paused') ? ` <button class="st-btn" data-ann="cancel" data-id="${a.id}">Cancel</button>` : ''}${(a.retryable > 0 && a.status !== 'cancelled') ? ` <button class="st-btn primary" data-ann="retry-failed" data-id="${a.id}">Retry failed (${a.retryable})</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="state-msg">Nothing sent yet.</p>';
