@@ -22394,8 +22394,11 @@ async function autoSuggestEmptyDraftCategories() {
   // ---------- Admin Panel: Mail (announcements + limits) ----------
   let annTimer = null;
   /** Admin > Mail > "Amazon data calls": the calls made to the paid Amazon data services per day, and the ones that were not needed (ELMS's own copy of a product, a stock answer shared between sellers). */
+  let vendorUsageAt = 0;
   async function loadAdminVendorUsage() {
     const el = document.getElementById('adminVendorUsage'); if (!el) return;
+    if (el.dataset.ready === '1' && Date.now() - vendorUsageAt < 60000) return; // loaded a moment ago (loadAdminMail also runs every 8 s while an announcement is sent)
+    vendorUsageAt = Date.now();
     try {
       const res = await apiFetch('/api/admin/vendor-usage?days=7');
       const d = await res.json();
@@ -22408,15 +22411,21 @@ async function autoSuggestEmptyDraftCategories() {
       const weekOf = (k) => days.reduce((sum, day) => sum + countOf(day, k), 0);
       const weekSaved = days.reduce((sum, day) => sum + (day.saved || 0), 0);
       const dayRows = days.map((day) => `<tr><td>${escapeHtml(day.day)}</td><td>${num(countOf(day, 'canopy.calls'))}</td><td>${num(countOf(day, 'easyparser.submitted'))}</td><td><b>${num(day.saved)}</b></td></tr>`).join('');
-      const kindRows = Object.keys(labels).map((k) => `<tr><td>${escapeHtml(labels[k])}${saved.has(k) ? ' <b>(not needed)</b>' : ''}</td><td>${num(countOf(days[0], k))}</td><td>${num(weekOf(k))}</td></tr>`).join('');
-      el.innerHTML = `<p><b>Last ${days.length} days:</b> ${num(weekSaved)} calls were not needed (an import or a stock check was answered without asking the data service).</p>
+      // Canopy requests of features that have no row of their own (searches, reviews, the order checks, the stock probe) are the rest of the total
+      const known = ['single.cache_miss', 'tool.cache_miss', 'stock.vendor', 'variant.vendor'];
+      const otherOf = (day) => Math.max(0, countOf(day, 'canopy.calls') - known.reduce((sum, k) => sum + countOf(day, k), 0));
+      const kindRows = Object.keys(labels).map((k) => `<tr><td>${escapeHtml(labels[k])}</td><td>${num(countOf(days[0], k))}</td><td>${num(weekOf(k))}</td></tr>`).join('')
+        + `<tr><td>Canopy requests of other features (searches, reviews, order checks ...)</td><td>${num(otherOf(days[0]))}</td><td>${num(days.reduce((sum, day) => sum + otherOf(day), 0))}</td></tr>`;
+      el.innerHTML = `<p><b>Last ${days.length} days:</b> ${num(weekSaved)} calls were not needed (an import, a stock check or a tool was answered without asking the data service).</p>
         <div class="st-table-wrap"><table class="st-table"><thead><tr><th>Day (UTC)</th><th>Canopy requests</th><th>Easyparser products</th><th>Calls not needed</th></tr></thead><tbody>${dayRows}</tbody></table></div>
-        <div class="st-table-wrap" style="margin-top:12px;"><table class="st-table"><thead><tr><th>Where</th><th>Today</th><th>Last ${days.length} days</th></tr></thead><tbody>${kindRows}</tbody></table></div>
-        <p class="st-hint">Counting starts the day this was switched on: earlier days show 0. "Canopy requests" and "Easyparser products" are every call of every feature, so the second table shows where they came from. A stock check answered from another seller's check still costs that seller the credit; only the data-service call is saved.</p>`;
+        <div class="st-table-wrap" style="margin-top:12px;"><table class="st-table"><thead><tr><th>Where</th><th>Today (UTC)</th><th>Last ${days.length} days</th></tr></thead><tbody>${kindRows}</tbody></table></div>
+        <p class="st-hint">Counting starts the day this was switched on: earlier days show 0. "Canopy requests" and "Easyparser products" are every call of every feature; the second table shows where they came from (the rest is "other features"). A stock check answered from another seller's check still costs that seller the credit; only the data-service call is saved.</p>`;
+      el.dataset.ready = '1';
     } catch (err) { el.innerHTML = '<p class="st-hint">' + escapeHtml(err.message) + '</p>'; }
   }
   async function loadAdminMail() {
     const banner = document.getElementById('adminMailStatus'); if (!banner) return;
+    loadAdminVendorUsage(); // independent of the announcements and the limits below: it must not wait for them, or die with them
     try {
       const [res, lres] = await Promise.all([apiFetch('/api/admin/announcements'), apiFetch('/api/admin/settings/limits')]);
       const d = await res.json(); const l = await lres.json();
@@ -22441,7 +22450,6 @@ async function autoSuggestEmptyDraftCategories() {
         document.getElementById('limNetProfitFree').value = l.limits.netProfitFreeLines;
         document.getElementById('limProductCacheDays').value = l.limits.productCacheDays;
       }
-      loadAdminVendorUsage();
       const label = { sending: 'Sending', paused: 'Paused', done: 'Done', cancelled: 'Cancelled' };
       const active = d.announcements.some((a) => a.status === 'sending' || a.status === 'paused');
       document.getElementById('annList').innerHTML = d.announcements.length ? `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Subject</th><th>Status</th><th>Sent</th><th>Failed</th><th></th></tr></thead><tbody>${d.announcements.map((a) => `<tr><td>${escapeHtml(a.subject)}<br><small>${new Date(a.createdAt).toLocaleString()}</small>${a.lastError ? `<br><small style="color:#b91c1c;">Error: ${escapeHtml(a.lastError)}</small>` : ""}</td><td>${label[a.status] || a.status}</td><td>${a.sent} / ${a.total}</td><td>${a.failed}</td><td>${a.status === 'sending' ? `<button class="st-btn" data-ann="pause" data-id="${a.id}">Pause</button>` : ''}${a.status === 'paused' ? `<button class="st-btn" data-ann="resume" data-id="${a.id}">Resume</button>` : ''}${(a.status === 'sending' || a.status === 'paused') ? ` <button class="st-btn" data-ann="cancel" data-id="${a.id}">Cancel</button>` : ''}${(a.retryable > 0 && a.status !== 'cancelled') ? ` <button class="st-btn primary" data-ann="retry-failed" data-id="${a.id}">Retry failed (${a.retryable})</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="state-msg">Nothing sent yet.</p>';
