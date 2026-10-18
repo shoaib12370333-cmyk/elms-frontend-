@@ -5348,7 +5348,7 @@
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico red">&#129513;</div>
-              <div class="st-head-txt"><h2>Browser extension</h2><p>Import straight from the Amazon page.</p></div>
+              <div class="st-head-txt"><h2>Browser extension</h2><p>The key that connects the ELMS Order Sync extension.</p></div>
             </div>
             <div class="st-field">
               <label>Your extension key</label>
@@ -6448,7 +6448,6 @@ B0EXAMPLE2"></textarea></div>
                 <label>Status <span class="welcome-bonus-label" id="importPolicyStateLabel" style="text-transform:none;letter-spacing:0;">Allowed</span></label>
                 <p class="meta-line" id="importPolicyHelp" style="margin:6px 0 0;"></p>
               </div>
-              <p class="meta-line" style="margin:2px 0 12px;">What the extension charges for an import is set under <b>Credit Costs</b> (the rows that start with &ldquo;Extension&rdquo;). A price of 0 makes it free, and the extension then says so.</p>
               <div class="st-actions"><button class="st-btn primary" id="saveImportPolicyBtn" type="button">Save</button><div id="importPolicyStatus"></div></div>
             </section>
             <section class="st-card" id="ebayUsageCard">
@@ -6469,14 +6468,12 @@ B0EXAMPLE2"></textarea></div>
             <section class="st-card">
               <div class="st-head">
                 <div class="st-ico blue">&#129513;</div>
-                <div class="st-head-txt"><h2>Browser extension</h2><p>Links and IDs used by the ELMS Chrome extension.</p></div>
+                <div class="st-head-txt"><h2>Browser extension</h2><p>Links used by the ELMS Order Sync extension.</p></div>
               </div>
               <div class="st-field"><label>Registration URL</label><input class="st-input" type="url" id="extensionRegistrationUrl" placeholder="https://your-site.com/register" /></div>
               <div class="st-actions" style="margin-top:0;margin-bottom:12px;"><button class="st-btn small" id="saveExtensionRegistrationUrlBtn" type="button">Save URL</button><div id="extensionRegistrationUrlStatus"></div></div>
               <div class="st-field"><label>ELMS backend URL</label><input class="st-input" type="url" id="extensionBackendUrl" placeholder="https://elms-backend.example.com" /></div>
               <div class="st-actions" style="margin-top:0;margin-bottom:12px;"><button class="st-btn small" id="saveExtensionBackendUrlBtn" type="button">Save URL</button><div id="extensionBackendUrlStatus"></div></div>
-              <div class="st-field"><label>Chrome extension ID</label><input class="st-input mono" id="chromeExtensionId" maxlength="32" placeholder="32-character Chrome extension ID" /></div>
-              <div class="st-actions" style="margin-top:0;"><button class="st-btn small" id="saveChromeExtensionIdBtn" type="button">Save ID</button><div id="chromeExtensionIdStatus"></div></div>
             </section>
           </div>
         </div>
@@ -8578,7 +8575,7 @@ B0EXAMPLE2"></textarea></div>
       { title: 'Import', text: 'Paste an Amazon link, or use Bulk, Large or CSV import. ELMS builds the eBay draft from the product page, with your Margin on the price.', page: 'import', button: 'Go to Import' },
       { title: 'Review', text: 'Open a draft to check the title, pictures, category and price. Select many drafts to edit or clean them together.' },
       { title: 'Publish', text: 'Publish one draft, or select several and publish them together. Published products move to Live listings.', page: 'listings', button: 'Live listings' },
-    ], 'The ELMS browser extension can also send a product you are looking at on Amazon straight into your Drafts.'),
+    ]),
     listings: () => emptyGuideHtml('What this page will show you', [
       { title: 'Price and profit', text: 'Every live listing shows its eBay price, what the product costs you and the margin between them.' },
       { title: 'Stock watching', text: 'ELMS can watch the supplier\u2019s stock and end a listing that is clearly out of stock, so you never sell what you cannot buy. Each listing has its own Stock Monitoring switch.' },
@@ -10731,21 +10728,6 @@ B0EXAMPLE2"></textarea></div>
     return Array.from(elmsFieldsShown()).map((k) => `f-${k}`).join(' ');
   }
 
-  // /draft?open=<id> (the browser extension's "Open the draft in ELMS"): open that draft's editor once, then tidy the address.
-  function openDraftFromUrl() {
-    let id = null;
-    try { id = new URLSearchParams(window.location.search).get('open'); } catch (_) { /* no address to read */ }
-    if (!id || !/^[A-Za-z0-9_-]{1,64}$/.test(id)) return;
-    try {
-      const u = new URL(window.location.href);
-      u.searchParams.delete('open');
-      window.history.replaceState({}, '', u.pathname + u.search + u.hash);
-    } catch (_) { /* the address stays */ }
-    const l = draftListingMap.get(String(id));
-    if (l) openListingEditor(l, { mode: 'draft', onDone: () => loadDrafts() });
-    else openDraftDetailModal(id);
-  }
-
   // The Drafts page keeps what you were doing (page number, tab, search, sort, selection) when it refreshes: after an edit, a publish or
   // a background import it updates in place instead of drawing everything again from page 1 (a draft you had just edited used to
   // "disappear": it jumped to the top and the list went back to the first page). Only the first draw shows the loading skeleton.
@@ -10775,7 +10757,6 @@ B0EXAMPLE2"></textarea></div>
       draftListingMap = new Map(allDrafts.map((item) => [String(item.id), item]));
       draftSelected = new Set();
       draftFilteredIds = [];
-      setTimeout(openDraftFromUrl, 0);
       let draftVeroOnly = false;
       let draftNoImageOnly = false;
       const veroCount = () => allDrafts.filter((l) => l._vero.terms.length).length;
@@ -20981,7 +20962,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadAdminPage() {
     loadAdminAdmins();
     loadAdminAffiliates();
-    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadAdminEbayRules(), loadChromeExtensionId(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog(), loadAdminService(), loadAdminAlerts(), loadAdminSocial()]);
+    await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadAdminEbayRules(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog(), loadAdminService(), loadAdminAlerts(), loadAdminSocial()]);
   }
 
   // ---------- Admin Panel: tabs ----------
@@ -22998,22 +22979,6 @@ async function autoSuggestEmptyDraftCategories() {
     }
   });
 
-  // ---------- Admin Panel: Chrome Extension ID ----------
-  async function loadChromeExtensionId() {
-    const input = document.getElementById('chromeExtensionId'); if (!input) return;
-    try { const res = await apiFetch('/api/admin/settings'); const data = await res.json(); if (res.ok && data.success) input.value = data.settings.chromeExtensionId || ''; } catch (_) {}
-  }
-  document.getElementById('saveChromeExtensionIdBtn')?.addEventListener('click', async () => {
-    const input = document.getElementById('chromeExtensionId'), status = document.getElementById('chromeExtensionIdStatus');
-    const btn = document.getElementById('saveChromeExtensionIdBtn'); btn.disabled = true; status.textContent = 'Saving…';
-    try {
-      const res = await apiFetch('/api/admin/settings/chrome-extension', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({chromeExtensionId: input.value.trim()}) });
-      const data = await res.json(); if (!res.ok || !data.success) throw new Error(data.error || 'Could not save extension ID.');
-      status.className='success'; status.textContent='Saved.';
-    } catch (err) { status.className='error'; status.textContent=err.message; }
-    finally { btn.disabled=false; }
-  });
-
   // ---------- Admin Panel: eBay API usage ----------
   // ELMS's own count of Trading calls today (eBay allows 5,000 a day for the whole app) next to eBay's numbers for every API.
   async function loadEbayUsage(force) {
@@ -23101,7 +23066,7 @@ async function autoSuggestEmptyDraftCategories() {
     const on = document.getElementById('importPolicyToggle').checked;
     document.getElementById('importPolicyStateLabel').textContent = on ? 'Allowed' : 'Not allowed';
     document.getElementById('importPolicyHelp').textContent = on
-      ? 'Allowed: the extension, the Import page and bulk imports work even when no eBay store is connected. The draft is saved without a store and the person chooses one when they publish.'
+      ? 'Allowed: the Import page and bulk imports work even when no eBay store is connected. The draft is saved without a store and the person chooses one when they publish.'
       : 'Not allowed: a person with no connected eBay store is asked to connect one before importing. Nothing is charged for that attempt.';
   }
   document.getElementById('importPolicyToggle').addEventListener('change', renderImportPolicyText);
@@ -24286,7 +24251,7 @@ async function autoSuggestEmptyDraftCategories() {
         ['Auto review request', adOnOff(set.autoReviewRequestMessage)],
         ['CJdropshipping', set.cjConnected ? 'Connected' + (set.cjConnectedAt ? ' ' + adEsc(adDate(set.cjConnectedAt)) : '') : 'Not connected'],
         ['AliExpress', set.aliexpressConnected ? 'Connected' + (set.aliexpressAccount ? ' (' + adEsc(set.aliexpressAccount) + ')' : '') : 'Not connected'],
-        ['Chrome extension key', set.extensionKeyMade ? 'Made' : 'Not made'],
+        ['Extension key', set.extensionKeyMade ? 'Made' : 'Not made'],
         ['New-device email', adOnOff(set.notifyNewDevice)],
         ['Product-news emails', set.marketingOptOut ? 'Unsubscribed' : 'Subscribed'],
       ])));

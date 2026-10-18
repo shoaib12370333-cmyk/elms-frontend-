@@ -201,33 +201,6 @@
 </ul>
 <p>Large import skips any line that is not a valid Amazon link.</p>
 
-<h3 id="importing-extension">Import with the Chrome extension</h3>
-<p>The ELMS extension adds a panel to Amazon product pages, so you can check profit and import without leaving the page. It works in Chrome on Amazon .com, .co.uk, .ca, .de, .fr, .it, .es, .in and .com.au.</p>
-<h4>Connect it once</h4>
-<ol class="howto">
-<li>Install the ELMS extension in Chrome: search the Chrome Web Store for <strong>ELMS Product Importer</strong>. If you cannot find it, open a <span class="term">Support</span> ticket and we will send you the link.</li>
-<li>In ELMS, open <span class="term">Settings</span>, find the <span class="term">Browser extension</span> card and press <span class="term">Copy</span> to copy <span class="term">Your extension key</span>.</li>
-<li>Click the ELMS icon in the Chrome toolbar, paste the key into <span class="term">ELMS Extension Key</span> and press <span class="term">Connect ELMS Account</span>.</li>
-</ol>
-<div class="callout callout--note" role="note"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg><div class="callout__body"><p class="callout__title">Treat the key like a password</p><p><span class="term">Regenerate</span> makes a new key, and the old one stops working.</p></div></div>
-<h4>What the panel shows</h4>
-<p>On a product page, click the ELMS chip (for example Profit with a warning count) to open the panel.</p>
-<ul>
-<li><strong>Profit.</strong> The Amazon price, your eBay price at your markup, eBay fees, what you keep, break-even and the price for your wanted profit. <span class="term">Use N%</span> sets the markup that reaches it.</li>
-<li><span class="term">Market on eBay</span> shows the lowest, typical and highest price of similar listings in your store&rsquo;s marketplace.</li>
-<li><span class="term">Checks</span> flag your VeRO words, products you already have, an Amazon site that does not fit your store, a missing price, deal prices, third-party sellers, slow delivery, low ratings, a loss at your markup and too few credits. A product that eBay does not allow is flagged in red, so you know before you import it.</li>
-</ul>
-<p>Set your fees and wanted profit under <span class="term">Profit settings</span> in the extension popup.</p>
-<h4>Import a product</h4>
-<ol class="howto">
-<li>Open an Amazon product page. Pick the colour or size first if the page asks.</li>
-<li>In <span class="term">Your markup %</span>, type a percentage, or leave it empty so your margin prices the product when it is on. A percentage you type wins.</li>
-<li>Press <span class="term">Import to Drafts</span>, which shows the cost. The popup button <span class="term">Import current Amazon product</span> and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd> do the same.</li>
-<li>Press <span class="term">Open the draft in ELMS</span>, or switch on <span class="term">Open the draft in ELMS after an import</span> under <span class="term">Options</span>.</li>
-</ol>
-<p>Warnings do not stop an import. An import does stop when you are not connected to ELMS, when the Amazon site does not fit your store, when you lack credits, or when the product is already live, scheduled or being published. A product already in Drafts shows <span class="term">Refresh the draft</span>.</p>
-<p>On search and bestseller pages, tick the <span class="term">+ ELMS</span> badges, then open the ELMS chip (it reads <span class="term">Bulk import</span>, and <span class="term">N products selected</span> once you have ticked some) and press <span class="term">Import N products</span>. Products you already have in ELMS show <span class="term">In Drafts</span> or <span class="term">In ELMS</span>.</p>
-
 <h3 id="importing-csv">Import from a CSV file</h3>
 <p>Use a CSV file for products without an Amazon link, such as your own stock. Each row becomes a draft. You need a connected store, because ELMS reads the Cost in your store&rsquo;s currency.</p>
 <ol class="howto">
@@ -511,13 +484,13 @@ MUG-001,Ceramic Coffee Mug Blue,4.50,,1,https://example.invalid/mug-1.jpg</pre>
 <p>You can also type the buying price on the order itself. The <span class="term">Buying cost</span> box on the row and <span class="term">Buying price</span> in the order window are the same figure as <span class="term">Buying price</span> on the Net Profit sheet. <span class="term">Cost per item</span> in the order window is separate: it only sets the profit shown on Orders. <span class="term">Amazon order ID</span> is a field for your own record; saving it also marks the order as ordered.</p>
 
 <h3 id="orders-helper">The order helper extension</h3>
-<p>The order helper is a second browser extension, separate from the Chrome extension that imports products; it shows its name as ELMS Order Sync (search the Chrome Web Store for that name). It works on Amazon pages, and only in a tab you opened with the <span class="term">AMAZON</span> label on an order row. It never clicks, types or submits anything for you: you place the order yourself.</p>
+<p>The order helper is a browser extension for Chrome; it shows its name as ELMS Order Sync (search the Chrome Web Store for that name; if you cannot find it, open a <span class="term">Support</span> ticket and we will send you the link). It works on Amazon pages, and only in a tab you opened with the <span class="term">AMAZON</span> label on an order row. It never clicks, types or submits anything for you: you place the order yourself.</p>
 <ul>
 <li>A small panel, <span class="term">ELMS buyer address</span>, shows the buyer&rsquo;s delivery details from the order. Press <span class="term">Copy</span> beside a field, or <span class="term">Copy full address</span>, and paste it into Amazon&rsquo;s own form yourself.</li>
 <li>After you buy, press <span class="term">Mark as ordered</span> in the same panel (on Amazon&rsquo;s order confirmation page the panel shows only this button). Type the <span class="term">Delivery date</span> and your <span class="term">Buying price</span>, both optional, and press <span class="term">Mark as ordered</span> again. ELMS marks the order exactly as when you use <a href="#orders-ordered">Mark as ordered</a> in ELMS: the same note, the same ordered message to the buyer if you switched it on, and the note on eBay if you switched that on. The panel tells you what happened, also on eBay. To take the mark away again, use <span class="term">Undo &ldquo;ordered&rdquo; mark</span> in ELMS.</li>
 <li>It does not read what is on Amazon&rsquo;s pages. It saves only what you type, and only when you press the button.</li>
 </ul>
-<p>It uses the same extension key as the product extension. Copy the key from the <span class="term">Browser extension</span> card in Settings, paste it into <span class="term">ELMS Extension Key</span> in the helper&rsquo;s popup and press <span class="term">Connect ELMS Account</span>. There is no separate switch for it in Settings. <span class="term">Disconnect ELMS</span> in the popup removes the key from the browser.</p>
+<p>It connects with your personal extension key. Treat the key like a password: anyone who has it can use your account through the extension, and <span class="term">Regenerate</span> makes a new key and stops the old one at once. Copy the key from the <span class="term">Browser extension</span> card in Settings, paste it into <span class="term">ELMS Extension Key</span> in the helper&rsquo;s popup and press <span class="term">Connect ELMS Account</span>. There is no separate switch for it in Settings. <span class="term">Disconnect ELMS</span> in the popup removes the key from the browser.</p>
 
 <h3 id="orders-shipped">Mark as shipped and add tracking</h3>
 <ol class="howto">
@@ -672,7 +645,6 @@ MUG-001,Ceramic Coffee Mug Blue,4.50,,1,https://example.invalid/mug-1.jpg</pre>
 <ul>
 <li>A window that asks you to confirm a bulk action, such as filling categories, item details or descriptions with AI for a selection, states the cost first. An item that is skipped or fails is not charged.</li>
 <li>On Messages, the note beside the <span class="term">AI replies</span> modes says what a reply uses.</li>
-<li>In the Chrome extension, <span class="term">Import to Drafts</span> shows the cost on the button.</li>
 </ul>
 <p>Other actions, such as an import from the Import page, a publish, a monitoring check or a research lookup, use credits when they complete, and the credits chip shows your new balance.</p>
 <p>When your balance is too low, ELMS stops and shows <span class="term">Out of credits</span> with a <span class="term">Buy credits</span> button. Nothing you built is lost.</p>
@@ -727,7 +699,7 @@ MUG-001,Ceramic Coffee Mug Blue,4.50,,1,https://example.invalid/mug-1.jpg</pre>
 <p>Set a new password first. It signs out every device that was signed in, including any you do not know, and the old password stops working. If you press <span class="term">Log out everywhere</span> first, someone who knows the old password can sign in again.</p>
 <ol class="howto">
 <li>Log out on your own device: your name in the top bar, then <span class="term">Logout</span>. On the sign-in form press <span class="term">Forgot password?</span> and set a new password with the code ELMS e-mails you (<a href="#getting-started-signin">see how to reset your password</a>). The code goes to your e-mail address, so make sure that mailbox is safe first.</li>
-<li>If you use the Chrome extension or the order helper, open <span class="term">Settings</span>, find the <span class="term">Browser extension</span> card and press <span class="term">Regenerate</span>. A new password does not end the extension key; regenerating stops the old key at once. Paste the new key into the extension.</li>
+<li>If you use the order helper extension, open <span class="term">Settings</span>, find the <span class="term">Browser extension</span> card and press <span class="term">Regenerate</span>. A new password does not end the extension key; regenerating stops the old key at once. Paste the new key into the extension.</li>
 <li>Sign in with the new password and check <span class="term">Devices signed in</span> and <span class="term">Login activity</span> in Settings. Press <span class="term">Log out</span> on any device you do not recognise.</li>
 <li>To report a security problem, write to <a href="mailto:security@elmstool.com">security@elmstool.com</a>.</li>
 </ol>
