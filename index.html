@@ -22438,7 +22438,10 @@ async function autoSuggestEmptyDraftCategories() {
         const keep = el.value;
         el.innerHTML = optionsHtml;
         if (keep && senders.some((s) => s.id === keep)) el.value = keep;
-        else if (senders.some((s) => s.id === 'support')) el.value = 'support';
+        else {
+          const first = (id === 'annFrom' ? ['hello', 'support'] : ['support']).find((k) => senders.some((s) => s.id === k));
+          if (first) el.value = first;
+        }
       });
       banner.className = 'ad-banner ok';
       banner.textContent = 'Announcements are sent from ' + (d.from || 'the SMTP address') + ' unless you choose another sender. ' + d.recipients + ' user(s) will receive them. Sent today: ' + d.sentToday + ' of ' + d.limits.mailDailyCap + '.';
@@ -26053,7 +26056,7 @@ async function autoSuggestEmptyDraftCategories() {
                 <td>${escapeHtml(new Date(p.createdAt).toLocaleString())}</td>
                 <td>$${p.priceUsd.toFixed(2)}</td>
                 <td>${p.listingCount.toLocaleString()}</td>
-                <td>${p.pushed.toLocaleString()}${p.pushed < p.listingCount ? ' <small style="color:var(--grey);">(fewer than you bought: write to billing@elmstool.com)</small>' : ''}</td>
+                <td>${p.pushed.toLocaleString()}${p.pushed < p.listingCount ? ' <small style="color:var(--grey);">(fewer than you bought: write to support@elmstool.com)</small>' : ''}</td>
               </tr>
             `).join('')}
           </tbody>
