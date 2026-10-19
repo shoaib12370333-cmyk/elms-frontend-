@@ -2,6 +2,11 @@
 'use strict';
 var API_HOST = 'https://elms-backend-1-tr5h.onrender.com';
 safe(function () {
+var clean = { '/landing.html': '/', '/pricing.html': '/plans', '/policy.html': '/privacy', '/privacy.html': '/privacy', '/terms.html': '/terms', '/refund.html': '/refund', '/user-guide.html': '/user-guide', '/affiliate-terms.html': '/affiliate-terms', '/copyright.html': '/copyright', '/contact.html': '/contact', '/track.html': '/track' };
+var to = clean[w.location.pathname];
+if (to && w.history && w.history.replaceState) { w.history.replaceState(null, '', to + w.location.search + w.location.hash); }
+});
+safe(function () {
 var root = d.documentElement;
 if ((' ' + root.className + ' ').indexOf(' js ') === -1) { root.className += ' js'; }
 });
