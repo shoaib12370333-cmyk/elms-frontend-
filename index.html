@@ -3786,6 +3786,18 @@
   .ad-kebab:hover, .ad-kebab:focus-visible { background:#F2F4F7; border-color:#98A2B3; outline:none; }
   #page-admin #adminUsersTable th:last-child, #page-admin #adminUsersTable td:last-child { width:1%; text-align:right; white-space:nowrap; }
   .ad-sect { margin-top:18px; padding-top:14px; border-top:1px solid var(--line); }
+  /* Admin > Team: the people who have the panel, what each may open, the invitations; and the banner of an invited person on the sign-in page */
+  .tm-member { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px 0; border-top:1px solid var(--line); }
+  .tm-who { min-width:0; flex:1 1 260px; } .tm-who b { overflow-wrap:anywhere; } .tm-who .rfa-def { font-size:12px; margin-top:3px; }
+  .tm-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .tm-group { font-weight:800; font-size:11.5px; color:#0B4FA0; text-transform:uppercase; letter-spacing:.05em; margin:14px 0 6px; }
+  .tm-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:8px 14px; }
+  .tm-check { display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; } .tm-check input { width:16px; height:16px; margin:0; flex:0 0 auto; }
+  .tm-full { display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--line); border-radius:12px; margin:12px 0 4px; cursor:pointer; background:#F8FAFC; } .tm-full input { width:16px; height:16px; margin:2px 0 0; flex:0 0 auto; } .tm-full b { display:block; font-size:13px; } .tm-full span { font-size:12px; color:#64748B; }
+  .tm-ticks.off { opacity:.4; pointer-events:none; }
+  .tm-inv { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 0; border-top:1px solid var(--line); font-size:13px; }
+  .tm-form-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px; } .tm-form-row .st-input { flex:1 1 260px; min-width:0; }
+  .auth-invite { margin:0 0 16px; padding:12px 14px; border-radius:12px; background:#EEF4FF; border:1px solid #C9DBFF; color:#0B3A7A; font-size:13px; line-height:1.45; } .auth-invite b { overflow-wrap:anywhere; }
   .ad-sect-title { font-weight:800; font-size:13px; color:#0B4FA0; margin-bottom:10px; }
   .ad-edit-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; align-items:end; } @media (max-width:560px) { .ad-edit-grid { grid-template-columns:1fr; } }
   .ad-edit-actions { display:flex; gap:8px; flex-wrap:wrap; }
@@ -4386,6 +4398,8 @@
         <img class="logo-img" src="/logo-wordmark.png" alt="ELMS" height="36">
         <span class="tag">listing management</span>
       </div>
+
+      <div class="auth-invite" id="teamInviteBanner" style="display:none;"></div>
 
       <!-- Login form -->
       <div id="authFormLogin" class="auth-form">
@@ -5741,7 +5755,17 @@
           <button class="ad-tab" data-admin-tab="appeals" type="button">Appeals <span class="ad-count" id="adminAppealsCount" style="display:none;"></span></button>
           <button class="ad-tab" data-admin-tab="security" type="button">Security</button>
           <button class="ad-tab" data-admin-tab="settings" type="button">Settings</button>
-          <button class="ad-tab" data-admin-tab="admins" id="adminAdminsTab" type="button" style="display:none;">Admins</button>
+          <button class="ad-tab" data-admin-tab="admins" id="adminAdminsTab" type="button" style="display:none;">Team</button>
+        </div>
+
+        <!-- A team member who has the panel but no section yet -->
+        <div class="ad-panel" data-admin-panel="none" style="display:none;">
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128274;</div>
+              <div class="st-head-txt"><h2>No section yet</h2><p>You are on the ELMS team, but nothing has been opened for you yet. Ask the owner to give you the sections you need; they show up here by themselves.</p></div>
+            </div>
+          </section>
         </div>
 
         <!-- Overview -->
@@ -6442,19 +6466,35 @@ B0EXAMPLE2"></textarea></div>
           </section>
         </div>
 
-        <!-- Admins (super admin only) -->
+        <!-- Team (the owner and members with full rights) -->
         <div class="ad-panel" data-admin-panel="admins" style="display:none;">
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico blue">&#128273;</div>
-              <div class="st-head-txt"><h2>Admins</h2><p>People who can use this admin panel. An admin can do everything you can here, except add or remove admins. The super admin can never be removed.</p></div>
+              <div class="st-head-txt"><h2>Team</h2><p>People who can use this panel, and what each of them can open. A person with full rights can do everything except change the owner. Nobody can change their own rights.</p></div>
             </div>
-            <div class="ad-addadmin">
-              <input class="st-input" id="adminAddEmail" type="email" placeholder="Email of an ELMS user" autocomplete="off" />
-              <button class="st-btn primary" id="adminAddBtn" type="button">Give admin access</button>
+            <div class="st-status" id="teamStatus"></div>
+            <div id="teamMembers"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico green">&#9993;</div>
+              <div class="st-head-txt"><h2>Invite a person</h2><p>They get an email with a link, sign in (or sign up) with that address and accept. Nothing is open to them until they accept, and the link works once, for 7 days.</p></div>
             </div>
-            <div class="st-status" id="adminAdminsStatus"></div>
-            <div id="adminAdminsList"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+            <div class="tm-form-row">
+              <input class="st-input" id="teamInvEmail" type="email" placeholder="Email address of the person" autocomplete="off" />
+            </div>
+            <label class="tm-full"><input type="checkbox" id="teamInvFull" /><div><b>Full rights</b><span>Everything except the owner status: all sections, the team itself, deleting an account and copying listings.</span></div></label>
+            <div class="tm-ticks" id="teamInvTicks"></div>
+            <div style="margin-top:14px;"><button class="st-btn primary" id="teamInvBtn" type="button">Send invitation</button></div>
+            <div class="st-status" id="teamInvStatus"></div>
+          </section>
+          <section class="st-card">
+            <div class="st-head">
+              <div class="st-ico blue">&#128232;</div>
+              <div class="st-head-txt"><h2>Invitations</h2><p>The last 30 days: waiting, used, withdrawn and expired.</p></div>
+            </div>
+            <div id="teamInvites"></div>
           </section>
         </div>
 
@@ -6812,6 +6852,18 @@ B0EXAMPLE2"></textarea></div>
   (function captureRefFromLink() {
     try { const c = cleanRefCode(new URLSearchParams(location.search).get('ref')); if (c) localStorage.setItem(REF_KEY, c); } catch (_) { /* no storage: the code can still be typed */ }
   })();
+  // An invitation to the admin team arrives as /join#t=TOKEN. The token is in the fragment (no server, log or referrer ever sees it); it is moved into this tab's session storage
+  // and out of the address at once, so it survives sign-in, Google and the eBay round trip, and is forgotten when the tab closes.
+  const TEAM_INVITE_KEY = 'elmsTeamInvite';
+  (function captureTeamInvite() {
+    try {
+      if (window.location.pathname.replace(/\/+$/, '') !== '/join') return;
+      const m = /(?:^#|&)t=([^&]+)/.exec(window.location.hash);
+      const token = m ? decodeURIComponent(m[1]).trim() : '';
+      if (token.length >= 20 && token.length <= 200) sessionStorage.setItem(TEAM_INVITE_KEY, token);
+      window.history.replaceState({}, '', '/join');
+    } catch (_) { /* no session storage, or a broken link: the person opens the link from the mail again */ }
+  })();
   // The code to send with a sign-up: what is typed on the form, else what the link brought.
   function signupReferralCode() {
     return cleanRefCode(document.getElementById('registerReferral')?.value) || storedRefCode() || undefined;
@@ -6949,7 +7001,7 @@ B0EXAMPLE2"></textarea></div>
     if (document.getElementById('appShell').style.display === 'none') return;
     const page = pageFromPath(window.location.pathname) || 'dashboard';
     if (page === 'admin' && window.currentUser?.role !== 'admin') return showPage('dashboard', { replace: true });
-    if (page === 'owner' && !window.currentUser?.isSuperAdmin) return showPage('dashboard', { replace: true });
+    if (page === 'owner' && window.currentUser?.role !== 'admin') return showPage('dashboard', { replace: true });
     showPage(page, { fromPop: true });
   });
 
@@ -6970,7 +7022,7 @@ B0EXAMPLE2"></textarea></div>
 
   function showPage(page, opts = {}) {
     if (!PAGE_TITLES[page]) page = 'dashboard';
-    if (page === 'owner' && !(window.currentUser && window.currentUser.isSuperAdmin)) page = 'dashboard'; // the owner panel: the super admin only (the team gets it with their rights, later)
+    if (page === 'owner' && !(window.currentUser && window.currentUser.role === 'admin')) page = 'dashboard'; // the owner / team panel: every admin (each sees only the sections he has)
     if (page === 'owner') closeMobileSidebar(); // the owner frame hides the app drawer: its scrim must not stay
     if (document.querySelector('.sidebar-nav a.active')?.getAttribute('data-page') !== page) scrollPageTop(false);
     if (!opts.fromPop) syncUrlToPage(page, !!opts.replace);
@@ -6986,7 +7038,7 @@ B0EXAMPLE2"></textarea></div>
       a.classList.toggle('active', a.getAttribute('data-page') === page);
     });
     revealActiveNav();
-    const [title, subline] = PAGE_TITLES[page];
+    const [title, subline] = page === 'owner' && !adminIsOwner() ? ['Team panel', PAGE_TITLES.owner[1]] : PAGE_TITLES[page]; // a team member's panel is not called "Owner"
     document.getElementById('pageTitle').textContent = title;
     document.getElementById('pageSubline').textContent = subline;
     document.title = `${title} \u00b7 ELMS`;
@@ -7008,8 +7060,9 @@ B0EXAMPLE2"></textarea></div>
     if (page === 'admin' || page === 'owner') {
       const adminHead = document.querySelector('#page-admin .st-top h1');
       const adminSub = document.querySelector('#page-admin .st-top .sub');
-      if (adminHead) adminHead.textContent = page === 'owner' ? 'Owner panel' : 'Admin';
+      if (adminHead) adminHead.textContent = page === 'owner' ? (adminIsOwner() ? 'Owner panel' : 'Team panel') : 'Admin';
       if (adminSub) adminSub.textContent = page === 'owner' ? 'Everything about ELMS, grouped in the menu.' : 'Users, credits, AI, pricing and support in one place.';
+      applyAdminAccess();
       if (page === 'owner') renderOwnerNav();
       loadAdminPage();
     }
@@ -8959,10 +9012,9 @@ B0EXAMPLE2"></textarea></div>
     updateCreditBalanceChip(user.creditBalance);
     Promise.allSettled([refreshDraftsCountBadge(), refreshSystemNotificationBadge(), refreshMessageBadge(), populateSidebarEbayWidget(), refreshVoucherBadge(), refreshPricingRuleState()]);
     startBackgroundRefresh();
-    const adminNavLink = document.getElementById('adminNavLink');
-    if (adminNavLink) adminNavLink.style.display = user.role === 'admin' ? 'flex' : 'none';
-    const ownerOpenBtn = document.getElementById('ownerOpenBtn');
-    if (ownerOpenBtn) ownerOpenBtn.style.display = user.isSuperAdmin ? '' : 'none';
+    paintAdminEntry(user);
+    const inviteBanner = document.getElementById('teamInviteBanner');
+    if (inviteBanner) inviteBanner.style.display = 'none';
 
     // Always start authenticated sessions on Dashboard after login/reload.
     // Individual page navigation remains client-side after the initial boot.
@@ -8972,7 +9024,7 @@ B0EXAMPLE2"></textarea></div>
       let startPage = pageFromPath(window.location.pathname) || loginReturnPage || 'dashboard';
       loginReturnPage = null;
       if (startPage === 'admin' && user.role !== 'admin') startPage = 'dashboard';
-      if (startPage === 'owner' && !user.isSuperAdmin) startPage = 'dashboard';
+      if (startPage === 'owner' && user.role !== 'admin') startPage = 'dashboard';
       showPage(startPage, { replace: true });
     }
 
@@ -8994,7 +9046,80 @@ B0EXAMPLE2"></textarea></div>
       // The content-rights window comes first (once per wording of it); the notices follow it.
       if (!maybeShowContentRights(user, go)) go();
     };
-    setTimeout(() => { if (!maybeShowPhoneScreen(user, showNotices)) showNotices(); }, 400);
+    const startNotices = () => setTimeout(() => { if (!maybeShowPhoneScreen(user, showNotices)) showNotices(); }, 400);
+    if (pendingTeamInvite()) runTeamInviteFlow(user, startNotices); else startNotices(); // an invitation to the team is answered first (a phone number is not asked of a person who is about to become staff)
+  }
+
+  // ---------- Joining the admin team by invitation ----------
+  // The link in the mail (/join#t=TOKEN) is captured when the page opens (captureTeamInvite). A signed-out visitor sees a banner on the sign-in page and the address is filled in;
+  // a signed-in person (or one who just signed in) is asked once whether to join. The server accepts only the invited address, once, within 7 days.
+  const pendingTeamInvite = () => { try { return sessionStorage.getItem(TEAM_INVITE_KEY) || ''; } catch (_) { return ''; } };
+  const clearTeamInvite = () => { try { sessionStorage.removeItem(TEAM_INVITE_KEY); } catch (_) { /* nothing stored */ } };
+  const TEAM_INVITE_GONE = { unknown: 'This invitation link is not valid.', accepted: 'This invitation was already used.', withdrawn: 'This invitation was withdrawn. Ask for a new one.', expired: 'This invitation has expired. Ask for a new one.' };
+  async function describeTeamInvite(token) {
+    const res = await apiFetch('/api/team/invitations/describe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
+    const d = await res.json();
+    if (!res.ok || !d.success) throw new Error(d.error || 'Could not read the invitation.');
+    return d.invitation;
+  }
+  const teamInviteWhat = (inv) => (inv.full ? 'full rights: every section and the team itself' : 'access to ' + (inv.sectionLabels || []).join(', '));
+  async function showTeamInviteBanner() {
+    const token = pendingTeamInvite();
+    const box = document.getElementById('teamInviteBanner');
+    if (!token || !box) return;
+    try {
+      const inv = await describeTeamInvite(token);
+      if (inv.status !== 'waiting') {
+        clearTeamInvite();
+        box.innerHTML = escapeHtml(TEAM_INVITE_GONE[inv.status] || TEAM_INVITE_GONE.unknown);
+        box.style.display = 'block';
+        return;
+      }
+      box.innerHTML = 'You were invited to join the ELMS team with ' + escapeHtml(teamInviteWhat(inv)) + '.<br>Sign in, or create your account, with <b>' + escapeHtml(inv.email) + '</b>.';
+      box.style.display = 'block';
+      const loginBox = document.getElementById('loginEmail');
+      const registerBox = document.getElementById('registerEmail');
+      if (loginBox && !loginBox.value) loginBox.value = inv.email;
+      if (registerBox && !registerBox.value) registerBox.value = inv.email;
+      if (!inv.accountExists && document.getElementById('authPage').style.display !== 'none' && window.location.pathname !== '/signup') showRegisterForm();
+    } catch (_) { /* the link is read again after sign-in */ }
+  }
+  // `done` runs when the invitation is settled (not when the person joined: a new team member goes straight to the panel).
+  async function runTeamInviteFlow(user, done) {
+    const token = pendingTeamInvite();
+    const finish = () => { try { done(); } catch (_) { /* the notices are optional */ } };
+    if (!token) return finish();
+    if (user.role === 'admin') { clearTeamInvite(); return finish(); }
+    try {
+      const inv = await describeTeamInvite(token);
+      if (inv.status !== 'waiting') {
+        clearTeamInvite();
+        await elmsConfirm(TEAM_INVITE_GONE[inv.status] || TEAM_INVITE_GONE.unknown, { title: 'Team invitation', okText: 'OK', info: true });
+        return finish();
+      }
+      if (String(user.email || '').trim().toLowerCase() !== String(inv.email || '').toLowerCase()) {
+        const out = await elmsConfirm('This invitation was written for ' + inv.email + ', but you are signed in as ' + user.email + '.\nSign out and sign in (or sign up) with ' + inv.email + ' to join the team.', { title: 'Team invitation', okText: 'Sign out', cancelText: 'Not now' });
+        if (out) { document.getElementById('signOutBtn').click(); return; } // the invitation stays in this tab: the sign-in page shows it again
+        clearTeamInvite();
+        return finish();
+      }
+      const yes = await elmsConfirm('You were invited to join the ELMS team with ' + teamInviteWhat(inv) + '.\nYou are signed in as ' + user.email + '.', { title: 'Join the ELMS team?', okText: 'Join the team', cancelText: 'Not now' });
+      if (!yes) { clearTeamInvite(); return finish(); }
+      const res = await apiFetch('/api/team/invitations/accept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
+      const d = await res.json();
+      if ((res.ok && d.success) || [404, 409, 410].includes(res.status)) clearTeamInvite(); // joined, or used / withdrawn / expired / not valid: over. Any other failure keeps the link in this tab: it is asked again next time
+      if (!res.ok || !d.success) {
+        await elmsConfirm(d.error || 'Could not join the team. Please try again.', { title: 'Team invitation', okText: 'OK', info: true });
+        return finish();
+      }
+      window.currentUser = d.user || Object.assign({}, user, { role: 'admin', adminAccess: d.access });
+      paintAdminEntry(window.currentUser);
+      showToast('Welcome to the team', 'The team panel is open for you.', 'success');
+      showPage('owner', { replace: true });
+    } catch (err) { // a dropped connection: the link stays in this tab and is asked again on the next load
+      showToast('Team invitation', err.message || 'Could not read the invitation.', 'error');
+      finish();
+    }
   }
 
   /**
@@ -10300,6 +10425,7 @@ B0EXAMPLE2"></textarea></div>
     // Render Google buttons only after the auth state is settled, so they never
     // initialize over the dashboard or create a duplicate auth view. The Google sign-in code is requested here, for a signed-out visitor only.
     if (!loggedIn) loadGoogleSignIn();
+    if (!loggedIn && !ebayHandled) showTeamInviteBanner();
   });
 
   function setupGoogleButtons() {
@@ -10385,6 +10511,7 @@ B0EXAMPLE2"></textarea></div>
     document.getElementById('authPage').style.display = 'flex';
     document.getElementById('userChip').style.display = 'none';
     showLoginForm();
+    showTeamInviteBanner();
     if (window.google) google.accounts.id.disableAutoSelect();
   });
 
@@ -20362,6 +20489,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Affiliate (admin) ----------
   async function loadAdminAffiliates() {
+    if (!adminCan('affiliates')) return; // a section he does not have is never asked for
     const list = document.getElementById('afList'); const pay = document.getElementById('afPayouts');
     if (!list || !pay) return;
     try {
@@ -21010,14 +21138,69 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel ----------
   async function loadAdminPage() {
+    await refreshAdminAccess(); // what he may open is read again; every loader below does nothing for a section he does not have
+    if (!adminAccessOf()) return;
     loadAdminAdmins();
     loadAdminAffiliates();
     await Promise.all([loadAdminOverview(), loadAdminAi(), loadAdminUsers(), loadWelcomeBonusSettings(), loadEbayUsage(), loadExtensionRegistrationUrl(), loadExtensionBackendUrl(), loadAdminActionCosts(), loadAdminCategories(), loadAdminEbayRules(), loadAdminPlans(), loadAdminTickets(), loadAdminAppeals(), loadAdminMail(), loadAdminSecurity(), loadAdminReferrals(), loadAdminVouchers(), loadAdminCatalog(), loadAdminService(), loadAdminAlerts(), loadAdminSocial()]);
   }
 
   // ---------- Admin Panel: tabs ----------
+  // What this person may open. The server sends it with the session answer (user.adminAccess = { owner, full, sections }) and checks it again on every call; this only decides
+  // what is drawn. An older server that sends nothing: the owner has everything, any other admin every section but not the team.
+  const ADMIN_SECTION_ORDER = ['overview', 'users', 'lookup', 'appeals', 'tickets', 'plans', 'costs', 'vouchers', 'referrals', 'affiliates', 'catalog', 'service', 'categories', 'ebayrules', 'ai', 'mail', 'social', 'alerts', 'security', 'settings'];
+  function adminAccessOf() {
+    const u = window.currentUser;
+    if (!u || u.role !== 'admin') return null;
+    if (u.adminAccess) return u.adminAccess;
+    return { owner: !!u.isSuperAdmin, full: !!u.isSuperAdmin, sections: ADMIN_SECTION_ORDER.slice() };
+  }
+  const adminIsOwner = () => { const a = adminAccessOf(); return !!(a && a.owner); };
+  function adminCan(section) { // 'admins' = the team, deleting an account, copying listings: the owner and full rights
+    const a = adminAccessOf();
+    if (!a) return false;
+    if (a.owner || a.full) return true;
+    return section !== 'admins' && (a.sections || []).includes(section);
+  }
+  const adminFirstSection = () => { const a = adminAccessOf(); return !a ? '' : (a.owner || a.full ? 'overview' : ADMIN_SECTION_ORDER.find((k) => (a.sections || []).includes(k)) || ''); };
+  // The tabs this person has, an open tab that he does not have replaced by the first one he has (or the "no section yet" page).
+  function applyAdminAccess() {
+    const a = adminAccessOf();
+    if (!a) return;
+    document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => { t.style.display = adminCan(t.dataset.adminTab) ? '' : 'none'; });
+    const active = document.querySelector('#adminTabs [data-admin-tab].active');
+    const open = active ? active.dataset.adminTab : '';
+    if (!open || !adminCan(open)) setAdminTab(adminFirstSection() || 'none');
+  }
+  // The sidebar link and the "Open owner / team panel" button: every admin has them.
+  function paintAdminEntry(user) {
+    const isAdmin = !!user && user.role === 'admin';
+    const adminNavLink = document.getElementById('adminNavLink');
+    if (adminNavLink) adminNavLink.style.display = isAdmin ? 'flex' : 'none';
+    const roleEl = document.getElementById('userRole');
+    if (roleEl && user) roleEl.textContent = isAdmin ? 'Admin' : (user.planName || user.plan || 'Free Plan');
+    const ownerOpenBtn = document.getElementById('ownerOpenBtn');
+    if (ownerOpenBtn) { ownerOpenBtn.style.display = isAdmin ? '' : 'none'; ownerOpenBtn.textContent = user && user.isSuperAdmin ? 'Open owner panel' : 'Open team panel'; }
+  }
+  // Read the person again from the server when an admin page opens: the owner may have changed his sections (or taken the panel away) since he signed in.
+  async function refreshAdminAccess() {
+    try {
+      const res = await apiFetch('/api/auth/me');
+      const d = await res.json();
+      if (!res.ok || !d.success || !d.user || !window.currentUser) return;
+      const before = JSON.stringify(adminAccessOf());
+      window.currentUser = Object.assign(window.currentUser, { role: d.user.role, isSuperAdmin: d.user.isSuperAdmin, adminAccess: d.user.adminAccess, planName: d.user.planName, plan: d.user.plan });
+      paintAdminEntry(window.currentUser);
+      if (d.user.role !== 'admin') { showPage('dashboard', { replace: true }); return; }
+      if (JSON.stringify(adminAccessOf()) !== before) { applyAdminAccess(); renderOwnerNav(); }
+    } catch (_) { /* the access the page already has stays; the server checks every call anyway */ }
+  }
+
   function setAdminTab(name) {
-    if (name === 'admins' && !(window.currentUser && window.currentUser.isSuperAdmin)) name = 'overview';
+    if (window.currentUser && window.currentUser.role === 'admin') { // a section he does not have (or a name that is none) is never opened; the empty page only for a person with no section
+      const real = name === 'none' ? !adminFirstSection() : (ADMIN_SECTION_ORDER.includes(name) || name === 'admins') && adminCan(name);
+      if (!real) name = adminFirstSection() || 'none';
+    }
     document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.classList.toggle('active', t.dataset.adminTab === name));
     document.querySelectorAll('[data-admin-panel]').forEach((p) => { p.style.display = p.dataset.adminPanel === name ? 'block' : 'none'; });
     try { sessionStorage.setItem('elmsAdminTab', name); } catch (_) {}
@@ -21028,11 +21211,11 @@ async function autoSuggestEmptyDraftCategories() {
   try { const saved = sessionStorage.getItem('elmsAdminTab'); if (saved) setAdminTab(saved); } catch (_) {}
 
   // ---------- Owner panel (/owner): the admin sections in a left menu ----------
-  // Every admin tab is in the menu once; the third value marks what only the owner has. It only moves the person between the existing sections
-  // (setAdminTab), so everything that works in the admin panel works here the same way.
+  // Every admin tab is in the menu once; a person sees the ones he has (adminCan), a group with none of them is left out. It only moves the person between the existing
+  // sections (setAdminTab), so everything that works in the admin panel works here the same way.
   const OWNER_MENU = [
     ['Overview', [['overview', 'Owner home']]],
-    ['People', [['users', 'Users'], ['lookup', 'User lookup'], ['admins', 'Admins and rights', true], ['appeals', 'Appeals'], ['tickets', 'Support']]],
+    ['People', [['users', 'Users'], ['lookup', 'User lookup'], ['admins', 'Team and rights'], ['appeals', 'Appeals'], ['tickets', 'Support']]],
     ['Money', [['plans', 'Plans'], ['costs', 'Credit costs'], ['vouchers', 'Vouchers'], ['referrals', 'Referrals'], ['affiliates', 'Affiliates']]],
     ['Product', [['catalog', 'Product catalog'], ['service', 'Done-for-you'], ['categories', 'Categories'], ['ebayrules', 'eBay rules'], ['ai', 'AI']]],
     ['Messages', [['mail', 'Mail'], ['social', 'Social']]],
@@ -21041,10 +21224,12 @@ async function autoSuggestEmptyDraftCategories() {
   function renderOwnerNav() {
     const nav = document.getElementById('ownerNav');
     if (!nav) return;
-    const isSuper = !!(window.currentUser && window.currentUser.isSuperAdmin);
-    nav.innerHTML = '<div class="owner-nav-brand">ELMS owner</div>'
-      + OWNER_MENU.map(([group, items]) => '<div class="owner-nav-group">' + escapeHtml(group) + '</div>'
-        + items.filter(([, , ownerOnly]) => isSuper || !ownerOnly).map(([tab, label, ownerOnly]) => '<button class="owner-nav-item" type="button" data-owner-tab="' + tab + '"><span>' + escapeHtml(label) + '</span>' + (ownerOnly ? '<em class="owner-tag">owner</em>' : '') + '<span class="ad-count" data-owner-count="' + tab + '" style="display:none;"></span></button>').join('')).join('')
+    const owner = adminIsOwner();
+    nav.innerHTML = '<div class="owner-nav-brand">' + (owner ? 'ELMS owner' : 'ELMS team') + '</div>'
+      + OWNER_MENU.map(([group, items]) => {
+        const shown = items.filter(([tab]) => adminCan(tab));
+        return shown.length ? '<div class="owner-nav-group">' + escapeHtml(group) + '</div>' + shown.map(([tab, label]) => '<button class="owner-nav-item" type="button" data-owner-tab="' + tab + '"><span>' + escapeHtml(tab === 'overview' && !owner ? 'Overview' : label) + '</span><span class="ad-count" data-owner-count="' + tab + '" style="display:none;"></span></button>').join('') : '';
+      }).join('')
       + '<div class="owner-nav-group">ELMS</div><button class="owner-nav-item" type="button" data-owner-go="dashboard">Back to the app</button><button class="owner-nav-item" type="button" data-owner-go="admin">Classic admin panel</button>';
     nav.querySelectorAll('[data-owner-tab]').forEach((b) => b.addEventListener('click', () => {
       const tab = document.querySelector('#adminTabs [data-admin-tab="' + b.dataset.ownerTab + '"]'); // the tab strip is hidden here, its buttons still work: the same handlers run (Alerts and Social reload their list when opened)
@@ -21136,6 +21321,7 @@ async function autoSuggestEmptyDraftCategories() {
   function svcShow(job) { svcJob = job; svcShowBatch(null); document.getElementById('svcAnswers').value = ''; svcPaintResults(null); svcSay('', ''); svcPaintJob(); }
 
   async function loadAdminService() {
+    if (!adminCan('service')) return; // a section he does not have is never asked for
     const mine = ++svcSeq;
     const [jobs, words] = await Promise.allSettled([svcApi('/jobs'), svcApi('/vero-words')]);
     if (mine !== svcSeq) return;
@@ -21329,6 +21515,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel: Product Catalog ----------
   async function loadAdminCatalog() {
+    if (!adminCan('catalog')) return; // a section he does not have is never asked for
     try {
       const res = await apiFetch('/api/admin/settings/limits');
       const data = await res.json();
@@ -21877,47 +22064,127 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
-  // ---------- Admin: who has the admin panel (super admin only) ----------
+  // ---------- Admin: Team (who has the admin panel, what each may open, invitations) ----------
+  // For the owner and members with full rights. The server decides (every call is checked again); this draws what it sends.
+  let teamData = null;          // { members, invites, sections } as the server last sent it
+  let teamInviteBuilt = false;  // the tick boxes of the invitation form are drawn once, so what is ticked stays while the lists are read again
+  function teamSay(id, text, kind) { const el = document.getElementById(id); if (!el) return; el.className = 'st-status' + (kind ? ' ' + kind : ''); el.textContent = text || ''; }
+  async function teamApi(path, method, body) {
+    const res = await apiFetch('/api/admin/team' + path, { method: method || 'GET', headers: body ? { 'Content-Type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined });
+    let d = null;
+    try { d = await res.json(); } catch (_) { /* no JSON: apiFetch already said why (a restarting server, a proxy timeout) */ }
+    if (!res.ok || !d || !d.success) throw new Error((d && d.error) || 'The server did not answer. Please try again.');
+    return d;
+  }
+  const teamLabel = (key) => { const s = teamData && teamData.sections.find((x) => x.key === key); return s ? s.label : key; };
+  // One tick box per section, grouped like the menu. `chosen`: the keys that start ticked; `name` tells two sets of boxes apart.
+  function teamTicksHtml(chosen, name) {
+    const groups = [];
+    teamData.sections.forEach((sec) => { let g = groups.find((x) => x.name === sec.group); if (!g) { g = { name: sec.group, items: [] }; groups.push(g); } g.items.push(sec); });
+    return groups.map((g) => '<div class="tm-group">' + escapeHtml(g.name) + '</div><div class="tm-grid">' + g.items.map((sec) => '<label class="tm-check"><input type="checkbox" data-tm="' + escapeAttr(name) + '" value="' + escapeAttr(sec.key) + '"' + (chosen.includes(sec.key) ? ' checked' : '') + ' /><span>' + escapeHtml(sec.label) + '</span></label>').join('') + '</div>').join('');
+  }
+  const teamTicked = (root, name) => Array.from(root.querySelectorAll('input[data-tm="' + name + '"]:checked')).map((i) => i.value);
+  function teamSummary(m) {
+    if (m.owner) return 'Owner: can do everything.';
+    if (m.full) return 'Full rights: every section and the team.';
+    if (m.legacy) return 'Every section but not the team (set before rights existed). Edit to choose.';
+    if (!m.sections.length) return 'No section yet: signed in, but sees nothing until you give some.';
+    const names = m.sections.map(teamLabel);
+    return names.length + ' of ' + teamData.sections.length + ' sections: ' + (names.length > 6 ? names.slice(0, 6).join(', ') + ' and ' + (names.length - 6) + ' more' : names.join(', ')) + '.';
+  }
+  const teamBadge = (m) => (m.owner ? '<span class="ad-tag paid">OWNER</span>' : m.full ? '<span class="ad-tag paid">FULL RIGHTS</span>' : m.legacy ? '<span class="ad-tag free">ALL SECTIONS</span>' : !m.sections.length ? '<span class="ad-tag warn">NO SECTION</span>' : '<span class="ad-tag free">MEMBER</span>');
+  const TEAM_INVITE_TAG = { waiting: '<span class="ad-tag warn">WAITING</span>', accepted: '<span class="ad-tag paid">JOINED</span>', withdrawn: '<span class="ad-tag free">WITHDRAWN</span>', expired: '<span class="ad-tag bad">EXPIRED</span>' };
+  const teamDate = (v) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); };
+
+  function teamPaint() {
+    const me = window.currentUser && window.currentUser.id;
+    document.getElementById('teamMembers').innerHTML = teamData.members.map((m) => {
+      const self = String(m.id) === String(me);
+      const actions = m.owner || self ? '' : '<div class="tm-actions"><button class="btn-small" type="button" data-tm-act="edit" data-id="' + escapeAttr(m.id) + '">Edit rights</button><button class="btn-small delete" type="button" data-tm-act="remove" data-id="' + escapeAttr(m.id) + '" data-email="' + escapeAttr(m.email) + '">Remove</button></div>';
+      return '<div class="tm-member"><div class="tm-who"><b>' + escapeHtml(m.email || '') + '</b> ' + teamBadge(m) + (self ? ' <span class="rfa-def" style="display:inline;">(you)</span>' : '') + '<span class="rfa-def">' + escapeHtml((m.name ? m.name + ' \u00b7 ' : '') + teamSummary(m)) + '</span></div>' + actions + '</div>';
+    }).join('') || '<div class="state-msg">Nobody yet.</div>';
+    document.getElementById('teamInvites').innerHTML = teamData.invites.map((i) => {
+      const what = i.full ? 'Full rights' : (i.sections.length + ' section' + (i.sections.length === 1 ? '' : 's') + ': ' + i.sections.map(teamLabel).join(', '));
+      return '<div class="tm-inv"><div class="tm-who"><b>' + escapeHtml(i.email) + '</b> ' + (TEAM_INVITE_TAG[i.status] || '') + '<span class="rfa-def">' + escapeHtml(what + ' \u00b7 invited by ' + (i.invitedByEmail || 'the owner') + ' on ' + teamDate(i.createdAt) + (i.status === 'waiting' ? ' \u00b7 valid until ' + teamDate(i.expiresAt) : '')) + '</span></div>'
+        + (i.status === 'waiting' ? '<div class="tm-actions"><button class="btn-small" type="button" data-tm-act="withdraw" data-id="' + escapeAttr(i.id) + '">Withdraw</button></div>' : '') + '</div>';
+    }).join('') || '<div class="state-msg">No invitation in the last 30 days.</div>';
+    if (!teamInviteBuilt) { document.getElementById('teamInvTicks').innerHTML = teamTicksHtml([], 'inv'); teamInviteBuilt = true; }
+  }
   async function loadAdminAdmins() {
-    const isSuper = !!(window.currentUser && window.currentUser.isSuperAdmin);
-    const tab = document.getElementById('adminAdminsTab');
-    if (tab) tab.style.display = isSuper ? '' : 'none';
-    if (!isSuper) return;
-    const list = document.getElementById('adminAdminsList');
+    if (!adminCan('admins')) return;
+    const box = document.getElementById('teamMembers');
+    if (!box) return;
     try {
-      const res = await apiFetch('/api/admin/admins');
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the admins.');
-      list.innerHTML = data.admins.map((a) => `<div class="ad-adminrow"><div><b>${escapeHtml(a.email || '')}</b>${a.name ? `<span class="rfa-def">${escapeHtml(a.name)}</span>` : ''}</div>${a.isSuperAdmin ? '<span class="status-badge published">Super admin</span>' : `<button class="btn-small delete" data-remove-admin="${escapeAttr(a.id)}" data-email="${escapeAttr(a.email || '')}" type="button">Remove access</button>`}</div>`).join('') || '<div class="empty-state">No admins.</div>';
-      list.querySelectorAll('[data-remove-admin]').forEach((b) => b.addEventListener('click', async () => {
-        if (!(await elmsConfirm(`Take the admin panel away from ${b.dataset.email}? They stay an ordinary ELMS user.`, { title: 'Remove admin access', okText: 'Remove', danger: true }))) return;
-        const r = await apiFetch(`/api/admin/admins/${encodeURIComponent(b.dataset.removeAdmin)}`, { method: 'DELETE' });
-        const d = await r.json();
-        showToast('Admins', r.ok && d.success ? 'Admin access removed.' : (d.error || 'Could not remove access.'), r.ok && d.success ? 'success' : 'error');
-        loadAdminAdmins();
-      }));
+      teamData = await teamApi('');
+      teamPaint();
     } catch (err) {
-      list.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`;
+      box.innerHTML = '<div class="state-msg error">' + escapeHtml(err.message) + '</div>';
     }
   }
-  document.getElementById('adminAddBtn')?.addEventListener('click', async () => {
-    const input = document.getElementById('adminAddEmail');
-    const status = document.getElementById('adminAdminsStatus');
-    const email = input.value.trim();
-    if (!email) { status.textContent = 'Type the email of an ELMS user.'; status.className = 'st-status error'; return; }
-    const btn = document.getElementById('adminAddBtn');
+  function teamOpenEdit(member) {
+    const m = adminModal(`
+      <div class="draft-title">${escapeHtml(member.email)}</div>
+      <div class="meta-line">Choose what this person can open. The server refuses everything else.</div>
+      <label class="tm-full"><input type="checkbox" id="tmEditFull"${member.full ? ' checked' : ''} /><div><b>Full rights</b><span>Everything except the owner status: all sections, the team itself, deleting an account and copying listings.</span></div></label>
+      <div class="tm-ticks${member.full ? ' off' : ''}" id="tmEditTicks">${teamTicksHtml(member.sections, 'edit')}</div>
+      <div class="ad-chips" style="margin-top:16px;">
+        <button class="btn-small save" type="button" id="tmEditSave">Save</button>
+        <button class="btn-small" type="button" data-close style="background:var(--grey-light);color:var(--ink);">Cancel</button>
+      </div>
+      <div class="st-status" id="tmEditStatus"></div>`);
+    m.querySelector('#tmEditFull').addEventListener('change', (e) => m.querySelector('#tmEditTicks').classList.toggle('off', e.target.checked));
+    m.querySelector('#tmEditSave').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      try {
+        const full = m.querySelector('#tmEditFull').checked;
+        await teamApi('/members/' + encodeURIComponent(member.id), 'PUT', { full, sections: full ? [] : teamTicked(m, 'edit') });
+        m.remove();
+        showToast('Team', 'Rights saved for ' + member.email + '.', 'success');
+        loadAdminAdmins();
+      } catch (err) {
+        teamSay('tmEditStatus', err.message, 'error');
+        btn.disabled = false;
+      }
+    });
+  }
+  document.getElementById('teamMembers')?.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-tm-act]');
+    if (!b || !teamData) return;
+    if (b.dataset.tmAct === 'edit') { const member = teamData.members.find((x) => String(x.id) === b.dataset.id); if (member) teamOpenEdit(member); return; }
+    if (b.dataset.tmAct === 'remove') {
+      if (!(await elmsConfirm('Take the admin panel away from ' + b.dataset.email + '? They stay an ordinary ELMS user.', { title: 'Remove from the team', okText: 'Remove', danger: true }))) return;
+      try { await teamApi('/members/' + encodeURIComponent(b.dataset.id), 'DELETE'); showToast('Team', b.dataset.email + ' is no longer on the team.', 'success'); } catch (err) { showToast('Team', err.message, 'error'); }
+      loadAdminAdmins();
+    }
+  });
+  document.getElementById('teamInvites')?.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-tm-act="withdraw"]');
+    if (!b) return;
+    b.disabled = true;
+    try { await teamApi('/invites/' + encodeURIComponent(b.dataset.id), 'DELETE'); showToast('Team', 'Invitation withdrawn.', 'success'); } catch (err) { showToast('Team', err.message, 'error'); }
+    loadAdminAdmins();
+  });
+  document.getElementById('teamInvFull')?.addEventListener('change', (e) => document.getElementById('teamInvTicks').classList.toggle('off', e.target.checked));
+  document.getElementById('teamInvBtn')?.addEventListener('click', async () => {
+    const email = document.getElementById('teamInvEmail').value.trim();
+    const full = document.getElementById('teamInvFull').checked;
+    const sections = teamTicked(document.getElementById('teamInvTicks'), 'inv');
+    if (!email) return teamSay('teamInvStatus', 'Type the email address of the person.', 'error');
+    if (!full && !sections.length) return teamSay('teamInvStatus', 'Tick at least one section, or give full rights.', 'error');
+    const btn = document.getElementById('teamInvBtn');
     btn.disabled = true;
+    teamSay('teamInvStatus', 'Sending\u2026');
     try {
-      const res = await apiFetch('/api/admin/admins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not give admin access.');
-      status.textContent = `${data.admin.email} is now an admin.`;
-      status.className = 'st-status success';
-      input.value = '';
+      const out = await teamApi('/invite', 'POST', { email, full, sections: full ? [] : sections });
+      teamSay('teamInvStatus', 'Invitation sent to ' + out.invite.email + '. It is valid for 7 days.', 'success');
+      document.getElementById('teamInvEmail').value = '';
+      document.getElementById('teamInvFull').checked = false;
+      document.getElementById('teamInvTicks').classList.remove('off');
+      document.querySelectorAll('#teamInvTicks input[data-tm="inv"]').forEach((i) => { i.checked = false; });
       loadAdminAdmins();
     } catch (err) {
-      status.textContent = err.message;
-      status.className = 'st-status error';
+      teamSay('teamInvStatus', err.message, 'error');
     } finally {
       btn.disabled = false;
     }
@@ -22003,6 +22270,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function loadAdminReferrals() {
+    if (!adminCan('referrals')) return; // a section he does not have is never asked for
     const stats = document.getElementById('rfaStats');
     if (!stats) return;
     try {
@@ -22105,6 +22373,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function vcaLoadPlans() {
+    if (!adminCan('vouchers')) return; // a section he does not have is never asked for
     if (vca.plansLoaded) return;
     try {
       const res = await apiFetch('/api/admin/plans');
@@ -22122,6 +22391,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function loadAdminVouchers() {
+    if (!adminCan('vouchers')) return; // a section he does not have is never asked for
     const list = document.getElementById('vcaList');
     if (!list) return;
     vcaShowFields();
@@ -22230,6 +22500,7 @@ async function autoSuggestEmptyDraftCategories() {
   // ---------- Admin Panel: Overview ----------
   const money = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   async function loadAdminOverview() {
+    if (!adminCan('overview')) return; // a section he does not have is never asked for
     const el = document.getElementById('adminOverviewContent'); if (!el) return;
     try {
       const res = await apiFetch('/api/admin/overview'); const d = await res.json();
@@ -22265,6 +22536,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel: AI ----------
   async function loadAdminAi() {
+    if (!adminCan('ai')) return; // a section he does not have is never asked for
     const banner = document.getElementById('adminAiStatus'); if (!banner) return;
     try {
       const res = await apiFetch('/api/admin/settings/ai'); const d = await res.json();
@@ -22488,6 +22760,7 @@ async function autoSuggestEmptyDraftCategories() {
   /** Admin > Mail > "Amazon data calls": the calls made to the paid Amazon data services per day, and the ones that were not needed (ELMS's own copy of a product, a stock answer shared between sellers). */
   let vendorUsageAt = 0;
   async function loadAdminVendorUsage() {
+    if (!adminCan('mail')) return; // a section he does not have is never asked for
     const el = document.getElementById('adminVendorUsage'); if (!el) return;
     if (el.dataset.ready === '1' && Date.now() - vendorUsageAt < 60000) return; // loaded a moment ago (loadAdminMail also runs every 8 s while an announcement is sent)
     vendorUsageAt = Date.now();
@@ -22516,6 +22789,7 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) { el.innerHTML = '<p class="st-hint">' + escapeHtml(err.message) + '</p>'; }
   }
   async function loadAdminMail() {
+    if (!adminCan('mail')) return; // a section he does not have is never asked for
     const banner = document.getElementById('adminMailStatus'); if (!banner) return;
     loadAdminVendorUsage(); // independent of the announcements and the limits below: it must not wait for them, or die with them
     try {
@@ -22612,6 +22886,7 @@ async function autoSuggestEmptyDraftCategories() {
   });
 
   async function loadExtensionRegistrationUrl() {
+    if (!adminCan('settings')) return; // a section he does not have is never asked for
     const input = document.getElementById('extensionRegistrationUrl');
     if (!input) return;
     try {
@@ -22622,6 +22897,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function loadExtensionBackendUrl() {
+    if (!adminCan('settings')) return; // a section he does not have is never asked for
     const input = document.getElementById('extensionBackendUrl');
     if (!input) return;
     try {
@@ -22676,6 +22952,7 @@ async function autoSuggestEmptyDraftCategories() {
   // ---------- Admin Panel: Credit Costs ----------
   let adminActionCosts = [];
   async function loadAdminActionCosts() {
+    if (!adminCan('costs')) return; // a section he does not have is never asked for
     const el = document.getElementById('adminActionCostsContent'); if (!el) return;
     try {
       const res = await apiFetch('/api/admin/settings/action-costs'); const data = await res.json();
@@ -22715,6 +22992,7 @@ async function autoSuggestEmptyDraftCategories() {
     const aiTab = document.getElementById('aiCategoryEnabled'); if (aiTab) aiTab.checked = !!on; // the same setting, shown in the AI tab too
   }
   async function loadCategoryMode() {
+    if (!adminCan('categories')) return; // a section he does not have is never asked for
     const text = document.getElementById('catModeText'); const status = document.getElementById('catModeStatus'); const box = document.getElementById('catAiToggle');
     try {
       const res = await apiFetch('/api/admin/settings/ai'); const d = await res.json();
@@ -22744,6 +23022,7 @@ async function autoSuggestEmptyDraftCategories() {
   });
 
   async function loadAdminCategories(options = {}) {
+    if (!adminCan('categories')) return; // a section he does not have is never asked for
     if (options.mode !== false) loadCategoryMode();
     const el = document.getElementById('adminCategoryLists'); if (!el) return;
     try {
@@ -23049,6 +23328,7 @@ async function autoSuggestEmptyDraftCategories() {
   // area (or of their own, area "custom") and phrases that are always fine. The "Try a text" box uses the form as it is, saved or not.
   const erLines = (text) => String(text || '').split(/[\n,;]/).map((s) => s.trim()).filter(Boolean);
   async function loadAdminEbayRules() {
+    if (!adminCan('ebayrules')) return; // a section he does not have is never asked for
     const el = document.getElementById('ebayRulesBody'); if (!el) return;
     try {
       const res = await apiFetch('/api/admin/ebay-policy'); const d = await res.json();
@@ -23116,6 +23396,7 @@ async function autoSuggestEmptyDraftCategories() {
   // ---------- Admin Panel: eBay API usage ----------
   // ELMS's own count of Trading calls today (eBay allows 5,000 a day for the whole app) next to eBay's numbers for every API.
   async function loadEbayUsage(force) {
+    if (!adminCan('settings')) return; // a section he does not have is never asked for
     const body = document.getElementById('ebayUsageBody');
     if (!body) return;
     try {
@@ -23179,6 +23460,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin Panel: Welcome Bonus ----------
   async function loadWelcomeBonusSettings() {
+    if (!adminCan('settings')) return; // a section he does not have is never asked for
     try {
       const res = await apiFetch('/api/admin/settings');
       const data = await res.json();
@@ -23267,6 +23549,7 @@ async function autoSuggestEmptyDraftCategories() {
   });
 
   async function loadAdminUsers() {
+    if (!adminCan('users')) return; // a section he does not have is never asked for
     const container = document.getElementById('adminUsersContent');
     container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
 
@@ -23364,6 +23647,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // Quietly refreshes the status / plan / IP cells (not the inputs someone may be typing in) while the Users tab is open.
   async function refreshAdminUserStatus() {
+    if (!adminCan('users')) return; // a section he does not have is never asked for
     const panel = document.querySelector('[data-admin-panel="users"]');
     if (!panel || panel.style.display === 'none' || document.getElementById('page-admin')?.style.display === 'none' || document.hidden) return;
     try {
@@ -23428,7 +23712,7 @@ async function autoSuggestEmptyDraftCategories() {
       <div class="meta-line">${escapeHtml(u.email)}${u.phone ? ' &middot; ' + escapeHtml(u.phoneDisplay || u.phone) : ''} &middot; ${adminUserStatusHtml(u)} &middot; ${u.plan && u.plan.paid ? 'Paid plan' : 'Free plan'}</div>
       ${u.suspended ? `<div class="elms-blocked-reason" style="margin-top:12px;">${u.banned ? 'Permanently banned (no appeal)' : 'Suspended'}: ${escapeHtml(u.suspendedReason || '')}</div>` : ''}
       <div class="ad-chips" style="margin-top:14px;">
-        <button class="btn-small" data-sec="message">Send a message</button>
+        ${adminCan('security') ? '<button class="btn-small" data-sec="message">Send a message</button>' : ''}
         ${u.role === 'admin' ? '' : (u.suspended
     ? '<button class="btn-small save" data-sec="unsuspend">Reinstate account…</button>' + (u.banned ? '' : '<button class="btn-small" data-sec="ban" style="background:#FEF2F2;color:#B42318;">Ban permanently…</button>')
     : '<button class="btn-small" data-sec="suspend" style="background:#FEF2F2;color:#B42318;">Suspend or ban…</button>')}
@@ -23569,6 +23853,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // Security tab: send a pop-up message, see what was sent, see and lift blocks.
   async function loadAdminSecurity() {
+    if (!adminCan('security')) return; // a section he does not have is never asked for
     if (!document.getElementById('noticeList')) return;
     if (!adminUsersData.length) {
       try { const r = await apiFetch('/api/admin/users'); const d = await r.json(); if (r.ok && d.success) adminUsersData = d.users || []; } catch (_) { /* the list is only a convenience */ }
@@ -23719,7 +24004,7 @@ async function autoSuggestEmptyDraftCategories() {
   document.getElementById('adminUsersExportBtn')?.addEventListener('click', exportAdminUsersCsv);
 
   // The "Delete account" part of the edit window (see openUserEditModal): what to do, or what is already going on. `d` is the row's deletion state from GET /api/admin/users (never undefined here:
-  // the window asks first). Only the super admin can START a deletion; any admin can cancel one.
+  // the window asks first). Only the owner and members with full rights can START a deletion; any admin who can open the user can cancel one.
   const AD_DELETE_DAYS = 3;
   function adminDeletionHtml(u, d, canStart) {
     const when = (x) => escapeHtml(new Date(x).toLocaleString());
@@ -23733,7 +24018,7 @@ async function autoSuggestEmptyDraftCategories() {
     }
     const history = d && d.cancelledAt ? '<p class="meta-line" style="margin:0 0 10px;">The last deletion was cancelled' + (d.cancelledBy ? ' (' + escapeHtml(d.cancelledBy) + ')' : '') + ' on ' + when(d.cancelledAt) + '.</p>' : '';
     if (u.suspended || u.banned) return history + '<p class="meta-line" style="margin:0;">A suspended or banned account cannot be deleted: its owner could not sign in to keep it, and deleting it would erase the ban.</p>';
-    if (!canStart) return history + '<p class="meta-line" style="margin:0;">Only the super admin can delete an account. Ask them if this one has to go.</p>';
+    if (!canStart) return history + '<p class="meta-line" style="margin:0;">Only the owner and members with full rights can delete an account. Ask one of them if this one has to go.</p>';
     return history
       + '<p class="meta-line" style="margin:0 0 10px;">The person gets an email from support now and ' + AD_DELETE_DAYS + ' days to keep the account: if they sign in (or open ELMS) before then, nothing is deleted. Otherwise the account and all its data are deleted for good.</p>'
       + '<div class="st-field"><label for="ueDelNote">Reason (private, only admins see it)</label><input class="st-input" id="ueDelNote" maxlength="500" placeholder="e.g. asked to be deleted, spam account" /></div>'
@@ -23839,11 +24124,11 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="ad-edit-actions">
           <button class="btn-small" type="button" data-ue="security">Security and sign-ins…</button>
           <button class="btn-small" type="button" data-ue="credit-history" title="Every credit this person got and spent: what on, which admin added or took how many.">Credit history…</button>
-          <button class="btn-small" type="button" data-ue="message">Send a message</button>
+          ${adminCan('security') ? '<button class="btn-small" type="button" data-ue="message">Send a message</button>' : ''}
           <button class="btn-small" type="button" data-ue="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told.">Draft links (CSV)</button>
           <button class="btn-small" type="button" data-ue="push" title="Add drafts to this user's Drafts. Free, no credit is used.">Add listings…</button>
-          ${window.currentUser && window.currentUser.isSuperAdmin ? '<button class="btn-small" type="button" data-ue="copy" title="Give this user\'s current drafts and listings to another user as drafts. Nothing is fetched and no credit is used; this user keeps everything.">Copy listings to…</button>' : ''}
-          ${opts.fromLookup ? '' : '<button class="btn-small" type="button" data-ue="lookup">Whole picture</button>'}
+          ${adminCan('admins') ? '<button class="btn-small" type="button" data-ue="copy" title="Give this user\'s current drafts and listings to another user as drafts. Nothing is fetched and no credit is used; this user keeps everything.">Copy listings to…</button>' : ''}
+          ${opts.fromLookup || !adminCan('lookup') ? '' : '<button class="btn-small" type="button" data-ue="lookup">Whole picture</button>'}
         </div>
       </div>
 
@@ -23918,7 +24203,7 @@ async function autoSuggestEmptyDraftCategories() {
     });
 
     // Delete account: always with 3 days' notice. The person is mailed from support at once; signing in (or just opening ELMS) cancels it; otherwise the hourly job deletes the account and its data.
-    const canStartDeletion = !!(window.currentUser && window.currentUser.isSuperAdmin);
+    const canStartDeletion = adminCan('admins'); // the owner and members with full rights
     const liveRow = () => adminUsersData.find((x) => x.id === cur.id); // the table's row as it is NOW (the once-a-minute refresh replaces the objects)
     const deletionState = () => { const l = liveRow(); return l && l.deletion !== undefined ? l.deletion : cur.deletion; };
     const setDeletion = (v) => { cur.deletion = v; const l = liveRow(); if (l) l.deletion = v; };
@@ -23979,7 +24264,7 @@ async function autoSuggestEmptyDraftCategories() {
 
     m.querySelector('[data-ue="security"]').addEventListener('click', () => openUserSecurityModal(cur));
     m.querySelector('[data-ue="credit-history"]').addEventListener('click', () => openCreditHistoryModal(cur));
-    m.querySelector('[data-ue="message"]').addEventListener('click', () => { m.remove(); setAdminTab('security'); document.getElementById('noticeTo').value = cur.email; document.getElementById('noticeTitle').focus(); });
+    m.querySelector('[data-ue="message"]')?.addEventListener('click', () => { m.remove(); setAdminTab('security'); document.getElementById('noticeTo').value = cur.email; document.getElementById('noticeTitle').focus(); });
     m.querySelector('[data-ue="draft-links"]').addEventListener('click', (e) => downloadDraftLinks(cur, e.currentTarget));
     m.querySelector('[data-ue="push"]').addEventListener('click', () => openPushListingsModal(cur));
     m.querySelector('[data-ue="copy"]')?.addEventListener('click', () => openCopyListingsModal(cur));
@@ -24427,6 +24712,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function loadAdminTickets() {
+    if (!adminCan('tickets')) return; // a section he does not have is never asked for
     const container = document.getElementById('adminTicketsContent');
     container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
 
@@ -24567,6 +24853,7 @@ async function autoSuggestEmptyDraftCategories() {
     }));
     container.querySelectorAll('[data-al-user]').forEach((link) => link.addEventListener('click', (e) => {
       e.preventDefault();
+      if (!adminCan('lookup')) return showToast('Not part of your rights', 'Your rights do not include User lookup.', 'error');
       setAdminTab('lookup');
       const box = document.getElementById('lookupEmail');
       if (box) box.value = link.dataset.alEmail || '';
@@ -24587,6 +24874,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function loadAdminAlerts(opts = {}) {
+    if (!adminCan('alerts')) return; // a section he does not have is never asked for
     const container = document.getElementById('adminAlertsContent');
     if (!container) return;
     const seq = ++adminAlertsSeq;
@@ -24610,6 +24898,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // The red number on the tab stays true while the admin works elsewhere (just the numbers: one tiny request a minute while the admin page is open).
   async function refreshAdminAlertsBadge() {
+    if (!adminCan('alerts')) return; // a section he does not have is never asked for
     const page = document.getElementById('page-admin');
     if (!page || page.style.display === 'none' || document.hidden) return;
     try { if (!localStorage.getItem('elmsSessionToken')) return; } catch (_) { return; } // signed out (the page can stay on screen behind the sign-in): nothing to ask
@@ -24999,6 +25288,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   async function loadAdminSocial(opts = {}) {
+    if (!adminCan('social')) return; // a section he does not have is never asked for
     const box = document.getElementById('adminSocialContent');
     if (!box || socialSaving) return;
     if (!opts.force && socialRows.some(socialDirty)) return; // changes that are not saved yet stay in the form
@@ -25034,6 +25324,7 @@ async function autoSuggestEmptyDraftCategories() {
   const appealPreview = (message) => String(message || '').split('\n\n--\n')[0].replace(/\s+/g, ' ').trim().slice(0, 140);
 
   async function loadAdminAppeals() {
+    if (!adminCan('appeals')) return; // a section he does not have is never asked for
     const container = document.getElementById('adminAppealsContent');
     if (!container) return;
     try {
@@ -25235,6 +25526,7 @@ async function autoSuggestEmptyDraftCategories() {
     el.textContent = `Example: ${usd(amount)} a month = ${Math.round(amount * s.creditsPerUsd).toLocaleString()} credits. A year = ${usd(year)} for ${Math.round(amount * s.creditsPerUsd * 12).toLocaleString()} credits. ${s.includedStores} eBay store${s.includedStores === 1 ? '' : 's'} included, each extra store +${usd(s.extraStoreMonthlyUsd)} a month.`;
   }
   async function loadCustomPlanSettings() {
+    if (!adminCan('plans')) return; // a section he does not have is never asked for
     try {
       const res = await apiFetch('/api/admin/settings/custom-plan');
       const data = await res.json();
@@ -25267,6 +25559,7 @@ async function autoSuggestEmptyDraftCategories() {
   });
 
   async function loadAdminPlans() {
+    if (!adminCan('plans')) return; // a section he does not have is never asked for
     loadCustomPlanSettings();
     loadAdminListingPackTiers();
     const container = document.getElementById('adminPlansContent');
@@ -25454,6 +25747,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   // ---------- Admin: Buy Listings tiers (same Plans tab) ----------
   async function loadAdminListingPackTiers() {
+    if (!adminCan('plans')) return; // a section he does not have is never asked for
     const container = document.getElementById('adminListingPackTiersContent');
     if (!container) return;
     container.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading"></div>';
