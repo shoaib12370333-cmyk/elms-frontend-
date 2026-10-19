@@ -8774,6 +8774,7 @@ B0EXAMPLE2"></textarea></div>
     return `${pathname}?${query ? query + '&' : ''}accountId=${encodeURIComponent(id)}`;
   }
 
+  let lastAdminExpiredToastAt = 0;
   async function apiFetch(path, options = {}) {
     path = await scopeToActiveStore(path, options);
     const sessionToken = localStorage.getItem('elmsSessionToken');
@@ -8803,7 +8804,11 @@ B0EXAMPLE2"></textarea></div>
 
     if (res.status === 401) {
       // An admin sign-in lasts a few hours (the server answers with this code): say why the sign-in screen is back.
-      res.clone().json().then((d) => { if (d && d.code === 'admin_session_expired') showToast('Signed out', d.error || 'Admin sessions are short. Please sign in again.', 'error'); }).catch(() => {});
+      res.clone().json().then((d) => {
+        if (!d || d.code !== 'admin_session_expired' || Date.now() - lastAdminExpiredToastAt < 10000) return; // the admin page asks for two dozen things at once: say it once
+        lastAdminExpiredToastAt = Date.now();
+        showToast('Signed out', d.error || 'Admin sessions are short. Please sign in again.', 'error');
+      }).catch(() => {});
       // Do not let a racing background request during boot show Auth over the
       // app. Also only clear the token if it is still the token used by this
       // request; this avoids an old 401 logging out a newly authenticated user.
@@ -9115,6 +9120,11 @@ B0EXAMPLE2"></textarea></div>
       if (!yes) { clearTeamInvite(); return finish(); }
       const res = await apiFetch('/api/team/invitations/accept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
       const d = await res.json();
+      if (d && d.code === 'fresh_sign_in_required') { // the admin panel needs a recent sign-in: nothing was used up, the link stays in this tab
+        const again = await elmsConfirm(d.error || 'Please sign in again to join the team.', { title: 'Sign in again', okText: 'Sign out and sign in', cancelText: 'Not now' });
+        if (again) { document.getElementById('signOutBtn').click(); return; }
+        return finish();
+      }
       if ((res.ok && d.success) || [404, 409, 410].includes(res.status)) clearTeamInvite(); // joined, or used / withdrawn / expired / not valid: over. Any other failure keeps the link in this tab: it is asked again next time
       if (!res.ok || !d.success) {
         await elmsConfirm(d.error || 'Could not join the team. Please try again.', { title: 'Team invitation', okText: 'OK', info: true });
@@ -17100,6 +17110,8 @@ async function autoSuggestEmptyDraftCategories() {
       showToast('AliExpress', err.message || 'Could not start the connection. Please try again.', 'error');
     }
   });
+  // "Back" from AliExpress's consent screen brings this page back as it was (back/forward cache), with the button still switched off.
+  window.addEventListener('pageshow', (e) => { if (e.persisted) { const b = document.getElementById('aliexpressConnectBtn'); if (b) b.disabled = false; } });
 
   document.getElementById('aliexpressDisconnectBtn')?.addEventListener('click', async () => {
     if (!(await elmsConfirm('Disconnect AliExpress?', { danger: true }))) return;
