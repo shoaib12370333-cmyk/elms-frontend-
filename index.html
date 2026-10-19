@@ -3730,12 +3730,12 @@
   .ad-tab.active { background:#0064D2; color:#fff; }
   /* The owner panel (/owner): the same admin sections, reached from a left menu instead of the tab strip. */
   .owner-nav { display:none; }
-  #ownerOpenBtn { text-decoration:none; }
+  #ownerOpenBtn { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; }
   .app-shell.owner-mode #ownerOpenBtn { display:none !important; }
   .app-shell.owner-mode .sidebar, .app-shell.owner-mode .mobile-menu-btn, .app-shell.owner-mode #adminTabs { display:none !important; }
   .app-shell.owner-mode #page-admin { display:grid !important; grid-template-columns:230px minmax(0,1fr); column-gap:22px; align-items:start; }
   .app-shell.owner-mode #page-admin > * { grid-column:2; min-width:0; }
-  .app-shell.owner-mode #page-admin > .owner-nav { display:block; grid-column:1; grid-row:1 / span 80; position:sticky; top:86px; max-height:calc(100vh - 110px); overflow-y:auto; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px; scrollbar-width:thin; }
+  .app-shell.owner-mode #page-admin > .owner-nav { display:block; grid-column:1; grid-row:1 / span 80; position:sticky; top:calc(var(--topbar-h) + 14px); max-height:calc(100vh - var(--topbar-h) - 34px); overflow-y:auto; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px; scrollbar-width:thin; }
   .owner-nav-brand { font-size:15px; font-weight:800; color:var(--ink); padding:4px 8px 2px; }
   .owner-nav-group { font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#94A3B8; margin:14px 8px 4px; }
   .owner-nav-item { display:flex; width:100%; align-items:center; justify-content:space-between; gap:8px; border:none; background:transparent; padding:8px 10px; border-radius:9px; font:inherit; font-size:13.5px; font-weight:600; color:#475569; cursor:pointer; text-align:left; }
@@ -6971,6 +6971,7 @@ B0EXAMPLE2"></textarea></div>
   function showPage(page, opts = {}) {
     if (!PAGE_TITLES[page]) page = 'dashboard';
     if (page === 'owner' && !(window.currentUser && window.currentUser.isSuperAdmin)) page = 'dashboard'; // the owner panel: the super admin only (the team gets it with their rights, later)
+    if (page === 'owner') closeMobileSidebar(); // the owner frame hides the app drawer: its scrim must not stay
     if (document.querySelector('.sidebar-nav a.active')?.getAttribute('data-page') !== page) scrollPageTop(false);
     if (!opts.fromPop) syncUrlToPage(page, !!opts.replace);
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
@@ -21045,7 +21046,11 @@ async function autoSuggestEmptyDraftCategories() {
       + OWNER_MENU.map(([group, items]) => '<div class="owner-nav-group">' + escapeHtml(group) + '</div>'
         + items.filter(([, , ownerOnly]) => isSuper || !ownerOnly).map(([tab, label, ownerOnly]) => '<button class="owner-nav-item" type="button" data-owner-tab="' + tab + '"><span>' + escapeHtml(label) + '</span>' + (ownerOnly ? '<em class="owner-tag">owner</em>' : '') + '<span class="ad-count" data-owner-count="' + tab + '" style="display:none;"></span></button>').join('')).join('')
       + '<div class="owner-nav-group">ELMS</div><button class="owner-nav-item" type="button" data-owner-go="dashboard">Back to the app</button><button class="owner-nav-item" type="button" data-owner-go="admin">Classic admin panel</button>';
-    nav.querySelectorAll('[data-owner-tab]').forEach((b) => b.addEventListener('click', () => { setAdminTab(b.dataset.ownerTab); scrollPageTop(false); }));
+    nav.querySelectorAll('[data-owner-tab]').forEach((b) => b.addEventListener('click', () => {
+      const tab = document.querySelector('#adminTabs [data-admin-tab="' + b.dataset.ownerTab + '"]'); // the tab strip is hidden here, its buttons still work: the same handlers run (Alerts and Social reload their list when opened)
+      if (tab) tab.click(); else setAdminTab(b.dataset.ownerTab);
+      scrollPageTop(false);
+    }));
     nav.querySelectorAll('[data-owner-go]').forEach((b) => b.addEventListener('click', () => showPage(b.dataset.ownerGo)));
     syncOwnerNav();
   }
