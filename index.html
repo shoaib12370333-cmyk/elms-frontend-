@@ -8802,6 +8802,8 @@ B0EXAMPLE2"></textarea></div>
     }
 
     if (res.status === 401) {
+      // An admin sign-in lasts a few hours (the server answers with this code): say why the sign-in screen is back.
+      res.clone().json().then((d) => { if (d && d.code === 'admin_session_expired') showToast('Signed out', d.error || 'Admin sessions are short. Please sign in again.', 'error'); }).catch(() => {});
       // Do not let a racing background request during boot show Auth over the
       // app. Also only clear the token if it is still the token used by this
       // request; this avoids an old 401 logging out a newly authenticated user.
@@ -17079,13 +17081,24 @@ async function autoSuggestEmptyDraftCategories() {
     } catch (err) { /* Settings still renders fine with "not connected" until this loads. */ }
   }
 
-  document.getElementById('aliexpressConnectBtn')?.addEventListener('click', () => {
+  document.getElementById('aliexpressConnectBtn')?.addEventListener('click', async (e) => {
     // A direct navigation, never a fetch: /start sets a short-lived cookie (to carry which user this is through AliExpress's
     // redirect, since AliExpress's redirect_uri allows no query string - see routes/aliexpressConnect.js) and then redirects
     // straight to AliExpress. That cookie is only a genuine first-party cookie if the browser reaches /start by navigating
     // there itself, not through an XHR/fetch call.
-    const sessionToken = localStorage.getItem('elmsSessionToken');
-    window.location.href = `${API_BASE}/api/aliexpress-connect/start?token=${encodeURIComponent(sessionToken)}`;
+    // The navigation cannot carry the Authorization header, and the session token must not sit in an address: the page first asks for a one-use ticket (60 seconds)
+    // with its normal header and navigates with that.
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/api/aliexpress-connect/ticket', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.ticket) throw new Error(data.error || 'Could not start the connection. Please try again.');
+      window.location.href = `${API_BASE}/api/aliexpress-connect/start?ticket=${encodeURIComponent(data.ticket)}`;
+    } catch (err) {
+      btn.disabled = false;
+      showToast('AliExpress', err.message || 'Could not start the connection. Please try again.', 'error');
+    }
   });
 
   document.getElementById('aliexpressDisconnectBtn')?.addEventListener('click', async () => {
@@ -17950,12 +17963,11 @@ async function autoSuggestEmptyDraftCategories() {
     statusEl.textContent = 'Redirecting to eBay\u2026';
 
     try {
-      // /start needs the token as a query param (not a header) since the
-      // frontend is about to navigate the whole page to eBay's site. The
+      // /start is a fetch, so the session goes in the Authorization header like every other call (never in the address: history, logs, referrers). The
       // marketplace is passed directly here (rather than saved to settings
       // first) since this connection may become a brand-new account with
       // no settings of its own yet.
-      const res = await fetch(`${API_BASE}/api/ebay-connect/start?token=${encodeURIComponent(sessionToken)}&marketplaceId=${encodeURIComponent(marketplaceId)}${connectReconnectId ? `&reconnectAccountId=${encodeURIComponent(connectReconnectId)}` : ''}`);
+      const res = await fetch(`${API_BASE}/api/ebay-connect/start?marketplaceId=${encodeURIComponent(marketplaceId)}${connectReconnectId ? `&reconnectAccountId=${encodeURIComponent(connectReconnectId)}` : ''}`, { headers: { Authorization: `Bearer ${sessionToken}` } });
       const data = await res.json();
 
       if (!res.ok || !data.success) {
