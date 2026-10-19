@@ -9107,7 +9107,7 @@ B0EXAMPLE2"></textarea></div>
       if (!yes) { clearTeamInvite(); return finish(); }
       const res = await apiFetch('/api/team/invitations/accept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
       const d = await res.json();
-      clearTeamInvite();
+      if ((res.ok && d.success) || [404, 409, 410].includes(res.status)) clearTeamInvite(); // joined, or used / withdrawn / expired / not valid: over. Any other failure keeps the link in this tab: it is asked again next time
       if (!res.ok || !d.success) {
         await elmsConfirm(d.error || 'Could not join the team. Please try again.', { title: 'Team invitation', okText: 'OK', info: true });
         return finish();
@@ -9116,8 +9116,7 @@ B0EXAMPLE2"></textarea></div>
       paintAdminEntry(window.currentUser);
       showToast('Welcome to the team', 'The team panel is open for you.', 'success');
       showPage('owner', { replace: true });
-    } catch (err) {
-      clearTeamInvite();
+    } catch (err) { // a dropped connection: the link stays in this tab and is asked again on the next load
       showToast('Team invitation', err.message || 'Could not read the invitation.', 'error');
       finish();
     }
@@ -21171,7 +21170,7 @@ async function autoSuggestEmptyDraftCategories() {
     document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => { t.style.display = adminCan(t.dataset.adminTab) ? '' : 'none'; });
     const active = document.querySelector('#adminTabs [data-admin-tab].active');
     const open = active ? active.dataset.adminTab : '';
-    if (!adminCan(open)) setAdminTab(adminFirstSection() || 'none');
+    if (!open || !adminCan(open)) setAdminTab(adminFirstSection() || 'none');
   }
   // The sidebar link and the "Open owner / team panel" button: every admin has them.
   function paintAdminEntry(user) {
@@ -21179,7 +21178,7 @@ async function autoSuggestEmptyDraftCategories() {
     const adminNavLink = document.getElementById('adminNavLink');
     if (adminNavLink) adminNavLink.style.display = isAdmin ? 'flex' : 'none';
     const roleEl = document.getElementById('userRole');
-    if (roleEl && isAdmin) roleEl.textContent = 'Admin';
+    if (roleEl && user) roleEl.textContent = isAdmin ? 'Admin' : (user.planName || user.plan || 'Free Plan');
     const ownerOpenBtn = document.getElementById('ownerOpenBtn');
     if (ownerOpenBtn) { ownerOpenBtn.style.display = isAdmin ? '' : 'none'; ownerOpenBtn.textContent = user && user.isSuperAdmin ? 'Open owner panel' : 'Open team panel'; }
   }
@@ -21190,7 +21189,7 @@ async function autoSuggestEmptyDraftCategories() {
       const d = await res.json();
       if (!res.ok || !d.success || !d.user || !window.currentUser) return;
       const before = JSON.stringify(adminAccessOf());
-      window.currentUser = Object.assign(window.currentUser, { role: d.user.role, isSuperAdmin: d.user.isSuperAdmin, adminAccess: d.user.adminAccess });
+      window.currentUser = Object.assign(window.currentUser, { role: d.user.role, isSuperAdmin: d.user.isSuperAdmin, adminAccess: d.user.adminAccess, planName: d.user.planName, plan: d.user.plan });
       paintAdminEntry(window.currentUser);
       if (d.user.role !== 'admin') { showPage('dashboard', { replace: true }); return; }
       if (JSON.stringify(adminAccessOf()) !== before) { applyAdminAccess(); renderOwnerNav(); }
@@ -21198,7 +21197,10 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   function setAdminTab(name) {
-    if (window.currentUser && window.currentUser.role === 'admin' && !adminCan(name)) name = adminFirstSection() || 'none'; // a section he does not have is never opened
+    if (window.currentUser && window.currentUser.role === 'admin') { // a section he does not have (or a name that is none) is never opened; the empty page only for a person with no section
+      const real = name === 'none' ? !adminFirstSection() : (ADMIN_SECTION_ORDER.includes(name) || name === 'admins') && adminCan(name);
+      if (!real) name = adminFirstSection() || 'none';
+    }
     document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.classList.toggle('active', t.dataset.adminTab === name));
     document.querySelectorAll('[data-admin-panel]').forEach((p) => { p.style.display = p.dataset.adminPanel === name ? 'block' : 'none'; });
     try { sessionStorage.setItem('elmsAdminTab', name); } catch (_) {}
