@@ -24183,6 +24183,7 @@ async function autoSuggestEmptyDraftCategories() {
           <button class="btn-small" type="button" data-ue="draft-links" title="Download the Amazon links of this user's drafts (CSV). The user is not told.">Draft links (CSV)</button>
           <button class="btn-small" type="button" data-ue="push" title="Add drafts to this user's Drafts. Free, no credit is used.">Add listings…</button>
           ${adminCan('admins') ? '<button class="btn-small" type="button" data-ue="copy" title="Give this user\'s current drafts and listings to another user as drafts. Nothing is fetched and no credit is used; this user keeps everything.">Copy listings to…</button>' : ''}
+          ${adminCan('admins') && cur.role !== 'admin' ? '<button class="btn-small" type="button" data-ue="giveplan" title="This person paid outside the checkout (a bank transfer, Payoneer, USDT...). Give them the plan by hand: credits, term, invoice and affiliate commission follow, like a payment.">Give a plan…</button>' : ''}
           ${opts.fromLookup || !adminCan('lookup') ? '' : '<button class="btn-small" type="button" data-ue="lookup">Whole picture</button>'}
         </div>
       </div>
@@ -24323,7 +24324,177 @@ async function autoSuggestEmptyDraftCategories() {
     m.querySelector('[data-ue="draft-links"]').addEventListener('click', (e) => downloadDraftLinks(cur, e.currentTarget));
     m.querySelector('[data-ue="push"]').addEventListener('click', () => openPushListingsModal(cur));
     m.querySelector('[data-ue="copy"]')?.addEventListener('click', () => openCopyListingsModal(cur));
+    m.querySelector('[data-ue="giveplan"]')?.addEventListener('click', () => openGivePlanModal(cur, { onGiven: (s) => { if (s.creditBalance != null) cur.creditBalance = s.creditBalance; if (s.maxEbayAccounts != null) cur.maxEbayAccounts = s.maxEbayAccounts; if (s.planEndsOn) cur.planExpiresAt = s.planEndsOn; cur.planName = s.planName; const was = cur.plan || {}; cur.plan = { ...was, paid: true, totalUsd: Number(was.totalUsd || 0) + Number(s.amountUsd || 0), purchases: Number(was.purchases || 0) + 1, lastPurchaseAt: new Date().toISOString() }; done(); }, onRefresh: () => { if (typeof loadAdminUsers === 'function') loadAdminUsers(); } }));
     m.querySelector('[data-ue="lookup"]')?.addEventListener('click', () => { m.remove(); setAdminTab('lookup'); const box = document.getElementById('lookupEmail'); if (box) box.value = cur.email; openLookupById(cur.id); });
+  }
+
+  // Admin -> Users -> edit window -> "Give a plan...": a customer paid OUTSIDE the checkout (a bank transfer, Payoneer, USDT...) and support gives the plan by hand. The server does the same
+  // as for a payment (the term runs on after a running one, the payment is recorded with the admin's name, the invoice, the affiliate commission); this window only asks what was paid and how,
+  // shows what will happen (a preview that writes nothing), and asks once more before it gives anything. Only the owner and members with full rights see the button.
+  async function openGivePlanModal(user, opts = {}) {
+    const m = adminModal('<div class="elms-loader" role="status" aria-label="Loading"></div>');
+    const box = m.querySelector('.modal-box');
+    const closeRow = '<div class="ad-chips" style="margin:18px 0 0;"><button class="btn-small" data-close style="background:var(--grey-light);color:var(--ink);">Close</button></div>';
+    const call = async (path, body) => {
+      const res = await apiFetch(path, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      return { ok: res.ok && data.success, status: res.status, data };
+    };
+    let o;
+    try {
+      const r = await call('/api/admin/users/' + encodeURIComponent(user.id) + '/give-plan');
+      if (!r.ok) throw new Error(r.data.error || 'Could not open this window.');
+      o = r.data;
+    } catch (err) {
+      box.innerHTML = '<div class="state-msg error">' + adEsc(err.message) + '</div>' + closeRow;
+      return;
+    }
+    const usd = (n) => adUsd(n);
+    const day = (d) => (d ? new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '\u2014');
+    const planLine = o.user.planName && o.user.planExpiresAt
+      ? (o.user.planRunning ? adEsc(o.user.planName) + ' runs until <b>' + adEsc(day(o.user.planExpiresAt)) + '</b>' : adEsc(o.user.planName) + ' ended on <b>' + adEsc(day(o.user.planExpiresAt)) + '</b>')
+      : (o.user.planName ? adEsc(o.user.planName) + ' (no end date)' : 'No plan');
+    const planOptions = o.plans.map((p) => '<option value="' + adEsc(p.id) + '">' + adEsc(p.name) + ' \u2014 ' + adEsc(usd(p.priceUsd)) + ' a month, ' + Number(p.credits).toLocaleString() + ' credits' + (p.maxEbayAccounts ? ', ' + p.maxEbayAccounts + ' stores' : '') + '</option>').join('');
+    const c = o.custom;
+    box.innerHTML = '<div class="draft-title">Give a plan to ' + adEsc(user.name || user.email) + '</div>'
+      + '<div class="meta-line">' + adEsc(user.email) + ' &middot; ' + planLine + ' &middot; ' + Number(o.user.creditBalance).toLocaleString() + ' credits</div>'
+      + '<p class="meta-line" style="margin:10px 0 0;">For money you <b>received outside the checkout</b> (a bank transfer, Payoneer, USDT...). It works like a payment: the credits, the eBay-store limit and the term are given, the payment is recorded (so it counts in the revenue and has an invoice), and if this person came through an affiliate the commission is made too. A plan that is still running is <b>extended</b>: the new term starts when it ends. For a free plan use a voucher instead.</p>'
+      + '<div class="st-field" style="margin-top:14px;"><label for="gpPlan">Plan</label><select class="st-input" id="gpPlan">' + planOptions + (c ? '<option value="custom">Custom plan\u2026</option>' : '') + '</select></div>'
+      + '<div class="st-field"><label for="gpBilling">Term</label><select class="st-input" id="gpBilling"><option value="monthly">Monthly (1 month)</option><option value="yearly">Yearly (12 months)</option></select></div>'
+      + (c ? '<div id="gpCustom" style="display:none;"><div class="ad-edit-grid">'
+        + '<div class="st-field"><label for="gpCAmount">Amount a month (USD)</label><input class="st-input" type="number" id="gpCAmount" min="' + c.minUsd + '" max="' + c.maxUsd + '" step="1" value="' + c.minUsd + '" /></div>'
+        + '<div class="st-field"><label for="gpCStores">Extra eBay stores</label><input class="st-input" type="number" id="gpCStores" min="0" max="' + c.maxExtraStores + '" step="1" value="0" /></div></div>'
+        + '<p class="meta-line" style="margin:0 0 8px;">' + c.creditsPerUsd + ' credits per dollar, ' + c.includedStores + ' store' + (c.includedStores === 1 ? '' : 's') + ' included, an extra store is ' + adEsc(usd(c.extraStoreMonthlyUsd)) + ' a month, a year is 12 months less ' + c.yearlyDiscountPercent + '%.</p></div>' : '')
+      + '<div class="ad-edit-grid">'
+      + '<div class="st-field"><label for="gpAmount">Amount you received (USD)</label><input class="st-input" type="number" id="gpAmount" min="' + o.minUsd + '" step="0.01" /></div>'
+      + '<div class="st-field"><label for="gpMethod">How it came in</label><select class="st-input" id="gpMethod">' + o.methods.map((x) => '<option>' + adEsc(x) + '</option>').join('') + '</select></div></div>'
+      + '<div class="st-field"><label for="gpNote">Note (private, only admins see it: who paid, the transfer reference...)</label><input class="st-input" id="gpNote" maxlength="200" autocomplete="off" /></div>'
+      + '<label style="display:flex;gap:8px;align-items:center;font-weight:600;margin:4px 0 12px;"><input type="checkbox" id="gpReceipt" checked /> Email the receipt and the invoice to the customer</label>'
+      + '<div id="gpPreview" class="meta-line" style="padding:10px 12px;background:#F3F5F9;border-radius:10px;min-height:44px;">Working it out\u2026</div>'
+      + '<div class="st-actions"><button class="st-btn primary" id="gpGo" type="button" disabled>Give the plan\u2026</button><div id="gpStatus" role="status" style="font-size:13px;"></div></div>'
+      + closeRow;
+
+    const $ = (id) => m.querySelector('#' + id);
+    const planOf = (id) => o.plans.find((p) => p.id === id) || null;
+    let amountTouched = false; // the admin typed his own amount: the plan's price no longer fills it in
+    let current = null;        // { p, body }: the preview the Give button is for AND the exact request it was worked out for (null while it is being worked out or refused)
+    let seq = 0;
+    let finished = false;
+    let busy = false;          // a give request is on its way: nothing can be changed, nothing can be sent a second time
+
+    // what the server is asked, or null (with the reason shown) when it cannot be asked yet
+    const body = () => {
+      const isCustom = $('gpPlan').value === 'custom';
+      const b = { billing: $('gpBilling').value };
+      if (isCustom) {
+        const amountUsd = Number($('gpCAmount').value); const extraStores = Number($('gpCStores').value || 0);
+        if (!Number.isInteger(amountUsd) || amountUsd < c.minUsd || amountUsd > c.maxUsd) { $('gpPreview').textContent = 'The custom amount must be a whole number of dollars from ' + c.minUsd + ' to ' + c.maxUsd.toLocaleString() + '.'; return null; }
+        if (!Number.isInteger(extraStores) || extraStores < 0 || extraStores > c.maxExtraStores) { $('gpPreview').textContent = 'Extra eBay stores must be a whole number from 0 to ' + c.maxExtraStores + '.'; return null; }
+        b.custom = { amountUsd, extraStores };
+      } else {
+        b.planId = $('gpPlan').value;
+      }
+      if (amountTouched) {
+        const received = Number($('gpAmount').value);
+        if (!Number.isFinite(received) || received < o.minUsd) { $('gpPreview').textContent = 'The amount received must be at least $' + o.minUsd + '. To give a plan free, use a voucher.'; return null; }
+        b.amountUsd = received;
+      }
+      return b;
+    };
+    const previewHtml = (p) => {
+      const lines = [
+        '<b>' + adEsc(p.planName) + '</b>: ' + Number(p.credits).toLocaleString() + ' credits.',
+        p.stacked ? 'The running plan ends on <b>' + adEsc(day(p.planEndsBefore)) + '</b>; the new term runs on from there and ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
+          : p.lapsed ? 'Their earlier plan has run out: it is closed first (its own credits end), and the new term runs from today to <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
+            : 'The plan runs from today to <b>' + adEsc(day(p.planEndsAfter)) + '</b>.',
+        'eBay stores: ' + p.storeLimitNow + (p.storeLimitAfter !== p.storeLimitNow ? ' \u2192 <b>' + p.storeLimitAfter + '</b>' : ' (no change)') + '.',
+        'You received <b>' + adEsc(usd(p.amountUsd)) + '</b>' + (Math.abs(p.amountUsd - p.listPriceUsd) > 0.005 ? ' (the plan costs ' + adEsc(usd(p.listPriceUsd)) + ')' : '') + '.',
+        p.affiliate ? 'This customer came through an affiliate: a commission of <b>' + adEsc(usd(p.affiliate.commissionUsd)) + '</b> (' + adEsc(p.affiliate.percent) + '%) is recorded, payable after ' + adEsc(p.affiliate.holdDays) + ' days.' : '',
+      ].filter(Boolean);
+      return lines.join('<br>');
+    };
+    const refresh = async () => {
+      if (busy || finished) return; // while a give request is on its way, or after it, nothing is worked out again
+      const my = ++seq;
+      current = null; $('gpGo').disabled = true;
+      const b = body();
+      if (!b) return;
+      $('gpPreview').textContent = 'Working it out\u2026';
+      try {
+        const r = await call('/api/admin/users/' + encodeURIComponent(user.id) + '/give-plan/preview', b);
+        if (my !== seq) return; // something was typed meanwhile
+        if (!r.ok) { $('gpPreview').textContent = r.data.error || 'Could not work that out.'; return; }
+        const p = r.data.preview;
+        if (!amountTouched) $('gpAmount').value = p.amountUsd;
+        $('gpPreview').innerHTML = previewHtml(p);
+        current = { p, body: b }; $('gpGo').disabled = finished || busy;
+      } catch (err) { if (my === seq) $('gpPreview').textContent = err.message; }
+    };
+    let timer = null;
+    const later = () => { if (busy || finished) return; seq += 1; clearTimeout(timer); current = null; $('gpGo').disabled = true; timer = setTimeout(refresh, 300); }; // seq: an answer that is still on its way is for an older choice and is thrown away
+    const showTerm = () => {
+      const isCustom = $('gpPlan').value === 'custom';
+      const plan = planOf($('gpPlan').value);
+      const yearlyOk = isCustom || !!(plan && plan.yearlyPriceUsd);
+      const yearly = m.querySelector('#gpBilling option[value="yearly"]');
+      yearly.disabled = !yearlyOk;
+      if (!yearlyOk && $('gpBilling').value === 'yearly') $('gpBilling').value = 'monthly';
+      if (c) $('gpCustom').style.display = isCustom ? '' : 'none';
+    };
+    $('gpPlan').addEventListener('change', () => { amountTouched = false; showTerm(); later(); });
+    $('gpBilling').addEventListener('change', () => { amountTouched = false; later(); });
+    if (c) { $('gpCAmount').addEventListener('input', () => { amountTouched = false; later(); }); $('gpCStores').addEventListener('input', () => { amountTouched = false; later(); }); }
+    $('gpAmount').addEventListener('input', () => { amountTouched = true; later(); });
+    showTerm();
+    refresh();
+
+    // one key for this window: the same window sent twice gives the plan once
+    const give = async (sent, confirmRepeat) => call('/api/admin/users/' + encodeURIComponent(user.id) + '/give-plan', { ...sent.body, amountUsd: sent.p.amountUsd, method: $('gpMethod').value, note: $('gpNote').value.trim(), sendReceipt: $('gpReceipt').checked, key: o.key, confirmRepeat: !!confirmRepeat });
+    $('gpGo').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      if (!current || finished || busy) return;
+      const sent = current; // the preview and the request it was made for: the confirm and the give both use this, whatever is typed meanwhile
+      const p = sent.p;
+      const text = 'Give ' + (user.name || user.email) + ' (' + user.email + ') the plan "' + p.planName + '"?\n\n'
+        + 'You received ' + usd(p.amountUsd) + ' by ' + $('gpMethod').value + '.\n'
+        + Number(p.credits).toLocaleString() + ' credits are added; the plan ' + (p.stacked ? 'is extended to ' : 'runs until ') + day(p.planEndsAfter) + '.\n'
+        + (p.affiliate ? 'An affiliate commission of ' + usd(p.affiliate.commissionUsd) + ' is recorded.\n' : '')
+        + ($('gpReceipt').checked ? 'The customer gets the receipt and the invoice by email.' : 'The customer gets no receipt or invoice email.')
+        + '\n\nThis is recorded as a payment. It cannot be undone from here.';
+      if (!(await elmsConfirm(text, { title: 'Give this plan?', okText: 'Give the plan' }))) return;
+      busy = true; clearTimeout(timer); seq += 1;
+      m.querySelectorAll('input, select').forEach((el) => { el.disabled = true; });
+      btn.disabled = true; $('gpStatus').textContent = 'Giving the plan\u2026';
+      try {
+        let r = await give(sent, false);
+        if (!r.ok && r.data.code === 'maybe_duplicate') {
+          $('gpStatus').textContent = '';
+          if (!(await elmsConfirm(r.data.error + '\n\nGive it again?', { title: 'Same plan a moment ago', okText: 'Give it again', cancelText: 'No' }))) { busy = false; m.querySelectorAll('input, select').forEach((el) => { el.disabled = false; }); showTerm(); btn.disabled = false; return; }
+          $('gpStatus').textContent = 'Giving the plan\u2026';
+          r = await give(sent, true);
+        }
+        if (!r.ok) throw new Error(r.data.error || 'The plan could not be given.');
+        finished = true; busy = false;
+        m.querySelectorAll('input, select').forEach((el) => { el.disabled = true; });
+        if (r.data.duplicate) {
+          $('gpStatus').textContent = 'This was already given (the same window was sent twice). Nothing more was added.';
+          if (typeof opts.onRefresh === 'function') opts.onRefresh(); // the first answer may have been lost: the table is read again
+        } else {
+          const s = r.data.summary;
+          $('gpStatus').innerHTML = '<b style="color:#067647;">Given.</b> ' + adEsc(s.planName) + ' until ' + adEsc(day(s.planEndsOn)) + '. Credits now: ' + Number(s.creditBalance).toLocaleString() + '. ' + (s.receiptSent ? 'The receipt and invoice were emailed.' : 'No email was sent.');
+          showToast('Plan given', (user.name || user.email) + ': ' + s.planName, 'success');
+          if (typeof opts.onGiven === 'function') opts.onGiven(s);
+        }
+        btn.textContent = 'Done';
+      } catch (err) {
+        busy = false;
+        m.querySelectorAll('input, select').forEach((el) => { el.disabled = false; });
+        showTerm();
+        $('gpStatus').textContent = err.message;
+        btn.disabled = false;
+        showToast('The plan was not given', err.message, 'error'); // also seen when the window was closed meanwhile
+      }
+    });
   }
 
   // Admin -> Users -> "Copy listings to...": this customer's CURRENT drafts and listings become DRAFTS of another user (the admin names them by email). Nothing is fetched, no credit is used,
@@ -24679,7 +24850,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="st-custom-title" style="margin:14px 0 8px;">Purchases (latest 20)</div>
         ${adTable(['Date', 'Plan', 'Paid', 'List price', 'Discount', 'Credits', 'Method', 'Invoice', 'Status'], (d.purchases || []).map((p) => [
           adEsc(adDate(p.createdAt)), adEsc(p.planName || '—') + (p.billing ? ' <small style="color:var(--grey);">' + adEsc(p.billing) + '</small>' : ''), adEsc(adUsd(p.priceUsd)), adEsc(adUsd(p.listPriceUsd)),
-          p.discountPercent ? adEsc(p.discountPercent) + '%' : '—', Number(p.creditsGranted || 0).toLocaleString(), adEsc(p.paymentMethod || p.provider || '—'), adEsc(p.invoiceNo || '—'),
+          p.discountPercent ? adEsc(p.discountPercent) + '%' : '—', Number(p.creditsGranted || 0).toLocaleString(), adEsc(p.paymentMethod || p.provider || '—') + (p.provider === 'manual' ? ' <small style="color:var(--grey);">given by ' + adEsc(p.manualBy || 'an admin') + (p.manualNote ? ': ' + adEsc(p.manualNote) : '') + '</small>' : ''), adEsc(p.invoiceNo || '—'),
           p.status === 'refunded' ? '<span class="ad-tag bad">REFUNDED</span>' : '<span class="ad-tag paid">PAID</span>',
         ]), 'No purchases.')}
         ${(d.listingPacks || []).length ? `<div class="st-custom-title" style="margin:14px 0 8px;">Buy Listings packs</div>${adTable(['Date', 'Pack', 'Paid', 'Listings bought', 'Delivered'], d.listingPacks.map((p) => [adEsc(adDate(p.createdAt)), adEsc(p.tierName || '—'), adEsc(adUsd(p.priceUsd)), Number(p.listingCount || 0).toLocaleString(), Number(p.pushed || 0).toLocaleString()]), '')}` : ''}
