@@ -6483,6 +6483,7 @@ B0EXAMPLE2"></textarea></div>
             </div>
             <div class="tm-form-row">
               <input class="st-input" id="teamInvEmail" type="email" placeholder="Email address of the person" autocomplete="off" />
+              <select class="st-input" id="teamInvPanel" aria-label="Which panel opens for them" title="Which panel opens for them" style="flex:0 1 260px;"><option value="team">Team panel (/team)</option><option value="owner">Owner-style panel (/owner)</option><option value="admin">Classic admin panel (/admin)</option></select>
             </div>
             <label class="tm-full"><input type="checkbox" id="teamInvFull" /><div><b>Full rights</b><span>Everything except the owner status: all sections, the team itself, deleting an account and copying listings.</span></div></label>
             <div class="tm-ticks" id="teamInvTicks"></div>
@@ -6949,15 +6950,17 @@ B0EXAMPLE2"></textarea></div>
     support: ['Support', 'Open a ticket if you need more credits or run into an issue.'],
     admin: ['Admin', 'Manage users, credits, and support tickets.'],
     owner: ['Owner', 'Everything about ELMS in one place.'],
+    team: ['Team panel', 'Everything about ELMS in one place.'],
   };
 
   // ---------- Page URLs ----------
   // Every page has its own address (elmstool.com/listing, /draft, ...), so a refresh,
   // a bookmark or a shared link opens the same page instead of the dashboard.
+  let currentPageId = 'dashboard'; // the page showPage opened last
   const PAGE_PATHS = {
     dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders', netprofit: '/net-profit',
     messages: '/messages', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer', affiliate: '/affiliate', vouchers: '/vouchers',
-    settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin', owner: '/owner',
+    settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin', owner: '/owner', team: '/team',
   };
   const PATH_ALIASES = { '/drafts': 'drafts', '/listings': 'listings', '/order': 'orders', '/message': 'messages', '/pricing': 'pricing', '/credits': 'pricing', '/index.html': 'dashboard', '/': 'dashboard' };
   function pageFromPath(pathname) {
@@ -7001,7 +7004,7 @@ B0EXAMPLE2"></textarea></div>
     if (document.getElementById('appShell').style.display === 'none') return;
     const page = pageFromPath(window.location.pathname) || 'dashboard';
     if (page === 'admin' && window.currentUser?.role !== 'admin') return showPage('dashboard', { replace: true });
-    if (page === 'owner' && window.currentUser?.role !== 'admin') return showPage('dashboard', { replace: true });
+    if ((page === 'owner' || page === 'team') && window.currentUser?.role !== 'admin') return showPage('dashboard', { replace: true });
     showPage(page, { fromPop: true });
   });
 
@@ -7022,15 +7025,18 @@ B0EXAMPLE2"></textarea></div>
 
   function showPage(page, opts = {}) {
     if (!PAGE_TITLES[page]) page = 'dashboard';
-    if (page === 'owner' && !(window.currentUser && window.currentUser.role === 'admin')) page = 'dashboard'; // the owner / team panel: every admin (each sees only the sections he has)
-    if (page === 'owner') closeMobileSidebar(); // the owner frame hides the app drawer: its scrim must not stay
+    const asked = page;
+    page = resolveAdminPage(page); // /owner, /team and /admin: the owner opens all three, a member the one the owner gave him, anybody else none
+    currentPageId = page;
+    const leftMenu = page === 'owner' || page === 'team'; // the two panels with the left menu (the owner frame)
+    if (leftMenu) closeMobileSidebar(); // the owner frame hides the app drawer: its scrim must not stay
     if (document.querySelector('.sidebar-nav a.active')?.getAttribute('data-page') !== page) scrollPageTop(false);
-    if (!opts.fromPop) syncUrlToPage(page, !!opts.replace);
+    if (!opts.fromPop || page !== asked) syncUrlToPage(page, !!opts.replace || page !== asked); // an address that was sent to another panel is rewritten, also when it came from the back button
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
-    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'netprofit' || page === 'admin' || page === 'owner');
-    document.getElementById('appShell')?.classList.toggle('owner-mode', page === 'owner');
-    const shownPage = page === 'owner' ? 'admin' : page; // the owner panel is the admin page in another frame
+    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'netprofit' || page === 'admin' || leftMenu);
+    document.getElementById('appShell')?.classList.toggle('owner-mode', leftMenu);
+    const shownPage = leftMenu ? 'admin' : page; // the owner and team panels are the admin page in another frame
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'netprofit', 'messages', 'research-tools', 'calculator', 'referrals', 'affiliate', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
       document.getElementById(`page-${p}`).style.display = p === shownPage ? 'block' : 'none';
     });
@@ -7038,7 +7044,7 @@ B0EXAMPLE2"></textarea></div>
       a.classList.toggle('active', a.getAttribute('data-page') === page);
     });
     revealActiveNav();
-    const [title, subline] = page === 'owner' && !adminIsOwner() ? ['Team panel', PAGE_TITLES.owner[1]] : PAGE_TITLES[page]; // a team member's panel is not called "Owner"
+    const [title, subline] = PAGE_TITLES[page];
     document.getElementById('pageTitle').textContent = title;
     document.getElementById('pageSubline').textContent = subline;
     document.title = `${title} \u00b7 ELMS`;
@@ -7057,13 +7063,13 @@ B0EXAMPLE2"></textarea></div>
     if (page === 'settings') loadSettingsPage();
     if (page === 'pricing') loadPricingPage();
     if (page === 'support') loadSupportPage();
-    if (page === 'admin' || page === 'owner') {
+    if (page === 'admin' || leftMenu) {
       const adminHead = document.querySelector('#page-admin .st-top h1');
       const adminSub = document.querySelector('#page-admin .st-top .sub');
-      if (adminHead) adminHead.textContent = page === 'owner' ? (adminIsOwner() ? 'Owner panel' : 'Team panel') : 'Admin';
-      if (adminSub) adminSub.textContent = page === 'owner' ? 'Everything about ELMS, grouped in the menu.' : 'Users, credits, AI, pricing and support in one place.';
+      if (adminHead) adminHead.textContent = page === 'owner' ? 'Owner panel' : page === 'team' ? 'Team panel' : 'Admin';
+      if (adminSub) adminSub.textContent = leftMenu ? 'Everything about ELMS, grouped in the menu.' : 'Users, credits, AI, pricing and support in one place.';
       applyAdminAccess();
-      if (page === 'owner') renderOwnerNav();
+      if (leftMenu) renderOwnerNav();
       loadAdminPage();
     }
   }
@@ -7071,7 +7077,7 @@ B0EXAMPLE2"></textarea></div>
   document.querySelectorAll('.sidebar-nav a').forEach((a) => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      showPage(a.getAttribute('data-page'));
+      showPage(resolveAdminPage(a.getAttribute('data-page'))); // the Admin link opens the person's own panel as a normal step (a new history entry), not as a redirect
       closeMobileSidebar();
     });
   });
@@ -9024,7 +9030,7 @@ B0EXAMPLE2"></textarea></div>
       let startPage = pageFromPath(window.location.pathname) || loginReturnPage || 'dashboard';
       loginReturnPage = null;
       if (startPage === 'admin' && user.role !== 'admin') startPage = 'dashboard';
-      if (startPage === 'owner' && user.role !== 'admin') startPage = 'dashboard';
+      if ((startPage === 'owner' || startPage === 'team') && user.role !== 'admin') startPage = 'dashboard';
       showPage(startPage, { replace: true });
     }
 
@@ -9115,7 +9121,7 @@ B0EXAMPLE2"></textarea></div>
       window.currentUser = d.user || Object.assign({}, user, { role: 'admin', adminAccess: d.access });
       paintAdminEntry(window.currentUser);
       showToast('Welcome to the team', 'The team panel is open for you.', 'success');
-      showPage('owner', { replace: true });
+      showPage(adminPanelOf(), { replace: true }); // the panel the owner gave him
     } catch (err) { // a dropped connection: the link stays in this tab and is asked again on the next load
       showToast('Team invitation', err.message || 'Could not read the invitation.', 'error');
       finish();
@@ -21156,6 +21162,16 @@ async function autoSuggestEmptyDraftCategories() {
     return { owner: !!u.isSuperAdmin, full: !!u.isSuperAdmin, sections: ADMIN_SECTION_ORDER.slice() };
   }
   const adminIsOwner = () => { const a = adminAccessOf(); return !!(a && a.owner); };
+  // Which of the three panels opens for this person: the owner's choice per member (adminAccess.panel). A server that sends none: the owner /owner, any other admin /admin.
+  const ADMIN_PANEL_PAGES = ['owner', 'team', 'admin'];
+  function adminPanelOf() { const a = adminAccessOf(); return !a ? '' : a.owner ? 'owner' : (ADMIN_PANEL_PAGES.includes(a.panel) ? a.panel : 'admin'); }
+  // The page that really opens for a panel address: the owner opens all three, a member only his own (the others send him there), a person who is not an admin none of them.
+  function resolveAdminPage(page) {
+    if (!ADMIN_PANEL_PAGES.includes(page)) return page;
+    const a = adminAccessOf();
+    if (!a) return 'dashboard';
+    return a.owner ? page : adminPanelOf();
+  }
   function adminCan(section) { // 'admins' = the team, deleting an account, copying listings: the owner and full rights
     const a = adminAccessOf();
     if (!a) return false;
@@ -21180,7 +21196,7 @@ async function autoSuggestEmptyDraftCategories() {
     const roleEl = document.getElementById('userRole');
     if (roleEl && user) roleEl.textContent = isAdmin ? 'Admin' : (user.planName || user.plan || 'Free Plan');
     const ownerOpenBtn = document.getElementById('ownerOpenBtn');
-    if (ownerOpenBtn) { ownerOpenBtn.style.display = isAdmin ? '' : 'none'; ownerOpenBtn.textContent = user && user.isSuperAdmin ? 'Open owner panel' : 'Open team panel'; }
+    if (ownerOpenBtn) ownerOpenBtn.style.display = isAdmin && user.isSuperAdmin ? '' : 'none'; // the owner's way to the owner panel; a member has one panel and the app's own Admin link opens it
   }
   // Read the person again from the server when an admin page opens: the owner may have changed his sections (or taken the panel away) since he signed in.
   async function refreshAdminAccess() {
@@ -21192,7 +21208,11 @@ async function autoSuggestEmptyDraftCategories() {
       window.currentUser = Object.assign(window.currentUser, { role: d.user.role, isSuperAdmin: d.user.isSuperAdmin, adminAccess: d.user.adminAccess, planName: d.user.planName, plan: d.user.plan });
       paintAdminEntry(window.currentUser);
       if (d.user.role !== 'admin') { showPage('dashboard', { replace: true }); return; }
-      if (JSON.stringify(adminAccessOf()) !== before) { applyAdminAccess(); renderOwnerNav(); }
+      if (JSON.stringify(adminAccessOf()) !== before) {
+        const target = resolveAdminPage(currentPageId);
+        if (target !== currentPageId) { showPage(target, { replace: true }); return; } // the owner gave him another panel
+        applyAdminAccess(); renderOwnerNav();
+      }
     } catch (_) { /* the access the page already has stays; the server checks every call anyway */ }
   }
 
@@ -21225,12 +21245,13 @@ async function autoSuggestEmptyDraftCategories() {
     const nav = document.getElementById('ownerNav');
     if (!nav) return;
     const owner = adminIsOwner();
-    nav.innerHTML = '<div class="owner-nav-brand">' + (owner ? 'ELMS owner' : 'ELMS team') + '</div>'
+    const ownerLook = currentPageId === 'owner'; // /owner looks like the owner's panel (the name and the first item), /team like the team's
+    nav.innerHTML = '<div class="owner-nav-brand">' + (ownerLook ? 'ELMS owner' : 'ELMS team') + '</div>'
       + OWNER_MENU.map(([group, items]) => {
         const shown = items.filter(([tab]) => adminCan(tab));
-        return shown.length ? '<div class="owner-nav-group">' + escapeHtml(group) + '</div>' + shown.map(([tab, label]) => '<button class="owner-nav-item" type="button" data-owner-tab="' + tab + '"><span>' + escapeHtml(tab === 'overview' && !owner ? 'Overview' : label) + '</span><span class="ad-count" data-owner-count="' + tab + '" style="display:none;"></span></button>').join('') : '';
+        return shown.length ? '<div class="owner-nav-group">' + escapeHtml(group) + '</div>' + shown.map(([tab, label]) => '<button class="owner-nav-item" type="button" data-owner-tab="' + tab + '"><span>' + escapeHtml(tab === 'overview' && !ownerLook ? 'Overview' : label) + '</span><span class="ad-count" data-owner-count="' + tab + '" style="display:none;"></span></button>').join('') : '';
       }).join('')
-      + '<div class="owner-nav-group">ELMS</div><button class="owner-nav-item" type="button" data-owner-go="dashboard">Back to the app</button><button class="owner-nav-item" type="button" data-owner-go="admin">Classic admin panel</button>';
+      + '<div class="owner-nav-group">ELMS</div><button class="owner-nav-item" type="button" data-owner-go="dashboard">Back to the app</button>' + (owner ? '<button class="owner-nav-item" type="button" data-owner-go="admin">Classic admin panel</button>' : '');
     nav.querySelectorAll('[data-owner-tab]').forEach((b) => b.addEventListener('click', () => {
       const tab = document.querySelector('#adminTabs [data-admin-tab="' + b.dataset.ownerTab + '"]'); // the tab strip is hidden here, its buttons still work: the same handlers run (Alerts and Social reload their list when opened)
       if (tab) tab.click(); else setAdminTab(b.dataset.ownerTab);
@@ -22092,6 +22113,7 @@ async function autoSuggestEmptyDraftCategories() {
     const names = m.sections.map(teamLabel);
     return names.length + ' of ' + teamData.sections.length + ' sections: ' + (names.length > 6 ? names.slice(0, 6).join(', ') + ' and ' + (names.length - 6) + ' more' : names.join(', ')) + '.';
   }
+  const TEAM_PANEL_ADDRESS = { owner: '/owner', team: '/team', admin: '/admin' };
   const teamBadge = (m) => (m.owner ? '<span class="ad-tag paid">OWNER</span>' : m.full ? '<span class="ad-tag paid">FULL RIGHTS</span>' : m.legacy ? '<span class="ad-tag free">ALL SECTIONS</span>' : !m.sections.length ? '<span class="ad-tag warn">NO SECTION</span>' : '<span class="ad-tag free">MEMBER</span>');
   const TEAM_INVITE_TAG = { waiting: '<span class="ad-tag warn">WAITING</span>', accepted: '<span class="ad-tag paid">JOINED</span>', withdrawn: '<span class="ad-tag free">WITHDRAWN</span>', expired: '<span class="ad-tag bad">EXPIRED</span>' };
   const teamDate = (v) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); };
@@ -22101,7 +22123,7 @@ async function autoSuggestEmptyDraftCategories() {
     document.getElementById('teamMembers').innerHTML = teamData.members.map((m) => {
       const self = String(m.id) === String(me);
       const actions = m.owner || self ? '' : '<div class="tm-actions"><button class="btn-small" type="button" data-tm-act="edit" data-id="' + escapeAttr(m.id) + '">Edit rights</button><button class="btn-small delete" type="button" data-tm-act="remove" data-id="' + escapeAttr(m.id) + '" data-email="' + escapeAttr(m.email) + '">Remove</button></div>';
-      return '<div class="tm-member"><div class="tm-who"><b>' + escapeHtml(m.email || '') + '</b> ' + teamBadge(m) + (self ? ' <span class="rfa-def" style="display:inline;">(you)</span>' : '') + '<span class="rfa-def">' + escapeHtml((m.name ? m.name + ' \u00b7 ' : '') + teamSummary(m)) + '</span></div>' + actions + '</div>';
+      return '<div class="tm-member"><div class="tm-who"><b>' + escapeHtml(m.email || '') + '</b> ' + teamBadge(m) + (self ? ' <span class="rfa-def" style="display:inline;">(you)</span>' : '') + '<span class="rfa-def">' + escapeHtml((m.name ? m.name + ' \u00b7 ' : '') + teamSummary(m) + (m.owner ? '' : ' Opens at ' + (TEAM_PANEL_ADDRESS[m.panel] || '/team') + '.')) + '</span></div>' + actions + '</div>';
     }).join('') || '<div class="state-msg">Nobody yet.</div>';
     document.getElementById('teamInvites').innerHTML = teamData.invites.map((i) => {
       const what = i.full ? 'Full rights' : (i.sections.length + ' section' + (i.sections.length === 1 ? '' : 's') + ': ' + i.sections.map(teamLabel).join(', '));
@@ -22125,6 +22147,7 @@ async function autoSuggestEmptyDraftCategories() {
     const m = adminModal(`
       <div class="draft-title">${escapeHtml(member.email)}</div>
       <div class="meta-line">Choose what this person can open. The server refuses everything else.</div>
+      <div class="st-field" style="margin:10px 0 0;"><label for="tmEditPanel">Which panel opens for them</label><select class="st-input" id="tmEditPanel"><option value="team">Team panel (/team)</option><option value="owner">Owner-style panel (/owner)</option><option value="admin">Classic admin panel (/admin)</option></select></div>
       <label class="tm-full"><input type="checkbox" id="tmEditFull"${member.full ? ' checked' : ''} /><div><b>Full rights</b><span>Everything except the owner status: all sections, the team itself, deleting an account and copying listings.</span></div></label>
       <div class="tm-ticks${member.full ? ' off' : ''}" id="tmEditTicks">${teamTicksHtml(member.sections, 'edit')}</div>
       <div class="ad-chips" style="margin-top:16px;">
@@ -22132,13 +22155,14 @@ async function autoSuggestEmptyDraftCategories() {
         <button class="btn-small" type="button" data-close style="background:var(--grey-light);color:var(--ink);">Cancel</button>
       </div>
       <div class="st-status" id="tmEditStatus"></div>`);
+    m.querySelector('#tmEditPanel').value = ADMIN_PANEL_PAGES.includes(member.panel) ? member.panel : 'team';
     m.querySelector('#tmEditFull').addEventListener('change', (e) => m.querySelector('#tmEditTicks').classList.toggle('off', e.target.checked));
     m.querySelector('#tmEditSave').addEventListener('click', async (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
       try {
         const full = m.querySelector('#tmEditFull').checked;
-        await teamApi('/members/' + encodeURIComponent(member.id), 'PUT', { full, sections: full ? [] : teamTicked(m, 'edit') });
+        await teamApi('/members/' + encodeURIComponent(member.id), 'PUT', { full, sections: full ? [] : teamTicked(m, 'edit'), panel: m.querySelector('#tmEditPanel').value });
         m.remove();
         showToast('Team', 'Rights saved for ' + member.email + '.', 'success');
         loadAdminAdmins();
@@ -22176,10 +22200,11 @@ async function autoSuggestEmptyDraftCategories() {
     btn.disabled = true;
     teamSay('teamInvStatus', 'Sending\u2026');
     try {
-      const out = await teamApi('/invite', 'POST', { email, full, sections: full ? [] : sections });
+      const out = await teamApi('/invite', 'POST', { email, full, sections: full ? [] : sections, panel: document.getElementById('teamInvPanel').value });
       teamSay('teamInvStatus', 'Invitation sent to ' + out.invite.email + '. It is valid for 7 days.', 'success');
       document.getElementById('teamInvEmail').value = '';
       document.getElementById('teamInvFull').checked = false;
+      document.getElementById('teamInvPanel').value = 'team';
       document.getElementById('teamInvTicks').classList.remove('off');
       document.querySelectorAll('#teamInvTicks input[data-tm="inv"]').forEach((i) => { i.checked = false; });
       loadAdminAdmins();
