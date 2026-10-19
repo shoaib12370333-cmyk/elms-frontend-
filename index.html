@@ -3728,6 +3728,28 @@
   .ad-tab { flex:none; border:none; background:transparent; padding:10px 16px; border-radius:10px; font:inherit; font-size:13.5px; font-weight:700; color:#64748B; cursor:pointer; white-space:nowrap; }
   .ad-tab:hover { background:#F1F5F9; color:var(--ink); }
   .ad-tab.active { background:#0064D2; color:#fff; }
+  /* The owner panel (/owner): the same admin sections, reached from a left menu instead of the tab strip. */
+  .owner-nav { display:none; }
+  #ownerOpenBtn { text-decoration:none; }
+  .app-shell.owner-mode #ownerOpenBtn { display:none !important; }
+  .app-shell.owner-mode .sidebar, .app-shell.owner-mode .mobile-menu-btn, .app-shell.owner-mode #adminTabs { display:none !important; }
+  .app-shell.owner-mode #page-admin { display:grid !important; grid-template-columns:230px minmax(0,1fr); column-gap:22px; align-items:start; }
+  .app-shell.owner-mode #page-admin > * { grid-column:2; min-width:0; }
+  .app-shell.owner-mode #page-admin > .owner-nav { display:block; grid-column:1; grid-row:1 / span 80; position:sticky; top:86px; max-height:calc(100vh - 110px); overflow-y:auto; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px; scrollbar-width:thin; }
+  .owner-nav-brand { font-size:15px; font-weight:800; color:var(--ink); padding:4px 8px 2px; }
+  .owner-nav-group { font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#94A3B8; margin:14px 8px 4px; }
+  .owner-nav-item { display:flex; width:100%; align-items:center; justify-content:space-between; gap:8px; border:none; background:transparent; padding:8px 10px; border-radius:9px; font:inherit; font-size:13.5px; font-weight:600; color:#475569; cursor:pointer; text-align:left; }
+  .owner-nav-item:hover { background:#F1F5F9; color:var(--ink); }
+  .owner-nav-item.active { background:#0064D2; color:#fff; }
+  .owner-nav-item .ad-count { margin-left:auto; }
+  .owner-tag { font-style:normal; font-size:10px; font-weight:700; background:#FEF3C7; color:#92400E; padding:1px 6px; border-radius:6px; }
+  .owner-nav-item.active .owner-tag { background:rgba(255,255,255,.22); color:#fff; }
+  @media (max-width:900px) {
+    .app-shell.owner-mode #page-admin { display:block !important; }
+    .app-shell.owner-mode #page-admin > .owner-nav { position:static; max-height:none; display:flex; gap:4px; overflow-x:auto; overflow-y:hidden; padding:6px; margin-bottom:16px; }
+    .owner-nav-brand, .owner-nav-group { display:none; }
+    .owner-nav-item { flex:none; width:auto; white-space:nowrap; }
+  }
   /* Settings -> VeRO words */
   .vr-inputwrap { position:relative; }
   .vr-suggest { position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:30; background:#fff; border:1.5px solid var(--line); border-radius:12px; box-shadow:0 12px 30px rgba(15,27,45,.14); max-height:280px; overflow:auto; }
@@ -5686,12 +5708,16 @@
       </div>
 
       <div id="page-admin" style="display:none;">
+        <nav class="owner-nav" id="ownerNav" aria-label="Owner panel"></nav>
         <div class="st-top">
           <div>
             <h1>Admin</h1>
             <div class="sub">Users, credits, AI, pricing and support in one place.</div>
           </div>
-          <button class="st-btn" id="adminRefreshBtn" type="button">Refresh</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a class="st-btn primary" id="ownerOpenBtn" href="/owner" style="display:none;">Open owner panel</a>
+            <button class="st-btn" id="adminRefreshBtn" type="button">Refresh</button>
+          </div>
         </div>
 
         <div class="ad-tabs" id="adminTabs" role="tablist">
@@ -6870,6 +6896,7 @@ B0EXAMPLE2"></textarea></div>
     pricing: ['Buy Credits', 'Purchase credits to import products and monitor stock.'],
     support: ['Support', 'Open a ticket if you need more credits or run into an issue.'],
     admin: ['Admin', 'Manage users, credits, and support tickets.'],
+    owner: ['Owner', 'Everything about ELMS in one place.'],
   };
 
   // ---------- Page URLs ----------
@@ -6878,7 +6905,7 @@ B0EXAMPLE2"></textarea></div>
   const PAGE_PATHS = {
     dashboard: '/dashboard', import: '/import', drafts: '/draft', listings: '/listing', orders: '/orders', netprofit: '/net-profit',
     messages: '/messages', 'research-tools': '/research-tools', calculator: '/price-calculator', referrals: '/refer', affiliate: '/affiliate', vouchers: '/vouchers',
-    settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin',
+    settings: '/settings', pricing: '/buy-credits', support: '/support', admin: '/admin', owner: '/owner',
   };
   const PATH_ALIASES = { '/drafts': 'drafts', '/listings': 'listings', '/order': 'orders', '/message': 'messages', '/pricing': 'pricing', '/credits': 'pricing', '/index.html': 'dashboard', '/': 'dashboard' };
   function pageFromPath(pathname) {
@@ -6922,6 +6949,7 @@ B0EXAMPLE2"></textarea></div>
     if (document.getElementById('appShell').style.display === 'none') return;
     const page = pageFromPath(window.location.pathname) || 'dashboard';
     if (page === 'admin' && window.currentUser?.role !== 'admin') return showPage('dashboard', { replace: true });
+    if (page === 'owner' && !window.currentUser?.isSuperAdmin) return showPage('dashboard', { replace: true });
     showPage(page, { fromPop: true });
   });
 
@@ -6942,13 +6970,16 @@ B0EXAMPLE2"></textarea></div>
 
   function showPage(page, opts = {}) {
     if (!PAGE_TITLES[page]) page = 'dashboard';
+    if (page === 'owner' && !(window.currentUser && window.currentUser.isSuperAdmin)) page = 'dashboard'; // the owner panel: the super admin only (the team gets it with their rights, later)
     if (document.querySelector('.sidebar-nav a.active')?.getAttribute('data-page') !== page) scrollPageTop(false);
     if (!opts.fromPop) syncUrlToPage(page, !!opts.replace);
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
-    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'netprofit' || page === 'admin');
+    document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'netprofit' || page === 'admin' || page === 'owner');
+    document.getElementById('appShell')?.classList.toggle('owner-mode', page === 'owner');
+    const shownPage = page === 'owner' ? 'admin' : page; // the owner panel is the admin page in another frame
     ['dashboard', 'import', 'drafts', 'listings', 'orders', 'netprofit', 'messages', 'research-tools', 'calculator', 'referrals', 'affiliate', 'vouchers', 'settings', 'pricing', 'support', 'admin'].forEach((p) => {
-      document.getElementById(`page-${p}`).style.display = p === page ? 'block' : 'none';
+      document.getElementById(`page-${p}`).style.display = p === shownPage ? 'block' : 'none';
     });
     document.querySelectorAll('.sidebar-nav a').forEach((a) => {
       a.classList.toggle('active', a.getAttribute('data-page') === page);
@@ -6973,7 +7004,14 @@ B0EXAMPLE2"></textarea></div>
     if (page === 'settings') loadSettingsPage();
     if (page === 'pricing') loadPricingPage();
     if (page === 'support') loadSupportPage();
-    if (page === 'admin') loadAdminPage();
+    if (page === 'admin' || page === 'owner') {
+      const adminHead = document.querySelector('#page-admin .st-top h1');
+      const adminSub = document.querySelector('#page-admin .st-top .sub');
+      if (adminHead) adminHead.textContent = page === 'owner' ? 'Owner panel' : 'Admin';
+      if (adminSub) adminSub.textContent = page === 'owner' ? 'Everything about ELMS, grouped in the menu.' : 'Users, credits, AI, pricing and support in one place.';
+      if (page === 'owner') renderOwnerNav();
+      loadAdminPage();
+    }
   }
 
   document.querySelectorAll('.sidebar-nav a').forEach((a) => {
@@ -8922,6 +8960,8 @@ B0EXAMPLE2"></textarea></div>
     startBackgroundRefresh();
     const adminNavLink = document.getElementById('adminNavLink');
     if (adminNavLink) adminNavLink.style.display = user.role === 'admin' ? 'flex' : 'none';
+    const ownerOpenBtn = document.getElementById('ownerOpenBtn');
+    if (ownerOpenBtn) ownerOpenBtn.style.display = user.isSuperAdmin ? '' : 'none';
 
     // Always start authenticated sessions on Dashboard after login/reload.
     // Individual page navigation remains client-side after the initial boot.
@@ -8931,6 +8971,7 @@ B0EXAMPLE2"></textarea></div>
       let startPage = pageFromPath(window.location.pathname) || loginReturnPage || 'dashboard';
       loginReturnPage = null;
       if (startPage === 'admin' && user.role !== 'admin') startPage = 'dashboard';
+      if (startPage === 'owner' && !user.isSuperAdmin) startPage = 'dashboard';
       showPage(startPage, { replace: true });
     }
 
@@ -20979,10 +21020,56 @@ async function autoSuggestEmptyDraftCategories() {
     document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.classList.toggle('active', t.dataset.adminTab === name));
     document.querySelectorAll('[data-admin-panel]').forEach((p) => { p.style.display = p.dataset.adminPanel === name ? 'block' : 'none'; });
     try { sessionStorage.setItem('elmsAdminTab', name); } catch (_) {}
+    syncOwnerNav();
   }
   document.querySelectorAll('#adminTabs [data-admin-tab]').forEach((t) => t.addEventListener('click', () => setAdminTab(t.dataset.adminTab)));
   document.getElementById('adminRefreshBtn')?.addEventListener('click', () => loadAdminPage());
   try { const saved = sessionStorage.getItem('elmsAdminTab'); if (saved) setAdminTab(saved); } catch (_) {}
+
+  // ---------- Owner panel (/owner): the admin sections in a left menu ----------
+  // Every admin tab is in the menu once; the third value marks what only the owner has. It only moves the person between the existing sections
+  // (setAdminTab), so everything that works in the admin panel works here the same way.
+  const OWNER_MENU = [
+    ['Overview', [['overview', 'Owner home']]],
+    ['People', [['users', 'Users'], ['lookup', 'User lookup'], ['admins', 'Admins and rights', true], ['appeals', 'Appeals'], ['tickets', 'Support']]],
+    ['Money', [['plans', 'Plans'], ['costs', 'Credit costs'], ['vouchers', 'Vouchers'], ['referrals', 'Referrals'], ['affiliates', 'Affiliates']]],
+    ['Product', [['catalog', 'Product catalog'], ['service', 'Done-for-you'], ['categories', 'Categories'], ['ebayrules', 'eBay rules'], ['ai', 'AI']]],
+    ['Messages', [['mail', 'Mail'], ['social', 'Social']]],
+    ['System', [['alerts', 'Alerts'], ['security', 'Security'], ['settings', 'Settings']]],
+  ];
+  function renderOwnerNav() {
+    const nav = document.getElementById('ownerNav');
+    if (!nav) return;
+    const isSuper = !!(window.currentUser && window.currentUser.isSuperAdmin);
+    nav.innerHTML = '<div class="owner-nav-brand">ELMS owner</div>'
+      + OWNER_MENU.map(([group, items]) => '<div class="owner-nav-group">' + escapeHtml(group) + '</div>'
+        + items.filter(([, , ownerOnly]) => isSuper || !ownerOnly).map(([tab, label, ownerOnly]) => '<button class="owner-nav-item" type="button" data-owner-tab="' + tab + '"><span>' + escapeHtml(label) + '</span>' + (ownerOnly ? '<em class="owner-tag">owner</em>' : '') + '<span class="ad-count" data-owner-count="' + tab + '" style="display:none;"></span></button>').join('')).join('')
+      + '<div class="owner-nav-group">ELMS</div><button class="owner-nav-item" type="button" data-owner-go="dashboard">Back to the app</button><button class="owner-nav-item" type="button" data-owner-go="admin">Classic admin panel</button>';
+    nav.querySelectorAll('[data-owner-tab]').forEach((b) => b.addEventListener('click', () => { setAdminTab(b.dataset.ownerTab); scrollPageTop(false); }));
+    nav.querySelectorAll('[data-owner-go]').forEach((b) => b.addEventListener('click', () => showPage(b.dataset.ownerGo)));
+    syncOwnerNav();
+  }
+  function syncOwnerNav() {
+    const nav = document.getElementById('ownerNav');
+    if (!nav) return;
+    const current = document.querySelector('#adminTabs [data-admin-tab].active');
+    const active = current ? current.dataset.adminTab : 'overview';
+    const shell = document.getElementById('appShell');
+    if (shell && shell.classList.contains('owner-mode')) { // the heading of the page is the name of the section that is open
+      const head = document.querySelector('#page-admin .st-top h1');
+      const label = nav.querySelector('[data-owner-tab="' + active + '"] span');
+      if (head && label) head.textContent = label.textContent;
+    }
+    nav.querySelectorAll('[data-owner-tab]').forEach((b) => {
+      b.classList.toggle('active', b.dataset.ownerTab === active);
+      const badge = document.querySelector('#adminTabs [data-admin-tab="' + b.dataset.ownerTab + '"] .ad-count');
+      const mine = b.querySelector('[data-owner-count]');
+      if (badge && mine) { mine.textContent = badge.textContent; mine.style.display = badge.style.display === 'none' || !badge.textContent.trim() ? 'none' : ''; }
+    });
+  }
+  document.getElementById('ownerOpenBtn')?.addEventListener('click', (e) => { e.preventDefault(); showPage('owner'); });
+  document.getElementById('adminTabs')?.addEventListener('click', () => setTimeout(syncOwnerNav, 0));
+  if (window.MutationObserver && document.getElementById('adminTabs')) new MutationObserver(() => syncOwnerNav()).observe(document.getElementById('adminTabs'), { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['style', 'class'] });
 
   // ---------- Admin Panel: Done-for-you ----------
   let svcJob = null;        // the order being worked on, as the server last described it
