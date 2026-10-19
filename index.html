@@ -3512,6 +3512,10 @@
   .bc-trust { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(220px, 100%),1fr)); gap:14px; margin-top:20px; }
   .bc-trust div { display:flex; flex-direction:column; gap:3px; padding:14px 16px; background:#fff; border:1px solid var(--line); border-radius:14px; }
   .bc-trust b { font-size:13.5px; } .bc-trust span { font-size:12.5px; color:var(--grey); }
+  .bc-support { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 16px; padding:12px 16px; border:1px solid #B2DDFF; border-radius:12px; background:#EFF8FF; }
+  .bc-support-ico { font-size:22px; flex:none; } .bc-support > div:nth-child(2) { flex:1; min-width:200px; font-size:13px; line-height:1.5; }
+  .bc-support b { display:block; font-size:13.5px; } .bc-support span { color:var(--grey); }
+  .bc-support .st-btn { text-decoration:none; display:inline-flex; align-items:center; }
   /* ===== Refer & earn ===== */
   .rf-hero { position:relative; overflow:hidden; border-radius:20px; padding:30px 32px; color:#fff; background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 55%,#4F46E5 100%); display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:28px; align-items:center; box-shadow:0 18px 44px rgba(30,58,138,.28); margin-bottom:18px; }
   .rf-hero::before { content:''; position:absolute; right:-80px; top:-90px; width:300px; height:300px; border-radius:50%; background:radial-gradient(circle,rgba(96,165,250,.38),transparent 68%); pointer-events:none; }
@@ -5518,6 +5522,8 @@
 
         <div class="bc-billing" id="pricingTabs"><span class="dv-seg" role="group" aria-label="Buy Credits or Buy Listings"><button type="button" data-pricing-tab="credits" class="on">Credits</button><button type="button" data-pricing-tab="listings">Buy Listings</button></span></div>
 
+        <div class="bc-support" id="pricingSupportNote"><div class="bc-support-ico" aria-hidden="true">&#128172;</div><div><b>Cannot pay with the wallet?</b><span id="pricingSupportText">Write to support and we will renew your plan for you.</span></div><a class="st-btn small primary" id="pricingSupportBtn" href="mailto:support@elmstool.com">Email support</a></div>
+
         <div data-pricing-panel="credits">
           <div id="pricingContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           <p class="bc-refund-note">Taxes may be added at checkout where they apply.</p>
@@ -5526,7 +5532,7 @@
           <div class="bc-trust">
             <div><b>&#128274; Secure checkout</b><span>Payments are handled by our payment partner. ELMS never sees your card or wallet details.</span></div>
             <div><b>&#9989; Credits after payment</b><span>Credits are added once the payment is confirmed.</span></div>
-            <div><b>&#128179; Cards, wallets &amp; more</b><span>Pay the way you prefer.</span></div>
+            <div><b>&#128179; Wallet checkout</b><span>Pay with your digital wallet. Cannot? Write to support and we renew your plan for you.</span></div>
           </div>
 
           <section class="st-card" style="margin-top:20px;">
@@ -6135,7 +6141,7 @@ B0EXAMPLE2"></textarea></div>
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico green">&#128179;</div>
-              <div class="st-head-txt"><h2>Credit plans</h2><p>The plans shown on Buy credits (the price is for one month; a yearly price switches the yearly option on). A monthly or yearly plan runs one term from the payment (CashTap and Paddle alike); when it ends the credits that came with it end, and so does any eBay-account limit the plan raised. Credits the person held before the plan began, or got from a voucher, a referral reward or from you during the term, stay. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Paddle is optional and off unless PAYMENT_PROVIDER=paddle. Paddle needs its OWN price for the yearly term - it cannot reuse the monthly Paddle Price ID - so Monthly and Yearly each have their own Paddle ID field below.</p></div>
+              <div class="st-head-txt"><h2>Credit plans</h2><p>The plans shown on Buy credits (the price is for one month; a yearly price switches the yearly option on). A monthly or yearly plan runs one term from the payment (CashTap and Paddle alike); when it ends the credits that came with it end, and so does any eBay-account limit the plan raised. Credits the person held before the plan began, or got from a voucher, a referral reward or from you during the term, stay. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Card payments (Paddle) are CLOSED: a Paddle price ID has no effect while they are closed. If they are ever opened again, Paddle needs its OWN price for the yearly term - it cannot reuse the monthly Paddle Price ID - so Monthly and Yearly each have their own Paddle ID field below.</p></div>
             </div>
             <div id="adminPlansContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
             <div class="st-custom" id="customPlanCard">
@@ -22572,7 +22578,7 @@ async function autoSuggestEmptyDraftCategories() {
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Listings</h2><p>Across every user and store.</p></div></div>
             <div class="ad-bars">${bar('Live', l.published, '#86B817')}${bar('Drafts', l.draft, '#0064D2')}${bar('Scheduled', l.scheduled, '#F5AF02')}${bar('Publishing', l.publishing, '#8B5CF6')}${bar('Errors', l.error, '#E53238')}</div></section>
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Service health</h2><p>Server settings that the app depends on.</p></div></div>
-            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (CashTap)', d.health.cashtap, 'CASHTAP_SECRET_KEY / CASHTAP_WEBHOOK_SECRET missing')}${health('Payments (Paddle, optional)', d.health.paddle, 'PADDLE keys missing')}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
+            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (CashTap)', d.health.cashtap, 'CASHTAP_SECRET_KEY / CASHTAP_WEBHOOK_SECRET missing')}${d.health.cardClosed ? health('Card payments (closed)', false, 'Closed on purpose. Keep the Paddle keys: a late payment still needs them.') : health('Payments (Paddle, optional)', d.health.paddle, 'PADDLE keys missing')}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
         </div>
         <div class="ad-two">
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Newest users</h2></div></div>
@@ -25983,6 +25989,7 @@ async function autoSuggestEmptyDraftCategories() {
     pricingTab = name;
     document.querySelectorAll('#pricingTabs [data-pricing-tab]').forEach((b) => b.classList.toggle('on', b.dataset.pricingTab === name));
     document.querySelectorAll('[data-pricing-panel]').forEach((p) => { p.style.display = p.dataset.pricingPanel === name ? '' : 'none'; });
+    setPricingSupport();
     const title = document.getElementById('pricingTitle');
     const sub = document.getElementById('pricingSub');
     if (name === 'listings') {
@@ -26033,7 +26040,7 @@ async function autoSuggestEmptyDraftCategories() {
     // paddleYearlyAvailable, not paddleAvailable (that one is the monthly term's own flag).
     const cardAvailable = yr ? p.paddleYearlyAvailable : p.paddleAvailable;
     if (!(cardAvailable && cardTokenSet())) {
-      return `<div class="bc-plan-label">Wallet, card and more &middot; secure checkout</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${credits} credits</button>`;
+      return `<div class="bc-plan-label">Wallet checkout &middot; secure</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${credits} credits</button>`;
     }
     const noDiscount = hasOff || pricingVoucherId ? '<div class="bc-pay-note">Discounts and vouchers apply to the wallet checkout.</div>' : '';
     return `
@@ -26075,6 +26082,7 @@ async function autoSuggestEmptyDraftCategories() {
       }
 
       currentPaymentProvider = data.provider;
+      setPricingSupport(data.supportEmail);
       if (!data.plans.length) {
         container.innerHTML = '<div class="empty-state">No credit plans are available right now. Please check back later.</div>';
         return;
@@ -26291,6 +26299,30 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
+  // Card payments are closed: the wallet is the only way to pay, and a person who cannot use it writes to support, who renew the plan for them.
+  var SUPPORT_ADDRESS_OK = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/; // var, not const: the pricing page can be asked for before this line has run (no temporal-dead-zone error)
+  var pricingSupportEmail = 'support@elmstool.com';
+  function supportMailto(email, topic) {
+    const me = window.currentUser || {};
+    const listings = topic === 'listings';
+    const body = 'Hi,\n\nI cannot pay with the wallet checkout. ' + (listings ? 'Please help me buy listings.' : 'Please help me renew my plan.') + '\n\nMy ELMS account: ' + (me.email || '') + '\n' + (listings ? 'How many listings I want: ' : 'The plan I want: ') + '\n\nThank you';
+    return 'mailto:' + (email || 'support@elmstool.com') + '?subject=' + encodeURIComponent(listings ? 'Help buying listings' : 'Help renewing my plan') + '&body=' + encodeURIComponent(body);
+  }
+  // The strip follows the tab: Buy credits renews a plan, Buy Listings buys listings. The address is the server's (checked); the account is whoever is signed in NOW.
+  function setPricingSupport(email) {
+    if (typeof email === 'string' && SUPPORT_ADDRESS_OK.test(email)) pricingSupportEmail = email;
+    const listings = typeof pricingTab !== 'undefined' && pricingTab === 'listings';
+    const btn = document.getElementById('pricingSupportBtn');
+    if (btn) btn.setAttribute('href', supportMailto(pricingSupportEmail, listings ? 'listings' : 'plan'));
+    const text = document.getElementById('pricingSupportText');
+    if (text) text.textContent = listings ? 'Write to support and we will help you buy your listings.' : 'Write to support and we will renew your plan for you.';
+  }
+  async function cardClosedDialog(message, email) {
+    setPricingSupport(email);
+    const write = await elmsConfirm(message || 'Card payments are no longer available. Pay with the wallet checkout, or write to support and we will help you renew your plan.', { title: 'Card payments are closed', okText: 'Email support', cancelText: 'Close' });
+    if (write) window.location.href = supportMailto(pricingSupportEmail);
+  }
+
   async function startCheckout(planId, btn, custom, provider, orderLines) {
     if (orderLines && !(await confirmCheckout(orderLines))) return;
     const idleLabel = btn.textContent;
@@ -26307,6 +26339,7 @@ async function autoSuggestEmptyDraftCategories() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
+        if (data.code === 'card_checkout_closed') { await cardClosedDialog(data.error, data.supportEmail); loadPlanCards(); return; } // a page opened before this changed: say so, and show the plans without the card button
         alert(data.error || 'Could not start checkout.');
         if (pricingVoucherId && res.status >= 400 && res.status < 500) loadPlanCards(); // the voucher may be used or expired now
         return;
@@ -26432,7 +26465,7 @@ async function autoSuggestEmptyDraftCategories() {
               <div class="bc-plan-name">${escapeHtml(t.name)}</div>
               <div class="bc-plan-credits">${t.listingCount.toLocaleString()}<small>drafts</small></div>
               <div class="bc-plan-price">$${Number(t.priceUsd).toFixed(2)}<small class="bc-term"> one time</small></div>
-              <div class="bc-plan-label">Wallet, card and more &middot; secure checkout</div>
+              <div class="bc-plan-label">Wallet checkout &middot; secure</div>
               <button class="bc-buy listing-pack-buy-btn" data-tier-id="${t.id}" type="button">Buy ${t.listingCount.toLocaleString()} listings</button>
             </div>
           `).join('')}
