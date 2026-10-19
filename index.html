@@ -7077,7 +7077,7 @@ B0EXAMPLE2"></textarea></div>
   document.querySelectorAll('.sidebar-nav a').forEach((a) => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      showPage(a.getAttribute('data-page'));
+      showPage(resolveAdminPage(a.getAttribute('data-page'))); // the Admin link opens the person's own panel as a normal step (a new history entry), not as a redirect
       closeMobileSidebar();
     });
   });
