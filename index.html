@@ -5522,7 +5522,7 @@
 
         <div class="bc-billing" id="pricingTabs"><span class="dv-seg" role="group" aria-label="Buy Credits or Buy Listings"><button type="button" data-pricing-tab="credits" class="on">Credits</button><button type="button" data-pricing-tab="listings">Buy Listings</button></span></div>
 
-        <div class="bc-support" id="pricingSupportNote"><div class="bc-support-ico" aria-hidden="true">&#128172;</div><div><b>Cannot pay with the wallet?</b><span id="pricingSupportText">Write to support and we will renew your plan for you.</span></div><a class="st-btn small primary" id="pricingSupportBtn" href="mailto:support@elmstool.com">Email support</a></div>
+        <div class="bc-support" id="pricingSupportNote"><div class="bc-support-ico" aria-hidden="true">&#128172;</div><div><b>Cannot pay by card or with the wallet?</b><span id="pricingSupportText">Write to support and we will renew your plan for you.</span></div><a class="st-btn small primary" id="pricingSupportBtn" href="mailto:support@elmstool.com">Email support</a></div>
 
         <div data-pricing-panel="credits">
           <div id="pricingContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
@@ -5532,7 +5532,7 @@
           <div class="bc-trust">
             <div><b>&#128274; Secure checkout</b><span>Payments are handled by our payment partner. ELMS never sees your card or wallet details.</span></div>
             <div><b>&#9989; Credits after payment</b><span>Credits are added once the payment is confirmed.</span></div>
-            <div><b>&#128179; Wallet checkout</b><span>Pay with your digital wallet. Cannot? Write to support and we renew your plan for you.</span></div>
+            <div><b>&#128179; Card or wallet</b><span>Pay by card or with your digital wallet. Cannot? Write to support and we renew your plan for you.</span></div>
           </div>
 
           <section class="st-card" style="margin-top:20px;">
@@ -6141,7 +6141,7 @@ B0EXAMPLE2"></textarea></div>
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico green">&#128179;</div>
-              <div class="st-head-txt"><h2>Credit plans</h2><p>The plans shown on Buy credits (the price is for one month; a yearly price switches the yearly option on). A monthly or yearly plan runs one term from the payment (CashTap and Paddle alike); when it ends the credits that came with it end, and so does any eBay-account limit the plan raised. Credits the person held before the plan began, or got from a voucher, a referral reward or from you during the term, stay. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Card payments (Paddle) are CLOSED: a Paddle price ID has no effect while they are closed. If they are ever opened again, Paddle needs its OWN price for the yearly term - it cannot reuse the monthly Paddle Price ID - so Monthly and Yearly each have their own Paddle ID field below.</p></div>
+              <div class="st-head-txt"><h2>Credit plans</h2><p>The plans shown on Buy credits (the price is for one month; a yearly price switches the yearly option on). A monthly or yearly plan runs one term from the payment (CashTap and Paddle alike); when it ends the credits that came with it end, and so does any eBay-account limit the plan raised. Credits the person held before the plan began, or got from a voucher, a referral reward or from you during the term, stay. Users pay through CashTap: when the payment is confirmed they get the credits and the eBay-account limit of the plan automatically. Card payments use ONE product whose price the server sets for every plan, so the Paddle ID fields below have no effect (Paddle stays closed).</p></div>
             </div>
             <div id="adminPlansContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
             <div class="st-custom" id="customPlanCard">
@@ -8730,13 +8730,6 @@ B0EXAMPLE2"></textarea></div>
 
   // Google Identity Services client ID used by the Google Sign-In button.
   const GOOGLE_CLIENT_ID = '851041711281-skfab92keqlcjjkli3ebg2i216ef33k2.apps.googleusercontent.com';
-
-  // Client-side token of the card checkout (safe to expose in frontend code - it can only
-  // open checkouts, not access an account).
-  const cardClientToken = 'live_6e14cf9337f385541654e9079b4';
-  // 'sandbox' while testing, 'production' once live.
-  const cardEnvironment = 'production';
-  const cardSdkUrl = 'https://cdn.paddle.com/paddle/v2/paddle.js'; // requested only when someone pays by card
 
   /**
    * Wraps fetch() to automatically attach the current session token (if any)
@@ -22578,7 +22571,7 @@ async function autoSuggestEmptyDraftCategories() {
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Listings</h2><p>Across every user and store.</p></div></div>
             <div class="ad-bars">${bar('Live', l.published, '#86B817')}${bar('Drafts', l.draft, '#0064D2')}${bar('Scheduled', l.scheduled, '#F5AF02')}${bar('Publishing', l.publishing, '#8B5CF6')}${bar('Errors', l.error, '#E53238')}</div></section>
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Service health</h2><p>Server settings that the app depends on.</p></div></div>
-            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (CashTap)', d.health.cashtap, 'CASHTAP_SECRET_KEY / CASHTAP_WEBHOOK_SECRET missing')}${d.health.cardClosed ? health('Card payments (closed)', false, 'Closed on purpose. Keep the Paddle keys: a late payment still needs them.') : health('Payments (Paddle, optional)', d.health.paddle, 'PADDLE keys missing')}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
+            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (CashTap)', d.health.cashtap, 'CASHTAP_SECRET_KEY / CASHTAP_WEBHOOK_SECRET missing')}${(() => { const c = d.health.card || {}; return !c.configured ? health('Card payments (off)', false, 'The card payment settings are missing on the server (see PRODUCTION-SETUP.md).') : !c.on ? health('Card payments (off)', false, 'Set up but switched off on the server.') : c.test ? health('Card payments (TEST mode)', false, 'A TEST key is in use: put the live settings on the server before real customers pay.') : health('Card payments', true, ''); })()}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
         </div>
         <div class="ad-two">
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Newest users</h2></div></div>
@@ -24294,7 +24287,7 @@ async function autoSuggestEmptyDraftCategories() {
         const paid = cur.plan && cur.plan.paid && cur.planExpiresAt && new Date(cur.planExpiresAt).getTime() > Date.now();
         const text = 'Delete ' + cur.email + '?\n\nThey get an email from support now. If they do not sign in within ' + AD_DELETE_DAYS + ' days, the account is deleted for good: drafts, listings, imports, orders, messages, notes and the eBay store connections. Payment records are kept. Listings that are already live on eBay are not touched.'
           + '\n\nThey have ' + Number(cur.creditBalance || 0).toLocaleString() + ' credits (lost)' + (cur.ebay && cur.ebay.connected ? ' and ' + cur.ebay.stores + ' connected eBay store' + (cur.ebay.stores === 1 ? '' : 's') : '') + '.'
-          + (paid ? '\n\nThey have a paid plan that runs until ' + new Date(cur.planExpiresAt).toLocaleDateString() + '. If it renews by itself, cancel it in Paddle yourself: ELMS cannot.' : '');
+          + (paid ? '\n\nThey have a paid plan that runs until ' + new Date(cur.planExpiresAt).toLocaleDateString() + '. If it renews by itself, cancel it with the payment company yourself: ELMS cannot.' : '');
         if (!(await elmsConfirm(text, { title: 'Delete this account?', okText: 'Send the notice', danger: true }))) return;
         const note = delBox.querySelector('#ueDelNote').value.trim();
         btn.disabled = true; status().textContent = 'Sending the email\u2026';
@@ -26117,44 +26110,6 @@ async function autoSuggestEmptyDraftCategories() {
   });
 
   // ---------- Pricing page (Buy Credits) ----------
-  // The card checkout code comes from its own site and is requested only when someone pays by card, never when a page opens.
-  let cardSdkReady = false;
-  let cardSdkLoad = null;
-
-  const cardTokenSet = () => !!cardClientToken;
-
-  function startCardSdk() {
-    if (cardSdkReady || !window.Paddle || !cardTokenSet()) return;
-    if (cardEnvironment === 'sandbox') Paddle.Environment.set('sandbox'); // live is the default, so nothing is set for it
-    Paddle.Initialize({ token: cardClientToken });
-    cardSdkReady = true;
-  }
-
-  // Resolves true when the card checkout is ready to open. One request however often it is called; a failed or very slow request can be tried again.
-  function ensureCardSdk() {
-    if (cardSdkReady) return Promise.resolve(true);
-    if (cardSdkLoad) return cardSdkLoad;
-    cardSdkLoad = new Promise((resolve) => {
-      let settled = false;
-      let timer = null;
-      const finish = (ok) => { if (settled) return; settled = true; clearTimeout(timer); if (!ok) cardSdkLoad = null; resolve(ok); };
-      const ready = () => { try { startCardSdk(); } catch (_) { /* not ready */ } finish(cardSdkReady); };
-      timer = setTimeout(() => finish(false), 20000);
-      if (window.Paddle) { ready(); return; }
-      let s = document.querySelector('script[data-card-sdk]');
-      if (!s) {
-        s = document.createElement('script');
-        s.src = cardSdkUrl;
-        s.async = true;
-        s.setAttribute('data-card-sdk', '');
-        document.head.appendChild(s);
-      }
-      s.addEventListener('load', ready);
-      s.addEventListener('error', () => { s.remove(); finish(false); });
-    });
-    return cardSdkLoad;
-  }
-
   let pricingTab = 'credits';
   function setPricingTab(name) {
     pricingTab = name;
@@ -26198,32 +26153,32 @@ async function autoSuggestEmptyDraftCategories() {
   ];
   const payBadge = (m) => '<span class="pay-badge"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="' + m.color + '" d="' + m.d + '"/></svg></span>';
   const CARD_ICONS_HTML = PAY_MARKS.map(payBadge).join('');
+  const CARD_MARKS_HTML = PAY_MARKS.slice(0, 3).map(payBadge).join(''); // Visa, Mastercard, American Express
 
-  // The two ways to pay for a plan. The wallet checkout keeps the discounts, vouchers and yearly plans. Card and other methods
-  // charge the plan's list price. Each way has its own box, so the buyer sees which one is for what.
+  // The ways to pay for a plan: the wallet checkout, and - when the server says a card option exists for this plan and term - the card checkout next to it. The server prices both the same
+  // way (a referral discount or a voucher applies to both). Each way has its own box, so the buyer sees which one is which.
   function payBlocks(p, { shownCredits, hasOff, yr }) {
     const credits = shownCredits.toLocaleString();
-    const cardPriceUsd = yr ? p.yearlyPriceUsd : p.priceUsd;
     if (currentPaymentProvider !== 'cashtap') {
       return `<div class="bc-plan-icons" aria-hidden="true">${CARD_ICONS_HTML}</div><div class="bc-plan-label">Card, wallets &amp; more</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${credits} credits</button>`;
     }
-    // Monthly and yearly are two separate card prices, so whether the card option shows up for yearly depends on
-    // paddleYearlyAvailable, not paddleAvailable (that one is the monthly term's own flag).
-    const cardAvailable = yr ? p.paddleYearlyAvailable : p.paddleAvailable;
-    if (!(cardAvailable && cardTokenSet())) {
+    // Monthly and yearly are separate: the server answers per term (cardAvailable for the monthly one, cardYearlyAvailable for the yearly one).
+    const cardAvailable = yr ? p.cardYearlyAvailable : p.cardAvailable;
+    if (!cardAvailable) {
       return `<div class="bc-plan-label">Wallet checkout &middot; secure</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${credits} credits</button>`;
     }
-    const noDiscount = hasOff || pricingVoucherId ? '<div class="bc-pay-note">Discounts and vouchers apply to the wallet checkout.</div>' : '';
+    const listUsd = yr ? p.yearlyPriceUsd : p.priceUsd;
+    const discUsd = yr ? p.discountedYearlyPriceUsd : p.discountedPriceUsd;
+    const cardPriceUsd = discUsd != null && discUsd < listUsd ? discUsd : listUsd;
     return `
       <div class="bc-pay bc-pay-first">
         <div class="bc-pay-head"><span>Wallet checkout</span></div>
         <button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Pay with wallet</button>
       </div>
       <div class="bc-pay">
-        <div class="bc-pay-head"><span>Card &amp; other payment methods</span></div>
-        <div class="bc-plan-icons" aria-hidden="true">${CARD_ICONS_HTML}</div>
+        <div class="bc-pay-head"><span>Card</span></div>
+        <div class="bc-plan-icons" aria-hidden="true">${CARD_MARKS_HTML}</div>
         <button class="bc-buy bc-buy-alt pricing-buy-btn" data-plan-id="${p.id}" data-provider="card" type="button">Pay $${Number(cardPriceUsd).toFixed(2)} + tax by card</button>
-        ${noDiscount}
       </div>`;
   }
 
@@ -26412,7 +26367,7 @@ async function autoSuggestEmptyDraftCategories() {
     const listUsd = yr ? p.yearlyPriceUsd : p.priceUsd;
     const discUsd = yr ? p.discountedYearlyPriceUsd : p.discountedPriceUsd;
     const card = provider === 'card' || currentPaymentProvider !== 'cashtap';
-    const payUsd = !card && discUsd != null && discUsd < listUsd ? discUsd : listUsd;
+    const payUsd = discUsd != null && discUsd < listUsd ? discUsd : listUsd;
     const lines = [['Plan', String(p.name || '')], ['Credits', (yr ? p.credits * 12 : p.credits).toLocaleString() + ', valid for ' + (yr ? '1 year' : '1 month')]];
     if (p.maxEbayAccounts) lines.push(['eBay stores', String(p.maxEbayAccounts)]);
     if (Number.isFinite(Number(payUsd))) lines.push(['Price', '$' + Number(payUsd).toFixed(2) + (card ? ' + tax' : '')]);
@@ -26470,13 +26425,13 @@ async function autoSuggestEmptyDraftCategories() {
     });
   }
 
-  // Card payments are closed: the wallet is the only way to pay, and a person who cannot use it writes to support, who renew the plan for them.
+  // A person who cannot pay by card or with the wallet writes to support, who renew the plan for them.
   var SUPPORT_ADDRESS_OK = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/; // var, not const: the pricing page can be asked for before this line has run (no temporal-dead-zone error)
   var pricingSupportEmail = 'support@elmstool.com';
   function supportMailto(email, topic) {
     const me = window.currentUser || {};
     const listings = topic === 'listings';
-    const body = 'Hi,\n\nI cannot pay with the wallet checkout. ' + (listings ? 'Please help me buy listings.' : 'Please help me renew my plan.') + '\n\nMy ELMS account: ' + (me.email || '') + '\n' + (listings ? 'How many listings I want: ' : 'The plan I want: ') + '\n\nThank you';
+    const body = 'Hi,\n\nI cannot pay by card or with the wallet. ' + (listings ? 'Please help me buy listings.' : 'Please help me renew my plan.') + '\n\nMy ELMS account: ' + (me.email || '') + '\n' + (listings ? 'How many listings I want: ' : 'The plan I want: ') + '\n\nThank you';
     return 'mailto:' + (email || 'support@elmstool.com') + '?subject=' + encodeURIComponent(listings ? 'Help buying listings' : 'Help renewing my plan') + '&body=' + encodeURIComponent(body);
   }
   // The strip follows the tab: Buy credits renews a plan, Buy Listings buys listings. The address is the server's (checked); the account is whoever is signed in NOW.
@@ -26499,13 +26454,12 @@ async function autoSuggestEmptyDraftCategories() {
     const idleLabel = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Starting checkout\u2026';
-    if (provider === 'card') ensureCardSdk(); // the card checkout code is asked for now, while the order is being set up
 
     try {
       const res = await apiFetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(custom ? { custom, billing: pricingBilling } : provider === 'card' ? { planId, provider: 'paddle', billing: pricingBilling } : { planId, billing: pricingBilling, ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
+        body: JSON.stringify(custom ? { custom, billing: pricingBilling } : { planId, billing: pricingBilling, ...(provider === 'card' ? { provider: 'card' } : {}), ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
       });
       const data = await res.json();
 
@@ -26516,23 +26470,13 @@ async function autoSuggestEmptyDraftCategories() {
         return;
       }
 
-      if (data.provider === 'cashtap') {
-        // Remember the payment: when the buyer comes back the site asks the server whether it is paid.
+      if (data.url) {
+        // Remember the payment: when the buyer comes back the site asks the server whether it is paid (the server tells the wallet's id from the card's).
         try { localStorage.setItem('elmsPendingPayment', JSON.stringify({ sessionId: data.sessionId, at: Date.now() })); } catch (_) { /* the server still gives the plan */ }
         window.location.href = data.url;
         return;
       }
-
-      if (!(await ensureCardSdk())) {
-        alert('Card payment is not available right now. Please try again later or contact support.');
-        return;
-      }
-      Paddle.Checkout.open({
-        transactionId: data.transactionId,
-        settings: {
-          successUrl: window.location.origin + window.location.pathname + '?paymentComplete=true',
-        },
-      });
+      alert('Could not start checkout. Please try again.');
     } catch (err) {
       alert('Could not connect to the server: ' + err.message);
     } finally {
@@ -26710,7 +26654,7 @@ async function autoSuggestEmptyDraftCategories() {
   function dropPaymentParams() {
     try {
       const q = new URLSearchParams(window.location.search);
-      ['pay', 'payment', 'kind', 'paymentComplete'].forEach((k) => q.delete(k));
+      ['pay', 'payment', 'kind', 'paymentComplete', 'checkout_id', 'order_id', 'customer_id', 'product_id', 'request_id', 'signature'].forEach((k) => q.delete(k)); // the last six are added by the card checkout
       const rest = q.toString();
       window.history.replaceState({}, document.title, window.location.pathname + (rest ? '?' + rest : '') + window.location.hash);
     } catch (_) { /* the address stays as it is */ }
@@ -26764,7 +26708,7 @@ async function autoSuggestEmptyDraftCategories() {
     const attempt = async () => {
       let finished = false;
       try {
-        const res = await apiFetch('/api/payments/cashtap/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: pending.sessionId }) });
+        const res = await apiFetch('/api/payments/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: pending.sessionId }) });
         const data = await res.json();
         if (res.status === 404) { finished = true; clearPendingPlanPayment(); }
         else if (res.ok && data.success) {
@@ -26776,7 +26720,7 @@ async function autoSuggestEmptyDraftCategories() {
           } else if (data.status === 'expired' || data.status === 'failed') {
             finished = true; clearPendingPlanPayment();
             if (!silent) showToast('Payment', data.status === 'expired' ? 'The checkout expired without a payment.' : 'The payment could not be completed. Contact support if money left your account.', 'error');
-          } else if (['underpaid', 'amount_mismatch', 'no_plan', 'no_user'].includes(data.reason)) {
+          } else if (['underpaid', 'amount_mismatch', 'no_plan', 'no_user', 'unverified'].includes(data.reason)) {
             finished = true; clearPendingPlanPayment();
             showToast('Payment', 'Your payment arrived but needs a quick check by our team. They have been told and will sort it out.', 'error');
           }
