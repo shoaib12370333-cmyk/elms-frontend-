@@ -5777,6 +5777,25 @@
         <!-- Overview -->
         <div class="ad-panel" data-admin-panel="overview">
           <div id="adminOverviewContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          <section class="st-card" id="productStatsCard" style="display:none;">
+            <div class="st-head">
+              <div class="st-ico blue">&#128230;</div>
+              <div class="st-head-txt"><h2>Products of all users</h2><p>How many products every user holds, how many of them are in stock and which Amazon site they come from. You can also send the drafts of one Amazon site to another user. The numbers are counted when you press the button (not on every visit).</p></div>
+            </div>
+            <div class="st-actions"><button class="st-btn primary" id="productStatsBtn" type="button">Show the numbers</button><div id="productStatsStatus" class="st-status" role="status"></div></div>
+            <div id="productStatsResult"></div>
+            <div class="st-custom" id="productSendBox" style="display:none;">
+              <div class="st-custom-title">Send drafts of one Amazon site to a user</div>
+              <p class="st-hint" style="margin-top:0;">Takes drafts of that site from every user's drafts (newest first, one per product) and gives them to the user below as <b>new drafts</b>. Nothing is fetched, no credit is used, nothing is published and the users keep their drafts. A product the user already has is skipped, and so is a draft made for another eBay site than that user's store.</p>
+              <div class="st-grid">
+                <div class="st-field"><label for="pcSite">Amazon site</label><select class="st-input" id="pcSite"><option value="UK">UK</option><option value="US">US</option><option value="AU">AU</option><option value="CA">CA</option><option value="DE">DE</option><option value="FR">FR</option><option value="IT">IT</option><option value="ES">ES</option></select></div>
+                <div class="st-field"><label for="pcStock">Which drafts</label><select class="st-input" id="pcStock"><option value="notout">Not out of stock</option><option value="in">Only in stock</option><option value="any">Any</option></select></div>
+                <div class="st-field"><label for="pcCount">How many (1 to 5,000)</label><input class="st-input" type="number" id="pcCount" min="1" max="5000" step="1" value="100" /></div>
+                <div class="st-field"><label for="pcTarget">Send to (email of the user)</label><input class="st-input" type="email" id="pcTarget" autocomplete="off" spellcheck="false" placeholder="name@example.com" /></div>
+              </div>
+              <div class="st-actions"><button class="st-btn" id="pcCheck" type="button">Check first</button><button class="st-btn primary" id="pcSend" type="button" disabled>Send</button><div id="pcStatus" class="st-status" role="status" style="overflow-wrap:anywhere;"></div></div>
+            </div>
+          </section>
         </div>
 
         <!-- Users -->
@@ -22564,6 +22583,8 @@ async function autoSuggestEmptyDraftCategories() {
   const money = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   async function loadAdminOverview() {
     if (!adminCan('overview')) return; // a section he does not have is never asked for
+    const productCard = document.getElementById('productStatsCard');
+    if (productCard) productCard.style.display = adminCan('admins') ? '' : 'none'; // 'admins' = the owner and full rights: it moves other people's drafts
     const el = document.getElementById('adminOverviewContent'); if (!el) return;
     try {
       const res = await apiFetch('/api/admin/overview'); const d = await res.json();
@@ -23148,6 +23169,96 @@ async function autoSuggestEmptyDraftCategories() {
       loadAdminCategories({ mode: false });
     } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
   });
+
+  // "Products of all users": the numbers, and "send the drafts of one Amazon site to a user" (check first, then send exactly what was checked).
+  const prodNum = (n) => Number(n || 0).toLocaleString('en-US');
+  const prodState = { checked: null, running: false };
+  const prodStatus = (id, text, kind) => { const el = document.getElementById(id); if (el) { el.className = 'st-status' + (kind ? ' ' + kind : ''); el.textContent = text || ''; } };
+  function prodRows(rows, first) {
+    return rows.map((r) => '<tr><td><b>' + escapeHtml(r.label) + '</b></td><td style="text-align:right;">' + prodNum(r.total) + '</td><td style="text-align:right;">' + prodNum(r.drafts) + '</td><td style="text-align:right;">' + prodNum(r.live) + '</td><td style="text-align:right;">' + prodNum(r.ended) + '</td><td style="text-align:right;">' + prodNum(r.inStock) + '</td><td style="text-align:right;">' + prodNum(r.outOfStock) + '</td><td style="text-align:right;">' + prodNum(r.notChecked) + '</td></tr>').join('') + (first || '');
+  }
+  const prodHead = (first) => '<thead><tr><th>' + first + '</th><th style="text-align:right;">Products</th><th style="text-align:right;">Drafts</th><th style="text-align:right;">Live</th><th style="text-align:right;">Ended</th><th style="text-align:right;">In stock</th><th style="text-align:right;">Out of stock</th><th style="text-align:right;">Not checked</th></tr></thead>';
+  function productStatsRender(d) {
+    const totalRow = '<tr style="font-weight:700;"><td>All products</td><td style="text-align:right;">' + prodNum(d.totals.total) + '</td><td style="text-align:right;">' + prodNum(d.totals.drafts) + '</td><td style="text-align:right;">' + prodNum(d.totals.live) + '</td><td style="text-align:right;">' + prodNum(d.totals.ended) + '</td><td style="text-align:right;">' + prodNum(d.totals.inStock) + '</td><td style="text-align:right;">' + prodNum(d.totals.outOfStock) + '</td><td style="text-align:right;">' + prodNum(d.totals.notChecked) + '</td></tr>';
+    document.getElementById('productStatsResult').innerHTML =
+      '<p style="margin:10px 0 6px;"><b>' + prodNum(d.totals.total) + '</b> ' + (d.totals.total === 1 ? 'product' : 'products') + ' held by <b>' + prodNum(d.users) + '</b> ' + (d.users === 1 ? 'user' : 'users') + '.</p>' +
+      '<div class="st-table-wrap"><table class="st-table">' + prodHead('Where the product comes from') + '<tbody>' + prodRows(d.byCountry) + totalRow + '</tbody></table></div>' +
+      '<details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:600;">By eBay site</summary><div class="st-table-wrap"><table class="st-table">' + prodHead('eBay site') + '<tbody>' + prodRows(d.bySite) + '</tbody></table></div></details>' +
+      '<p class="st-hint">Drafts = drafts, failed, scheduled and publishing. Live = published, paused and sold out on eBay. "In stock" is what the stock monitor last read; "Not checked" = never checked (a draft often is). Stock is counted for products that are not ended. The listings of a store a seller disconnected are not counted.</p>';
+    // the site list shows how many products each Amazon site has
+    const totalOf = new Map((d.byCountry || []).filter((r) => r.platform === 'amazon' && r.country).map((r) => [r.country, r.total]));
+    document.querySelectorAll('#pcSite option').forEach((o) => { o.textContent = o.value + (totalOf.has(o.value) ? ' (' + prodNum(totalOf.get(o.value)) + ' products)' : ''); });
+    document.getElementById('productSendBox').style.display = '';
+  }
+  async function productStatsLoad() {
+    const btn = document.getElementById('productStatsBtn');
+    if (!btn || btn.disabled) return;
+    btn.disabled = true; prodStatus('productStatsStatus', 'Counting\u2026');
+    try {
+      const res = await apiFetch('/api/admin/product-stats'); const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not count the products.');
+      productStatsRender(d);
+      prodStatus('productStatsStatus', 'Counted at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '.', 'success');
+    } catch (err) { prodStatus('productStatsStatus', err.message, 'error'); }
+    btn.disabled = false;
+  }
+  const prodBody = () => {
+    const count = Number(document.getElementById('pcCount').value);
+    if (!Number.isInteger(count) || count < 1 || count > 5000) { prodStatus('pcStatus', 'How many must be a whole number from 1 to 5,000.', 'error'); return null; }
+    const targetEmail = document.getElementById('pcTarget').value.trim();
+    if (!targetEmail) { prodStatus('pcStatus', 'Write the email of the user who gets the drafts.', 'error'); return null; }
+    return { country: document.getElementById('pcSite').value, stock: document.getElementById('pcStock').value, count, targetEmail };
+  };
+  const prodSame = (a, b) => !!a && !!b && JSON.stringify(a) === JSON.stringify(b);
+  async function productSendCheck() {
+    if (prodState.running) return;
+    const body = prodBody(); if (!body) return;
+    prodState.running = true; prodState.checked = null;
+    const send = document.getElementById('pcSend'); const check = document.getElementById('pcCheck');
+    send.disabled = true; check.disabled = true; prodStatus('pcStatus', 'Counting\u2026');
+    try {
+      const out = await adminPost('/api/admin/country-drafts/preview', { country: body.country, stock: body.stock, targetEmail: body.targetEmail });
+      const c = out.counts;
+      const left = [];
+      if (c.alreadyHad) left.push(prodNum(c.alreadyHad) + ' already there');
+      if (c.sameProduct) left.push(prodNum(c.sameProduct) + ' repeated (the same product in several drafts)');
+      if (c.otherSite) left.push(prodNum(c.otherSite) + ' for another eBay site');
+      if (c.ownerGone) left.push(prodNum(c.ownerGone) + ' of accounts that are being deleted, banned or gone');
+      if (c.noSku) left.push(prodNum(c.noSku) + ' without a product code');
+      const who = (out.targetUser.name ? out.targetUser.name + ' (' + out.targetUser.email + ')' : out.targetUser.email) + (out.target && out.target.label ? ' - store ' + out.target.label : ' - no store connected yet');
+      prodStatus('pcStatus', prodNum(c.found) + ' draft' + (c.found === 1 ? '' : 's') + ' of ' + out.country + ' found' + (c.capped ? ' (only the newest were read)' : '') + '. ' + prodNum(c.products) + ' different product' + (c.products === 1 ? '' : 's') + ' can be sent to ' + who + (left.length ? '. Left out: ' + left.join(', ') : '') + '. Pictures are checked while sending.');
+      const now = prodBody();
+      if (prodSame(now, body)) { prodState.checked = body; send.disabled = !c.products; } // typed something else while it was counting: check again
+      else prodStatus('pcStatus', document.getElementById('pcStatus').textContent + ' (You changed something while it was counting: check again.)');
+    } catch (err) { prodStatus('pcStatus', err.message, 'error'); }
+    prodState.running = false; check.disabled = false;
+  }
+  async function productSendNow() {
+    if (prodState.running) return;
+    const body = prodBody();
+    if (!body || !prodSame(body, prodState.checked)) { prodStatus('pcStatus', 'Check first: what you typed changed since the last check.', 'error'); document.getElementById('pcSend').disabled = true; return; }
+    if (!(await elmsConfirm('Send up to ' + prodNum(body.count) + ' drafts of the ' + body.country + ' Amazon site to ' + body.targetEmail + '?\n\nThey are taken from other users\' drafts and given to this user as new drafts. Nothing is published and no credit is used; the users keep theirs, and a product this user already has is not touched.', { title: 'Send drafts', okText: 'Send' }))) return;
+    prodState.running = true;
+    const send = document.getElementById('pcSend'); const check = document.getElementById('pcCheck');
+    send.disabled = true; check.disabled = true; prodStatus('pcStatus', 'Sending\u2026 this can take a little while for a large number.');
+    try {
+      const out = await adminPost('/api/admin/country-drafts/send', body);
+      const parts = [prodNum(out.copied) + ' draft' + (out.copied === 1 ? '' : 's') + ' sent to ' + out.targetUser.email];
+      if (out.stopped === 'time') parts.push((out.left ? prodNum(out.left) + ' not tried yet' : 'The time was up') + ' (to continue press Check first, then Send again with the count ' + prodNum(Math.max(out.wanted - out.copied, 1)) + ')');
+      else if (out.stopped === 'cap') parts.push('Only the newest ' + prodNum(out.counts && out.counts.found) + ' drafts were read, the rest was not looked at');
+      else if (out.stopped === 'pool' && out.copied < out.wanted) parts.push('That was all there was to send');
+      if (out.outcomes && out.outcomes.noImages) parts.push(prodNum(out.outcomes.noImages) + ' without a usable picture');
+      if (out.failed) parts.push(prodNum(out.failed) + ' could not be copied');
+      prodStatus('pcStatus', parts.join('. ') + '.', out.failed ? 'error' : 'success');
+      if (out.copied) showToast('Drafts sent', prodNum(out.copied) + ' draft' + (out.copied === 1 ? '' : 's') + ' added for ' + out.targetUser.email + '.', 'success');
+    } catch (err) { prodStatus('pcStatus', err.message, 'error'); }
+    prodState.running = false; check.disabled = false;
+  }
+  document.getElementById('productStatsBtn')?.addEventListener('click', productStatsLoad);
+  document.getElementById('pcCheck')?.addEventListener('click', productSendCheck);
+  document.getElementById('pcSend')?.addEventListener('click', productSendNow);
+  // any change after a check makes the check out of date: send only what was checked
+  ['pcSite', 'pcStock', 'pcCount', 'pcTarget'].forEach((id) => document.getElementById(id)?.addEventListener('input', () => { prodState.checked = null; const s = document.getElementById('pcSend'); if (s) s.disabled = true; }));
 
   // "Fill missing draft categories": "Check drafts" counts, "Fill" works through them 40 at a time (the server answers nextAfterId / done) until done, the daily AI limit is reached or Stop is pressed.
   const draftCat = { checked: null, running: false, stop: false, resume: null }; // resume: where a run that was stopped (or ended by the AI limit / an error) carries on
