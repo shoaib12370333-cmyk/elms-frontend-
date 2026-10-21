@@ -5997,6 +5997,23 @@
             <div id="adminCategoryLists"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
             <p class="st-hint">Uploading again replaces that country's list at once. The AI uses it first for every product; it costs the seller the "AI category" credits set in the AI tab (0 = free; nothing is charged when the AI finds no category).</p>
           </section>
+          <section class="st-card" id="draftCatCard" style="display:none;">
+            <div class="st-head">
+              <div class="st-ico green">&#10024;</div>
+              <div class="st-head-txt"><h2>Fill missing draft categories</h2><p>Finds the drafts that have no eBay category - of every user, or of one user - and gives them one. The AI chooses from the category list of the draft's own eBay site; when it finds nothing there, eBay's own suggestion is used, and only when it fits the product. A draft that already has a category, live listings and everything else are never touched, and no credits are taken from the users.</p></div>
+            </div>
+            <div class="st-grid">
+              <div class="st-field"><label for="draftCatEmail">Only this user (email, optional)</label><input class="st-input" type="email" id="draftCatEmail" placeholder="empty = every user" autocomplete="off" /></div>
+            </div>
+            <div class="st-actions">
+              <button class="st-btn" id="draftCatCheck" type="button">Check drafts</button>
+              <button class="st-btn primary" id="draftCatFill" type="button" disabled>Fill missing categories</button>
+              <button class="st-btn" id="draftCatStop" type="button" style="display:none;">Stop</button>
+            </div>
+            <div id="draftCatStatus" class="st-status" role="status"></div>
+            <div id="draftCatResult"></div>
+            <p class="st-hint">"Check drafts" only counts (nothing is asked of the AI or eBay and nothing is changed). "Fill" then works through them 40 at a time; keep this page open, press Stop whenever you like, and press it again later to carry on. When a daily AI spending limit is set in the AI tab, the run stops when it is used up.</p>
+          </section>
         </div>
 
         <!-- eBay rules -->
@@ -23069,6 +23086,8 @@ async function autoSuggestEmptyDraftCategories() {
 
   async function loadAdminCategories(options = {}) {
     if (!adminCan('categories')) return; // a section he does not have is never asked for
+    const draftCard = document.getElementById('draftCatCard');
+    if (draftCard) draftCard.style.display = adminCan('admins') ? '' : 'none'; // 'admins' = the owner and full rights: it changes other people's drafts
     if (options.mode !== false) loadCategoryMode();
     const el = document.getElementById('adminCategoryLists'); if (!el) return;
     try {
@@ -23129,6 +23148,117 @@ async function autoSuggestEmptyDraftCategories() {
       loadAdminCategories({ mode: false });
     } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
   });
+
+  // "Fill missing draft categories": "Check drafts" counts, "Fill" works through them 40 at a time (the server answers nextAfterId / done) until done, the daily AI limit is reached or Stop is pressed.
+  const draftCat = { checked: null, running: false, stop: false, resume: null }; // resume: where a run that was stopped (or ended by the AI limit / an error) carries on
+  const draftCatNum = (n) => Number(n || 0).toLocaleString('en-US');
+  const draftCatEmail = () => String((document.getElementById('draftCatEmail') || {}).value || '').trim().toLowerCase();
+  const draftCatStatus = (text, kind) => { const el = document.getElementById('draftCatStatus'); if (el) { el.className = 'st-status' + (kind ? ' ' + kind : ''); el.textContent = text || ''; } };
+  function draftCatReset() { // what was counted is no longer what is typed: the Fill button waits for a new check
+    draftCat.checked = null;
+    draftCat.resume = null; // and a new check starts from the beginning again
+    const fill = document.getElementById('draftCatFill'); if (fill) fill.disabled = true;
+    const res = document.getElementById('draftCatResult'); if (res) res.innerHTML = '';
+  }
+  function draftCatBusy(on, canStop) { // Stop is for a fill run only: a check cannot be stopped from the page
+    draftCat.running = on;
+    const check = document.getElementById('draftCatCheck'); if (check) check.disabled = on;
+    const stop = document.getElementById('draftCatStop'); if (stop) stop.style.display = on && canStop ? '' : 'none';
+    const email = document.getElementById('draftCatEmail'); if (email) email.disabled = on;
+    const fill = document.getElementById('draftCatFill'); if (fill) fill.disabled = on || !(draftCat.checked && draftCat.checked.canFill > 0);
+  }
+  function draftCatRenderCheck(d) {
+    const who = d.scope && d.scope.email ? ' of ' + escapeHtml(d.scope.email) : ' of all users';
+    const left = [];
+    if (d.skipped.account) left.push(draftCatNum(d.skipped.account) + ' of accounts that are being deleted, banned or gone');
+    if (d.skipped.store) left.push(draftCatNum(d.skipped.store) + ' of a store the seller disconnected');
+    if (d.skipped.title) left.push(draftCatNum(d.skipped.title) + ' with no title');
+    if (d.skipped.site) left.push(draftCatNum(d.skipped.site) + ' whose eBay site is not known');
+    const notes = [];
+    if (d.ai && (!d.ai.configured || !d.ai.enabled)) notes.push("The AI category is " + (d.ai.configured ? 'switched off' : 'not set up') + ": eBay's own suggestion will be used for every draft, without the AI's check.");
+    const noList = (d.byMarketplace || []).filter((m) => !m.hasList).map((m) => m.marketplaceId);
+    if (noList.length && d.ai && d.ai.configured && d.ai.enabled) notes.push('No category list is uploaded for ' + noList.join(', ') + ": the AI cannot choose there, so eBay's own suggestion is used (and checked by the AI).");
+    if (d.ai && d.ai.configured && d.ai.enabled) notes.push('The AI costs about $1-2 per 1,000 drafts it has to place. ' + (d.ai.dailyLimitUsd > 0 ? 'The daily AI limit of $' + d.ai.dailyLimitUsd + ' (Admin > AI) stops the run when it is used up.' : 'No daily AI spending limit is set in Admin > AI: set one first if you want a ceiling.'));
+    if (d.capped) notes.push('Only the first ' + draftCatNum(d.drafts) + ' drafts were counted.');
+    const rows = (d.byMarketplace || []).map((m) => '<tr><td><b>' + escapeHtml(m.marketplaceId) + '</b></td><td style="text-align:right;">' + draftCatNum(m.count) + '</td><td>' + (m.hasList ? 'category list uploaded' : '<span style="color:#b45309;">no list</span>') + '</td></tr>').join('');
+    document.getElementById('draftCatResult').innerHTML =
+      '<p style="margin:10px 0 6px;"><b>' + draftCatNum(d.drafts) + '</b> drafts' + who + ' have no category. <b>' + draftCatNum(d.canFill) + '</b> of them (' + draftCatNum(d.users) + (d.users === 1 ? ' user' : ' users') + ') can be filled now.' + (left.length ? ' Left out: ' + left.join(', ') + '.' : '') + '</p>' +
+      (rows ? '<div class="st-table-wrap"><table class="st-table"><thead><tr><th>eBay site</th><th style="text-align:right;">Drafts</th><th>AI</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '') +
+      notes.map((n) => '<p class="st-hint">' + escapeHtml(n) + '</p>').join('');
+  }
+  async function draftCatCheckNow() {
+    if (draftCat.running) return;
+    const email = draftCatEmail();
+    draftCatReset();
+    draftCatBusy(true);
+    draftCatStatus('Counting the drafts\u2026');
+    try {
+      const d = await adminPost('/api/admin/draft-categories/check', { email });
+      draftCat.checked = { email, canFill: d.canFill, drafts: d.drafts, users: d.users, ai: d.ai || null };
+      draftCatRenderCheck(d);
+      draftCatStatus(d.canFill ? 'Counted. Press "Fill missing categories" to give them a category.' : 'Nothing to fill' + (email ? ' for this user' : '') + '.', d.canFill ? 'success' : '');
+    } catch (err) { draftCatStatus(err.message, 'error'); }
+    draftCatBusy(false);
+  }
+  async function draftCatFillNow() {
+    if (draftCat.running || !draftCat.checked || !draftCat.checked.canFill) return;
+    const checked = draftCat.checked;
+    if (checked.email !== draftCatEmail()) { draftCatReset(); draftCatStatus('The email was changed: press "Check drafts" again first.', 'error'); return; }
+    const who = checked.email ? checked.email : 'all users';
+    const resumed = !!(draftCat.resume && draftCat.resume.email === checked.email);
+    const limitText = checked.ai && checked.ai.dailyLimitUsd > 0 ? 'the daily AI limit ($' + checked.ai.dailyLimitUsd + ') applies' : 'no daily AI limit is set (Admin > AI)';
+    if (!(await elmsConfirm('Give a category to up to ' + draftCatNum(checked.canFill) + ' drafts of ' + who + (resumed ? ' (carrying on where the last run stopped)' : '') + '?\n\nThe AI chooses from your category lists (and eBay when it finds nothing). No credits are taken from the users, ' + limitText + ', and drafts that already have a category are never changed.', { title: 'Fill missing categories', okText: 'Fill' }))) return;
+    draftCat.stop = false;
+    draftCatBusy(true, true);
+    let afterId = resumed ? draftCat.resume.afterId : null; let stepStart = afterId;
+    draftCatStatus(resumed ? 'Carrying on where the last run stopped\u2026' : 'Starting\u2026');
+    let read = 0; let filled = 0; let byAi = 0; let byEbay = 0; let unchecked = 0; let notPlaced = 0; let notTried = 0; let ebayLimit = false; let budget = false; let failed = ''; let finished = false;
+    const reasons = [];
+    try {
+      for (;;) {
+        stepStart = afterId;
+        const out = await adminPost('/api/admin/draft-categories/fill', { email: checked.email, afterId });
+        read += out.read; filled += out.filled; byAi += out.byAi; byEbay += out.byEbay; unchecked += out.uncheckedFromEbay || 0; notPlaced += out.couldNotPlace; notTried += out.notTried || 0;
+        (out.reasons || []).forEach((r) => { if (reasons.length < 3 && !reasons.includes(r)) reasons.push(r); });
+        if (out.ebayLimitReached) ebayLimit = true;
+        afterId = out.nextAfterId;
+        draftCatStatus('Looked at ' + draftCatNum(read) + ' drafts, ' + draftCatNum(filled) + ' got a category\u2026');
+        if (out.budgetReached) { budget = true; break; } // the AI is paused for the day: going on would only skip every draft
+        if (out.done) { finished = true; break; }
+        if (draftCat.stop) break;
+      }
+    } catch (err) { failed = err.message; }
+    // a run that did not reach the end carries on from here next time: a step the AI limit cut short is done again from its start (what it already filled is skipped by the server; the limit answer comes back with a cursor that is already past that step), a step that finished is not
+    draftCat.resume = finished ? null : { email: checked.email, afterId: budget ? stepStart : afterId };
+    const tally = draftCatNum(filled) + ' of ' + draftCatNum(read) + ' drafts got a category (' + draftCatNum(byAi) + ' by the AI, ' + draftCatNum(byEbay) + ' from eBay' + (unchecked ? ', ' + draftCatNum(unchecked) + ' of those without the AI check' : '') + ')' + (notPlaced ? '; ' + draftCatNum(notPlaced) + ' could not be placed' : '') + '.';
+    const extra = [];
+    if (reasons.length) extra.push('Why some could not be placed: ' + reasons.join(' | '));
+    if (ebayLimit) extra.push("eBay's category lookups for today are mostly used up, so some drafts were only tried with the AI.");
+    if (budget) extra.push("The AI's daily spending limit is used up (Admin > AI): press Fill again tomorrow, or raise the limit.");
+    if (failed) extra.push('Stopped: ' + failed);
+    else if (!finished && !budget) extra.push('Stopped by you: press Fill again to carry on.');
+    draftCatStatus(tally + (extra.length ? ' ' + extra.join(' ') : ''), failed || budget || notPlaced ? 'error' : 'success');
+    showToast('Draft categories', tally + (failed ? ' Stopped: ' + failed : budget ? " Stopped: the AI's daily limit is used up." : ''), failed || budget || !filled ? 'error' : 'success');
+    draftCatBusy(false);
+    draftCatCheckAfterFill();
+  }
+  // after a run the numbers are counted again, so the table shows what is still missing (the status line of the run is kept)
+  async function draftCatCheckAfterFill() {
+    if (!draftCat.checked) return;
+    const email = draftCat.checked.email;
+    try {
+      const d = await adminPost('/api/admin/draft-categories/check', { email });
+      // while it was counting the admin may have typed another email (that cleared the numbers), pressed Check or started another run: then this answer is about a question nobody asks any more
+      if (draftCat.running || draftCatEmail() !== email) return;
+      draftCat.checked = { email, canFill: d.canFill, drafts: d.drafts, users: d.users, ai: d.ai || null };
+      draftCatRenderCheck(d);
+      const fill = document.getElementById('draftCatFill'); if (fill) fill.disabled = !d.canFill;
+    } catch (_) { /* the run's own result stays on the screen */ }
+  }
+  document.getElementById('draftCatCheck')?.addEventListener('click', draftCatCheckNow);
+  document.getElementById('draftCatFill')?.addEventListener('click', draftCatFillNow);
+  document.getElementById('draftCatStop')?.addEventListener('click', () => { draftCat.stop = true; draftCatStatus('Stopping after this step\u2026'); });
+  document.getElementById('draftCatEmail')?.addEventListener('input', () => { if (!draftCat.running) { draftCatReset(); draftCatStatus(''); } });
 
   // The editor of one country's list: search, add, change and remove single categories, select many like in Drafts and remove them together, download the list.
   // Every change carries the `stamp` of the list as this window last saw it; the server refuses a change to a list that is not that one any more (409), so two admins never overwrite each other unseen.
