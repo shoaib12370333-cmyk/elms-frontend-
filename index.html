@@ -8951,6 +8951,9 @@ B0EXAMPLE2"></textarea></div>
       res.clone().json().then((d) => { if (d && PLAN_LIMIT_TITLES[d.code]) showPlanLimitToast(d); }).catch(() => {});
     }
 
+    // A person on a plan by listings has a live-listings chip: after a write that can change it (publish, schedule, delete, relist, a draft made) it is read again, a moment after the last one.
+    if (!isGet && res.ok && onSlotsPlan() && /^\/api\/(listings|list-on-ebay|fetch-product|cj|aliexpress|imports|csv|orders\/[^\/?]+\/import-product)/.test(path)) schedulePlanUsageRefresh();
+
     // Every caller does `await res.json()`. When the server answers with something that is not JSON (a proxy
     // timeout page on a long publish, an empty body, a start-up page) the browser's own error leaks into the
     // UI - Safari's is the baffling "The string did not match the expected pattern", Chrome's mentions
@@ -9122,8 +9125,19 @@ B0EXAMPLE2"></textarea></div>
     if (user.picture) img.src = user.picture; else img.removeAttribute('src');
   }
 
+  // What the plans page learned about the shop belongs to the account that is signed in: a new sign-in starts clean. A sign-in answer does not say what is on sale (only /me does).
+  function resetPlanState() { window.plansOnSale = undefined; window.pricingMyPlan = null; window.planUsage = null; pricingModel = 'credits'; }
+  async function refreshPlansOnSale() {
+    try {
+      const res = await apiFetch('/api/auth/me');
+      const d = await res.json();
+      if (res.ok && d.success && d.user && d.user.plansOnSale) { window.plansOnSale = d.user.plansOnSale; if (window.currentUser) window.currentUser.plansOnSale = d.user.plansOnSale; applyPlanLabels(window.currentUser); }
+    } catch (_) { /* the labels keep the credits wording */ }
+  }
   function showApp(user) {
+    resetPlanState();
     window.currentUser = user;
+    if (!user.plansOnSale) refreshPlansOnSale();
     renderPhoneSettings();
     document.getElementById('authPage').style.display = 'none';
     document.getElementById('appShell').style.display = 'flex';
@@ -9401,6 +9415,8 @@ B0EXAMPLE2"></textarea></div>
   function updateCreditBalanceChip(creditBalance, user) {
     const chip = document.getElementById('creditBalanceChip');
     if (typeof applyPlanLabels === 'function') applyPlanLabels(user || window.currentUser);
+    // every path that refreshes the chip keeps the profile in step (a plan bought or closed since the page loaded): the price lines and the result windows read it
+    if (user && user.planModel && window.currentUser && window.currentUser !== user) { window.currentUser.planModel = user.planModel; window.currentUser.entitlement = user.entitlement; }
     if (user && user.planModel === 'slots') { // a plan by listings: the chip shows the live listings used (the numbers come a moment later), not credits
       if (chip) { document.getElementById('creditBalanceAmount').textContent = user.entitlement ? String(user.entitlement.maxListings.toLocaleString('en-US')) : '0'; const w = chip.querySelector('.cb-word'); if (w) w.textContent = 'listings'; chip.style.display = 'flex'; }
       refreshPlanUsage();
@@ -10651,6 +10667,7 @@ B0EXAMPLE2"></textarea></div>
     const endingToken = localStorage.getItem('elmsSessionToken');
     if (endingToken) fetch(`${API_BASE}/api/security/logout`, { method: 'POST', headers: { Authorization: `Bearer ${endingToken}` }, keepalive: true }).catch(() => {});
     localStorage.removeItem('elmsSessionToken');
+    resetPlanState();
     renderReconnectBanner([]);
     document.getElementById('appShell').style.display = 'none';
     document.getElementById('authPage').style.display = 'flex';
@@ -26693,7 +26710,7 @@ async function autoSuggestEmptyDraftCategories() {
       applyPlanLabels(window.currentUser);
       if (currentPageId === 'pricing' && pricingTab === 'credits') { const [t, s] = PAGE_TITLES.pricing; document.getElementById('pageTitle').textContent = t; document.getElementById('pageSubline').textContent = s; document.title = t + ' · ELMS'; }
     }
-    document.querySelector('.content')?.classList.toggle('drafts-wide', slots || ['drafts', 'listings', 'orders', 'netprofit', 'admin', 'owner', 'team'].includes(currentPageId));
+    document.querySelector('.content')?.classList.toggle('drafts-wide', (slots && currentPageId === 'pricing') || ['drafts', 'listings', 'orders', 'netprofit', 'admin', 'owner', 'team'].includes(currentPageId));
     const bal = document.querySelector('#page-pricing .bc-balance');
     if (bal) bal.style.display = slots ? 'none' : '';
     const first = document.querySelector('#pricingTabs [data-pricing-tab="credits"]');
@@ -26760,7 +26777,7 @@ async function autoSuggestEmptyDraftCategories() {
     // the plan the person is on, with how much of it is used (the usage comes from /api/payments/usage a moment later)
     const my = data.myPlan && data.myPlan.slots ? data.myPlan : null;
     window.pricingMyPlan = my; // the order review says when a bigger plan takes over the days left on this one
-    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + ', then monitoring pauses and new listings cannot be published. Renew below to keep going.' : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.'}</span></div></div>` : '';
+    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + (Number(window.currentUser && window.currentUser.creditBalance) > 0 ? ', then publishing and price and stock monitoring use your ' + Number(window.currentUser.creditBalance).toLocaleString() + ' credits again. Renew below to keep the plan.' : ', then monitoring pauses and new listings cannot be published (you have no credits). Renew below to keep going.') : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.'}</span></div></div>` : '';
 
     const cardFor = (p, i) => {
       const noYear = yr && !p.yearlyPriceUsd; // a plan without a yearly price on the yearly view: monthly only (never "$0 / year")
@@ -26829,7 +26846,7 @@ async function autoSuggestEmptyDraftCategories() {
       ['How many drafts can I create?', 'Each month of your plan you can create as many new drafts as the plan says, and keep that many waiting in Drafts. Deleting a draft does not give one back before the next month starts. Drafts our team adds for you are not counted.'],
       ['Is monitoring included?', 'Yes. Prices and stock of your listings are checked as often as your plan says, and it costs nothing extra. Your credits are not used while a plan by listings runs.'],
       ['Does my plan renew by itself?', 'No. You pay for a month or a year, we remind you by email before it ends, and you renew when you want to.'],
-      ['What happens when my plan ends?', 'Everything keeps working for ' + grace + ' more days. After that, monitoring pauses and new listings cannot be published. Your listings stay on eBay and nothing is deleted. Choose a plan again and it all starts at once.'],
+      ['What happens when my plan ends?', 'Everything keeps working for ' + grace + ' more days. After that you are back on credits: if you hold credits, publishing and price and stock monitoring use them again; with none, monitoring pauses and new listings cannot be published. Your listings stay on eBay and nothing is deleted. Choose a plan again and it all starts at once.'],
       ['Which plan can I choose?', 'A bigger plan can be chosen at any time and starts at once; the days left on your current plan are added to it, counted by what a month of each plan costs. A smaller one can be chosen after your current plan ends.'],
     ];
     container.innerHTML = `
@@ -26856,6 +26873,8 @@ async function autoSuggestEmptyDraftCategories() {
 
   // The plan the person is on, as the chip in the top bar and the sidebar show it. Everything else (the credits chip) is as it always was.
   window.planUsage = null;
+  var planUsageTimer = null;
+  function schedulePlanUsageRefresh() { clearTimeout(planUsageTimer); planUsageTimer = setTimeout(() => { refreshPlanUsage(); }, 1500); }
   async function refreshPlanUsage() {
     try {
       const res = await apiFetch('/api/payments/usage');
