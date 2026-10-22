@@ -717,6 +717,7 @@ run();
 };
 /* The shop sells either credits plans or plans by listings (the server says which). The text of a page that depends on it is marked data-only="credits" or data-only="slots": the slots
    ones start hidden, so without the answer (or without JavaScript) a page reads exactly as it always did. */
+var ldCredits = {};
 function setModel(model) {
 each(qsa('[data-only]'), function (n) { n.hidden = n.getAttribute('data-only') !== model; });
 d.documentElement.setAttribute('data-plans-model', model);
@@ -727,6 +728,15 @@ var cur = isMeta ? n.getAttribute('content') : n.textContent;
 if (!n.getAttribute('data-credits')) { n.setAttribute('data-credits', cur); }
 var next = n.getAttribute(model === 'slots' ? 'data-slots' : 'data-credits');
 if (isMeta) { n.setAttribute('content', next); } else { n.textContent = next; }
+});
+/* the questions in the structured data (JSON-LD) are the questions on the page: the block that carries data-slots-from keeps the credits version, and the plans-by-listings version
+   sits in the inert block it names (a script of type application/json, which search engines do not read) */
+each(qsa('script[type="application/ld+json"][data-slots-from]'), function (n) {
+var key = n.getAttribute('data-slots-from');
+var other = d.getElementById(key);
+if (!other) { return; }
+if (!(key in ldCredits)) { ldCredits[key] = n.textContent; }
+n.textContent = model === 'slots' ? other.textContent : ldCredits[key];
 });
 }
 Plans.setModel = setModel;
