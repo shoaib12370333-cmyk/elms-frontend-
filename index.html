@@ -8952,7 +8952,7 @@ B0EXAMPLE2"></textarea></div>
     }
 
     // A person on a plan by listings has a live-listings chip: after a write that can change it (publish, schedule, delete, relist, a draft made) it is read again, a moment after the last one.
-    if (!isGet && res.ok && onSlotsPlan() && /^\/api\/(listings|list-on-ebay|fetch-product|cj|aliexpress|imports|csv|orders\/[^\/?]+\/import-product)/.test(path)) schedulePlanUsageRefresh();
+    if (!isGet && res.ok && onSlotsPlan() && /^\/api\/(listings|list-on-ebay|fetch-product|cj|aliexpress|imports|csv|ebay-connect|orders\/[^\/?]+\/import-product)/.test(path)) schedulePlanUsageRefresh();
 
     // Every caller does `await res.json()`. When the server answers with something that is not JSON (a proxy
     // timeout page on a long publish, an empty body, a start-up page) the browser's own error leaks into the
@@ -9417,6 +9417,7 @@ B0EXAMPLE2"></textarea></div>
     if (typeof applyPlanLabels === 'function') applyPlanLabels(user || window.currentUser);
     // every path that refreshes the chip keeps the profile in step (a plan bought or closed since the page loaded): the price lines and the result windows read it
     if (user && user.planModel && window.currentUser && window.currentUser !== user) { window.currentUser.planModel = user.planModel; window.currentUser.entitlement = user.entitlement; }
+    if (window.currentUser && creditBalance != null) window.currentUser.creditBalance = creditBalance; // (the grace banner and the price lines read the balance from the profile)
     if (user && user.planModel === 'slots') { // a plan by listings: the chip shows the live listings used (the numbers come a moment later), not credits
       if (chip) { document.getElementById('creditBalanceAmount').textContent = user.entitlement ? String(user.entitlement.maxListings.toLocaleString('en-US')) : '0'; const w = chip.querySelector('.cb-word'); if (w) w.textContent = 'listings'; chip.style.display = 'flex'; }
       refreshPlanUsage();
@@ -27408,6 +27409,7 @@ async function autoSuggestEmptyDraftCategories() {
         if (bal) bal.textContent = Number(data.user.creditBalance || 0).toLocaleString();
       }
     } catch (_) { /* the next refresh will show it */ }
+    if (currentPageId === 'pricing') loadPlanCards().catch(() => {}); // the plans page that is open shows the plan that was just bought (the banner, "Renew", the days of an upgrade)
     loadPurchaseHistory().catch(() => {});
   }
   let planPaymentConfirming = false;
