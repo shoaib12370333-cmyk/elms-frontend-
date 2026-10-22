@@ -22737,15 +22737,37 @@ async function autoSuggestEmptyDraftCategories() {
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Listings</h2><p>Across every user and store.</p></div></div>
             <div class="ad-bars">${bar('Live', l.published, '#86B817')}${bar('Drafts', l.draft, '#0064D2')}${bar('Scheduled', l.scheduled, '#F5AF02')}${bar('Publishing', l.publishing, '#8B5CF6')}${bar('Errors', l.error, '#E53238')}</div></section>
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Service health</h2><p>Server settings that the app depends on.</p></div></div>
-            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (CashTap)', d.health.cashtap, 'CASHTAP_SECRET_KEY / CASHTAP_WEBHOOK_SECRET missing')}${(() => { const c = d.health.card || {}; return !c.configured ? health('Card payments (off)', false, 'The card payment settings are missing on the server (see PRODUCTION-SETUP.md).') : !c.on ? health('Card payments (off)', false, 'Set up but switched off on the server.') : c.test ? health('Card payments (TEST mode)', false, 'A TEST key is in use: put the live settings on the server before real customers pay.') : c.adminOnly ? health('Card payments (admin only)', false, 'Only admin accounts are offered the card (the first live test). Switch it on for everybody on the server when it worked.') : health('Card payments', true, ''); })()}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
+            <div class="ad-health">${health('eBay API', d.health.ebay, 'EBAY_CLIENT_ID / SECRET missing')}${health('Amazon data (Canopy)', d.health.canopy, 'CANOPY_API_KEY missing')}${health('AI (Anthropic)', d.health.anthropic, 'ANTHROPIC_API_KEY missing')}${health('Payments (CashTap)', d.health.cashtap, 'CASHTAP_SECRET_KEY / CASHTAP_WEBHOOK_SECRET missing')}${(() => { const c = d.health.card || {}; return !c.configured ? health('Card payments (off)', false, 'The card payment settings are missing on the server (see PRODUCTION-SETUP.md).') : !c.on ? health('Card payments (off)', false, 'Set up but switched off on the server.') : c.test ? health('Card payments (TEST mode)', false, 'A TEST key is in use: put the live settings on the server before real customers pay.') : c.adminOnly ? health('Card payments (admin only)', false, 'Only admin accounts are offered the card (the first live test). Switch it on for everybody on the server when it worked.') : health('Card payments', true, ''); })()}${(() => { const c = d.health.crypto || {}; return !c.configured ? health('Crypto payments (off)', false, 'The crypto payment settings are missing on the server (see PRODUCTION-SETUP.md).') : !c.on ? health('Crypto payments (off)', false, 'Set up but switched off on the server (CRYPTO_CHECKOUT).') : c.test ? health('Crypto payments (TEST mode)', false, 'The payment account is the TEST one: put the live settings on the server before real customers pay.') : c.adminOnly ? health('Crypto payments (admin only)', false, 'Only admin accounts are offered crypto (the first live test). Switch it on for everybody on the server when it worked.') : health('Crypto payments', true, ''); })()}${health('Email (SMTP)', d.health.email, 'SMTP settings missing')}</div></section>
         </div>
         <div class="ad-two">
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Newest users</h2></div></div>
             <div class="ad-list">${d.recentUsers.map((u) => `<div><span>${escapeHtml(u.name || u.email)}<br><small>${escapeHtml(u.email)}</small></span><small>${new Date(u.createdAt).toLocaleDateString()}</small></div>`).join('') || '<div><small>No users yet.</small></div>'}</div></section>
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Latest purchases</h2></div></div>
             <div class="ad-list">${d.recentPurchases.map((p) => `<div><span>${escapeHtml(p.email || 'Unknown user')}<br><small>${p.listingSlots ? p.listingSlots.toLocaleString() + ' live listings' : p.credits.toLocaleString() + ' credits'} \u00b7 ${new Date(p.createdAt).toLocaleDateString()}</small></span><b>${money(p.priceUsd)}</b></div>`).join('') || '<div><small>No purchases yet.</small></div>'}</div></section>
-        </div>`;
+        </div>
+        ${d.health.crypto && d.health.crypto.configured ? '<section class="st-card" id="cryptoPaymentsCard"><div class="st-head"><div class="st-head-txt"><h2>Crypto payments</h2><p>The latest crypto orders and what became of them.</p></div></div><div id="cryptoPaymentsList"><div class="elms-loader" role="status" aria-label="Loading"></div></div></section>' : ''}`;
+      if (d.health.crypto && d.health.crypto.configured) loadCryptoPayments();
     } catch (err) { el.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
+  }
+
+  // The latest crypto orders (Admin -> Overview): what the buyer chose, what the payment company says, and whether ELMS gave the plan. "Needs review" = money (maybe) arrived and the plan was NOT given.
+  async function loadCryptoPayments() {
+    const box = document.getElementById('cryptoPaymentsList'); if (!box) return;
+    try {
+      const res = await apiFetch('/api/admin/crypto-payments?limit=25'); const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the crypto payments.');
+      const NAMES = { created: 'Started', open: 'Waiting', paid: 'Paid, plan given', needs_review: 'Needs review', expired: 'Expired', failed: 'Failed', refunded: 'Refunded' };
+      const REASONS = { partially_paid: 'paid less than due', underpaid: 'paid less than due', amount_mismatch: 'the price does not match', unverified: 'could not be checked', repeated_deposit: 'an extra deposit on an earlier payment', no_plan: 'the plan is gone', no_user: 'no buyer on the order', user_missing: 'the account is gone', timeout: 'ran out', payment_failed: 'the payment failed', payment_expired: 'the payment expired', payment_refunded: 'refunded', invoice_failed: 'the invoice could not be made' };
+      if (!d.payments.length) { box.innerHTML = '<div class="empty-state">No crypto orders yet.</div>'; return; }
+      box.innerHTML = `<table class="data-table"><thead><tr><th>Date</th><th>Buyer</th><th>Plan</th><th>Price</th><th>Status</th><th>Coin</th></tr></thead><tbody>${d.payments.map((p) => `<tr>
+        <td>${escapeHtml(new Date(p.createdAt).toLocaleString())}</td>
+        <td>${escapeHtml(p.email || 'Unknown user')}</td>
+        <td>${escapeHtml(p.planName || '')}</td>
+        <td>$${Number(p.priceUsd).toFixed(2)}</td>
+        <td><span class="status-badge ${p.status === 'paid' ? 'published' : p.status === 'needs_review' ? 'error' : 'draft'}" title="${escapeAttr(p.order + (p.paymentId ? ' \u00b7 payment ' + p.paymentId : ''))}">${escapeHtml(NAMES[p.status] || p.status)}</span>${p.providerStatus ? `<br><small>${escapeHtml(p.providerStatus)}</small>` : ''}${p.reason ? `<br><small>${escapeHtml(REASONS[p.reason] || p.reason)}</small>` : ''}</td>
+        <td>${p.payCurrency ? escapeHtml(String(p.payCurrency).toUpperCase()) + (p.actuallyPaid != null ? '<br><small>' + escapeHtml(String(p.actuallyPaid)) + (p.payAmount != null ? ' of ' + escapeHtml(String(p.payAmount)) : '') + '</small>' : '') : ''}</td>
+      </tr>`).join('')}</tbody></table>`;
+    } catch (err) { box.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
   }
 
   // ---------- Admin Panel: AI ----------
@@ -26534,23 +26556,30 @@ async function autoSuggestEmptyDraftCategories() {
     }
     // Monthly and yearly are separate: the server answers per term (cardAvailable for the monthly one, cardYearlyAvailable for the yearly one).
     const cardAvailable = yr ? p.cardYearlyAvailable : p.cardAvailable;
+    const cryptoAvailable = yr ? p.cryptoYearlyAvailable : p.cryptoAvailable;
     const listUsd = yr ? p.yearlyPriceUsd : p.priceUsd;
     const discUsd = yr ? p.discountedYearlyPriceUsd : p.discountedPriceUsd;
     const cardPriceUsd = discUsd != null && discUsd < listUsd ? discUsd : listUsd;
-    // the card checkout cannot take less than $1.00 (the wallet can take $0.50): a plan that costs less after a discount is wallet only
-    if (!cardAvailable || !(Number(cardPriceUsd) >= 1)) {
+    // the card checkout cannot take less than $1.00 (the wallet can take $0.50), the crypto checkout not less than $5.00: a plan that costs less after a discount is wallet only
+    const cardOk = !!cardAvailable && Number(cardPriceUsd) >= 1;
+    const cryptoOk = !!cryptoAvailable && Number(cardPriceUsd) >= 5;
+    if (!cardOk && !cryptoOk) {
       return `<div class="bc-plan-label">Wallet checkout &middot; secure</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">${escapeHtml(buyLabel)}</button>`;
     }
     return `
       <div class="bc-pay bc-pay-first">
         <div class="bc-pay-head"><span>Wallet checkout</span></div>
         <button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Pay with wallet</button>
-      </div>
+      </div>${cardOk ? `
       <div class="bc-pay">
         <div class="bc-pay-head"><span>Card</span></div>
         <div class="bc-plan-icons" aria-hidden="true">${CARD_MARKS_HTML}</div>
         <button class="bc-buy bc-buy-alt pricing-buy-btn" data-plan-id="${p.id}" data-provider="card" type="button">Pay $${Number(cardPriceUsd).toFixed(2)} + tax by card</button>
-      </div>`;
+      </div>` : ''}${cryptoOk ? `
+      <div class="bc-pay">
+        <div class="bc-pay-head"><span>Crypto</span></div>
+        <button class="bc-buy bc-buy-alt pricing-buy-btn" data-plan-id="${p.id}" data-provider="crypto" type="button">Pay $${Number(cardPriceUsd).toFixed(2)} with crypto</button>
+      </div>` : ''}`;
   }
 
   let currentPaymentProvider = 'cashtap';
@@ -26584,7 +26613,7 @@ async function autoSuggestEmptyDraftCategories() {
 
       currentPaymentProvider = data.provider;
       setPricingSupport(data.supportEmail);
-      setPricingCardWording(Array.isArray(data.plans) && data.plans.some((p) => p.cardAvailable || p.cardYearlyAvailable));
+      setPricingCardWording(Array.isArray(data.plans) && data.plans.some((p) => p.cardAvailable || p.cardYearlyAvailable), Array.isArray(data.plans) && data.plans.some((p) => p.cryptoAvailable || p.cryptoYearlyAvailable));
       if (data.model === 'slots') { renderSlotsPlans(container, data, usable); return; } // plans by listings: their own page
       setPricingModelWording('credits');
       if (!data.plans.length) {
@@ -27059,7 +27088,8 @@ async function autoSuggestEmptyDraftCategories() {
     const yr = pricingBilling === 'yearly';
     const listUsd = yr ? p.yearlyPriceUsd : p.priceUsd;
     const discUsd = yr ? p.discountedYearlyPriceUsd : p.discountedPriceUsd;
-    const card = provider === 'card' || currentPaymentProvider !== 'cashtap';
+    const crypto = provider === 'crypto';
+    const card = !crypto && (provider === 'card' || currentPaymentProvider !== 'cashtap');
     const payUsd = discUsd != null && discUsd < listUsd ? discUsd : listUsd;
     if (p.limits) { // a plan by listings: what it gives, no credits
       const L = p.limits;
@@ -27070,11 +27100,13 @@ async function autoSuggestEmptyDraftCategories() {
       if (mine && !mine.inGrace && Number(mine.maxListings) > 0 && Number(L.liveListings) > Number(mine.maxListings)) slotLines.push(['Your current plan', 'The days left are added to this plan, counted by price']);
       if (Number.isFinite(Number(payUsd))) slotLines.push(['Price', '$' + Number(payUsd).toFixed(2) + (card ? ' + tax' : '')]);
       slotLines.slots = true; // the refund sentence below is not the credits one
+      if (crypto) slotLines.crypto = true;
       return slotLines;
     }
     const lines = [['Plan', String(p.name || '')], ['Credits', (yr ? p.credits * 12 : p.credits).toLocaleString() + ', valid for ' + (yr ? '1 year' : '1 month')]];
     if (p.maxEbayAccounts) lines.push(['eBay stores', String(p.maxEbayAccounts)]);
     if (Number.isFinite(Number(payUsd))) lines.push(['Price', '$' + Number(payUsd).toFixed(2) + (card ? ' + tax' : '')]);
+    if (crypto) lines.crypto = true;
     return lines;
   }
 
@@ -27090,8 +27122,9 @@ async function autoSuggestEmptyDraftCategories() {
           <div class="elms-confirm-title">Review your order</div>
           <div class="bc-co-lines">${(lines || []).map(([k, v]) => `<div><span>${escapeHtml(String(k))}</span><b>${escapeHtml(String(v))}</b></div>`).join('')}</div>
           <div class="elms-confirm-message">${escapeHtml(lines && lines.slots ? REFUND_SLOTS_LINE : lines && lines.pack ? REFUND_PACK_LINE : REFUND_SHORT_LINE)} <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></div>
-          <div class="elms-confirm-message bc-co-pay">Payments are handled by our payment partner. ELMS never sees your card or wallet details.</div>
-          <div class="elms-confirm-message bc-co-pay">Taxes may be added at checkout where they apply.</div>
+          ${lines && lines.crypto ? `<div class="elms-confirm-message bc-co-pay">You pay with crypto on our payment partner's page: choose your coin there and send exactly the amount shown, from a wallet or an exchange. Your plan starts when the network confirms the payment, usually within a few minutes.</div>
+          <div class="elms-confirm-message bc-co-pay">Payments are handled by our payment partner. ELMS never sees your wallet.</div>` : `<div class="elms-confirm-message bc-co-pay">Payments are handled by our payment partner. ELMS never sees your card or wallet details.</div>
+          <div class="elms-confirm-message bc-co-pay">Taxes may be added at checkout where they apply.</div>`}
           <div class="elms-confirm-actions">
             <button type="button" class="ord-btn" data-act="cancel">Cancel</button>
             <button type="button" class="ord-btn primary" data-act="ok">Continue to payment</button>
@@ -27133,11 +27166,19 @@ async function autoSuggestEmptyDraftCategories() {
   var SUPPORT_ADDRESS_OK = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/; // var, not const: the pricing page can be asked for before this line has run (no temporal-dead-zone error)
   var pricingSupportEmail = 'support@elmstool.com';
   var pricingCardOffered = false; // true while the server says some plan can be paid by card (setPricingCardWording)
+  var pricingCryptoOffered = false; // true while the server says some plan can be paid with crypto
+  // the ways to pay in words: "with the wallet checkout" (alone), "by card or with the wallet", "with crypto or with the wallet", "by card, with crypto or with the wallet"
+  function payWays() {
+    const ways = [];
+    if (pricingCardOffered) ways.push('by card');
+    if (pricingCryptoOffered) ways.push('with crypto');
+    return ways.length ? ways.join(', ') + ' or with the wallet' : 'with the wallet checkout';
+  }
   function supportMailto(email, topic) {
     const me = window.currentUser || {};
     const listings = topic === 'listings';
     if (topic === 'custom') return 'mailto:' + (email || 'support@elmstool.com') + '?subject=' + encodeURIComponent('A custom plan') + '&body=' + encodeURIComponent('Hi,\n\nI would like a custom plan.\n\nMy ELMS account: ' + ((window.currentUser || {}).email || '') + '\nHow many live listings I need: \nHow many eBay stores: \nHow often I want prices and stock checked: \n');
-    const body = 'Hi,\n\nI cannot pay ' + (!listings && pricingCardOffered ? 'by card or with the wallet' : 'with the wallet checkout') + '. ' + (listings ? 'Please help me buy listings.' : 'Please help me renew my plan.') + '\n\nMy ELMS account: ' + (me.email || '') + '\n' + (listings ? 'How many listings I want: ' : 'The plan I want: ') + '\n\nThank you';
+    const body = 'Hi,\n\nI cannot pay ' + (!listings && (pricingCardOffered || pricingCryptoOffered) ? payWays() : 'with the wallet checkout') + '. ' + (listings ? 'Please help me buy listings.' : 'Please help me renew my plan.') + '\n\nMy ELMS account: ' + (me.email || '') + '\n' + (listings ? 'How many listings I want: ' : 'The plan I want: ') + '\n\nThank you';
     return 'mailto:' + (email || 'support@elmstool.com') + '?subject=' + encodeURIComponent(listings ? 'Help buying listings' : 'Help renewing my plan') + '&body=' + encodeURIComponent(body);
   }
   // The strip follows the tab: Buy credits renews a plan, Buy Listings buys listings. The address is the server's (checked); the account is whoever is signed in NOW.
@@ -27149,20 +27190,28 @@ async function autoSuggestEmptyDraftCategories() {
     const text = document.getElementById('pricingSupportText');
     if (text) text.textContent = listings ? 'Write to support and we will help you buy your listings.' : 'Write to support and we will renew your plan for you.';
     const head = document.getElementById('pricingSupportHead');
-    if (head) head.textContent = !listings && pricingCardOffered ? 'Cannot pay by card or with the wallet?' : 'Cannot pay with the wallet?';
+    if (head) head.textContent = !listings && (pricingCardOffered || pricingCryptoOffered) ? 'Cannot pay ' + payWays() + '?' : 'Cannot pay with the wallet?';
   }
   // The words follow what the server really offers: card words only while some plan has a card option (never on Buy Listings: that is the wallet or support).
-  function setPricingCardWording(on) {
+  function setPricingCardWording(on, cryptoOn) {
     pricingCardOffered = !!on;
+    pricingCryptoOffered = !!cryptoOn;
     const title = document.getElementById('bcTrustPayTitle');
     const text = document.getElementById('bcTrustPayText');
-    if (title) title.innerHTML = pricingCardOffered ? '&#128179; Card or wallet' : '&#128179; Wallet checkout';
-    if (text) text.textContent = pricingCardOffered ? 'Pay by card or with your digital wallet. Cannot? Write to support and we renew your plan for you.' : 'Pay with your digital wallet. Cannot? Write to support and we renew your plan for you.';
+    const names = [pricingCardOffered ? 'Card' : null, pricingCryptoOffered ? 'crypto' : null].filter(Boolean);
+    if (title) title.innerHTML = names.length ? '&#128179; ' + (names.length === 2 ? 'Card, crypto or wallet' : names[0] === 'Card' ? 'Card or wallet' : 'Crypto or wallet') : '&#128179; Wallet checkout';
+    if (text) text.textContent = names.length ? 'Pay ' + payWays().replace('the wallet', 'your digital wallet') + '. Cannot? Write to support and we renew your plan for you.' : 'Pay with your digital wallet. Cannot? Write to support and we renew your plan for you.';
     setPricingSupport();
   }
   async function cardClosedDialog(message, email) {
     setPricingSupport(email);
     const write = await elmsConfirm(message || 'Card payments are no longer available. Pay with the wallet checkout, or write to support and we will help you renew your plan.', { title: 'Card payments are closed', okText: 'Email support', cancelText: 'Close' });
+    if (write) window.location.href = supportMailto(pricingSupportEmail);
+  }
+
+  async function cryptoClosedDialog(message, email) {
+    setPricingSupport(email);
+    const write = await elmsConfirm(message || 'Paying with crypto is not available right now. Pay with the wallet checkout, or write to support and we will help you renew your plan.', { title: 'Crypto payments are closed', okText: 'Email support', cancelText: 'Close' });
     if (write) window.location.href = supportMailto(pricingSupportEmail);
   }
 
@@ -27176,11 +27225,12 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(custom ? { custom, billing: pricingBilling } : { planId, billing: pricingBilling, ...(provider === 'card' ? { provider: 'card' } : {}), ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
+        body: JSON.stringify(custom ? { custom, billing: pricingBilling } : { planId, billing: pricingBilling, ...(provider === 'card' ? { provider: 'card' } : provider === 'crypto' ? { provider: 'crypto' } : {}), ...(pricingVoucherId ? { voucherId: pricingVoucherId } : {}) }),
       });
       const data = await res.json();
 
       if (!res.ok || !data.success) {
+        if (data.code === 'crypto_checkout_closed') { await cryptoClosedDialog(data.error, data.supportEmail); loadPlanCards(); return; } // the same for crypto
         if (data.code === 'card_checkout_closed') { await cardClosedDialog(data.error, data.supportEmail); loadPlanCards(); return; } // a page opened before this changed: say so, and show the plans without the card button
         alert(data.error || 'Could not start checkout.');
         if (pricingVoucherId && res.status >= 400 && res.status < 500) loadPlanCards(); // the voucher may be used or expired now
@@ -27423,6 +27473,9 @@ async function autoSuggestEmptyDraftCategories() {
     if (planPaymentConfirming || !localStorage.getItem('elmsSessionToken')) return;
     planPaymentConfirming = true;
     let waited = 0;
+    const isCrypto = /^crp_/.test(String(pending.sessionId)); // the network takes minutes: look every 10 seconds for half an hour (the plan also comes by itself)
+    const step = isCrypto ? 10 : 5;
+    const limit = isCrypto ? 1800 : 120;
     const attempt = async () => {
       let finished = false;
       try {
@@ -27445,8 +27498,8 @@ async function autoSuggestEmptyDraftCategories() {
         }
       } catch (_) { /* try again */ }
       if (finished) { planPaymentConfirming = false; return; }
-      waited += 5;
-      if (waited < 120) setTimeout(attempt, 5000);
+      waited += step;
+      if (waited < limit) setTimeout(attempt, step * 1000);
       else { planPaymentConfirming = false; if (!silent) showToast('Payment', 'The payment is still being confirmed. Your plan is added automatically as soon as it is confirmed.', 'info'); }
     };
     attempt();
