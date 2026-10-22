@@ -22745,29 +22745,55 @@ async function autoSuggestEmptyDraftCategories() {
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Latest purchases</h2></div></div>
             <div class="ad-list">${d.recentPurchases.map((p) => `<div><span>${escapeHtml(p.email || 'Unknown user')}<br><small>${p.listingSlots ? p.listingSlots.toLocaleString() + ' live listings' : p.credits.toLocaleString() + ' credits'} \u00b7 ${new Date(p.createdAt).toLocaleDateString()}</small></span><b>${money(p.priceUsd)}</b></div>`).join('') || '<div><small>No purchases yet.</small></div>'}</div></section>
         </div>
-        ${d.health.crypto && d.health.crypto.configured ? '<section class="st-card" id="cryptoPaymentsCard"><div class="st-head"><div class="st-head-txt"><h2>Crypto payments</h2><p>The latest crypto orders and what became of them.</p></div></div><div id="cryptoPaymentsList"><div class="elms-loader" role="status" aria-label="Loading"></div></div></section>' : ''}`;
-      if (d.health.crypto && d.health.crypto.configured) loadCryptoPayments();
+        ${d.health.crypto && d.health.crypto.configured && adminCan('admins') ? '<section class="st-card" id="cryptoPaymentsCard"><div class="st-head"><div class="st-head-txt"><h2>Crypto payments</h2><p>The latest crypto orders and what became of them.</p></div></div><div id="cryptoPaymentsList"><div class="elms-loader" role="status" aria-label="Loading"></div></div></section>' : ''}`;
+      if (d.health.crypto && d.health.crypto.configured && adminCan('admins')) loadCryptoPayments();
     } catch (err) { el.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
   }
 
-  // The latest crypto orders (Admin -> Overview): what the buyer chose, what the payment company says, and whether ELMS gave the plan. "Needs review" = money (maybe) arrived and the plan was NOT given.
+  // The latest crypto orders (Admin -> Overview, owner and full rights): what the buyer chose, what the payment company says, and whether ELMS gave the plan. "Needs review" = money (maybe)
+  // arrived and the plan was NOT given: those come first (all of them, not only the latest ones), each with the two decisions: give the plan once, or close the order.
+  const CRYPTO_NAMES = { created: 'Started', open: 'Waiting', paid: 'Paid, plan given', needs_review: 'Needs review', expired: 'Expired', failed: 'Failed', refunded: 'Refunded', resolved: 'Closed by an admin' };
+  const CRYPTO_REASONS = { partially_paid: 'paid less than due', underpaid: 'paid less than due', amount_mismatch: 'the price does not match', unverified: 'could not be checked', repeated_deposit: 'an extra deposit on an earlier payment', no_plan: 'the plan is gone', no_user: 'no buyer on the order', user_missing: 'the account is gone', timeout: 'ran out', payment_failed: 'the payment failed', payment_expired: 'the payment expired', payment_refunded: 'refunded', invoice_failed: 'the invoice could not be made', closed_by_admin: 'closed by an admin' };
   async function loadCryptoPayments() {
     const box = document.getElementById('cryptoPaymentsList'); if (!box) return;
     try {
       const res = await apiFetch('/api/admin/crypto-payments?limit=25'); const d = await res.json();
       if (!res.ok || !d.success) throw new Error(d.error || 'Could not load the crypto payments.');
-      const NAMES = { created: 'Started', open: 'Waiting', paid: 'Paid, plan given', needs_review: 'Needs review', expired: 'Expired', failed: 'Failed', refunded: 'Refunded' };
-      const REASONS = { partially_paid: 'paid less than due', underpaid: 'paid less than due', amount_mismatch: 'the price does not match', unverified: 'could not be checked', repeated_deposit: 'an extra deposit on an earlier payment', no_plan: 'the plan is gone', no_user: 'no buyer on the order', user_missing: 'the account is gone', timeout: 'ran out', payment_failed: 'the payment failed', payment_expired: 'the payment expired', payment_refunded: 'refunded', invoice_failed: 'the invoice could not be made' };
-      if (!d.payments.length) { box.innerHTML = '<div class="empty-state">No crypto orders yet.</div>'; return; }
-      box.innerHTML = `<table class="data-table"><thead><tr><th>Date</th><th>Buyer</th><th>Plan</th><th>Price</th><th>Status</th><th>Coin</th></tr></thead><tbody>${d.payments.map((p) => `<tr>
+      let list = d.payments;
+      if (d.needsReview > 0) { // the ones that wait for a decision are all shown, whatever their age
+        const r2 = await apiFetch('/api/admin/crypto-payments?status=needs_review&limit=100'); const d2 = await r2.json();
+        if (r2.ok && d2.success) { const ids = new Set(d2.payments.map((p) => p.id)); list = [...d2.payments, ...list.filter((p) => !ids.has(p.id))]; }
+      }
+      if (!list.length) { box.innerHTML = '<div class="empty-state">No crypto orders yet.</div>'; return; }
+      const act = (p) => p.status === 'needs_review' ? `<div class="ad-actions"><button class="btn-small save" type="button" data-crypto-act="accept" data-id="${escapeAttr(p.id)}">Accept and give the plan</button> <button class="btn-small" type="button" data-crypto-act="close" data-id="${escapeAttr(p.id)}">Close</button></div>` : '';
+      box.innerHTML = `${d.needsReview > 0 ? `<div class="state-msg error">${d.needsReview} order${d.needsReview === 1 ? '' : 's'} need${d.needsReview === 1 ? 's' : ''} a decision: money may have arrived and the plan was NOT given. Look at the payment in the payment dashboard, then accept it or close the order.</div>` : ''}<table class="data-table"><thead><tr><th>Date</th><th>Buyer</th><th>Plan</th><th>Price</th><th>Status</th><th>Coin</th></tr></thead><tbody>${list.map((p) => `<tr>
         <td>${escapeHtml(new Date(p.createdAt).toLocaleString())}</td>
         <td>${escapeHtml(p.email || 'Unknown user')}</td>
         <td>${escapeHtml(p.planName || '')}</td>
         <td>$${Number(p.priceUsd).toFixed(2)}</td>
-        <td><span class="status-badge ${p.status === 'paid' ? 'published' : p.status === 'needs_review' ? 'error' : 'draft'}" title="${escapeAttr(p.order + (p.paymentId ? ' \u00b7 payment ' + p.paymentId : ''))}">${escapeHtml(NAMES[p.status] || p.status)}</span>${p.providerStatus ? `<br><small>${escapeHtml(p.providerStatus)}</small>` : ''}${p.reason ? `<br><small>${escapeHtml(REASONS[p.reason] || p.reason)}</small>` : ''}</td>
+        <td><span class="status-badge ${p.status === 'paid' ? 'published' : p.status === 'needs_review' ? 'error' : 'draft'}" title="${escapeAttr(p.order + (p.paymentId ? ' \u00b7 payment ' + p.paymentId : ''))}">${escapeHtml(CRYPTO_NAMES[p.status] || p.status)}</span>${p.providerStatus ? `<br><small>${escapeHtml(p.providerStatus)}</small>` : ''}${p.reason ? `<br><small>${escapeHtml(CRYPTO_REASONS[p.reason] || p.reason)}</small>` : ''}${p.handledNote ? `<br><small>${escapeHtml(p.handledNote)}</small>` : ''}${act(p)}</td>
         <td>${p.payCurrency ? escapeHtml(String(p.payCurrency).toUpperCase()) + (p.actuallyPaid != null ? '<br><small>' + escapeHtml(String(p.actuallyPaid)) + (p.payAmount != null ? ' of ' + escapeHtml(String(p.payAmount)) : '') + '</small>' : '') : ''}</td>
       </tr>`).join('')}</tbody></table>`;
+      box.querySelectorAll('[data-crypto-act]').forEach((btn) => btn.addEventListener('click', () => decideCryptoOrder(btn.dataset.cryptoAct, btn.dataset.id, btn)));
     } catch (err) { box.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
+  }
+  async function decideCryptoOrder(what, id, btn) {
+    const accept = what === 'accept';
+    const sure = await elmsConfirm(accept
+      ? 'Give the plan of this order now? Do this only after you looked at the payment in the payment dashboard and it is fine. The plan is given once, for the price that was asked.'
+      : 'Close this order? Nothing more will ever be given for it (use it after you gave the plan by hand, or when the money is to be sent back).', { title: accept ? 'Accept and give the plan' : 'Close this order', okText: accept ? 'Give the plan' : 'Close the order', cancelText: 'Cancel' });
+    if (!sure) return;
+    const label = btn.textContent; btn.disabled = true; btn.textContent = 'Saving\u2026';
+    try {
+      const res = await apiFetch('/api/admin/crypto-payments/' + encodeURIComponent(id) + '/' + (accept ? 'accept' : 'close'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not save that decision.');
+      showToast(accept ? 'Plan given' : 'Order closed', accept ? (d.planName ? d.planName + ' was given to the buyer.' : 'The plan was given to the buyer.') : 'Nothing more will be given for this order.', 'success');
+      loadCryptoPayments();
+    } catch (err) {
+      btn.disabled = false; btn.textContent = label;
+      showToast('Crypto payment', err.message, 'error');
+    }
   }
 
   // ---------- Admin Panel: AI ----------
@@ -26613,7 +26639,9 @@ async function autoSuggestEmptyDraftCategories() {
 
       currentPaymentProvider = data.provider;
       setPricingSupport(data.supportEmail);
-      setPricingCardWording(Array.isArray(data.plans) && data.plans.some((p) => p.cardAvailable || p.cardYearlyAvailable), Array.isArray(data.plans) && data.plans.some((p) => p.cryptoAvailable || p.cryptoYearlyAvailable));
+      const priceOf = (p, yearly) => { const list = yearly ? p.yearlyPriceUsd : p.priceUsd; const disc = yearly ? p.discountedYearlyPriceUsd : p.discountedPriceUsd; return Number(disc != null && disc < list ? disc : list); };
+      const cryptoUsable = Array.isArray(data.plans) && data.plans.some((p) => (p.cryptoAvailable && priceOf(p, false) >= 5) || (p.cryptoYearlyAvailable && priceOf(p, true) >= 5));
+      setPricingCardWording(Array.isArray(data.plans) && data.plans.some((p) => p.cardAvailable || p.cardYearlyAvailable), cryptoUsable);
       if (data.model === 'slots') { renderSlotsPlans(container, data, usable); return; } // plans by listings: their own page
       setPricingModelWording('credits');
       if (!data.plans.length) {
@@ -27477,6 +27505,7 @@ async function autoSuggestEmptyDraftCategories() {
     const step = isCrypto ? 10 : 5;
     const limit = isCrypto ? 1800 : 120;
     const attempt = async () => {
+      if (!localStorage.getItem('elmsSessionToken')) { planPaymentConfirming = false; return; } // signed out (or the session ended): the plan still comes by itself, the page stops asking
       let finished = false;
       try {
         const res = await apiFetch('/api/payments/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: pending.sessionId }) });
@@ -27491,6 +27520,9 @@ async function autoSuggestEmptyDraftCategories() {
           } else if (data.status === 'expired' || data.status === 'failed') {
             finished = true; clearPendingPlanPayment();
             if (!silent) showToast('Payment', data.status === 'expired' ? 'The checkout expired without a payment.' : 'The payment could not be completed. Contact support if money left your account.', 'error');
+          } else if (data.status === 'refunded') {
+            finished = true; clearPendingPlanPayment();
+            if (!silent) showToast('Payment', 'This payment was refunded.', 'info');
           } else if (['underpaid', 'amount_mismatch', 'no_plan', 'no_user', 'unverified', 'discounted'].includes(data.reason)) {
             finished = true; clearPendingPlanPayment();
             showToast('Payment', 'Your payment arrived but needs a quick check by our team. They have been told and will sort it out.', 'error');
@@ -27561,6 +27593,12 @@ async function autoSuggestEmptyDraftCategories() {
         showPage('pricing');
         if (isListingPack) setPricingTab('listings');
         if (outcome === 'cancelled') {
+          const pend = readPendingPlanPayment();
+          if (!isListingPack && pend && /^crp_/.test(String(pend.sessionId))) { // a crypto payment: coins may be on their way, so it keeps being watched
+            showToast('Payment', 'The payment page was closed. If you already sent coins, your plan is added automatically once the network confirms them.', 'info');
+            confirmPlanPayment(true);
+            return;
+          }
           clearPendingPlanPayment(); clearPendingListingPack();
           showToast('Payment cancelled', 'No money was taken.', 'info');
           return;
