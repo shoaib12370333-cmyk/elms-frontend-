@@ -3465,6 +3465,44 @@
   .bc-balance { display:flex; align-items:baseline; gap:8px; padding:12px 20px; border-radius:14px; background:#0F172A; color:#fff; }
   .bc-balance span { font-size:12px; letter-spacing:.05em; text-transform:uppercase; opacity:.7; }
   .bc-balance b { font-size:28px; letter-spacing:-.02em; } .bc-balance em { font-style:normal; font-size:13px; opacity:.8; }
+  /* plans by listing slots: the plans page (renderSlotsPlans) */
+  .sp-plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr)); gap:20px; margin-top:14px; align-items:stretch; }
+  .sp-card { position:relative; background:#fff; border:1px solid var(--line); border-radius:16px; padding:28px 22px 22px; display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .sp-card .bc-buy { margin-top:0; } /* the buttons of all cards sit at the same height: the lists of features come after them */
+  .sp-card.hot { border:2px solid #2347D6; box-shadow:0 12px 32px rgba(35,71,214,.12); }
+  .sp-card.dark { background:#0E1424; border-color:#0E1424; color:#E3E8F4; }
+  .sp-card.dark .sp-name, .sp-card.dark .sp-amount { color:#fff; } .sp-card.dark .sp-tag, .sp-card.dark .sp-qty span { color:#B7C0D6; } .sp-card.dark .sp-qty { background:#1C2438; color:#fff; }
+  .sp-card.dark .bc-buy { background:#fff; color:#0E1424; border-color:#fff; display:block; text-align:center; text-decoration:none; }
+  .sp-badge { position:absolute; top:-13px; left:22px; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:5px 12px; border-radius:999px; background:#2347D6; color:#fff; }
+  .sp-badge.green { background:#0F7B5C; }
+  .sp-name { margin:0; font-size:20px; font-weight:700; color:var(--ink); }
+  .sp-tag { margin:4px 0 0; font-size:14px; color:var(--grey); }
+  .sp-price { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+  .sp-amount { font-size:38px; font-weight:800; letter-spacing:-.02em; color:var(--ink); }
+  .sp-per { font-size:14px; color:var(--grey); }
+  .sp-qty { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; background:#F1F4FB; border-radius:10px; padding:10px 14px; font-size:14px; color:var(--ink); }
+  .sp-qty b { font-size:15px; } .sp-qty span { color:var(--grey); font-size:13px; }
+  .sp-feats { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; font-size:14px; line-height:1.4; }
+  .sp-feats li { display:flex; gap:10px; align-items:flex-start; }
+  .sp-feats li::before { flex:0 0 20px; height:20px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; margin-top:-1px; }
+  .sp-feats li.yes::before { content:"\2713"; background:#E3F4EC; color:#0B6B4F; }
+  .sp-feats li.no { color:#6B7489; text-decoration:line-through; } .sp-feats li.no::before { content:"\2715"; background:#F1F2F5; color:#6B7489; }
+  .sp-feats li.head { font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:#fff; } .sp-feats li.head::before { content:none; }
+  .sp-card.dark .sp-feats li.yes::before { background:#16355A; color:#7FD6B2; }
+  .sp-h { margin:34px 0 14px; font-size:22px; font-weight:800; text-align:center; }
+  .sp-tablebox { overflow-x:auto; background:#fff; border:1px solid var(--line); border-radius:16px; }
+  .sp-table { border-collapse:collapse; width:100%; min-width:760px; font-size:14px; }
+  .sp-table th, .sp-table td { padding:12px 14px; text-align:center; border-bottom:1px solid #EDF0F5; }
+  .sp-table th { background:#F8F9FC; font-weight:700; } .sp-table th.hot { color:#2347D6; }
+  .sp-table td:first-child, .sp-table th:first-child { text-align:left; font-weight:600; position:sticky; left:0; background:#fff; }
+  .sp-table th:first-child { background:#F8F9FC; }
+  .sp-table tr.group td { background:#F8F9FC; font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--grey); text-align:left; position:static; }
+  .sp-table td.y { color:#0B6B4F; font-weight:800; } .sp-table td.n { color:#9AA2B4; }
+  .sp-table tr:last-child td { border-bottom:none; }
+  .sp-faq { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); gap:14px; }
+  .sp-q { background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .sp-q h4 { margin:0 0 6px; font-size:15px; } .sp-q p { margin:0; font-size:14px; color:var(--grey); line-height:1.5; }
+  @media (max-width:640px) { .sp-card { padding:26px 16px 18px; } .sp-amount { font-size:32px; } }
   .bc-plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(230px, 100%),1fr)); gap:18px; margin-top:6px; }
   .bc-plan { position:relative; overflow:hidden; background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:26px 22px 22px; display:flex; flex-direction:column; gap:6px; box-shadow:0 6px 22px rgba(20,35,60,.05); transition:transform .15s, box-shadow .15s; }
   .bc-plan:hover { transform:translateY(-3px); box-shadow:0 12px 30px rgba(20,35,60,.10); }
@@ -5527,11 +5565,11 @@
         <div data-pricing-panel="credits">
           <div id="pricingContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
           <p class="bc-refund-note">Taxes may be added at checkout where they apply.</p>
-          <p class="bc-refund-note">You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used. <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></p>
+          <p class="bc-refund-note" id="pricingRefundNote">You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used. <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></p>
 
           <div class="bc-trust">
             <div><b>&#128274; Secure checkout</b><span>Payments are handled by our payment partner. ELMS never sees your card or wallet details.</span></div>
-            <div><b>&#9989; Credits after payment</b><span>Credits are added once the payment is confirmed.</span></div>
+            <div id="pricingTrustCredits"><b>&#9989; Credits after payment</b><span>Credits are added once the payment is confirmed.</span></div>
             <div><b id="bcTrustPayTitle">&#128179; Wallet checkout</b><span id="bcTrustPayText">Pay with your digital wallet. Cannot? Write to support and we renew your plan for you.</span></div>
           </div>
 
@@ -6174,6 +6212,18 @@ B0EXAMPLE2"></textarea></div>
 
         <!-- Plans -->
         <div class="ad-panel" data-admin-panel="plans" style="display:none;">
+          <section class="st-card" id="slotsPlansCard">
+            <div class="st-head">
+              <div class="st-ico blue">&#128230;</div>
+              <div class="st-head-txt"><h2>Plans by listings</h2><p>Plans that give live listings, new drafts a month and included price / stock monitoring instead of credits. While the switch is off buyers see the credits plans below, exactly as before; people who already hold a plan by listings keep it, and still see and can renew these plans. You can look at the plans page as a buyer would with "?model=slots" (admins only) before you switch it on.</p></div>
+            </div>
+            <div class="st-actions">
+              <label class="meta-line" style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="slotsSwitch" /> On sale: buyers see the plans by listings</label>
+              <button class="st-btn" id="slotsInstallBtn" type="button">Install the standard plans</button>
+              <div class="st-status" id="slotsStatus" role="status"></div>
+            </div>
+            <div id="slotsPlansContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
+          </section>
           <section class="st-card">
             <div class="st-head">
               <div class="st-ico green">&#128179;</div>
@@ -7239,6 +7289,37 @@ B0EXAMPLE2"></textarea></div>
   // specific error text the calling code's own catch block already shows. A bulk action can trigger several 402s
   // within the same beat (one per row); a short cooldown keeps that down to a single toast, not one per row.
   let lastOutOfCreditsToastAt = 0;
+  var PLAN_LIMIT_TITLES = { plan_feature: 'Not in your plan', drafts_allowance: 'No new drafts left this month', drafts_cap: 'Drafts is full', live_limit: 'Live listings: your plan is full', ai_quota: 'No AI actions left this month' };
+  var lastPlanLimitToastAt = 0;
+  function showPlanLimitToast(d) {
+    if (Date.now() - lastPlanLimitToastAt < 5000) return; // a bulk action can be refused many times in one beat: one toast is enough
+    lastPlanLimitToastAt = Date.now();
+    showToast(PLAN_LIMIT_TITLES[d.code], d.error || '', 'error', { actionLabel: 'See plans', onAction: () => showPage('pricing') });
+  }
+  // What the price line of an AI action says for a plan by listings: it is part of the plan, with the AI actions left this month (the server sends included + aiLeft). null = the credits price.
+  function includedLine(d) {
+    if (!d || !d.included) return null;
+    const left = typeof d.aiLeft === 'number' ? ` ${d.aiLeft.toLocaleString('en-US')} AI action${d.aiLeft === 1 ? '' : 's'} left this month; each one that makes a change uses one.` : '';
+    return `\n\nIncluded in your plan.${left}`;
+  }
+  // True when the person is on a plan by listings (no credits are used while it runs).
+  function onSlotsPlan() { return !!(window.currentUser && window.currentUser.planModel === 'slots'); }
+  // An AI tool that is NOT part of the plan: its price line answers available:false with the words to say. A window that would only be refused one item at a time says it once and stops.
+  function planLocked(d) {
+    if (!d || !d.included || d.available !== false) return false;
+    showToast(PLAN_LIMIT_TITLES.plan_feature, d.message || 'This is not part of your plan.', 'error', { actionLabel: 'See plans', onAction: () => showPage('pricing') });
+    return true;
+  }
+  // The price sentence of the VeRO clean: credits for a credits account, AI actions of the plan for a plan by listings. No number = one item (the editor); a number = that many drafts.
+  function veroAiLine(n) {
+    const plan = onSlotsPlan();
+    if (n === undefined) return plan
+      ? 'One AI action of your plan is used only when the AI is needed (for example to rewrite the title); a clean done without the AI uses none.'
+      : 'One AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free.';
+    return plan
+      ? `At most ${n} AI action${n === 1 ? '' : 's'} of your plan (one per draft, and only when the AI is needed, for example to rewrite the title); a clean done without the AI uses none.`
+      : `At most ${n} AI credit${n === 1 ? '' : 's'} (one per draft, and only when the AI is needed, for example to rewrite the title); a clean done without the AI is free.`;
+  }
   function showOutOfCreditsToast(message) {
     if (Date.now() - lastOutOfCreditsToastAt < 5000) return;
     lastOutOfCreditsToastAt = Date.now();
@@ -8865,6 +8946,13 @@ B0EXAMPLE2"></textarea></div>
     if (res.status === 402) {
       res.clone().json().then((d) => showOutOfCreditsToast(d && d.error)).catch(() => {});
     }
+    // A plan by listings refuses with 403 and a code (not 402: that one means "out of credits"): say it with a way to the plans.
+    if (res.status === 403) {
+      res.clone().json().then((d) => { if (d && PLAN_LIMIT_TITLES[d.code]) showPlanLimitToast(d); }).catch(() => {});
+    }
+
+    // A person on a plan by listings has a live-listings chip: after a write that can change it (publish, schedule, delete, relist, a draft made) it is read again, a moment after the last one.
+    if (!isGet && res.ok && onSlotsPlan() && /^\/api\/(listings|list-on-ebay|fetch-product|cj|aliexpress|imports|csv|ebay-connect|orders\/[^\/?]+\/import-product)/.test(path)) schedulePlanUsageRefresh();
 
     // Every caller does `await res.json()`. When the server answers with something that is not JSON (a proxy
     // timeout page on a long publish, an empty body, a start-up page) the browser's own error leaks into the
@@ -9037,8 +9125,19 @@ B0EXAMPLE2"></textarea></div>
     if (user.picture) img.src = user.picture; else img.removeAttribute('src');
   }
 
+  // What the plans page learned about the shop belongs to the account that is signed in: a new sign-in starts clean. A sign-in answer does not say what is on sale (only /me does).
+  function resetPlanState() { window.plansOnSale = undefined; window.pricingMyPlan = null; window.planUsage = null; pricingModel = 'credits'; }
+  async function refreshPlansOnSale() {
+    try {
+      const res = await apiFetch('/api/auth/me');
+      const d = await res.json();
+      if (res.ok && d.success && d.user && d.user.plansOnSale) { window.plansOnSale = d.user.plansOnSale; if (window.currentUser) window.currentUser.plansOnSale = d.user.plansOnSale; applyPlanLabels(window.currentUser); }
+    } catch (_) { /* the labels keep the credits wording */ }
+  }
   function showApp(user) {
+    resetPlanState();
     window.currentUser = user;
+    if (!user.plansOnSale) refreshPlansOnSale();
     renderPhoneSettings();
     document.getElementById('authPage').style.display = 'none';
     document.getElementById('appShell').style.display = 'flex';
@@ -9055,7 +9154,7 @@ B0EXAMPLE2"></textarea></div>
     }
     document.getElementById('userChip').style.display = 'block';
     document.getElementById('sidebarFooter').textContent = user.googleId ? 'Signed in via Google' : 'Signed in';
-    updateCreditBalanceChip(user.creditBalance);
+    updateCreditBalanceChip(user.creditBalance, user);
     Promise.allSettled([refreshDraftsCountBadge(), refreshSystemNotificationBadge(), refreshMessageBadge(), populateSidebarEbayWidget(), refreshVoucherBadge(), refreshPricingRuleState()]);
     startBackgroundRefresh();
     paintAdminEntry(user);
@@ -9236,7 +9335,9 @@ B0EXAMPLE2"></textarea></div>
     overlay.innerHTML = `
       <div class="welcome-box" role="dialog" aria-modal="true" aria-label="Your plan ended">
         <div class="welcome-title">Your${notice.planName ? ' ' + escapeHtml(notice.planName) : ''} plan ended</div>
-        <div class="welcome-sub">${when ? `It ran out on ${when}. ` : ''}The credits that came with it ended with it.${Number(notice.creditsKept) > 0 ? ` You still have ${Number(notice.creditsKept).toLocaleString()} credits from before the plan.` : ''} Your listings, drafts and orders are all still there. Buy a plan again whenever you are ready.</div>
+        <div class="welcome-sub">${when ? `It ran out on ${when}. ` : ''}${notice.slots
+          ? `The limits of the plan ended with it.${Number(notice.creditsKept) > 0 ? ` You have ${Number(notice.creditsKept).toLocaleString()} credits: publishing and price and stock monitoring use them again, as before the plan.` : ' You have no credits, so price and stock monitoring has paused and new listings cannot be published.'}`
+          : `The credits that came with it ended with it.${Number(notice.creditsKept) > 0 ? ` You still have ${Number(notice.creditsKept).toLocaleString()} credits from before the plan.` : ''}`} Your listings, drafts and orders are all still there. Buy a plan again whenever you are ready.</div>
         <div class="welcome-actions">
           <button type="button" class="ord-btn primary" data-act="buy">See plans</button>
           <button type="button" class="ord-btn" data-act="close">Dismiss</button>
@@ -9311,9 +9412,19 @@ B0EXAMPLE2"></textarea></div>
    * Updates the credit balance chip in the topbar, so the user always knows
    * how many credits they have left without hunting for it.
    */
-  function updateCreditBalanceChip(creditBalance) {
+  function updateCreditBalanceChip(creditBalance, user) {
     const chip = document.getElementById('creditBalanceChip');
+    if (typeof applyPlanLabels === 'function') applyPlanLabels(user || window.currentUser);
+    // every path that refreshes the chip keeps the profile in step (a plan bought or closed since the page loaded): the price lines and the result windows read it
+    if (user && user.planModel && window.currentUser && window.currentUser !== user) { window.currentUser.planModel = user.planModel; window.currentUser.entitlement = user.entitlement; }
+    if (window.currentUser && creditBalance != null) window.currentUser.creditBalance = creditBalance; // (the grace banner and the price lines read the balance from the profile)
+    if (user && user.planModel === 'slots') { // a plan by listings: the chip shows the live listings used (the numbers come a moment later), not credits
+      if (chip) { document.getElementById('creditBalanceAmount').textContent = user.entitlement ? String(user.entitlement.maxListings.toLocaleString('en-US')) : '0'; const w = chip.querySelector('.cb-word'); if (w) w.textContent = 'listings'; chip.style.display = 'flex'; }
+      refreshPlanUsage();
+      return;
+    }
     if (!chip || creditBalance == null) return;
+    const word = chip.querySelector('.cb-word'); if (word) word.textContent = 'credits'; chip.removeAttribute('title');
     document.getElementById('creditBalanceAmount').textContent = creditBalance.toLocaleString();
     const pb = document.getElementById('pricingBalance'); if (pb) pb.textContent = creditBalance.toLocaleString();
     chip.style.display = 'flex';
@@ -9333,7 +9444,7 @@ B0EXAMPLE2"></textarea></div>
     try {
       const res = await apiFetch('/api/auth/me');
       const data = await res.json();
-      if (res.ok && data.success) updateCreditBalanceChip(data.user.creditBalance);
+      if (res.ok && data.success) { window.currentUser = { ...(window.currentUser || {}), planModel: data.user.planModel, entitlement: data.user.entitlement }; updateCreditBalanceChip(data.user.creditBalance, data.user); }
     } catch (err) {
       // Non-critical - the chip just keeps showing its last known value.
     }
@@ -10557,6 +10668,7 @@ B0EXAMPLE2"></textarea></div>
     const endingToken = localStorage.getItem('elmsSessionToken');
     if (endingToken) fetch(`${API_BASE}/api/security/logout`, { method: 'POST', headers: { Authorization: `Bearer ${endingToken}` }, keepalive: true }).catch(() => {});
     localStorage.removeItem('elmsSessionToken');
+    resetPlanState();
     renderReconnectBanner([]);
     document.getElementById('appShell').style.display = 'none';
     document.getElementById('authPage').style.display = 'flex';
@@ -11922,7 +12034,7 @@ B0EXAMPLE2"></textarea></div>
     const scan = veroScanValues(values);
     if (!scan.terms.length) { showToast('VeRO words', 'No VeRO words found.', 'info'); return; }
     if (String(values.title || '').trim().length < 3) { showToast('Title needed', 'Type a title first.', 'error'); return; }
-    if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${scan.terms.join(', ')}\n\nOne AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free. The result goes into the editor so you can check it; press Save changes to keep it.`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
+    if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${scan.terms.join(', ')}\n\n${veroAiLine()} The result goes into the editor so you can check it; press Save changes to keep it.`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
     const label = btn.textContent;
     btn.disabled = true; btn.textContent = 'Removing…';
     try {
@@ -12419,7 +12531,7 @@ async function autoSuggestEmptyDraftCategories() {
         const btn = e.currentTarget;
         const l = draftListingMap.get(String(id));
         if (!l || !l._vero.terms.length) return;
-        if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${l._vero.terms.join(', ')}\n\nOne AI credit is used only when the AI is needed (for example to rewrite the title); a clean done without the AI is free.`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
+        if (!(await elmsConfirm(`These words will be taken out of the title, description, bullet points and item specifics:\n${l._vero.terms.join(', ')}\n\n${veroAiLine()}`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
         const label = btn.textContent;
         btn.disabled = true; btn.textContent = 'Removing…';
         try {
@@ -13170,16 +13282,18 @@ async function autoSuggestEmptyDraftCategories() {
   // UK list; no eBay call, the admin-set credits are taken per draft that gets one), or eBay's own category suggestion (free, but it uses eBay's daily category lookups).
   async function bulkFillCategories(ids, btn) {
     let cost = null;
+    let included = null; // a plan by listings: the AI is part of it (how many actions are left this month), no credits
     let mode = null; // 'ai' = the AI from the category lists (credits), 'ebay' = eBay's own suggestion (free); null = could not be read: the wording stays neutral
     try {
       const r = await apiFetch('/api/listings/bulk-category/cost');
       const d = await apiJson(r);
-      if (r.ok && d.success) { cost = Number(d.cost); mode = d.mode === 'ebay' ? 'ebay' : 'ai'; }
+      if (r.ok && d.success) { cost = Number(d.cost); included = includedLine(d); mode = d.mode === 'ebay' ? 'ebay' : 'ai'; }
     } catch (_) { /* the dialog just leaves the price out */ }
     const n = ids.length;
-    const price = cost === null ? '' : cost === 0
+    let price = cost === null ? '' : cost === 0
       ? '\n\nThis is free.'
       : `\n\nIt costs ${cost} credit${cost === 1 ? '' : 's'} per draft that gets a category: up to ${cost * n} credit${cost * n === 1 ? '' : 's'} for ${n} draft${n === 1 ? '' : 's'}. A draft that already has one, is skipped or fails is not charged.`;
+        if (included) price = included;
     const ok = await elmsConfirm(mode === 'ebay'
       ? `eBay's own category suggestion will choose the eBay category of the selected drafts that have none, for each draft's own eBay site, and save it. A draft that already has a category is left alone.\n\nThis is free.`
       : mode === 'ai'
@@ -13216,8 +13330,8 @@ async function autoSuggestEmptyDraftCategories() {
     const attention = [...reasons.entries()].map(([why, k]) => `${k} \u00d7 ${why}`);
     if (stop) attention.unshift(stop);
     const lines = [
-      `${count('filled')} categor${count('filled') === 1 ? 'y' : 'ies'} filled${count('has_category') ? `, ${count('has_category')} already had one` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
-      `Credits used: ${spent}.`,
+      `${count('filled')} categor${count('filled') === 1 ? 'y' : 'ies'} filled${count('has_category') ? `, ${count('has_category')} already had one` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}${count('no_quota') ? `, ${count('no_quota')} not done (no AI actions left in your plan)` : ''}.`,
+      window.currentUser && window.currentUser.planModel === 'slots' ? 'Included in your plan: no credits used.' : `Credits used: ${spent}.`,
     ];
     const overlay = document.createElement('div');
     overlay.className = 'elms-confirm-overlay';
@@ -13389,7 +13503,7 @@ async function autoSuggestEmptyDraftCategories() {
   // instead of being refused outright - the button's own label shows progress across the whole selection.
   async function bulkRemoveLiveVero(ids, btn) {
     const n = ids.length;
-    const ok = await elmsConfirm(`ELMS will check ${n} selected live listing${n === 1 ? '' : 's'} for VeRO words (brand names eBay removes listings for), take them out of the title, description, bullet points and item specifics, and push the change to eBay.\n\nOnly a listing that actually has VeRO words is changed; a credit is used for it only when the AI is needed (otherwise it is free); the rest are left alone at no cost.${n > 20 ? ' A selection this size is sent in batches of 20, so this can take a while - leave this tab open until it finishes.' : ''}`, { title: 'Remove brand words', okText: 'Check and clean', tick: VERO_TICK });
+    const ok = await elmsConfirm(`ELMS will check ${n} selected live listing${n === 1 ? '' : 's'} for VeRO words (brand names eBay removes listings for), take them out of the title, description, bullet points and item specifics, and push the change to eBay.\n\nOnly a listing that actually has VeRO words is changed; ${onSlotsPlan() ? 'an AI action of your plan is used for it only when the AI is needed (otherwise none)' : 'a credit is used for it only when the AI is needed (otherwise it is free)'}; the rest are left alone at no cost.${n > 20 ? ' A selection this size is sent in batches of 20, so this can take a while - leave this tab open until it finishes.' : ''}`, { title: 'Remove brand words', okText: 'Check and clean', tick: VERO_TICK });
     if (!ok) return;
 
     const VERO_CHUNK = 20;
@@ -13405,6 +13519,7 @@ async function autoSuggestEmptyDraftCategories() {
         const data = await res.json();
         if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
         all.push(...data.results);
+        if (data.results.some((r) => r.status === 'no_quota')) stop = (data.results.find((r) => r.status === 'no_quota') || {}).reason || 'Your plan has no AI actions left.';
       }
     } catch (err) {
       stop = err.message || 'Could not reach the server.';
@@ -13417,10 +13532,10 @@ async function autoSuggestEmptyDraftCategories() {
     loadListings();
 
     const count = (s) => all.filter((r) => r.status === s).length;
-    const attention = all.filter((r) => r.status === 'skipped' || r.status === 'failed' || r.status === 'no_credits').map((r) => `${r.title || r.id}: ${r.reason}`);
+    const attention = all.filter((r) => r.status === 'skipped' || r.status === 'failed' || r.status === 'no_credits' || r.status === 'no_quota').map((r) => `${r.title || r.id}: ${r.reason}`);
     if (stop) attention.unshift(stop);
     const lines = [
-      `${count('changed')} cleaned${count('clean') ? `, ${count('clean')} already had no VeRO words` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
+      `${count('changed')} cleaned${count('clean') ? `, ${count('clean')} already had no VeRO words` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}${count('no_quota') ? `, ${count('no_quota')} not done (no AI actions left in your plan)` : ''}.`,
     ];
     const overlay = document.createElement('div');
     overlay.className = 'elms-confirm-overlay';
@@ -13507,15 +13622,17 @@ async function autoSuggestEmptyDraftCategories() {
   // already-published listing's category be changed, so there is nothing to push it onto). ----------
   async function bulkFillLiveAspects(ids, btn) {
     let cost = null;
+    let included = null; // a plan by listings: the AI is part of it (how many actions are left this month), no credits
     try {
       const r = await apiFetch('/api/listings/bulk-aspects/cost');
       const d = await apiJson(r);
-      if (r.ok && d.success) cost = Number(d.cost);
+      if (r.ok && d.success) { if (planLocked(d)) return; cost = Number(d.cost); included = includedLine(d); }
     } catch (_) { /* the dialog just leaves the price out */ }
     const n = ids.length;
-    const price = cost === null ? '' : cost === 0
+    let price = cost === null ? '' : cost === 0
       ? '\n\nThis is free.'
       : `\n\nIt costs ${cost} credit${cost === 1 ? '' : 's'} per listing that gets new specifics: up to ${cost * n} credit${cost * n === 1 ? '' : 's'} for ${n} listing${n === 1 ? '' : 's'}. A listing that gets nothing new, is skipped or fails is not charged.`;
+        if (included) price = included;
     const ok = await elmsConfirm(`AI will fill the eBay item specifics of ${n} selected live listing${n === 1 ? '' : 's'} and push the change to eBay.${price}`, { title: 'Fill item specifics with AI', okText: 'Fill with AI' });
     if (!ok) return;
 
@@ -13532,6 +13649,7 @@ async function autoSuggestEmptyDraftCategories() {
         if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
         all.push(...data.results);
         if (data.results.some((r) => r.status === 'no_credits')) stop = 'You ran out of credits. Buy more to continue.';
+        else if (data.results.some((r) => r.status === 'no_quota')) stop = (data.results.find((r) => r.status === 'no_quota') || {}).reason || 'Your plan has no AI actions left.';
       }
     } catch (err) {
       stop = err.message || 'Could not reach the server.';
@@ -13550,8 +13668,8 @@ async function autoSuggestEmptyDraftCategories() {
     ];
     if (stop) attention.unshift(stop);
     const lines = [
-      `${count('filled')} filled${count('nothing') ? `, ${count('nothing')} already complete` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
-      `Credits used: ${spent}.`,
+      `${count('filled')} filled${count('nothing') ? `, ${count('nothing')} already complete` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}${count('no_quota') ? `, ${count('no_quota')} not done (no AI actions left in your plan)` : ''}.`,
+      window.currentUser && window.currentUser.planModel === 'slots' ? 'Included in your plan: no credits used.' : `Credits used: ${spent}.`,
     ];
     const overlay = document.createElement('div');
     overlay.className = 'elms-confirm-overlay';
@@ -13578,15 +13696,17 @@ async function autoSuggestEmptyDraftCategories() {
   // beautifyLiveDescription) - unlike the Drafts version, which only ever saves ELMS's own copy. ----------
   async function bulkBeautifyLiveDescriptions(ids, btn) {
     let cost = null;
+    let included = null; // a plan by listings: the AI is part of it (how many actions are left this month), no credits
     try {
       const r = await apiFetch('/api/listings/bulk-description-beautify/cost');
       const d = await apiJson(r);
-      if (r.ok && d.success) cost = Number(d.cost);
+      if (r.ok && d.success) { if (planLocked(d)) return; cost = Number(d.cost); included = includedLine(d); }
     } catch (_) { /* the dialog just leaves the price out */ }
     const n = ids.length;
-    const price = cost === null ? '' : cost === 0
+    let price = cost === null ? '' : cost === 0
       ? '\n\nThis is free.'
       : `\n\nIt costs ${cost} credit${cost === 1 ? '' : 's'} per listing: up to ${cost * n} credit${cost * n === 1 ? '' : 's'} for ${n} listing${n === 1 ? '' : 's'}. A listing that is skipped or fails is not charged.`;
+        if (included) price = included;
     const ok = await elmsConfirm(`AI will restructure the description of ${n} selected live listing${n === 1 ? '' : 's'} into your saved Description Template and push the change to eBay.${price}`, { title: 'Beautify descriptions with AI', okText: 'Beautify with AI' });
     if (!ok) return;
 
@@ -13603,6 +13723,7 @@ async function autoSuggestEmptyDraftCategories() {
         if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
         all.push(...data.results);
         if (data.results.some((r) => r.status === 'no_credits')) stop = 'You ran out of credits. Buy more to continue.';
+        else if (data.results.some((r) => r.status === 'no_quota')) stop = (data.results.find((r) => r.status === 'no_quota') || {}).reason || 'Your plan has no AI actions left.';
       }
     } catch (err) {
       stop = err.message || 'Could not reach the server.';
@@ -13622,8 +13743,8 @@ async function autoSuggestEmptyDraftCategories() {
     ];
     if (stop) attention.unshift(stop);
     const lines = [
-      `${count('done')} beautified${flagged.length ? `, ${flagged.length} worth a check` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
-      `Credits used: ${spent}.`,
+      `${count('done')} beautified${flagged.length ? `, ${flagged.length} worth a check` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}${count('no_quota') ? `, ${count('no_quota')} not done (no AI actions left in your plan)` : ''}.`,
+      window.currentUser && window.currentUser.planModel === 'slots' ? 'Included in your plan: no credits used.' : `Credits used: ${spent}.`,
     ];
     const overlay = document.createElement('div');
     overlay.className = 'elms-confirm-overlay';
@@ -13650,15 +13771,17 @@ async function autoSuggestEmptyDraftCategories() {
   // really got a new description. A big selection goes in small requests so the progress can show and none times out.
   async function bulkBeautifyDescriptions(ids, btn) {
     let cost = null;
+    let included = null; // a plan by listings: the AI is part of it (how many actions are left this month), no credits
     try {
       const r = await apiFetch('/api/listings/bulk-description-beautify/cost');
       const d = await apiJson(r);
-      if (r.ok && d.success) cost = Number(d.cost);
+      if (r.ok && d.success) { if (planLocked(d)) return; cost = Number(d.cost); included = includedLine(d); }
     } catch (_) { /* the dialog just leaves the price out */ }
     const n = ids.length;
-    const price = cost === null ? '' : cost === 0
+    let price = cost === null ? '' : cost === 0
       ? '\n\nThis is free.'
       : `\n\nIt costs ${cost} credit${cost === 1 ? '' : 's'} per product: up to ${cost * n} credit${cost * n === 1 ? '' : 's'} for ${n} product${n === 1 ? '' : 's'}. A product that is skipped or fails is not charged.`;
+        if (included) price = included;
     const ok = await elmsConfirm(`AI will restructure the description of ${n} selected draft${n === 1 ? '' : 's'} into your saved Description Template and save it.${price}`, { title: 'Beautify descriptions with AI', okText: 'Beautify with AI' });
     if (!ok) return;
 
@@ -13674,6 +13797,7 @@ async function autoSuggestEmptyDraftCategories() {
         if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
         all.push(...data.results);
         if (data.results.some((r) => r.status === 'no_credits')) stop = 'You ran out of credits. Buy more to continue.';
+        else if (data.results.some((r) => r.status === 'no_quota')) stop = (data.results.find((r) => r.status === 'no_quota') || {}).reason || 'Your plan has no AI actions left.';
       }
     } catch (err) {
       stop = err.message || 'Could not reach the server.';
@@ -13692,8 +13816,8 @@ async function autoSuggestEmptyDraftCategories() {
     ];
     if (stop) attention.unshift(stop);
     const lines = [
-      `${count('done')} beautified${flagged.length ? `, ${flagged.length} worth a check` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
-      `Credits used: ${spent}.`,
+      `${count('done')} beautified${flagged.length ? `, ${flagged.length} worth a check` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}${count('no_quota') ? `, ${count('no_quota')} not done (no AI actions left in your plan)` : ''}.`,
+      window.currentUser && window.currentUser.planModel === 'slots' ? 'Included in your plan: no credits used.' : `Credits used: ${spent}.`,
     ];
     const overlay = document.createElement('div');
     overlay.className = 'elms-confirm-overlay';
@@ -13721,15 +13845,17 @@ async function autoSuggestEmptyDraftCategories() {
   // that really got new specifics. A big selection goes in small requests so the progress can show and none times out.
   async function bulkFillAspects(ids, btn) {
     let cost = null;
+    let included = null; // a plan by listings: the AI is part of it (how many actions are left this month), no credits
     try {
       const r = await apiFetch('/api/listings/bulk-aspects/cost');
       const d = await apiJson(r);
-      if (r.ok && d.success) cost = Number(d.cost);
+      if (r.ok && d.success) { if (planLocked(d)) return; cost = Number(d.cost); included = includedLine(d); }
     } catch (_) { /* the dialog just leaves the price out */ }
     const n = ids.length;
-    const price = cost === null ? '' : cost === 0
+    let price = cost === null ? '' : cost === 0
       ? '\n\nThis is free.'
       : `\n\nIt costs ${cost} credit${cost === 1 ? '' : 's'} per product: up to ${cost * n} credit${cost * n === 1 ? '' : 's'} for ${n} product${n === 1 ? '' : 's'}. A product that gets nothing new, is skipped or fails is not charged.`;
+        if (included) price = included;
     const ok = await elmsConfirm(`AI will fill the eBay item specifics of ${n} selected draft${n === 1 ? '' : 's'} and save them, so publishing does not stop on a missing one.\nA draft with no eBay category gets eBay's suggested one.${price}`, { title: 'Fill item specifics with AI', okText: 'Fill with AI' });
     if (!ok) return;
 
@@ -13745,6 +13871,7 @@ async function autoSuggestEmptyDraftCategories() {
         if (!res.ok || !data.success) { stop = data.error || 'That did not work. Please try again.'; break; }
         all.push(...data.results);
         if (data.results.some((r) => r.status === 'no_credits')) stop = 'You ran out of credits. Buy more to continue.';
+        else if (data.results.some((r) => r.status === 'no_quota')) stop = (data.results.find((r) => r.status === 'no_quota') || {}).reason || 'Your plan has no AI actions left.';
       }
     } catch (err) {
       stop = err.message || 'Could not reach the server.';
@@ -13762,8 +13889,8 @@ async function autoSuggestEmptyDraftCategories() {
     ];
     if (stop) attention.unshift(stop);
     const lines = [
-      `${count('filled')} filled${count('nothing') ? `, ${count('nothing')} already complete` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}.`,
-      `Credits used: ${spent}.`,
+      `${count('filled')} filled${count('nothing') ? `, ${count('nothing')} already complete` : ''}${count('skipped') ? `, ${count('skipped')} skipped` : ''}${count('failed') ? `, ${count('failed')} failed` : ''}${count('no_credits') ? `, ${count('no_credits')} not done (no credits)` : ''}${count('no_quota') ? `, ${count('no_quota')} not done (no AI actions left in your plan)` : ''}.`,
+      window.currentUser && window.currentUser.planModel === 'slots' ? 'Included in your plan: no credits used.' : `Credits used: ${spent}.`,
     ];
     const overlay = document.createElement('div');
     overlay.className = 'elms-confirm-overlay';
@@ -13907,7 +14034,7 @@ async function autoSuggestEmptyDraftCategories() {
     bulkVeroBtn?.addEventListener('click', async () => {
       const chosen = getSelectedIds().map((id) => draftListingMap.get(String(id))).filter((l) => l && l._vero && l._vero.terms.length);
       if (!chosen.length) { showToast('VeRO words', 'None of the selected drafts contain VeRO words.', 'info'); return; }
-      if (!(await elmsConfirm(`${chosen.length} selected draft(s) contain VeRO words.\nThe words will be taken out of their title, description, bullet points and item specifics.\n\nAt most ${chosen.length} AI credit${chosen.length === 1 ? '' : 's'} (one per draft, and only when the AI is needed, for example to rewrite the title); a clean done without the AI is free.`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
+      if (!(await elmsConfirm(`${chosen.length} selected draft(s) contain VeRO words.\nThe words will be taken out of their title, description, bullet points and item specifics.\n\n${veroAiLine(chosen.length)}`, { title: 'Remove brand words', okText: 'Remove words', tick: VERO_TICK }))) return;
       const label = bulkVeroBtn.textContent;
       bulkVeroBtn.disabled = true;
       let done = 0; let failed = 0; let firstError = '';
@@ -19550,15 +19677,18 @@ async function autoSuggestEmptyDraftCategories() {
   let msgAiMode = 'off';
   let msgAiAvailable = true;
   let msgAiCost = 1;
+  let msgAiPlan = null; // a plan by listings: { hasReplies, left } - the AI is part of the plan (no credits), or not part of it
   function renderMsgAiBox() {
+    const locked = !!(msgAiPlan && !msgAiPlan.hasReplies); // the plan has no AI replies: they cannot be switched on (switching off is always possible)
     document.querySelectorAll('#msgAiBox [data-ai-mode]').forEach((b) => {
       b.classList.toggle('on', b.dataset.aiMode === msgAiMode);
-      b.disabled = !msgAiAvailable;
+      b.disabled = !msgAiAvailable || (locked && b.dataset.aiMode !== 'off');
     });
     const note = document.getElementById('msgAiNote'); if (!note) return;
-    const cost = msgAiCost ? ` Each AI reply uses ${msgAiCost} credit${msgAiCost === 1 ? '' : 's'}.` : '';
+    const cost = msgAiPlan ? (msgAiPlan.hasReplies && typeof msgAiPlan.left === 'number' ? ` Included in your plan: ${msgAiPlan.left.toLocaleString('en-US')} AI action${msgAiPlan.left === 1 ? '' : 's'} left this month.` : '') : msgAiCost ? ` Each AI reply uses ${msgAiCost} credit${msgAiCost === 1 ? '' : 's'}.` : '';
     note.classList.toggle('warn', msgAiMode === 'auto');
     note.textContent = !msgAiAvailable ? 'AI replies are turned off by the administrator.'
+      : locked && msgAiMode === 'off' ? 'AI replies are not part of your plan. A bigger plan includes them. You write every reply yourself.'
       : msgAiMode === 'off' ? 'You write every reply yourself.' + cost
       : msgAiMode === 'draft' ? 'New buyer messages get an AI draft in the reply box. You read it, edit it and press Send. AI can make mistakes.' + cost
       : 'AI sends replies to simple buyer messages without asking you. ELMS tries to keep messages about refunds, returns, damage and complaints as drafts, but it cannot recognise every such message. AI can make mistakes.' + cost;
@@ -19566,7 +19696,7 @@ async function autoSuggestEmptyDraftCategories() {
   async function loadMsgAiSettings() {
     try {
       const res = await apiFetch('/api/notifications/ai-reply/settings'); const d = await res.json();
-      if (res.ok && d.success) { msgAiMode = d.mode; msgAiAvailable = d.available !== false; msgAiCost = d.cost; }
+      if (res.ok && d.success) { msgAiMode = d.mode; msgAiAvailable = d.available !== false; msgAiCost = d.cost; msgAiPlan = d.included ? { hasReplies: d.planHasReplies !== false, left: typeof d.aiLeft === 'number' ? d.aiLeft : null } : null; }
     } catch (_) {}
     renderMsgAiBox();
   }
@@ -19577,9 +19707,9 @@ async function autoSuggestEmptyDraftCategories() {
     const before = msgAiMode; msgAiMode = mode; renderMsgAiBox();
     try {
       const res = await apiFetch('/api/notifications/ai-reply/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode }) });
-      const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || 'Could not save.');
+      const d = await res.json(); if (!res.ok || !d.success) throw Object.assign(new Error(d.error || 'Could not save.'), { planLimit: !!PLAN_LIMIT_TITLES[d.code] }); // a plan refusal already has its own toast
       showToast('AI replies', mode === 'off' ? 'Off. You write every reply.' : mode === 'draft' ? 'New buyer messages will get a draft to review.' : 'Auto-send is on for simple messages.', 'success');
-    } catch (err) { msgAiMode = before; renderMsgAiBox(); showToast('AI replies', err.message, 'error'); }
+    } catch (err) { msgAiMode = before; renderMsgAiBox(); if (!err.planLimit) showToast('AI replies', err.message, 'error'); }
   }));
 
   /**
@@ -22462,7 +22592,7 @@ async function autoSuggestEmptyDraftCategories() {
       const d = await res.json();
       if (!res.ok || !d.success) return;
       const sel = document.getElementById('vcaPlan');
-      sel.insertAdjacentHTML('beforeend', d.plans.map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.name)} - $${Number(p.priceUsd).toFixed(2)}, ${Number(p.credits).toLocaleString()} credits${p.active ? '' : ' (hidden)'}</option>`).join(''));
+      sel.insertAdjacentHTML('beforeend', d.plans.map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.name)} - $${Number(p.priceUsd).toFixed(2)}, ${p.kind === 'slots' ? Number(p.maxListings).toLocaleString() + ' live listings' : Number(p.credits).toLocaleString() + ' credits'}${p.active ? '' : ' (hidden)'}</option>`).join(''));
       vca.plansLoaded = true;
     } catch (_) { /* the plan box stays with its first option */ }
   }
@@ -22613,7 +22743,7 @@ async function autoSuggestEmptyDraftCategories() {
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Newest users</h2></div></div>
             <div class="ad-list">${d.recentUsers.map((u) => `<div><span>${escapeHtml(u.name || u.email)}<br><small>${escapeHtml(u.email)}</small></span><small>${new Date(u.createdAt).toLocaleDateString()}</small></div>`).join('') || '<div><small>No users yet.</small></div>'}</div></section>
           <section class="st-card"><div class="st-head"><div class="st-head-txt"><h2>Latest purchases</h2></div></div>
-            <div class="ad-list">${d.recentPurchases.map((p) => `<div><span>${escapeHtml(p.email || 'Unknown user')}<br><small>${p.credits.toLocaleString()} credits \u00b7 ${new Date(p.createdAt).toLocaleDateString()}</small></span><b>${money(p.priceUsd)}</b></div>`).join('') || '<div><small>No purchases yet.</small></div>'}</div></section>
+            <div class="ad-list">${d.recentPurchases.map((p) => `<div><span>${escapeHtml(p.email || 'Unknown user')}<br><small>${p.listingSlots ? p.listingSlots.toLocaleString() + ' live listings' : p.credits.toLocaleString() + ' credits'} \u00b7 ${new Date(p.createdAt).toLocaleDateString()}</small></span><b>${money(p.priceUsd)}</b></div>`).join('') || '<div><small>No purchases yet.</small></div>'}</div></section>
         </div>`;
     } catch (err) { el.innerHTML = `<div class="state-msg error">${escapeHtml(err.message)}</div>`; }
   }
@@ -24586,7 +24716,7 @@ async function autoSuggestEmptyDraftCategories() {
     const planLine = o.user.planName && o.user.planExpiresAt
       ? (o.user.planRunning ? adEsc(o.user.planName) + ' runs until <b>' + adEsc(day(o.user.planExpiresAt)) + '</b>' : adEsc(o.user.planName) + ' ended on <b>' + adEsc(day(o.user.planExpiresAt)) + '</b>')
       : (o.user.planName ? adEsc(o.user.planName) + ' (no end date)' : 'No plan');
-    const planOptions = o.plans.map((p) => '<option value="' + adEsc(p.id) + '">' + adEsc(p.name) + ' \u2014 ' + adEsc(usd(p.priceUsd)) + ' a month, ' + Number(p.credits).toLocaleString() + ' credits' + (p.maxEbayAccounts ? ', ' + p.maxEbayAccounts + ' stores' : '') + '</option>').join('');
+    const planOptions = o.plans.map((p) => '<option value="' + adEsc(p.id) + '">' + adEsc(p.name) + ' \u2014 ' + adEsc(usd(p.priceUsd)) + ' a month, ' + (p.kind === 'slots' ? Number(p.maxListings).toLocaleString() + ' live listings' : Number(p.credits).toLocaleString() + ' credits') + (p.maxEbayAccounts ? ', ' + p.maxEbayAccounts + ' stores' : '') + '</option>').join('');
     const c = o.custom;
     box.innerHTML = '<div class="draft-title">Give a plan to ' + adEsc(user.name || user.email) + '</div>'
       + '<div class="meta-line">' + adEsc(user.email) + ' &middot; ' + planLine + ' &middot; ' + Number(o.user.creditBalance).toLocaleString() + ' credits</div>'
@@ -24635,8 +24765,10 @@ async function autoSuggestEmptyDraftCategories() {
     };
     const previewHtml = (p) => {
       const lines = [
-        '<b>' + adEsc(p.planName) + '</b>: ' + Number(p.credits).toLocaleString() + ' credits.',
-        p.stacked ? 'The running plan ends on <b>' + adEsc(day(p.planEndsBefore)) + '</b>; the new term runs on from there and ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
+        '<b>' + adEsc(p.planName) + '</b>: ' + (p.listingSlots ? Number(p.listingSlots).toLocaleString() + ' live listings (credits are not used while it runs).' : Number(p.credits).toLocaleString() + ' credits.'),
+        p.slotsMove === 'up' ? 'A <b>bigger</b> plan than the one running: it starts now with fresh monthly numbers, and the days left on the running plan are added to it, counted by price. It ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
+          : p.slotsMove === 'down' ? 'A <b>smaller</b> plan than the one running: the running plan keeps its limits, and the time paid for is added to it, counted by price. It ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>.' : '',
+        p.slotsMove === 'up' || p.slotsMove === 'down' ? '' : p.stacked ? 'The running plan ends on <b>' + adEsc(day(p.planEndsBefore)) + '</b>; the new term runs on from there and ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
           : p.lapsed ? 'Their earlier plan has run out: it is closed first (its own credits end), and the new term runs from today to <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
             : 'The plan runs from today to <b>' + adEsc(day(p.planEndsAfter)) + '</b>.',
         'eBay stores: ' + p.storeLimitNow + (p.storeLimitAfter !== p.storeLimitNow ? ' \u2192 <b>' + p.storeLimitAfter + '</b>' : ' (no change)') + '.',
@@ -24658,6 +24790,7 @@ async function autoSuggestEmptyDraftCategories() {
         if (!r.ok) { $('gpPreview').textContent = r.data.error || 'Could not work that out.'; return; }
         const p = r.data.preview;
         if (!amountTouched) $('gpAmount').value = p.amountUsd;
+        if (p.refusal) { $('gpPreview').innerHTML = '<span style="color:#b42318;">' + adEsc(p.refusal.message) + '</span>'; return; } // a credits plan and a plan by listings are not mixed: nothing can be given
         $('gpPreview').innerHTML = previewHtml(p);
         current = { p, body: b }; $('gpGo').disabled = finished || busy;
       } catch (err) { if (my === seq) $('gpPreview').textContent = err.message; }
@@ -24689,7 +24822,7 @@ async function autoSuggestEmptyDraftCategories() {
       const p = sent.p;
       const text = 'Give ' + (user.name || user.email) + ' (' + user.email + ') the plan "' + p.planName + '"?\n\n'
         + 'You received ' + usd(p.amountUsd) + ' by ' + $('gpMethod').value + '.\n'
-        + Number(p.credits).toLocaleString() + ' credits are added; the plan ' + (p.stacked ? 'is extended to ' : 'runs until ') + day(p.planEndsAfter) + '.\n'
+        + (p.listingSlots ? Number(p.listingSlots).toLocaleString() + ' live listings are given (no credits are added); the plan ' : Number(p.credits).toLocaleString() + ' credits are added; the plan ') + (p.stacked || p.slotsMove ? 'is extended to ' : 'runs until ') + day(p.planEndsAfter) + '.\n'
         + (p.affiliate ? 'An affiliate commission of ' + usd(p.affiliate.commissionUsd) + ' is recorded.\n' : '')
         + ($('gpReceipt').checked ? 'The customer gets the receipt and the invoice by email.' : 'The customer gets no receipt or invoice email.')
         + '\n\nThis is recorded as a payment. It cannot be undone from here.';
@@ -25077,12 +25210,13 @@ async function autoSuggestEmptyDraftCategories() {
           ['Plan', acc.planName ? adEsc(acc.planName) + (acc.planTerm ? ' &middot; ' + adEsc(acc.planTerm) : '') : 'Free'],
           ['Plan ends', acc.planExpiresAt ? adEsc(adDate(acc.planExpiresAt)) + ' (' + adEsc(adDaysLeft(acc.planExpiresAt)) + ')' : '—'],
           ['eBay accounts after the plan ends', acc.planPrevMaxEbayAccounts == null ? '—' : adEsc(acc.planPrevMaxEbayAccounts)],
+          ...(acc.entitlement ? [['Plan by listings', adEsc(acc.entitlement.planName || 'Plan') + ': ' + adEsc(nf(acc.entitlement.maxListings)) + ' live listings, drafts ' + adEsc(nf(acc.entitlement.draftsCreated)) + ' of ' + adEsc(nf(acc.entitlement.draftAllowance)) + ' this month (' + adEsc(nf(acc.entitlement.draftHoldMax)) + ' kept in Drafts at most), AI ' + adEsc(nf(acc.entitlement.aiUsed)) + ' of ' + adEsc(nf(acc.entitlement.aiQuota)) + ', monitoring every ' + adEsc(acc.entitlement.monitorIntervalDays) + ' day(s), ' + adEsc(acc.entitlement.ebayStores) + ' store(s). The month ends ' + (acc.entitlement.windowEnd ? adEsc(adDate(acc.entitlement.windowEnd)) : '—') + '. Features: ' + adEsc((acc.entitlement.features || []).map(slotFeatureLabel).join(', ') || 'none')]] : []),
           ['Lifetime spend', u.plan && u.plan.paid ? adEsc(adUsd(u.plan.totalUsd)) + ' in ' + u.plan.purchases + ' purchase' + (u.plan.purchases === 1 ? '' : 's') : '$0.00'],
         ])}
         <div class="st-custom-title" style="margin:14px 0 8px;">Purchases (latest 20)</div>
         ${adTable(['Date', 'Plan', 'Paid', 'List price', 'Discount', 'Credits', 'Method', 'Invoice', 'Status'], (d.purchases || []).map((p) => [
           adEsc(adDate(p.createdAt)), adEsc(p.planName || '—') + (p.billing ? ' <small style="color:var(--grey);">' + adEsc(p.billing) + '</small>' : ''), adEsc(adUsd(p.priceUsd)), adEsc(adUsd(p.listPriceUsd)),
-          p.discountPercent ? adEsc(p.discountPercent) + '%' : '—', Number(p.creditsGranted || 0).toLocaleString(), adEsc(p.paymentMethod || p.provider || '—') + (p.provider === 'manual' ? ' <small style="color:var(--grey);">given by ' + adEsc(p.manualBy || 'an admin') + (p.manualNote ? ': ' + adEsc(p.manualNote) : '') + '</small>' : ''), adEsc(p.invoiceNo || '—'),
+          p.discountPercent ? adEsc(p.discountPercent) + '%' : '—', p.listingSlots != null ? Number(p.listingSlots).toLocaleString() + ' live listings' : Number(p.creditsGranted || 0).toLocaleString(), adEsc(p.paymentMethod || p.provider || '—') + (p.provider === 'manual' ? ' <small style="color:var(--grey);">given by ' + adEsc(p.manualBy || 'an admin') + (p.manualNote ? ': ' + adEsc(p.manualNote) : '') + '</small>' : ''), adEsc(p.invoiceNo || '—'),
           p.status === 'refunded' ? '<span class="ad-tag bad">REFUNDED</span>' : '<span class="ad-tag paid">PAID</span>',
         ]), 'No purchases.')}
         ${(d.listingPacks || []).length ? `<div class="st-custom-title" style="margin:14px 0 8px;">Buy Listings packs</div>${adTable(['Date', 'Pack', 'Paid', 'Listings bought', 'Delivered'], d.listingPacks.map((p) => [adEsc(adDate(p.createdAt)), adEsc(p.tierName || '—'), adEsc(adUsd(p.priceUsd)), Number(p.listingCount || 0).toLocaleString(), Number(p.pushed || 0).toLocaleString()]), '')}` : ''}
@@ -26018,6 +26152,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   async function loadAdminPlans() {
     if (!adminCan('plans')) return; // a section he does not have is never asked for
+    loadAdminSlotsPlans();
     loadCustomPlanSettings();
     loadAdminListingPackTiers();
     const container = document.getElementById('adminPlansContent');
@@ -26032,8 +26167,9 @@ async function autoSuggestEmptyDraftCategories() {
         return;
       }
 
+      data.plans = data.plans.filter((p) => p.kind !== 'slots'); // the plans by listings have their own card above
       if (!data.plans.length) {
-        container.innerHTML = '<div class="empty-state">No plans yet. Add one below.</div>';
+        container.innerHTML = '<div class="empty-state">No credit plans yet. Add one below.</div>';
         return;
       }
 
@@ -26353,8 +26489,10 @@ async function autoSuggestEmptyDraftCategories() {
       loadListingPackCards();
       loadListingPackHistory();
     } else {
-      if (title) title.textContent = 'Buy credits';
-      if (sub) sub.textContent = 'Credits pay for imports, publishing and order syncing. Pick a plan and check out securely.';
+      // the heading follows the plans the page was last told about, also when the person comes back from the Listings tab
+      const slotsPage = pricingModel === 'slots';
+      if (title) title.textContent = slotsPage ? 'Plans' : 'Buy credits';
+      if (sub) sub.textContent = slotsPage ? PRICING_SLOTS_SUB : 'Credits pay for imports, publishing and order syncing. Pick a plan and check out securely.';
     }
   }
   document.querySelectorAll('#pricingTabs [data-pricing-tab]').forEach((b) => b.addEventListener('click', () => setPricingTab(b.dataset.pricingTab)));
@@ -26386,10 +26524,11 @@ async function autoSuggestEmptyDraftCategories() {
 
   // The ways to pay for a plan: the wallet checkout, and - when the server says a card option exists for this plan and term - the card checkout next to it. The server prices both the same
   // way (a referral discount or a voucher applies to both). Each way has its own box, so the buyer sees which one is which.
-  function payBlocks(p, { shownCredits, hasOff, yr }) {
-    const credits = shownCredits.toLocaleString();
+  function payBlocks(p, { shownCredits, hasOff, yr, label }) {
+    const credits = Number(shownCredits || 0).toLocaleString();
+    const buyLabel = label || 'Buy ' + credits + ' credits'; // a plan by listings says "Choose Growth"
     if (currentPaymentProvider !== 'cashtap') {
-      return `<div class="bc-plan-icons" aria-hidden="true">${CARD_ICONS_HTML}</div><div class="bc-plan-label">Card, wallets &amp; more</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${credits} credits</button>`;
+      return `<div class="bc-plan-icons" aria-hidden="true">${CARD_ICONS_HTML}</div><div class="bc-plan-label">Card, wallets &amp; more</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">${escapeHtml(buyLabel)}</button>`;
     }
     // Monthly and yearly are separate: the server answers per term (cardAvailable for the monthly one, cardYearlyAvailable for the yearly one).
     const cardAvailable = yr ? p.cardYearlyAvailable : p.cardAvailable;
@@ -26398,7 +26537,7 @@ async function autoSuggestEmptyDraftCategories() {
     const cardPriceUsd = discUsd != null && discUsd < listUsd ? discUsd : listUsd;
     // the card checkout cannot take less than $1.00 (the wallet can take $0.50): a plan that costs less after a discount is wallet only
     if (!cardAvailable || !(Number(cardPriceUsd) >= 1)) {
-      return `<div class="bc-plan-label">Wallet checkout &middot; secure</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Buy ${credits} credits</button>`;
+      return `<div class="bc-plan-label">Wallet checkout &middot; secure</div><button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">${escapeHtml(buyLabel)}</button>`;
     }
     return `
       <div class="bc-pay bc-pay-first">
@@ -26428,7 +26567,11 @@ async function autoSuggestEmptyDraftCategories() {
       } catch (_) { /* no voucher picker */ }
       if (pricingVoucherId && !usable.some((v) => v.id === pricingVoucherId)) pricingVoucherId = '';
 
-      const res = await apiFetch('/api/payments/plans' + (pricingVoucherId ? '?voucherId=' + encodeURIComponent(pricingVoucherId) : ''));
+      // An admin can look at the plans by listings before they are on sale: "?model=slots" at the end of the address (the page keeps the query while the admin moves around; the server only listens to an admin).
+      const asked = [];
+      if (pricingVoucherId) asked.push('voucherId=' + encodeURIComponent(pricingVoucherId));
+      if (window.currentUser && window.currentUser.role === 'admin' && new URLSearchParams(window.location.search).get('model') === 'slots') asked.push('model=slots');
+      const res = await apiFetch('/api/payments/plans' + (asked.length ? '?' + asked.join('&') : ''));
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -26440,6 +26583,8 @@ async function autoSuggestEmptyDraftCategories() {
       currentPaymentProvider = data.provider;
       setPricingSupport(data.supportEmail);
       setPricingCardWording(Array.isArray(data.plans) && data.plans.some((p) => p.cardAvailable || p.cardYearlyAvailable));
+      if (data.model === 'slots') { renderSlotsPlans(container, data, usable); return; } // plans by listings: their own page
+      setPricingModelWording('credits');
       if (!data.plans.length) {
         container.innerHTML = '<div class="empty-state">No credit plans are available right now. Please check back later.</div>';
         return;
@@ -26538,6 +26683,319 @@ async function autoSuggestEmptyDraftCategories() {
     }
   }
 
+  // ---------- Plans by listing slots (the Buy-credits page when the admin has switched them on) ----------
+  // The server sends every number (GET /api/payments/plans: model 'slots', each plan with `limits`); nothing here works out what a plan gives. The page is advisory only: the server refuses what a plan does not include.
+  var pricingModel = 'credits'; // (var: the page can be asked for before this line has run)
+  var PRICING_SLOTS_SUB = 'Pick the plan that fits your eBay store. Monitoring is included; bigger plans cost less per listing.';
+  var SLOT_FEATURES = [ // the keys of config/planEntitlements.js FEATURES, in the order the page lists them
+    ['bulkImport', 'Bulk import (many Amazon links, large imports, CSV file)'],
+    ['bulkDraft', 'Bulk draft (publish many drafts in one go)'],
+    ['bulkEdit', 'Bulk edit'],
+    ['moreSources', 'CJdropshipping and AliExpress sources'],
+    ['aiText', 'AI title and description'],
+    ['aiAspects', 'AI item-specifics auto-fill'],
+    ['aiReply', 'AI message reply drafts for buyers'],
+    ['research', 'Research tools (keyword rank, reviews, categories, bestsellers, listing grade)'],
+  ];
+  var slotFeatureLabel = (key) => (SLOT_FEATURES.find((f) => f[0] === key) || [key, key])[1];
+  var nf = (n) => Number(n || 0).toLocaleString('en-US');
+  var REFUND_SLOTS_LINE = 'Refunds follow our Refund Policy.';
+
+  // The words of the page around the plans follow the model: nothing says "credits" while plans by listings are shown.
+  function setPricingModelWording(model) {
+    pricingModel = model;
+    const slots = model === 'slots';
+    window.plansOnSale = model; // the menu, the page title and the upgrade card follow what the plans page was just told
+    if (window.currentUser) window.currentUser.plansOnSale = model; // (applyPlanLabels reads the profile: it must not put an older answer back)
+    if (typeof applyPlanLabels === 'function') {
+      applyPlanLabels(window.currentUser);
+      if (currentPageId === 'pricing' && pricingTab === 'credits') { const [t, s] = PAGE_TITLES.pricing; document.getElementById('pageTitle').textContent = t; document.getElementById('pageSubline').textContent = s; document.title = t + ' · ELMS'; }
+    }
+    document.querySelector('.content')?.classList.toggle('drafts-wide', (slots && currentPageId === 'pricing') || ['drafts', 'listings', 'orders', 'netprofit', 'admin', 'owner', 'team'].includes(currentPageId));
+    const bal = document.querySelector('#page-pricing .bc-balance');
+    if (bal) bal.style.display = slots ? 'none' : '';
+    const first = document.querySelector('#pricingTabs [data-pricing-tab="credits"]');
+    if (first) first.textContent = slots ? 'Plans' : 'Credits';
+    const note = document.getElementById('pricingRefundNote');
+    if (note) note.innerHTML = slots ? escapeHtml(REFUND_SLOTS_LINE) + ' <a href="/refund" target="_blank" rel="noopener">Refund Policy</a>' : 'You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used. <a href="/refund" target="_blank" rel="noopener">Refund Policy</a>';
+    const tcred = document.getElementById('pricingTrustCredits');
+    if (tcred) tcred.innerHTML = slots ? '<b>&#9989; Active after payment</b><span>Your plan starts once the payment is confirmed.</span>' : '<b>&#9989; Credits after payment</b><span>Credits are added once the payment is confirmed.</span>';
+    if (pricingTab === 'credits') {
+      const title = document.getElementById('pricingTitle');
+      const sub = document.getElementById('pricingSub');
+      if (title) title.textContent = slots ? 'Plans' : 'Buy credits';
+      if (sub) sub.textContent = slots ? PRICING_SLOTS_SUB : 'Credits pay for imports, publishing and order syncing. Pick a plan and check out securely.';
+    }
+  }
+
+  // One feature line of a card: included (check) or not (cross).
+  var slotLi = (text, yes = true) => `<li class="${yes ? 'yes' : 'no'}">${escapeHtml(text)}</li>`;
+
+  // What a card lists: the numbers of the plan, then what it unlocks over the plan before it (the first plan shows what it does not have).
+  function slotCardLines(p, prev) {
+    const L = p.limits;
+    const lines = [];
+    lines.push(slotLi(nf(L.liveListings) + ' live listings'));
+    lines.push(slotLi(nf(L.draftsPerMonth) + ' new drafts a month'));
+    lines.push(slotLi('Price and stock monitoring every ' + (L.monitoringDays === 1 ? '24 hours' : L.monitoringDays * 24 + ' hours') + ', included'));
+    lines.push(slotLi(L.stores + ' eBay store' + (L.stores === 1 ? '' : 's')));
+    if (L.aiQuota > 0) lines.push(slotLi(nf(L.aiQuota) + ' AI actions a month'));
+    const prevKeys = new Set(prev ? prev.limits.features : []);
+    if (!prev) {
+      lines.push(slotLi('Auto price and quantity sync to eBay'), slotLi('Out-of-stock listings ended automatically'), slotLi('Pricing rules (profit %, fixed profit, eBay fees)'), slotLi('eBay order sync'));
+      for (const [key, label] of SLOT_FEATURES.filter(([k]) => k === 'bulkImport' || k === 'bulkDraft')) lines.push(slotLi(label, L.features.includes(key)));
+    }
+    for (const [key, label] of SLOT_FEATURES) if (L.features.includes(key) && (prev ? !prevKeys.has(key) : true) && !(!prev && (key === 'bulkImport' || key === 'bulkDraft'))) lines.push(slotLi(label));
+    return lines.join('');
+  }
+
+  function renderSlotsPlans(container, data, usable) {
+    setPricingModelWording('slots');
+    const plans = data.plans.filter((p) => p.limits);
+    if (!plans.length) { container.innerHTML = '<div class="empty-state">No plans are available right now. Please check back later.</div>'; return; }
+    const yr = pricingBilling === 'yearly' && plans.some((p) => p.yearlyPriceUsd);
+    if (!plans.some((p) => p.yearlyPriceUsd)) pricingBilling = 'monthly';
+    const offersYearly = plans.some((p) => p.yearlyPriceUsd);
+    // "2 months free" is worked out from the prices (12 months of the monthly price against the yearly price), never typed
+    const freeMonths = plans.filter((p) => p.yearlyPriceUsd).map((p) => Math.round(12 - p.yearlyPriceUsd / p.priceUsd));
+    const saveLabel = freeMonths.length && freeMonths.every((m) => m === freeMonths[0]) && freeMonths[0] >= 1 ? 'Annual · ' + freeMonths[0] + ' month' + (freeMonths[0] === 1 ? '' : 's') + ' free' : 'Annual · save';
+    const billingSwitch = offersYearly ? `<div class="bc-billing"><span class="dv-seg" role="group" aria-label="Billing"><button type="button" data-billing="monthly" class="${pricingBilling === 'monthly' ? 'on' : ''}">Monthly</button><button type="button" data-billing="yearly" class="${pricingBilling === 'yearly' ? 'on' : ''}">${escapeHtml(saveLabel)}</button></span></div>` : '';
+
+    const disc = data.referralDiscount;
+    let banner = '';
+    if (data.voucher) {
+      banner = `<div class="bc-ref-banner"><div class="bc-ref-ico">&#127915;</div><div><b>Voucher: ${escapeHtml(data.voucher.description)}</b><span>The prices below already include it.${data.voucher.expiresAt ? ' Valid until ' + escapeHtml(new Date(data.voucher.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + '.' : ''}</span></div></div>`;
+    } else if (disc) {
+      banner = `<div class="bc-ref-banner"><div class="bc-ref-ico">&#127873;</div><div><b>${fmtPct(disc.percent)}% referral discount</b><span>Applied automatically to your next ${disc.usesLeft > 1 ? disc.usesLeft + ' purchases' : 'purchase'}.</span></div></div>`;
+    }
+    const picker = usable && usable.length ? `
+      <div class="bc-voucher">
+        <div class="bc-vico">&#127915;</div>
+        <div class="bc-vtxt"><b>You have ${usable.length === 1 ? 'a voucher' : usable.length + ' vouchers'}</b><span>Pick one to take it off the price. A voucher is used instead of a referral discount.</span></div>
+        <select id="bcVoucherSelect" aria-label="Voucher"><option value="">No voucher</option>${usable.map((v) => `<option value="${escapeAttr(v.id)}" ${v.id === pricingVoucherId ? 'selected' : ''}>${escapeHtml(v.description)}</option>`).join('')}</select>
+      </div>` : '';
+
+    // the plan the person is on, with how much of it is used (the usage comes from /api/payments/usage a moment later)
+    const my = data.myPlan && data.myPlan.slots ? data.myPlan : null;
+    window.pricingMyPlan = my; // the order review says when a bigger plan takes over the days left on this one
+    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + (Number(window.currentUser && window.currentUser.creditBalance) > 0 ? ', then publishing and price and stock monitoring use your ' + Number(window.currentUser.creditBalance).toLocaleString() + ' credits again. Renew below to keep the plan.' : ', then monitoring pauses and new listings cannot be published (you have no credits). Renew below to keep going.') : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.'}</span></div></div>` : '';
+
+    const cardFor = (p, i) => {
+      const noYear = yr && !p.yearlyPriceUsd; // a plan without a yearly price on the yearly view: monthly only (never "$0 / year")
+      const listUsd = yr ? p.yearlyPriceUsd : p.priceUsd;
+      const discUsd = yr ? p.discountedYearlyPriceUsd : p.discountedPriceUsd;
+      const hasOff = !noYear && discUsd != null && discUsd < listUsd;
+      const payNow = hasOff ? discUsd : listUsd;
+      const perListing = noYear ? 0 : (payNow / (yr ? 12 : 1)) / Math.max(1, p.limits.liveListings);
+      const isMine = my && String(my.planName || '').startsWith(p.name);
+      const label = (isMine ? 'Renew ' : 'Choose ') + p.name;
+      const hot = p.badge === 'Most popular';
+      return `
+        <div class="sp-card ${hot ? 'hot' : ''} ${hasOff || p.voucherNotValid ? 'has-off' : ''}">
+          ${p.badge ? `<span class="sp-badge ${p.badge === 'Best value' ? 'green' : ''}">${escapeHtml(p.badge)}</span>` : ''}
+          ${hasOff ? `<div class="bc-off">${fmtPct((1 - payNow / listUsd) * 100)}% off</div>` : ''}
+          ${p.voucherNotValid ? '<div class="bc-plan-badnote">Your voucher is not valid for this plan.</div>' : ''}
+          <div><h3 class="sp-name">${escapeHtml(p.name)}</h3><p class="sp-tag">${escapeHtml(p.tagline || '')}</p></div>
+          <div class="sp-price">${noYear ? '<span class="sp-amount" style="font-size:20px;">No yearly option</span>' : hasOff ? `<s>$${Number(listUsd).toFixed(2)}</s> <span class="sp-amount">$${Number(payNow).toFixed(2)}</span>` : `<span class="sp-amount">$${Number(listUsd).toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>`}${noYear ? '' : `<span class="sp-per"> ${yr ? '/ year' : '/ month'}</span>`}</div>
+          <div class="sp-qty"><b>${nf(p.limits.liveListings)} live listings</b><span>${noYear ? 'This plan is monthly only.' : '$' + perListing.toFixed(3) + ' per listing a month'}</span></div>
+          ${noYear ? '<button class="bc-buy" type="button" disabled>Monthly only</button>' : payBlocks(p, { shownCredits: 0, hasOff, yr, label })}
+          <ul class="sp-feats">${slotCardLines(p, plans[i - 1] || null)}</ul>
+        </div>`;
+    };
+    const contact = `
+      <div class="sp-card dark">
+        <div><h3 class="sp-name">Custom</h3><p class="sp-tag">For high-volume sellers and agencies</p></div>
+        <div class="sp-price"><span class="sp-amount" style="font-size:30px;">Let's talk</span></div>
+        <div class="sp-qty"><b>Your own numbers</b><span>listings, checks and stores set for you</span></div>
+        <a class="bc-buy" id="spCustomContact" href="${supportMailto(pricingSupportEmail, 'custom')}">Contact us</a>
+        <ul class="sp-feats">
+          <li class="head">Set up with you</li>
+          ${slotLi('The number of live listings you need')}
+          ${slotLi('How often prices and stock are checked')}
+          ${slotLi('More eBay stores')}
+          ${slotLi('Custom invoice and annual billing')}
+        </ul>
+      </div>`;
+
+    const cell = (v) => `<td>${v}</td>`;
+    const yes = '<td class="y">&#10003;</td>';
+    const no = '<td class="n">&mdash;</td>';
+    const rows = [
+      ['group', 'Usage'],
+      ['Live listings', plans.map((p) => cell(nf(p.limits.liveListings)))],
+      ['New drafts a month', plans.map((p) => cell(nf(p.limits.draftsPerMonth)))],
+      ['eBay stores', plans.map((p) => cell(p.limits.stores))],
+      ['AI actions a month', plans.map((p) => (p.limits.aiQuota > 0 ? cell(nf(p.limits.aiQuota)) : no))],
+      ['group', 'Monitoring and sync'],
+      ['Price and stock checks', plans.map((p) => cell('Every ' + (p.limits.monitoringDays === 1 ? '24' : p.limits.monitoringDays * 24) + ' h'))],
+      ['Auto price and quantity sync', plans.map(() => yes)],
+      ['Out-of-stock listings ended automatically', plans.map(() => yes)],
+      ['Pricing rules', plans.map(() => yes)],
+      ['group', 'Importing and listing'],
+      ['Single product import', plans.map(() => yes)],
+      ...SLOT_FEATURES.filter(([k]) => ['bulkImport', 'bulkDraft', 'bulkEdit', 'moreSources'].includes(k)).map(([k, label]) => [label, plans.map((p) => (p.limits.features.includes(k) ? yes : no))]),
+      ['group', 'AI tools and research'],
+      ...SLOT_FEATURES.filter(([k]) => ['aiText', 'aiAspects', 'aiReply', 'research'].includes(k)).map(([k, label]) => [label, plans.map((p) => (p.limits.features.includes(k) ? yes : no))]),
+      ['group', 'Orders'],
+      ['eBay order sync', plans.map(() => yes)],
+    ];
+    const table = `<div class="sp-tablebox"><table class="sp-table"><thead><tr><th>Feature</th>${plans.map((p) => `<th class="${p.badge === 'Most popular' ? 'hot' : ''}">${escapeHtml(p.name)}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => (r[0] === 'group' ? `<tr class="group"><td colspan="${plans.length + 1}">${escapeHtml(r[1])}</td></tr>` : `<tr><td>${escapeHtml(r[0])}</td>${r[1].join('')}</tr>`)).join('')}</tbody></table></div>`;
+
+    const grace = plans[0].limits.graceDays;
+    const faq = [
+      ['What counts as a live listing?', 'A listing that is published, scheduled, paused or sold out on eBay. Drafts and ended listings do not count. When you are at your number, end a listing or choose a bigger plan to publish more.'],
+      ['How many drafts can I create?', 'Each month of your plan you can create as many new drafts as the plan says, and keep that many waiting in Drafts. Deleting a draft does not give one back before the next month starts. Drafts our team adds for you are not counted.'],
+      ['Is monitoring included?', 'Yes. Prices and stock of your listings are checked as often as your plan says, and it costs nothing extra. Your credits are not used while a plan by listings runs.'],
+      ['Does my plan renew by itself?', 'No. You pay for a month or a year, we remind you by email before it ends, and you renew when you want to.'],
+      ['What happens when my plan ends?', 'Everything keeps working for ' + grace + ' more days. After that you are back on credits: if you hold credits, publishing and price and stock monitoring use them again; with none, monitoring pauses and new listings cannot be published. Your listings stay on eBay and nothing is deleted. Choose a plan again and it all starts at once.'],
+      ['Which plan can I choose?', 'A bigger plan can be chosen at any time and starts at once; the days left on your current plan are added to it, counted by what a month of each plan costs. A smaller one can be chosen after your current plan ends.'],
+    ];
+    container.innerHTML = `
+      ${myBanner}
+      ${picker}
+      ${banner}
+      ${billingSwitch}
+      <div class="sp-plans">${plans.map(cardFor).join('')}${contact}</div>
+      <h3 class="sp-h">Compare all features</h3>
+      ${table}
+      <h3 class="sp-h">Questions</h3>
+      <div class="sp-faq">${faq.map(([q, a]) => `<div class="sp-q"><h4>${escapeHtml(q)}</h4><p>${escapeHtml(a)}</p></div>`).join('')}</div>`;
+
+    document.querySelectorAll('.pricing-buy-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const provider = btn.getAttribute('data-provider');
+        startCheckout(btn.getAttribute('data-plan-id'), btn, undefined, provider, planOrderLines(data.plans.find((x) => x.id === btn.getAttribute('data-plan-id')), provider));
+      });
+    });
+    document.querySelectorAll('.bc-billing [data-billing]').forEach((b) => b.addEventListener('click', () => { pricingBilling = b.dataset.billing; loadPlanCards(); }));
+    document.getElementById('bcVoucherSelect')?.addEventListener('change', (e) => { pricingVoucherId = e.target.value; loadPlanCards(); });
+    if (my) refreshPlanUsage().then((u) => { const line = document.getElementById('spUsageLine'); if (u && line && !my.inGrace) line.textContent = nf(u.live) + ' of ' + nf(u.maxListings) + ' live listings used. ' + nf(u.draftsCreated) + ' of ' + nf(u.draftAllowance) + ' new drafts created this month. ' + (u.aiQuota ? nf(u.aiUsed) + ' of ' + nf(u.aiQuota) + ' AI actions used.' : ''); });
+  }
+
+  // The plan the person is on, as the chip in the top bar and the sidebar show it. Everything else (the credits chip) is as it always was.
+  window.planUsage = null;
+  var planUsageTimer = null;
+  function schedulePlanUsageRefresh() { clearTimeout(planUsageTimer); planUsageTimer = setTimeout(() => { refreshPlanUsage(); }, 1500); }
+  async function refreshPlanUsage() {
+    try {
+      const res = await apiFetch('/api/payments/usage');
+      const d = await res.json();
+      if (!res.ok || !d.success) return null;
+      window.planUsage = d.usage || null;
+      paintPlanChip(window.planUsage);
+      return window.planUsage;
+    } catch (_) { return null; /* the chip keeps its last value */ }
+  }
+  function paintPlanChip(u) {
+    const chip = document.getElementById('creditBalanceChip');
+    if (!chip || !u) return;
+    document.getElementById('creditBalanceAmount').textContent = nf(u.live) + ' / ' + nf(u.maxListings);
+    const word = chip.querySelector('.cb-word');
+    if (word) word.textContent = 'live';
+    chip.title = u.planName + ': ' + nf(u.live) + ' of ' + nf(u.maxListings) + ' live listings. Drafts created this month: ' + nf(u.draftsCreated) + ' of ' + nf(u.draftAllowance) + '.';
+    chip.style.display = 'flex';
+  }
+  // The labels of a person on a plan by listings (the sidebar, the upgrade card); a credits person keeps the old words.
+  function applyPlanLabels(user) {
+    if (user && user.plansOnSale) window.plansOnSale = user.plansOnSale; // what the shop sells right now (the owner's switch), from the profile
+    const slots = !!(user && user.planModel === 'slots') || window.plansOnSale === 'slots';
+    PAGE_TITLES.pricing = slots ? ['Plans', 'Your plan, and the plans you can choose.'] : ['Buy Credits', 'Purchase credits to import products and monitor stock.'];
+    const link = document.querySelector('.sidebar-nav a[data-page="pricing"]');
+    if (link) { const t = Array.from(link.childNodes).filter((n) => n.nodeType === 3 && n.nodeValue.trim()).pop(); if (t) t.nodeValue = '\n        ' + (slots ? 'Plans' : 'Buy Credits') + '\n      '; }
+    const head = document.querySelector('#sidebarUpgradeCard .su-head span');
+    if (head) head.textContent = slots ? 'Need more listings?' : 'Need more credits?';
+  }
+
+  // ---------- Admin > Plans: plans by listing slots ----------
+  // The switch that puts them on sale, the "Install the standard plans" button, and an edit window per plan. Everything is saved through PUT /api/admin/plans/:id; the server checks every field.
+  var SLOT_FEATURE_KEYS_ADMIN = SLOT_FEATURES.map((f) => f[0]);
+  async function loadAdminSlotsPlans() {
+    const box = document.getElementById('slotsPlansContent');
+    const sw = document.getElementById('slotsSwitch');
+    if (!box || !sw) return;
+    try {
+      const [plansRes, onRes] = await Promise.all([apiFetch('/api/admin/plans'), apiFetch('/api/admin/settings/slots-plans')]);
+      const plans = await plansRes.json();
+      const on = await onRes.json();
+      if (!plansRes.ok || !plans.success) { box.innerHTML = `<div class="state-msg error">${escapeHtml(plans.error || 'Could not load the plans.')}</div>`; return; }
+      sw.checked = !!(on && on.enabled);
+      const list = plans.plans.filter((p) => p.kind === 'slots');
+      box.innerHTML = list.length ? `<div class="st-table-wrap"><table class="st-table"><thead><tr><th>Plan</th><th>Monthly</th><th>Yearly</th><th>Live listings</th><th>Drafts a month</th><th>Checks every</th><th>AI a month</th><th>Stores</th><th>On the page</th><th></th></tr></thead><tbody>${list.map((p) => `
+        <tr data-slot-plan="${escapeAttr(p.id)}"><td><b>${escapeHtml(p.name)}</b>${p.badge ? ' <span class="ad-tag">' + escapeHtml(p.badge) + '</span>' : ''}</td><td>$${p.priceUsd}</td><td>${p.yearlyPriceUsd ? '$' + p.yearlyPriceUsd : '&mdash;'}</td><td>${Number(p.maxListings || 0).toLocaleString('en-US')}</td><td>${Math.round((p.maxListings || 0) * (p.draftFactor || 1.5)).toLocaleString('en-US')}</td><td>${p.monitorIntervalDays} day${p.monitorIntervalDays === 1 ? '' : 's'}</td><td>${Number(p.aiQuota || 0).toLocaleString('en-US')}</td><td>${p.maxEbayAccounts || 1}</td><td>${p.active && p.listed ? 'Yes' : p.active ? 'Hidden (an admin can still give it)' : 'Off'}</td><td><button class="btn-small" data-edit-slot-plan="${escapeAttr(p.id)}" type="button">Edit</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">No plans by listings yet. Press "Install the standard plans".</div>';
+      box.querySelectorAll('[data-edit-slot-plan]').forEach((b) => b.addEventListener('click', () => openSlotPlanEditor(list.find((p) => p.id === b.getAttribute('data-edit-slot-plan')))));
+    } catch (err) {
+      box.innerHTML = `<div class="state-msg error">Could not connect to the server: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function openSlotPlanEditor(p) {
+    if (!p) return;
+    const f = (id, label, value, attrs = '') => `<div class="st-field"><label for="sp_${id}">${label}</label><input class="st-input" id="sp_${id}" value="${escapeAttr(value == null ? '' : value)}" ${attrs} /></div>`;
+    const m = adminModal(`
+      <div class="draft-title">${escapeHtml(p.name)}</div>
+      <p class="meta-line">The numbers are copied onto each buyer when they pay: changing them here changes the plan for NEW buyers only.</p>
+      <div class="st-grid">
+        ${f('name', 'Name', p.name)}
+        ${f('priceUsd', 'Price a month (USD)', p.priceUsd, 'type="number" step="0.01" min="0.5"')}
+        ${f('yearlyPriceUsd', 'Price a year (USD, empty = no yearly option)', p.yearlyPriceUsd, 'type="number" step="0.01" min="0"')}
+        ${f('maxListings', 'Live listings', p.maxListings, 'type="number" step="1" min="1"')}
+        ${f('draftFactor', 'New drafts a month = live listings x', p.draftFactor, 'type="number" step="0.1" min="0.1"')}
+        ${f('monitorIntervalDays', 'Price and stock checks every (days)', p.monitorIntervalDays, 'type="number" step="1" min="1" max="14"')}
+        ${f('aiQuota', 'AI actions a month', p.aiQuota, 'type="number" step="1" min="0"')}
+        ${f('maxEbayAccounts', 'eBay stores', p.maxEbayAccounts, 'type="number" step="1" min="1" max="50"')}
+        ${f('tagline', 'Line under the name', p.tagline)}
+        ${f('badge', 'Badge ("Most popular", "Best value" or empty)', p.badge)}
+        ${f('sortOrder', 'Order on the page (small first)', p.sortOrder, 'type="number" step="1"')}
+        <div class="st-field"><label for="sp_active">On the plans page</label><select class="st-input" id="sp_active"><option value="on" ${p.active && p.listed ? 'selected' : ''}>Shown</option><option value="hidden" ${p.active && !p.listed ? 'selected' : ''}>Not shown (an admin can still give it)</option><option value="off" ${!p.active ? 'selected' : ''}>Off</option></select></div>
+      </div>
+      <div class="st-field" style="margin-top:10px;"><label>What it unlocks</label>${SLOT_FEATURE_KEYS_ADMIN.map((k) => `<label style="display:block;font-weight:500;"><input type="checkbox" data-sp-feature="${k}" ${p.features.includes(k) ? 'checked' : ''} /> ${escapeHtml(slotFeatureLabel(k))}</label>`).join('')}</div>
+      <div class="st-actions"><button class="st-btn primary" id="sp_save" type="button">Save</button><button class="st-btn" data-close type="button">Close</button><div class="st-status" id="sp_status" role="status"></div></div>`, true);
+    m.querySelector('#sp_save').addEventListener('click', async () => {
+      const get = (id) => m.querySelector('#sp_' + id).value.trim();
+      const state = get('active');
+      const body = {
+        name: get('name'), priceUsd: Number(get('priceUsd')), yearlyPriceUsd: get('yearlyPriceUsd'), maxListings: Number(get('maxListings')), draftFactor: Number(get('draftFactor')),
+        monitorIntervalDays: Number(get('monitorIntervalDays')), aiQuota: Number(get('aiQuota')), maxEbayAccounts: Number(get('maxEbayAccounts')), tagline: get('tagline'), badge: get('badge'),
+        sortOrder: Number(get('sortOrder')), active: state !== 'off', listed: state === 'on',
+        features: Array.from(m.querySelectorAll('[data-sp-feature]')).filter((c) => c.checked).map((c) => c.getAttribute('data-sp-feature')),
+      };
+      const st = m.querySelector('#sp_status');
+      st.className = 'st-status'; st.textContent = 'Saving…';
+      try {
+        const res = await apiFetch('/api/admin/plans/' + encodeURIComponent(p.id), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const d = await res.json();
+        if (!res.ok || !d.success) throw new Error(d.error || 'Could not save.');
+        m.remove();
+        loadAdminSlotsPlans();
+      } catch (err) { st.className = 'st-status error'; st.textContent = err.message; }
+    });
+  }
+
+  document.getElementById('slotsSwitch')?.addEventListener('change', async (e) => {
+    const status = document.getElementById('slotsStatus');
+    const box = e.target;
+    const want = box.checked;
+    if (want && !(await elmsConfirm('Put the plans by listings on sale? Buyers will see them on the plans page INSTEAD of the credits plans, and can pay for them. People who hold a credits plan keep it until it ends.', { title: 'Plans by listings', okText: 'Put on sale' }))) { box.checked = false; return; }
+    status.className = 'st-status'; status.textContent = 'Saving…';
+    try {
+      const res = await apiFetch('/api/admin/settings/slots-plans', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: want }) });
+      const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || 'Could not save.');
+      status.className = 'st-status success'; status.textContent = d.enabled ? 'On sale: buyers see the plans by listings.' : 'Off: buyers see the credits plans.';
+    } catch (err) { box.checked = !want; status.className = 'st-status error'; status.textContent = err.message; }
+  });
+  document.getElementById('slotsInstallBtn')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget; const status = document.getElementById('slotsStatus');
+    btn.disabled = true; status.className = 'st-status'; status.textContent = 'Installing…';
+    try {
+      const d = await adminPost('/api/admin/plans/install-standard', {});
+      status.className = 'st-status success';
+      status.textContent = (d.created.length ? 'Installed: ' + d.created.join(', ') + '. ' : '') + (d.kept.length ? 'Already there (left as they are): ' + d.kept.join(', ') + '.' : '');
+      loadAdminSlotsPlans();
+    } catch (err) { status.className = 'st-status error'; status.textContent = err.message; }
+    btn.disabled = false;
+  });
+
   // The custom plan: the summary comes from the server (the same numbers the checkout uses).
   function wireCustomPlan(cs) {
     const num = document.getElementById('bcAmountNum');
@@ -26599,6 +27057,17 @@ async function autoSuggestEmptyDraftCategories() {
     const discUsd = yr ? p.discountedYearlyPriceUsd : p.discountedPriceUsd;
     const card = provider === 'card' || currentPaymentProvider !== 'cashtap';
     const payUsd = discUsd != null && discUsd < listUsd ? discUsd : listUsd;
+    if (p.limits) { // a plan by listings: what it gives, no credits
+      const L = p.limits;
+      const slotLines = [['Plan', String(p.name || '') + (yr ? ' (1 year)' : ' (1 month)')], ['Live listings', nf(L.liveListings)], ['New drafts a month', nf(L.draftsPerMonth)], ['Price and stock checks', 'every ' + (L.monitoringDays === 1 ? '24 hours' : L.monitoringDays * 24 + ' hours') + ', included']];
+      if (L.aiQuota > 0) slotLines.push(['AI actions a month', nf(L.aiQuota)]);
+      slotLines.push(['eBay stores', String(L.stores)]);
+      const mine = window.pricingMyPlan;
+      if (mine && !mine.inGrace && Number(mine.maxListings) > 0 && Number(L.liveListings) > Number(mine.maxListings)) slotLines.push(['Your current plan', 'The days left are added to this plan, counted by price']);
+      if (Number.isFinite(Number(payUsd))) slotLines.push(['Price', '$' + Number(payUsd).toFixed(2) + (card ? ' + tax' : '')]);
+      slotLines.slots = true; // the refund sentence below is not the credits one
+      return slotLines;
+    }
     const lines = [['Plan', String(p.name || '')], ['Credits', (yr ? p.credits * 12 : p.credits).toLocaleString() + ', valid for ' + (yr ? '1 year' : '1 month')]];
     if (p.maxEbayAccounts) lines.push(['eBay stores', String(p.maxEbayAccounts)]);
     if (Number.isFinite(Number(payUsd))) lines.push(['Price', '$' + Number(payUsd).toFixed(2) + (card ? ' + tax' : '')]);
@@ -26616,7 +27085,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="elms-confirm-box" role="alertdialog" aria-modal="true" aria-label="Review your order" tabindex="-1">
           <div class="elms-confirm-title">Review your order</div>
           <div class="bc-co-lines">${(lines || []).map(([k, v]) => `<div><span>${escapeHtml(String(k))}</span><b>${escapeHtml(String(v))}</b></div>`).join('')}</div>
-          <div class="elms-confirm-message">${escapeHtml(REFUND_SHORT_LINE)} <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></div>
+          <div class="elms-confirm-message">${escapeHtml(lines && lines.slots ? REFUND_SLOTS_LINE : REFUND_SHORT_LINE)} <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></div>
           <div class="elms-confirm-message bc-co-pay">Payments are handled by our payment partner. ELMS never sees your card or wallet details.</div>
           <div class="elms-confirm-message bc-co-pay">Taxes may be added at checkout where they apply.</div>
           <div class="elms-confirm-actions">
@@ -26663,6 +27132,7 @@ async function autoSuggestEmptyDraftCategories() {
   function supportMailto(email, topic) {
     const me = window.currentUser || {};
     const listings = topic === 'listings';
+    if (topic === 'custom') return 'mailto:' + (email || 'support@elmstool.com') + '?subject=' + encodeURIComponent('A custom plan') + '&body=' + encodeURIComponent('Hi,\n\nI would like a custom plan.\n\nMy ELMS account: ' + ((window.currentUser || {}).email || '') + '\nHow many live listings I need: \nHow many eBay stores: \nHow often I want prices and stock checked: \n');
     const body = 'Hi,\n\nI cannot pay ' + (!listings && pricingCardOffered ? 'by card or with the wallet' : 'with the wallet checkout') + '. ' + (listings ? 'Please help me buy listings.' : 'Please help me renew my plan.') + '\n\nMy ELMS account: ' + (me.email || '') + '\n' + (listings ? 'How many listings I want: ' : 'The plan I want: ') + '\n\nThank you';
     return 'mailto:' + (email || 'support@elmstool.com') + '?subject=' + encodeURIComponent(listings ? 'Help buying listings' : 'Help renewing my plan') + '&body=' + encodeURIComponent(body);
   }
@@ -26749,13 +27219,13 @@ async function autoSuggestEmptyDraftCategories() {
       container.innerHTML = `
 
         <table class="data-table">
-          <thead><tr><th>Date</th><th>Amount</th><th>Credits</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Amount</th><th>${data.purchases.some((p) => p.listingSlots) ? 'Plan gives' : 'Credits'}</th><th>Status</th><th></th></tr></thead>
           <tbody>
             ${data.purchases.map((p) => `
               <tr>
                 <td>${escapeHtml(new Date(p.createdAt).toLocaleString())}</td>
                 <td>$${p.priceUsd.toFixed(2)}${p.discountPercent > 0 ? `<span class="ph-was">$${Number(p.listPriceUsd).toFixed(2)}</span><span class="ph-off">-${fmtPct(p.discountPercent)}%</span>` : ''}</td>
-                <td>${p.creditsGranted.toLocaleString()}</td>
+                <td>${p.listingSlots ? p.listingSlots.toLocaleString() + ' live listings' : p.creditsGranted.toLocaleString()}</td>
                 <td><span class="status-badge ${p.status === 'completed' ? 'published' : 'draft'}">${escapeHtml(p.status)}</span></td>
                 <td>${p.provider === 'voucher' ? '' : `<button class="btn-small save" type="button" data-invoice="${escapeAttr(p.id)}">Invoice</button>`}</td>
               </tr>
@@ -26932,13 +27402,14 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/auth/me');
       const data = await res.json();
       if (res.ok && data.success && data.user) {
-        updateCreditBalanceChip(data.user.creditBalance);
+        updateCreditBalanceChip(data.user.creditBalance, data.user);
         const roleEl = document.getElementById('userRole');
         if (roleEl && data.user.role !== 'admin') roleEl.textContent = data.user.planName || 'Free Plan';
         const bal = document.getElementById('pricingBalance');
         if (bal) bal.textContent = Number(data.user.creditBalance || 0).toLocaleString();
       }
     } catch (_) { /* the next refresh will show it */ }
+    if (currentPageId === 'pricing') loadPlanCards().catch(() => {}); // the plans page that is open shows the plan that was just bought (the banner, "Renew", the days of an upgrade)
     loadPurchaseHistory().catch(() => {});
   }
   let planPaymentConfirming = false;
@@ -26958,7 +27429,7 @@ async function autoSuggestEmptyDraftCategories() {
           if (data.granted || data.duplicate) {
             finished = true; clearPendingPlanPayment();
             await refreshAfterPayment();
-            const extra = data.granted ? ` +${Number(data.credits).toLocaleString()} credits${data.ebayAccounts ? `, ${data.ebayAccounts} eBay account${data.ebayAccounts === 1 ? '' : 's'}` : ''}${data.planName ? ` — ${data.planName} plan` : ''}` : '';
+            const extra = data.granted ? ` ${data.listingSlots ? '+' + Number(data.listingSlots).toLocaleString() + ' live listings' : '+' + Number(data.credits).toLocaleString() + ' credits'}${data.ebayAccounts ? `, ${data.ebayAccounts} eBay account${data.ebayAccounts === 1 ? '' : 's'}` : ''}${data.planName ? ` — ${data.planName} plan` : ''}` : '';
             showToast('Payment confirmed', 'Your plan is active.' + extra, 'success');
           } else if (data.status === 'expired' || data.status === 'failed') {
             finished = true; clearPendingPlanPayment();
