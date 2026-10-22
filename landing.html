@@ -327,15 +327,12 @@
       <p class="plans__note">Plans and prices are listed on the <a href="/plans">Pricing page</a>.</p>
     </div>
     <div class="cards mt-7">
-      <article class="card reveal" data-only="credits">
+      <article class="card reveal">
         <span class="icon-tile icon-tile--teal"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg></span>
-        <h3 class="card__title mt-4">How credits work</h3>
-        <p class="mt-4">Credits are used when an action completes. If an action fails, the credits come back automatically.</p>
-      </article>
-      <article class="card reveal" data-only="slots" hidden>
-        <span class="icon-tile icon-tile--teal"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg></span>
-        <h3 class="card__title mt-4">How plans work</h3>
-        <p class="mt-4">A plan sets how many listings can be live on eBay at once and how many new drafts you can make each month. Price and stock monitoring is included, and bigger plans add bulk tools, more product sources and AI help.</p>
+        <h3 class="card__title mt-4" data-only="credits">How credits work</h3>
+        <h3 class="card__title mt-4" data-only="slots" hidden>How plans work</h3>
+        <p class="mt-4" data-only="credits">Credits are used when an action completes. If an action fails, the credits come back automatically.</p>
+        <p class="mt-4" data-only="slots" hidden>A plan sets how many listings can be live on eBay at once and how many new drafts you can make each month. Price and stock monitoring is included, and bigger plans add bulk tools, more product sources and AI help.</p>
       </article>
       <article class="card reveal reveal--d1">
         <span class="icon-tile icon-tile--navy"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg></span>
@@ -343,7 +340,7 @@
         <p class="mt-4" data-only="credits">You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used.</p>
         <p class="mt-4" data-only="credits">When a refund is approved, the plan and the credits that came with that purchase end.</p>
         <p class="mt-4" data-only="slots" hidden>You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan.</p>
-        <p class="mt-4" data-only="slots" hidden>When a refund is approved, the plan ends. Your listings on eBay, your drafts and your orders are not touched.</p>
+        <p class="mt-4" data-only="slots" hidden>When a refund is approved, the term you paid for ends. If it was the only term, the plan ends and its limits stop. Your listings on eBay, your drafts and your orders are not touched.</p>
         <p class="mt-4"><a class="link-arrow" href="/refund"><span>Read the Refund Policy</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></a></p>
       </article>
     </div>
@@ -368,7 +365,7 @@
       <details class="faq__item"><summary>Does ELMS order from Amazon for me?</summary><div class="faq__body"><p>No. ELMS does not place Amazon orders. You buy the item yourself when an order comes in. In ELMS you can mark the order as ordered, note what you paid and keep your tracking details together with the order.</p></div></details>
       <details class="faq__item"><summary>Who is responsible for my listings?</summary><div class="faq__body"><p>You are. ELMS is built for people who sell for business, and you are the seller: you decide what to list, and you are responsible for each listing, order and message. That includes following the rules of eBay and of the supplier sites you source from. ELMS gives you drafts, checks and warnings to help. They are aids, not approval.</p></div></details>
       <details class="faq__item"><summary>Is my data safe?</summary><div class="faq__body"><p>Passwords are stored as one-way hashes, eBay and supplier access tokens are stored encrypted, and data is encrypted in transit. No system is completely secure.</p><p>Payments are handled by our payment partner. ELMS never sees your card or wallet details. The <a href="/privacy">Privacy Policy</a> explains what we collect and why.</p></div></details>
-      <details class="faq__item" data-only="slots" hidden><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan.</p><p>When a refund is approved, the plan ends. The <a href="/refund">Refund Policy</a> explains how the 7 days and the listings you have published are counted.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan.</p><p>When a refund is approved, the term you paid for ends; if it was the only term, the plan ends. The <a href="/refund">Refund Policy</a> explains how the 7 days and the listings you have published are counted.</p></div></details>
       <details class="faq__item" data-only="credits"><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used.</p><p>When a refund is approved, the plan and the credits that came with that purchase end. The <a href="/refund">Refund Policy</a> explains how the 7 days and the credits you have used are counted.</p></div></details>
       <details class="faq__item"><summary>How do I contact you?</summary><div class="faq__body"><p>Write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> for help with ELMS, refunds and invoices, and to report a security problem, and to <a href="mailto:hello@elmstool.com">hello@elmstool.com</a> for general questions before you sign up. When you are signed in, you can also open a support ticket from the Support page in the app. The <a href="/contact">Contact page</a> says what to include in a message.</p></div></details>
       <details class="faq__item" data-only="slots" hidden><summary>Can I cancel or stop?</summary><div class="faq__body"><p>A plan is paid for one month or one year, and it ends by itself at the end of its term. If your payment method renews your plan, you can stop the renewal before the renewal date from your receipt or by writing to <a href="mailto:support@elmstool.com">support@elmstool.com</a>. To close your account, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.</p></div></details>

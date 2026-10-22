@@ -642,8 +642,13 @@ if (isFinite(p.drafts) && p.drafts > 0) { feats.appendChild(el('li', null, whole
 if (isFinite(p.days) && p.days > 0) { feats.appendChild(el('li', null, 'Price and stock checks every ' + (p.days === 1 ? '24' : whole(p.days * 24)) + ' hours, included')); }
 if (isFinite(p.stores) && p.stores > 0) { feats.appendChild(el('li', null, whole(p.stores) + (p.stores === 1 ? ' eBay store' : ' eBay stores'))); }
 if (isFinite(p.ai) && p.ai > 0) { feats.appendChild(el('li', null, whole(p.ai) + ' AI actions a month')); }
-if (prev) { feats.appendChild(el('li', null, 'Everything in ' + prev.name + ', plus:')); }
-each(slotFeatureLines(p, prev), function (line) { feats.appendChild(el('li', null, line)); });
+var extra = slotFeatureLines(p, prev);
+var covers = !!prev;
+if (prev) { each(prev.features, function (k) { if (p.features.indexOf(k) < 0) { covers = false; } }); }
+if (prev && !covers) { extra = slotFeatureLines(p, null); } // this plan does not include everything of the one before it: list what it has, never claim more
+else if (prev && extra.length) { feats.appendChild(el('li', null, 'Everything in ' + prev.name + ', plus:')); }
+else if (prev) { feats.appendChild(el('li', null, 'All the tools of ' + prev.name)); }
+each(extra, function (line) { feats.appendChild(el('li', null, line)); });
 return feats;
 }
 function render(list) {
@@ -696,6 +701,7 @@ function attempt() {
 fetchOnce(function (err, data) {
 if (mine !== token) { return; }
 var list = err ? null : read(data);
+if (list !== null && data && data.success === true) { setModel(data.model === 'slots' ? 'slots' : 'credits'); } // the cards and the text of the page always come from the SAME answer
 if (list === null) {
 tries += 1;
 if (tries <= 2) { w.setTimeout(attempt, 900 * tries); } else { showMessage('We could not load the plans just now. Please check your connection and try again.', true, true); }
@@ -714,6 +720,14 @@ run();
 function setModel(model) {
 each(qsa('[data-only]'), function (n) { n.hidden = n.getAttribute('data-only') !== model; });
 d.documentElement.setAttribute('data-plans-model', model);
+/* the tab title and the description say what the page is about: credit plans, or plans by listings (pages that carry data-slots on <title> / the description) */
+each(qsa('title[data-slots], meta[name="description"][data-slots]'), function (n) {
+var isMeta = n.tagName === 'META';
+var cur = isMeta ? n.getAttribute('content') : n.textContent;
+if (!n.getAttribute('data-credits')) { n.setAttribute('data-credits', cur); }
+var next = n.getAttribute(model === 'slots' ? 'data-slots' : 'data-credits');
+if (isMeta) { n.setAttribute('content', next); } else { n.textContent = next; }
+});
 }
 Plans.setModel = setModel;
 function initModel() {
