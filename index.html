@@ -25217,7 +25217,9 @@ async function autoSuggestEmptyDraftCategories() {
         ${adTable(['Date', 'Plan', 'Paid', 'List price', 'Discount', 'Credits', 'Method', 'Invoice', 'Status'], (d.purchases || []).map((p) => [
           adEsc(adDate(p.createdAt)), adEsc(p.planName || '—') + (p.billing ? ' <small style="color:var(--grey);">' + adEsc(p.billing) + '</small>' : ''), adEsc(adUsd(p.priceUsd)), adEsc(adUsd(p.listPriceUsd)),
           p.discountPercent ? adEsc(p.discountPercent) + '%' : '—', p.listingSlots != null ? Number(p.listingSlots).toLocaleString() + ' live listings' : Number(p.creditsGranted || 0).toLocaleString(), adEsc(p.paymentMethod || p.provider || '—') + (p.provider === 'manual' ? ' <small style="color:var(--grey);">given by ' + adEsc(p.manualBy || 'an admin') + (p.manualNote ? ': ' + adEsc(p.manualNote) : '') + '</small>' : ''), adEsc(p.invoiceNo || '—'),
-          p.status === 'refunded' ? '<span class="ad-tag bad">REFUNDED</span>' : '<span class="ad-tag paid">PAID</span>',
+          p.status === 'refunded' ? '<span class="ad-tag bad">REFUNDED</span>' : '<span class="ad-tag paid">PAID</span>'
+            // a plan by listings bought in the last 7 days: what the refund rule (7 days, fewer than 20 listings published) makes of it, with the numbers on hover
+            + (p.refundCheck && p.refundCheck.verdict && p.refundCheck.verdict !== 'late' ? '<br><span class="ad-tag ' + (p.refundCheck.verdict === 'yes' ? 'paid' : p.refundCheck.verdict === 'no' ? 'bad' : '') + '" title="' + adEsc(p.refundCheck.note || '') + '">Refund rule: ' + ({ yes: 'inside', no: 'outside', check: 'look at it' }[p.refundCheck.verdict] || '') + '</span>' : ''),
         ]), 'No purchases.')}
         ${(d.listingPacks || []).length ? `<div class="st-custom-title" style="margin:14px 0 8px;">Buy Listings packs</div>${adTable(['Date', 'Pack', 'Paid', 'Listings bought', 'Delivered'], d.listingPacks.map((p) => [adEsc(adDate(p.createdAt)), adEsc(p.tierName || '—'), adEsc(adUsd(p.priceUsd)), Number(p.listingCount || 0).toLocaleString(), Number(p.pushed || 0).toLocaleString()]), '')}` : ''}
         ${(d.vouchers || []).length ? `<div class="st-custom-title" style="margin:14px 0 8px;">Vouchers</div>${adTable(['Given', 'What', 'Note', 'Status'], d.vouchers.map((v) => [
@@ -26699,7 +26701,7 @@ async function autoSuggestEmptyDraftCategories() {
   ];
   var slotFeatureLabel = (key) => (SLOT_FEATURES.find((f) => f[0] === key) || [key, key])[1];
   var nf = (n) => Number(n || 0).toLocaleString('en-US');
-  var REFUND_SLOTS_LINE = 'Refunds follow our Refund Policy.';
+  var REFUND_SLOTS_LINE = 'You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan.';
 
   // The words of the page around the plans follow the model: nothing says "credits" while plans by listings are shown.
   function setPricingModelWording(model) {

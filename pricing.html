@@ -27,8 +27,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/site.css?v=6">
-<script src="/site.js?v=5" defer></script>
+<link rel="stylesheet" href="/site.css?v=7">
+<script src="/site.js?v=6" defer></script>
 <script src="/social.js?v=2" defer></script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
@@ -74,10 +74,15 @@
   <div class="container">
     <div class="page-hero__inner">
       <span class="eyebrow">Pricing</span>
-      <h1 class="t-h1">ELMS plans and credits</h1>
-      <p class="lead">ELMS turns Amazon product links into eBay listings and helps you run them. A plan gives you credits for its term. You spend credits on actions such as importing products from links, AI help and publishing.</p>
-      <div class="cluster">
+      <h1 class="t-h1" data-only="credits">ELMS plans and credits</h1>
+      <h1 class="t-h1" data-only="slots" hidden>ELMS plans</h1>
+      <p class="lead" data-only="credits">ELMS turns Amazon product links into eBay listings and helps you run them. A plan gives you credits for its term. You spend credits on actions such as importing products from links, AI help and publishing.</p>
+      <p class="lead" data-only="slots" hidden>ELMS turns Amazon product links into eBay listings and helps you run them. A plan gives you a number of listings that can be live on eBay at once, new drafts every month and automatic price and stock checks.</p>
+      <div class="cluster" data-only="credits">
         <a class="btn btn--secondary btn--lg" href="#credits">How credits work</a>
+      </div>
+      <div class="cluster" data-only="slots" hidden>
+        <a class="btn btn--secondary btn--lg" href="#how-plans">How plans work</a>
       </div>
     </div>
   </div>
@@ -97,7 +102,27 @@
   </div>
 </section>
 
-<section class="section section--soft" id="credits">
+<section class="section section--soft" id="how-plans" data-only="slots" hidden>
+  <div class="container">
+    <div class="split split--top">
+      <div class="stack">
+        <span class="eyebrow">Plans</span>
+        <h2>How plans work</h2>
+        <p class="lead">A plan sets how much you can run in ELMS at once. You see your usage in the app at any time.</p>
+      </div>
+      <ul class="check-list reveal">
+        <li>A plan sets how many listings can be live on eBay at once. Drafts, ended listings and listings of a store you disconnected do not count.</li>
+        <li>Each month you can create as many new drafts as the plan says, and keep that many waiting in Drafts. Deleting a draft does not give one back before the next month starts.</li>
+        <li>Price and stock monitoring is included. Your listings are checked as often as the plan says, and it costs nothing extra.</li>
+        <li>Bigger plans add bulk tools, more product sources, AI help and research tools. Each card above shows what its plan includes.</li>
+        <li>A plan is paid for one month or one year. We e-mail you before it ends, and you renew when you want to.</li>
+        <li>If you need more than a plan gives, choose a bigger one. If you need something different, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft" id="credits" data-only="credits">
   <div class="container">
     <div class="split split--top">
       <div class="stack">
@@ -121,7 +146,8 @@
     <div class="section-head">
       <span class="eyebrow">Included</span>
       <h2>What every plan includes</h2>
-      <p>The tools below are available on every plan. Each plan has its own name, price, credits and number of eBay stores you can connect.</p>
+      <p data-only="credits">The tools below are available on every plan. Each plan has its own name, price, credits and number of eBay stores you can connect.</p>
+      <p data-only="slots" hidden>The tools below are part of ELMS. Each plan card shows which of them it includes: bigger plans add bulk tools, more product sources, AI help and research tools. Each plan also has its own price, number of live listings and number of eBay stores you can connect.</p>
     </div>
     <div class="bento">
       <div class="bento__item bento__item--wide reveal">
@@ -214,11 +240,13 @@
       </li>
       <li class="step">
         <h3 class="step__title">Pick your plan</h3>
-        <p class="step__text">Open <span class="term">Buy Credits</span> in the app and pick a plan. The length of its term is shown before you pay.</p>
+        <p class="step__text" data-only="credits">Open <span class="term">Buy Credits</span> in the app and pick a plan. The length of its term is shown before you pay.</p>
+        <p class="step__text" data-only="slots" hidden>Open <span class="term">Plans</span> in the app and pick a plan. Whether it is for a month or for a year is shown before you pay.</p>
       </li>
       <li class="step">
         <h3 class="step__title">Pay and start</h3>
-        <p class="step__text">Pay at checkout. Your credits are added when the payment is confirmed.</p>
+        <p class="step__text" data-only="credits">Pay at checkout. Your credits are added when the payment is confirmed.</p>
+        <p class="step__text" data-only="slots" hidden>Pay at checkout. Your plan starts when the payment is confirmed.</p>
       </li>
     </ol>
   </div>
@@ -230,13 +258,19 @@
       <span class="eyebrow">Policy</span>
       <h2>Refunds</h2>
     </div>
-    <div class="callout callout--brief callout--lg" role="note">
+    <div class="callout callout--brief callout--lg" role="note" data-only="credits">
       <p class="callout__title">In brief</p>
       <p>You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used.</p>
     </div>
+    <div class="callout callout--brief callout--lg" role="note" data-only="slots" hidden>
+      <p class="callout__title">In brief</p>
+      <p>You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan.</p>
+    </div>
     <div class="stack mt-6">
-      <p>Credits you use count: if more than 5% of the credits that came with a purchase have been used, it cannot be refunded. Automatic features such as stock and price monitoring use credits too, so they count. When a refund is approved, the plan and the credits that came with that purchase end.</p>
-      <p>To ask, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> from your account's e-mail, or open a ticket in <span class="term">Support</span> in the app, and say which purchase it is. We check that your request is within the 7 days and that no more than 5% of the credits have been used, and reply by e-mail.</p>
+      <p data-only="credits">Credits you use count: if more than 5% of the credits that came with a purchase have been used, it cannot be refunded. Automatic features such as stock and price monitoring use credits too, so they count. When a refund is approved, the plan and the credits that came with that purchase end.</p>
+      <p data-only="slots" hidden>The listings you publish with the plan count, also the ones you remove later. Drafts, and listings that failed to publish, do not count. When a refund is approved, the plan ends and its limits stop; your listings on eBay, your drafts and your orders are not touched.</p>
+      <p data-only="credits">To ask, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> from your account's e-mail, or open a ticket in <span class="term">Support</span> in the app, and say which purchase it is. We check that your request is within the 7 days and that no more than 5% of the credits have been used, and reply by e-mail.</p>
+      <p data-only="slots" hidden>To ask, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> from your account's e-mail, or open a ticket in <span class="term">Support</span> in the app, and say which purchase it is. We check that your request is within the 7 days and that fewer than 20 listings have been published with the plan, and reply by e-mail.</p>
       <p>The Refund Policy explains how the time limit is counted, what cannot be refunded and your legal rights.</p>
       <a class="link-arrow" href="/refund"><span>Read the Refund Policy</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></a>
     </div>
@@ -248,15 +282,28 @@
     <div class="section-head">
       <span class="eyebrow">Plan ending</span>
       <h2>When a plan ends</h2>
-      <p>A plan is paid for one term; the credits that come with a plan are valid until the term ends, and we e-mail you before it ends. Credits you had before a plan are not affected.</p>
+      <p data-only="credits">A plan is paid for one term; the credits that come with a plan are valid until the term ends, and we e-mail you before it ends. Credits you had before a plan are not affected.</p>
+      <p data-only="slots" hidden>A plan is paid for one month or one year, and we e-mail you before it ends.</p>
     </div>
-    <dl class="dl">
+    <dl class="dl" data-only="credits">
       <dt>What ends</dt>
       <dd>The credits that came with the plan. The number of eBay stores you can connect goes back to what it was before the plan.</dd>
       <dt>What stays</dt>
       <dd>Credits you had before the plan, and your listings, drafts and orders.</dd>
       <dt>Buying again</dt>
       <dd>If you buy a plan while one is running, the new plan&rsquo;s credits are added at once, and the plan then runs for one more term after the current end date.</dd>
+      <dt>Renewals</dt>
+      <dd>If your payment method renews your plan, you can stop the renewal before the renewal date from your receipt or by writing to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.</dd>
+    </dl>
+    <dl class="dl" data-only="slots" hidden>
+      <dt>What ends</dt>
+      <dd>The limits of the plan: its live listings, its new drafts a month, the included monitoring and the tools it includes. The number of eBay stores you can connect goes back to what it was before the plan.</dd>
+      <dt>Extra days</dt>
+      <dd>After the end date everything keeps working for 7 more days, and we e-mail you when they start. If you buy a plan in those days, it starts fresh.</dd>
+      <dt>What stays</dt>
+      <dd>Your listings on eBay, your drafts and your orders. Nothing is deleted.</dd>
+      <dt>Buying again</dt>
+      <dd>If you buy the same plan while it runs, the new term starts when the current one ends. A bigger plan starts at once, and the days left on the smaller plan are added to it, counted by price. A smaller plan can be bought after your current plan ends.</dd>
       <dt>Renewals</dt>
       <dd>If your payment method renews your plan, you can stop the renewal before the renewal date from your receipt or by writing to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.</dd>
     </dl>
@@ -272,11 +319,15 @@
     <div class="faq">
       <details class="faq__item"><summary>Can I connect more than one eBay store?</summary><div class="faq__body"><p>That depends on your plan. Each plan card shows how many eBay stores it lets you connect. Inside ELMS you choose which store you are working in.</p></div></details>
       <details class="faq__item"><summary>Do I need to connect my eBay store?</summary><div class="faq__body"><p>To publish a listing, you connect your eBay store from inside ELMS. eBay asks you to approve the connection on its own page, and ELMS does not see your eBay password.</p></div></details>
-      <details class="faq__item"><summary>What happens when I run out of credits?</summary><div class="faq__body"><p>Actions that use credits do not run until your balance covers them. Open <span class="term">Buy Credits</span> in the app and pick a plan to add more.</p></div></details>
-      <details class="faq__item"><summary>Where can I see my credits?</summary><div class="faq__body"><p>The top bar of the app shows your balance, and the <span class="term">Buy Credits</span> page shows it too.</p></div></details>
-      <details class="faq__item"><summary>What is a term?</summary><div class="faq__body"><p>A term is the fixed period a plan is paid for. The credits that come with the plan last until the term ends, and the app shows the exact length of each plan before you pay.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>What happens when I reach the number of live listings in my plan?</summary><div class="faq__body"><p>You can publish more after you end or remove a listing, or choose a bigger plan. Drafts, ended listings and listings of a store you disconnected do not count.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>Where can I see how much of my plan I have used?</summary><div class="faq__body"><p>The top bar of the app shows your live listings, and the <span class="term">Plans</span> page shows the plan you are on with what you have used.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>What is a term?</summary><div class="faq__body"><p>A term is the fixed period a plan is paid for: one month or one year. The app shows which one before you pay.</p></div></details>
+      <details class="faq__item" data-only="credits"><summary>What happens when I run out of credits?</summary><div class="faq__body"><p>Actions that use credits do not run until your balance covers them. Open <span class="term">Buy Credits</span> in the app and pick a plan to add more.</p></div></details>
+      <details class="faq__item" data-only="credits"><summary>Where can I see my credits?</summary><div class="faq__body"><p>The top bar of the app shows your balance, and the <span class="term">Buy Credits</span> page shows it too.</p></div></details>
+      <details class="faq__item" data-only="credits"><summary>What is a term?</summary><div class="faq__body"><p>A term is the fixed period a plan is paid for. The credits that come with the plan last until the term ends, and the app shows the exact length of each plan before you pay.</p></div></details>
       <details class="faq__item"><summary>How do I pay?</summary><div class="faq__body"><p>Payments are handled by our payment partner. ELMS never sees your wallet details. You pay by card or with a digital wallet, in US dollars. Taxes may be added at checkout where they apply.</p><p>If you cannot pay either way, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> and we will help you renew your plan.</p></div></details>
-      <details class="faq__item"><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used. The <a href="/refund">Refund Policy</a> explains how to ask.</p></div></details>
+      <details class="faq__item" data-only="credits"><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used. The <a href="/refund">Refund Policy</a> explains how to ask.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan. The <a href="/refund">Refund Policy</a> explains how to ask.</p></div></details>
     </div>
   </div>
 </section>
