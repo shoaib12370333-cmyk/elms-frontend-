@@ -539,8 +539,34 @@ if (!r.ok) { throw new Error('status'); }
 return r.json();
 }).then(function (data) { end(null, data); }, function (err) { end(err || new Error('failed')); });
 }
+function readSlots(data) {
+var list = [];
+each(data.plans, function (p) {
+if (!p || typeof p.name !== 'string' || !p.name) { return; }
+var price = Number(p.priceUsd);
+var live = Number(p.liveListings);
+if (!isFinite(price) || price <= 0 || !isFinite(live) || live < 1) { return; }
+var yearly = Number(p.yearlyPriceUsd);
+list.push({
+slots: true,
+name: p.name,
+tagline: typeof p.tagline === 'string' ? p.tagline : '',
+badge: typeof p.badge === 'string' ? p.badge : '',
+price: price,
+yearly: isFinite(yearly) && yearly > 0 ? yearly : 0,
+live: live,
+drafts: Number(p.draftsPerMonth),
+days: Number(p.monitoringDays),
+ai: Number(p.aiQuota),
+stores: Number(p.stores),
+features: Array.isArray(p.features) ? p.features.filter(function (f) { return typeof f === 'string'; }) : []
+});
+});
+return limit ? list.slice(0, limit) : list;
+}
 function read(data) {
 if (!data || data.success !== true || !Array.isArray(data.plans)) { return null; }
+if (data.model === 'slots') { return readSlots(data); }
 var list = [];
 each(data.plans, function (p) {
 if (!p || typeof p.name !== 'string' || !p.name) { return; }
@@ -590,25 +616,69 @@ box.appendChild(p);
 view.appendChild(box);
 status.textContent = '';
 }
+var SLOT_FEATURES = [
+['bulkImport', 'Bulk import: many links at once, or a file'],
+['bulkDraft', 'Publish many drafts in one go'],
+['bulkEdit', 'Bulk edit of listings'],
+['moreSources', 'More product sources'],
+['aiText', 'AI help for titles and descriptions'],
+['aiAspects', 'AI fill of item specifics'],
+['aiReply', 'AI drafts for buyer messages'],
+['research', 'Research tools']
+];
+function slotFeatureLines(p, prev) {
+var had = {};
+each(prev ? prev.features : [], function (k) { had[k] = true; });
+var out = [];
+each(SLOT_FEATURES, function (f) {
+if (p.features.indexOf(f[0]) >= 0 && !had[f[0]]) { out.push(f[1]); }
+});
+return out;
+}
+function slotsPlanFeatures(p, prev) {
+var feats = el('ul', 'plan__features check-list');
+feats.appendChild(el('li', null, whole(p.live) + ' live listings at once'));
+if (isFinite(p.drafts) && p.drafts > 0) { feats.appendChild(el('li', null, whole(p.drafts) + ' new drafts a month')); }
+if (isFinite(p.days) && p.days > 0) { feats.appendChild(el('li', null, 'Price and stock checks every ' + (p.days === 1 ? '24' : whole(p.days * 24)) + ' hours, included')); }
+if (isFinite(p.stores) && p.stores > 0) { feats.appendChild(el('li', null, whole(p.stores) + (p.stores === 1 ? ' eBay store' : ' eBay stores'))); }
+if (isFinite(p.ai) && p.ai > 0) { feats.appendChild(el('li', null, whole(p.ai) + ' AI actions a month')); }
+var extra = slotFeatureLines(p, prev);
+var covers = !!prev;
+if (prev) { each(prev.features, function (k) { if (p.features.indexOf(k) < 0) { covers = false; } }); }
+if (prev && !covers) { extra = slotFeatureLines(p, null); } // this plan does not include everything of the one before it: list what it has, never claim more
+else if (prev && extra.length) { feats.appendChild(el('li', null, 'Everything in ' + prev.name + ', plus:')); }
+else if (prev) { feats.appendChild(el('li', null, 'All the tools of ' + prev.name)); }
+each(extra, function (line) { feats.appendChild(el('li', null, line)); });
+return feats;
+}
 function render(list) {
 var hadFocus = container.contains(d.activeElement);
 clear(view);
 container.setAttribute('aria-busy', 'false');
 var ul = el('ul', 'plans');
 var planNo = 0;
-each(list, function (p) {
+each(list, function (p, index) {
 var li = el('li', 'plan');
+if (p.slots && p.badge) { li.appendChild(el('p', 'plan__badge', p.badge)); }
 var nameEl = el('h' + level, 'plan__name', p.name);
 nameEl.setAttribute('id', 'plan-name-' + (planNo += 1));
 li.appendChild(nameEl);
+if (p.slots && p.tagline) { li.appendChild(el('p', 'plan__sub', p.tagline)); }
 var price = el('p', 'plan__price');
 price.appendChild(el('span', 'plan__cur', 'USD'));
 price.appendChild(el('span', 'plan__amount', money(p.price)));
+if (p.slots) { price.appendChild(el('span', 'plan__per', 'a month')); }
 li.appendChild(price);
-if (termNote) { li.appendChild(el('p', 'plan__term', termNote)); }
-var feats = el('ul', 'plan__features check-list');
+if (p.slots) { if (p.yearly) { li.appendChild(el('p', 'plan__term', 'or USD ' + money(p.yearly) + ' for a year')); } }
+else if (termNote) { li.appendChild(el('p', 'plan__term', termNote)); }
+var feats;
+if (p.slots) {
+feats = slotsPlanFeatures(p, index > 0 ? list[index - 1] : null);
+} else {
+feats = el('ul', 'plan__features check-list');
 feats.appendChild(el('li', null, whole(p.credits) + (p.credits === 1 ? ' credit' : ' credits')));
 if (isFinite(p.stores) && p.stores > 0) { feats.appendChild(el('li', null, whole(p.stores) + (p.stores === 1 ? ' eBay store' : ' eBay stores'))); }
+}
 li.appendChild(feats);
 var a = el('a', 'btn btn--primary plan__cta', ctaLabel);
 a.setAttribute('href', ctaHref);
@@ -631,6 +701,7 @@ function attempt() {
 fetchOnce(function (err, data) {
 if (mine !== token) { return; }
 var list = err ? null : read(data);
+if (list !== null && data && data.success === true) { setModel(data.model === 'slots' ? 'slots' : 'credits'); } // the cards and the text of the page always come from the SAME answer
 if (list === null) {
 tries += 1;
 if (tries <= 2) { w.setTimeout(attempt, 900 * tries); } else { showMessage('We could not load the plans just now. Please check your connection and try again.', true, true); }
@@ -644,6 +715,29 @@ attempt();
 }
 run();
 };
+/* The shop sells either credits plans or plans by listings (the server says which). The text of a page that depends on it is marked data-only="credits" or data-only="slots": the slots
+   ones start hidden, so without the answer (or without JavaScript) a page reads exactly as it always did. */
+function setModel(model) {
+each(qsa('[data-only]'), function (n) { n.hidden = n.getAttribute('data-only') !== model; });
+d.documentElement.setAttribute('data-plans-model', model);
+/* the tab title and the description say what the page is about: credit plans, or plans by listings (pages that carry data-slots on <title> / the description) */
+each(qsa('title[data-slots], meta[name="description"][data-slots]'), function (n) {
+var isMeta = n.tagName === 'META';
+var cur = isMeta ? n.getAttribute('content') : n.textContent;
+if (!n.getAttribute('data-credits')) { n.setAttribute('data-credits', cur); }
+var next = n.getAttribute(model === 'slots' ? 'data-slots' : 'data-credits');
+if (isMeta) { n.setAttribute('content', next); } else { n.textContent = next; }
+});
+}
+Plans.setModel = setModel;
+function initModel() {
+if (!qsa('[data-only]').length || !w.fetch) { return; }
+w.fetch((w.ELMS_API || '') + '/api/payments/public-plans', { credentials: 'omit' }).then(function (r) {
+return r.ok ? r.json() : null;
+}).then(function (data) {
+if (data && data.success === true) { setModel(data.model === 'slots' ? 'slots' : 'credits'); }
+}, function () { /* the page keeps its credits text */ });
+}
 w.ElmsPlans = Plans;
 function initPlans() {
 each(qsa('[data-elms-plans]'), function (box) {
@@ -711,6 +805,7 @@ safe(initAnchors);
 safe(initOpenTarget);
 safe(initFilter);
 safe(initPlans);
+safe(initModel);
 safe(initTableFocus);
 safe(initDemo);
 });

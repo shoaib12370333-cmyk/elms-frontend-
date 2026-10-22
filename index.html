@@ -5584,7 +5584,7 @@
 
         <div data-pricing-panel="listings" style="display:none;">
           <div id="listingPacksContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
-          <p class="bc-refund-note">You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used. <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></p>
+          <p class="bc-refund-note">You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the listings that came with the pack have been published. <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></p>
 
           <div class="bc-trust">
             <div><b>&#9989; Delivered after payment</b><span>Your drafts are added once the payment is confirmed.</span></div>
@@ -25217,7 +25217,9 @@ async function autoSuggestEmptyDraftCategories() {
         ${adTable(['Date', 'Plan', 'Paid', 'List price', 'Discount', 'Credits', 'Method', 'Invoice', 'Status'], (d.purchases || []).map((p) => [
           adEsc(adDate(p.createdAt)), adEsc(p.planName || '—') + (p.billing ? ' <small style="color:var(--grey);">' + adEsc(p.billing) + '</small>' : ''), adEsc(adUsd(p.priceUsd)), adEsc(adUsd(p.listPriceUsd)),
           p.discountPercent ? adEsc(p.discountPercent) + '%' : '—', p.listingSlots != null ? Number(p.listingSlots).toLocaleString() + ' live listings' : Number(p.creditsGranted || 0).toLocaleString(), adEsc(p.paymentMethod || p.provider || '—') + (p.provider === 'manual' ? ' <small style="color:var(--grey);">given by ' + adEsc(p.manualBy || 'an admin') + (p.manualNote ? ': ' + adEsc(p.manualNote) : '') + '</small>' : ''), adEsc(p.invoiceNo || '—'),
-          p.status === 'refunded' ? '<span class="ad-tag bad">REFUNDED</span>' : '<span class="ad-tag paid">PAID</span>',
+          p.status === 'refunded' ? '<span class="ad-tag bad">REFUNDED</span>' : '<span class="ad-tag paid">PAID</span>'
+            // a plan by listings bought in the last 7 days: what the refund rule (7 days, fewer than 20 listings published) makes of it, with the numbers on hover
+            + (p.refundCheck && p.refundCheck.verdict && p.refundCheck.verdict !== 'late' ? '<br><span class="ad-tag ' + (p.refundCheck.verdict === 'yes' ? 'paid' : p.refundCheck.verdict === 'no' ? 'bad' : '') + '" title="' + adEsc(p.refundCheck.note || '') + '">Refund rule: ' + ({ yes: 'inside', no: 'outside', check: 'look at it' }[p.refundCheck.verdict] || '') + '</span>' : ''),
         ]), 'No purchases.')}
         ${(d.listingPacks || []).length ? `<div class="st-custom-title" style="margin:14px 0 8px;">Buy Listings packs</div>${adTable(['Date', 'Pack', 'Paid', 'Listings bought', 'Delivered'], d.listingPacks.map((p) => [adEsc(adDate(p.createdAt)), adEsc(p.tierName || '—'), adEsc(adUsd(p.priceUsd)), Number(p.listingCount || 0).toLocaleString(), Number(p.pushed || 0).toLocaleString()]), '')}` : ''}
         ${(d.vouchers || []).length ? `<div class="st-custom-title" style="margin:14px 0 8px;">Vouchers</div>${adTable(['Given', 'What', 'Note', 'Status'], d.vouchers.map((v) => [
@@ -26699,7 +26701,7 @@ async function autoSuggestEmptyDraftCategories() {
   ];
   var slotFeatureLabel = (key) => (SLOT_FEATURES.find((f) => f[0] === key) || [key, key])[1];
   var nf = (n) => Number(n || 0).toLocaleString('en-US');
-  var REFUND_SLOTS_LINE = 'Refunds follow our Refund Policy.';
+  var REFUND_SLOTS_LINE = 'You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan.';
 
   // The words of the page around the plans follow the model: nothing says "credits" while plans by listings are shown.
   function setPricingModelWording(model) {
@@ -27048,6 +27050,8 @@ async function autoSuggestEmptyDraftCategories() {
 
   // The short refund rule, word for word as on the Refund Policy page.
   const REFUND_SHORT_LINE = "You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used.";
+  // a listing pack has no credits: its limit counts the delivered listings that were published (the Refund Policy, "Listing packs")
+  const REFUND_PACK_LINE = "You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the listings that came with the pack have been published.";
 
   // What a plan costs and gives, as the lines of the "Review your order" window (null when the plan is not known).
   function planOrderLines(p, provider) {
@@ -27085,7 +27089,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="elms-confirm-box" role="alertdialog" aria-modal="true" aria-label="Review your order" tabindex="-1">
           <div class="elms-confirm-title">Review your order</div>
           <div class="bc-co-lines">${(lines || []).map(([k, v]) => `<div><span>${escapeHtml(String(k))}</span><b>${escapeHtml(String(v))}</b></div>`).join('')}</div>
-          <div class="elms-confirm-message">${escapeHtml(lines && lines.slots ? REFUND_SLOTS_LINE : REFUND_SHORT_LINE)} <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></div>
+          <div class="elms-confirm-message">${escapeHtml(lines && lines.slots ? REFUND_SLOTS_LINE : lines && lines.pack ? REFUND_PACK_LINE : REFUND_SHORT_LINE)} <a href="/refund" target="_blank" rel="noopener">Refund Policy</a></div>
           <div class="elms-confirm-message bc-co-pay">Payments are handled by our payment partner. ELMS never sees your card or wallet details.</div>
           <div class="elms-confirm-message bc-co-pay">Taxes may be added at checkout where they apply.</div>
           <div class="elms-confirm-actions">
@@ -27302,7 +27306,7 @@ async function autoSuggestEmptyDraftCategories() {
       document.querySelectorAll('.listing-pack-buy-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
           const t = data.tiers.find((x) => String(x.id) === btn.getAttribute('data-tier-id'));
-          startListingPackCheckout(btn.getAttribute('data-tier-id'), btn, t ? [['Listing pack', String(t.name || '')], ['Drafts', Number(t.listingCount).toLocaleString()], ['Price', '$' + Number(t.priceUsd).toFixed(2)]] : null);
+          startListingPackCheckout(btn.getAttribute('data-tier-id'), btn, t ? Object.assign([['Listing pack', String(t.name || '')], ['Drafts', Number(t.listingCount).toLocaleString()], ['Price', '$' + Number(t.priceUsd).toFixed(2)]], { pack: true }) : null);
         });
       });
     } catch (err) {

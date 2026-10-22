@@ -399,6 +399,9 @@ html:not(.js) .site-header{position:static}
 .plan__amount{font-size:clamp(2.5rem,2rem + 2vw,3.25rem);font-weight:750;line-height:1;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
 .plan .plan__features{padding:1.25rem 0 0;margin:0;border-top:1px solid var(--line)}
 .plan__term{margin:-.5rem 0 0;color:var(--fg-mute);font-size:var(--fs-sm);line-height:1.5}
+.plan__badge{align-self:flex-start;margin:0;padding:.2rem .65rem;border-radius:var(--r-pill);background:var(--blue-50);color:var(--blue-dark);font-size:var(--fs-xs);font-weight:650;letter-spacing:.01em}
+.plan__sub{margin:-.75rem 0 0;color:var(--fg-mute);font-size:var(--fs-sm);line-height:1.5}
+.plan__per{color:var(--fg-mute);font-size:var(--fs-sm)}
 .plan__cta{margin-top:auto}
 @media (hover:hover){.plan:hover{translate:0 -3px;box-shadow:var(--sh-3)}}
 .plan--skeleton{pointer-events:none}

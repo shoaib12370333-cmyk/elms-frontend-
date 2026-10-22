@@ -28,8 +28,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=2" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
 <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/site.css?v=6">
-<script src="/site.js?v=5" defer></script>
+<link rel="stylesheet" href="/site.css?v=7">
+<script src="/site.js?v=6" defer></script>
 <script src="/social.js?v=2" defer></script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ELMS","url":"https://elmstool.com/","logo":"https://elmstool.com/logo.png"}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"ELMS","url":"https://elmstool.com/"}</script>
@@ -76,7 +76,8 @@
       <ul class="trust">
         <li>Built for eBay sellers</li>
         <li>Works with Amazon product links</li>
-        <li>Credits come back when an action fails</li>
+        <li data-only="credits">Credits come back when an action fails</li>
+        <li data-only="slots" hidden>Price and stock checks are included</li>
       </ul>
       <p class="sr-only">An animated illustration shows a product link becoming an eBay draft with a picture, a title, item details and an example price, next to a buyer message with a reply and a stock and price monitoring switch.</p>
       <p class="pill pill--teal" data-invite hidden><span class="pill__dot"></span><span>A friend invited you to ELMS.</span></p>
@@ -269,7 +270,8 @@
         </div>
         <ul class="check-list reveal">
           <li>Stock and price monitoring starts on for each listing that has a source link, and you can switch it off listing by listing. Automatic buyer messages stay off until you turn them on.</li>
-          <li>Your credit balance is shown in the app, and credits come back when an action fails.</li>
+          <li data-only="credits">Your credit balance is shown in the app, and credits come back when an action fails.</li>
+          <li data-only="slots" hidden>The app shows how many of your listings are live and how much of your plan you have used.</li>
           <li>Apart from monitoring and the automatic features you turn on, ELMS changes your listings and sends messages on your connected accounts only when you start the action.</li>
         </ul>
         <div class="ui ui-pane reveal" aria-hidden="true">
@@ -316,8 +318,10 @@
   <div class="container">
     <div class="section-head section-head--center">
       <span class="eyebrow">Plans</span>
-      <h2>Choose a plan when you need credits</h2>
-      <p>Create your account first and look around. When you want credits, buy a plan from inside ELMS. Each plan card shows its price, its credits and the number of eBay stores it lets you connect.</p>
+      <h2 data-only="credits">Choose a plan when you need credits</h2>
+      <h2 data-only="slots" hidden>Choose a plan by how many listings you need</h2>
+      <p data-only="credits">Create your account first and look around. When you want credits, buy a plan from inside ELMS. Each plan card shows its price, its credits and the number of eBay stores it lets you connect.</p>
+      <p data-only="slots" hidden>Create your account first and look around. When you are ready, choose a plan from inside ELMS. Each plan card shows its price, how many listings can be live at once, how many new drafts you get every month, how often prices and stock are checked and how many eBay stores you can connect.</p>
     </div>
     <div id="landing-plans" data-elms-plans data-heading-level="3" data-cta-label="Create your account" data-term-note="Credits last for the plan term.">
       <p class="plans__note">Plans and prices are listed on the <a href="/plans">Pricing page</a>.</p>
@@ -325,14 +329,18 @@
     <div class="cards mt-7">
       <article class="card reveal">
         <span class="icon-tile icon-tile--teal"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg></span>
-        <h3 class="card__title mt-4">How credits work</h3>
-        <p class="mt-4">Credits are used when an action completes. If an action fails, the credits come back automatically.</p>
+        <h3 class="card__title mt-4" data-only="credits">How credits work</h3>
+        <h3 class="card__title mt-4" data-only="slots" hidden>How plans work</h3>
+        <p class="mt-4" data-only="credits">Credits are used when an action completes. If an action fails, the credits come back automatically.</p>
+        <p class="mt-4" data-only="slots" hidden>A plan sets how many listings can be live on eBay at once and how many new drafts you can make each month. Price and stock monitoring is included, and bigger plans add bulk tools, more product sources and AI help.</p>
       </article>
       <article class="card reveal reveal--d1">
         <span class="icon-tile icon-tile--navy"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg></span>
         <h3 class="card__title mt-4">Refunds</h3>
-        <p class="mt-4">You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used.</p>
-        <p class="mt-4">When a refund is approved, the plan and the credits that came with that purchase end.</p>
+        <p class="mt-4" data-only="credits">You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used.</p>
+        <p class="mt-4" data-only="credits">When a refund is approved, the plan and the credits that came with that purchase end.</p>
+        <p class="mt-4" data-only="slots" hidden>You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan.</p>
+        <p class="mt-4" data-only="slots" hidden>When a refund is approved, the term you paid for ends. If it was the only term, the plan ends and its limits stop. Your listings on eBay, your drafts and your orders are not touched.</p>
         <p class="mt-4"><a class="link-arrow" href="/refund"><span>Read the Refund Policy</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></a></p>
       </article>
     </div>
@@ -348,16 +356,20 @@
       <p>Short answers to what sellers ask first. The <a href="/user-guide">user guide</a> has the detail.</p>
     </div>
     <div class="faq">
-      <details class="faq__item"><summary>How do credits work?</summary><div class="faq__body"><p>Credits are used when an action completes. If an action fails, the credits come back automatically.</p><p>A plan is paid for one term; the credits that come with a plan are valid until the term ends, and we e-mail you before it ends. Credits you had before a plan are not affected.</p></div></details>
-      <details class="faq__item"><summary>What happens when an action fails?</summary><div class="faq__body"><p>The credits come back to your balance automatically, normally within moments, and you do not need to ask. If one is missing, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> and we restore it. A failed publish also shows you the reason, so you can fix the draft and try again.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>How do plans work?</summary><div class="faq__body"><p>A plan sets how many listings can be live on eBay at once and how many new drafts you can make each month. Price and stock monitoring is included.</p><p>A plan is paid for one month or one year, and we e-mail you before it ends. When it ends, everything keeps working for 7 more days, and your listings stay on eBay.</p></div></details>
+      <details class="faq__item" data-only="credits"><summary>How do credits work?</summary><div class="faq__body"><p>Credits are used when an action completes. If an action fails, the credits come back automatically.</p><p>A plan is paid for one term; the credits that come with a plan are valid until the term ends, and we e-mail you before it ends. Credits you had before a plan are not affected.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>What happens when an action fails?</summary><div class="faq__body"><p>You see the reason, so you can fix the draft and try again. A failed action does not use up your plan: the draft or the AI action it would have used is given back automatically. If something looks wrong, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.</p></div></details>
+      <details class="faq__item" data-only="credits"><summary>What happens when an action fails?</summary><div class="faq__body"><p>The credits come back to your balance automatically, normally within moments, and you do not need to ask. If one is missing, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> and we restore it. A failed publish also shows you the reason, so you can fix the draft and try again.</p></div></details>
       <details class="faq__item"><summary>Do I need an eBay seller account?</summary><div class="faq__body"><p>Yes. You connect your own eBay seller account, which ELMS calls a store. A connection is needed to publish. You connect it by signing in on eBay and approving access on eBay's own page, so your eBay password stays with eBay. You choose which connected store you work in.</p></div></details>
       <details class="faq__item"><summary>Which eBay sites and countries does ELMS work with?</summary><div class="faq__body"><p>You choose your eBay site when you set up your store. The list includes eBay US, UK, Canada, Australia, Germany, France, Italy and Spain, among others.</p><p>Products come mainly from Amazon product links. You can also import a CSV file of your own products, and other supplier platforms can be connected. For many eBay sites the link has to come from the Amazon site of the same country, and ELMS tells you when a link does not match your store.</p></div></details>
       <details class="faq__item"><summary>Does ELMS order from Amazon for me?</summary><div class="faq__body"><p>No. ELMS does not place Amazon orders. You buy the item yourself when an order comes in. In ELMS you can mark the order as ordered, note what you paid and keep your tracking details together with the order.</p></div></details>
       <details class="faq__item"><summary>Who is responsible for my listings?</summary><div class="faq__body"><p>You are. ELMS is built for people who sell for business, and you are the seller: you decide what to list, and you are responsible for each listing, order and message. That includes following the rules of eBay and of the supplier sites you source from. ELMS gives you drafts, checks and warnings to help. They are aids, not approval.</p></div></details>
       <details class="faq__item"><summary>Is my data safe?</summary><div class="faq__body"><p>Passwords are stored as one-way hashes, eBay and supplier access tokens are stored encrypted, and data is encrypted in transit. No system is completely secure.</p><p>Payments are handled by our payment partner. ELMS never sees your card or wallet details. The <a href="/privacy">Privacy Policy</a> explains what we collect and why.</p></div></details>
-      <details class="faq__item"><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used.</p><p>When a refund is approved, the plan and the credits that came with that purchase end. The <a href="/refund">Refund Policy</a> explains how the 7 days and the credits you have used are counted.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of buying a plan. You do not need to give a reason. A refund is not possible if 20 or more listings have been published with the plan.</p><p>When a refund is approved, the term you paid for ends; if it was the only term, the plan ends. The <a href="/refund">Refund Policy</a> explains how the 7 days and the listings you have published are counted.</p></div></details>
+      <details class="faq__item" data-only="credits"><summary>Can I get a refund?</summary><div class="faq__body"><p>You can ask for a full refund within 7 days of a purchase. You do not need to give a reason. A refund is not possible if more than 5% of the credits that came with the purchase have been used.</p><p>When a refund is approved, the plan and the credits that came with that purchase end. The <a href="/refund">Refund Policy</a> explains how the 7 days and the credits you have used are counted.</p></div></details>
       <details class="faq__item"><summary>How do I contact you?</summary><div class="faq__body"><p>Write to <a href="mailto:support@elmstool.com">support@elmstool.com</a> for help with ELMS, refunds and invoices, and to report a security problem, and to <a href="mailto:hello@elmstool.com">hello@elmstool.com</a> for general questions before you sign up. When you are signed in, you can also open a support ticket from the Support page in the app. The <a href="/contact">Contact page</a> says what to include in a message.</p></div></details>
-      <details class="faq__item"><summary>Can I cancel or stop?</summary><div class="faq__body"><p>A plan is paid for one term, and its credits last until the term ends. If your payment method renews your plan, you can stop the renewal before the renewal date from your receipt or by writing to <a href="mailto:support@elmstool.com">support@elmstool.com</a>. To close your account, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.</p></div></details>
+      <details class="faq__item" data-only="slots" hidden><summary>Can I cancel or stop?</summary><div class="faq__body"><p>A plan is paid for one month or one year, and it ends by itself at the end of its term. If your payment method renews your plan, you can stop the renewal before the renewal date from your receipt or by writing to <a href="mailto:support@elmstool.com">support@elmstool.com</a>. To close your account, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.</p></div></details>
+      <details class="faq__item" data-only="credits"><summary>Can I cancel or stop?</summary><div class="faq__body"><p>A plan is paid for one term, and its credits last until the term ends. If your payment method renews your plan, you can stop the renewal before the renewal date from your receipt or by writing to <a href="mailto:support@elmstool.com">support@elmstool.com</a>. To close your account, write to <a href="mailto:support@elmstool.com">support@elmstool.com</a>.</p></div></details>
       <details class="faq__item"><summary>What is the VeRO helper?</summary><div class="faq__body"><p>VeRO is eBay's programme that lets brand owners report listings that infringe their rights. In ELMS you keep your own list of brand words, and ELMS warns you when a draft or live listing contains one.</p><p>It helps you check. It is not clearance. Taking a brand word out of the text does not give you the right to sell a branded item, and the <span class="term">Remove brand words</span> button asks you to confirm that every time you press it.</p></div></details>
     </div>
   </div>
