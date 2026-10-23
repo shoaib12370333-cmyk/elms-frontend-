@@ -3469,7 +3469,16 @@
   .sp-plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr)); gap:20px; margin-top:14px; align-items:stretch; }
   .sp-card { position:relative; background:#fff; border:1px solid var(--line); border-radius:16px; padding:28px 22px 22px; display:flex; flex-direction:column; gap:16px; min-width:0; }
   .sp-card .bc-buy { margin-top:0; } /* the buttons of all cards sit at the same height: the lists of features come after them */
-  .sp-card.hot { border:2px solid #2347D6; box-shadow:0 12px 32px rgba(35,71,214,.12); }
+  .sp-card .bc-pay { margin-top:0; padding:10px 12px; gap:6px; } /* the first box sits right under the listings line (no auto margin: it left a gap on every card shorter than its neighbour) */
+  .sp-pays { display:flex; flex-direction:column; gap:10px; min-width:0; } /* the pay boxes of a card: 10px apart */
+  .sp-card > * { min-width:0; }
+  @supports (grid-template-rows: subgrid) { .sp-card { display:grid; grid-template-rows:subgrid; grid-row:span 5; row-gap:16px; } } /* five rows: name, price, listings line, pay boxes, list. Each row is as tall as the tallest card's, so a tagline or a price that wraps on one card moves nothing on its neighbours */
+  .sp-card .bc-pay-card { display:grid; grid-template-columns:1fr auto; align-items:center; gap:6px 8px; }
+  .sp-card .bc-pay-card .bc-buy { grid-column:1 / -1; }
+  .sp-card .bc-pay .bc-plan-icons { justify-content:flex-end; gap:4px; flex-wrap:nowrap; }
+  .sp-card .pay-badge { height:24px; padding:0 5px; }
+  .sp-card .pay-badge svg { height:16px; width:30px; }
+  .sp-card.hot { border:1px solid #2347D6; box-shadow:0 0 0 1px #2347D6, 0 12px 32px rgba(35,71,214,.12); } /* the second line is a shadow: a thicker border would push this card's rows 1px down */
   .sp-card.dark { background:#0E1424; border-color:#0E1424; color:#E3E8F4; }
   .sp-card.dark .sp-name, .sp-card.dark .sp-amount { color:#fff; } .sp-card.dark .sp-tag, .sp-card.dark .sp-qty span { color:#B7C0D6; } .sp-card.dark .sp-qty { background:#1C2438; color:#fff; }
   .sp-card.dark .bc-buy { background:#fff; color:#0E1424; border-color:#fff; display:block; text-align:center; text-decoration:none; }
@@ -9126,12 +9135,12 @@ B0EXAMPLE2"></textarea></div>
   }
 
   // What the plans page learned about the shop belongs to the account that is signed in: a new sign-in starts clean. A sign-in answer does not say what is on sale (only /me does).
-  function resetPlanState() { window.plansOnSale = undefined; window.pricingMyPlan = null; window.planUsage = null; pricingModel = 'credits'; }
+  function resetPlanState() { window.plansOnSale = undefined; window.pricingMyPlan = null; window.planUsage = null; pricingModel = 'credits'; pricingWaysKnown = false; }
   async function refreshPlansOnSale() {
     try {
       const res = await apiFetch('/api/auth/me');
       const d = await res.json();
-      if (res.ok && d.success && d.user && d.user.plansOnSale) { window.plansOnSale = d.user.plansOnSale; if (window.currentUser) window.currentUser.plansOnSale = d.user.plansOnSale; applyPlanLabels(window.currentUser); }
+      if (res.ok && d.success && d.user && d.user.plansOnSale) { window.plansOnSale = d.user.plansOnSale; if (window.currentUser) { window.currentUser.plansOnSale = d.user.plansOnSale; applyPlanLabels(window.currentUser); updateCreditBalanceChip(window.currentUser.creditBalance, window.currentUser); } }
     } catch (_) { /* the labels keep the credits wording */ }
   }
   function showApp(user) {
@@ -9419,8 +9428,19 @@ B0EXAMPLE2"></textarea></div>
     if (user && user.planModel && window.currentUser && window.currentUser !== user) { window.currentUser.planModel = user.planModel; window.currentUser.entitlement = user.entitlement; }
     if (window.currentUser && creditBalance != null) window.currentUser.creditBalance = creditBalance; // (the grace banner and the price lines read the balance from the profile)
     if (user && user.planModel === 'slots') { // a plan by listings: the chip shows the live listings used (the numbers come a moment later), not credits
-      if (chip) { document.getElementById('creditBalanceAmount').textContent = user.entitlement ? String(user.entitlement.maxListings.toLocaleString('en-US')) : '0'; const w = chip.querySelector('.cb-word'); if (w) w.textContent = 'listings'; chip.style.display = 'flex'; }
+      if (chip) { document.getElementById('creditBalanceAmount').textContent = user.entitlement ? String(user.entitlement.maxListings.toLocaleString('en-US')) : '0'; const w = chip.querySelector('.cb-word'); if (w) w.textContent = 'listings'; chip.removeAttribute('title'); /* the numbers of the plan come a moment later and set it */ chip.style.display = 'flex'; }
       refreshPlanUsage();
+      return;
+    }
+    if (window.plansOnSale === 'slots') { // the shop sells plans by listings and this person has no plan yet: the chip counts listings (none), never credits
+      if (chip) {
+        const admin = ((user || window.currentUser || {}).role) === 'admin'; // an admin has no limit and is never charged credits
+        document.getElementById('creditBalanceAmount').textContent = admin ? 'Unlimited' : '0';
+        const w = chip.querySelector('.cb-word'); if (w) w.textContent = 'listings';
+        const held = Number(creditBalance || 0);
+        chip.title = admin ? 'Admin accounts have no limit on listings.' : 'No plan right now. Choose a plan to publish listings.' + (held > 0 ? ' You still hold ' + held.toLocaleString('en-US') + (held === 1 ? ' credit' : ' credits') + '; they are used while you have no plan.' : '');
+        chip.style.display = 'flex';
+      }
       return;
     }
     if (!chip || creditBalance == null) return;
@@ -26549,7 +26569,7 @@ async function autoSuggestEmptyDraftCategories() {
 
   async function loadPricingPage() {
     const bal = document.getElementById('pricingBalance');
-    if (bal) bal.textContent = document.getElementById('creditBalanceAmount')?.textContent || '0';
+    if (bal) bal.textContent = Number((window.currentUser && window.currentUser.creditBalance) || 0).toLocaleString('en-US');
     setPricingTab(pricingTab === 'listings' ? 'listings' : 'credits');
     await loadPlanCards();
     await loadPurchaseHistory();
@@ -26597,7 +26617,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="bc-pay-head"><span>Wallet checkout</span></div>
         <button class="bc-buy pricing-buy-btn" data-plan-id="${p.id}" type="button">Pay with wallet</button>
       </div>${cardOk ? `
-      <div class="bc-pay">
+      <div class="bc-pay bc-pay-card">
         <div class="bc-pay-head"><span>Card</span></div>
         <div class="bc-plan-icons" aria-hidden="true">${CARD_MARKS_HTML}</div>
         <button class="bc-buy bc-buy-alt pricing-buy-btn" data-plan-id="${p.id}" data-provider="card" type="button">Pay $${Number(cardPriceUsd).toFixed(2)} + tax by card</button>
@@ -26853,20 +26873,19 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="sp-card ${hot ? 'hot' : ''} ${hasOff || p.voucherNotValid ? 'has-off' : ''}">
           ${p.badge ? `<span class="sp-badge ${p.badge === 'Best value' ? 'green' : ''}">${escapeHtml(p.badge)}</span>` : ''}
           ${hasOff ? `<div class="bc-off">${fmtPct((1 - payNow / listUsd) * 100)}% off</div>` : ''}
-          ${p.voucherNotValid ? '<div class="bc-plan-badnote">Your voucher is not valid for this plan.</div>' : ''}
-          <div><h3 class="sp-name">${escapeHtml(p.name)}</h3><p class="sp-tag">${escapeHtml(p.tagline || '')}</p></div>
+          <div class="sp-head"><h3 class="sp-name">${escapeHtml(p.name)}</h3><p class="sp-tag">${escapeHtml(p.tagline || '')}</p>${p.voucherNotValid ? '<div class="bc-plan-badnote">Your voucher is not valid for this plan.</div>' : ''}</div>
           <div class="sp-price">${noYear ? '<span class="sp-amount" style="font-size:20px;">No yearly option</span>' : hasOff ? `<s>$${Number(listUsd).toFixed(2)}</s> <span class="sp-amount">$${Number(payNow).toFixed(2)}</span>` : `<span class="sp-amount">$${Number(listUsd).toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>`}${noYear ? '' : `<span class="sp-per"> ${yr ? '/ year' : '/ month'}</span>`}</div>
           <div class="sp-qty"><b>${nf(p.limits.liveListings)} live listings</b><span>${noYear ? 'This plan is monthly only.' : '$' + perListing.toFixed(3) + ' per listing a month'}</span></div>
-          ${noYear ? '<button class="bc-buy" type="button" disabled>Monthly only</button>' : payBlocks(p, { shownCredits: 0, hasOff, yr, label })}
+          <div class="sp-pays">${noYear ? '<button class="bc-buy" type="button" disabled>Monthly only</button>' : payBlocks(p, { shownCredits: 0, hasOff, yr, label })}</div>
           <ul class="sp-feats">${slotCardLines(p, plans[i - 1] || null)}</ul>
         </div>`;
     };
     const contact = `
       <div class="sp-card dark">
-        <div><h3 class="sp-name">Custom</h3><p class="sp-tag">For high-volume sellers and agencies</p></div>
+        <div class="sp-head"><h3 class="sp-name">Custom</h3><p class="sp-tag">For high-volume sellers and agencies</p></div>
         <div class="sp-price"><span class="sp-amount" style="font-size:30px;">Let's talk</span></div>
         <div class="sp-qty"><b>Your own numbers</b><span>listings, checks and stores set for you</span></div>
-        <a class="bc-buy" id="spCustomContact" href="${supportMailto(pricingSupportEmail, 'custom')}">Contact us</a>
+        <div class="sp-pays"><a class="bc-buy" id="spCustomContact" href="${supportMailto(pricingSupportEmail, 'custom')}">Contact us</a></div>
         <ul class="sp-feats">
           <li class="head">Set up with you</li>
           ${slotLi('The number of live listings you need')}
@@ -26950,7 +26969,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (!chip || !u) return;
     document.getElementById('creditBalanceAmount').textContent = nf(u.live) + ' / ' + nf(u.maxListings);
     const word = chip.querySelector('.cb-word');
-    if (word) word.textContent = 'live';
+    if (word) word.textContent = 'listings';
     chip.title = u.planName + ': ' + nf(u.live) + ' of ' + nf(u.maxListings) + ' live listings. Drafts created this month: ' + nf(u.draftsCreated) + ' of ' + nf(u.draftAllowance) + '.';
     chip.style.display = 'flex';
   }
@@ -27195,6 +27214,7 @@ async function autoSuggestEmptyDraftCategories() {
   var pricingSupportEmail = 'support@elmstool.com';
   var pricingCardOffered = false; // true while the server says some plan can be paid by card (setPricingCardWording)
   var pricingCryptoOffered = false; // true while the server says some plan can be paid with crypto
+  var pricingWaysKnown = false; // true once the plans have answered: until then the strip keeps its plain words (no "you cannot pay by card" flash for a person who can)
   // the ways to pay in words: "with the wallet checkout" (alone), "by card or with the wallet", "with crypto or with the wallet", "by card, with crypto or with the wallet"
   function payWays() {
     const ways = [];
@@ -27216,12 +27236,14 @@ async function autoSuggestEmptyDraftCategories() {
     const btn = document.getElementById('pricingSupportBtn');
     if (btn) btn.setAttribute('href', supportMailto(pricingSupportEmail, listings ? 'listings' : 'plan'));
     const text = document.getElementById('pricingSupportText');
-    if (text) text.textContent = listings ? 'Write to support and we will help you buy your listings.' : 'Write to support and we will renew your plan for you.';
+    const cardOff = !listings && pricingWaysKnown && !pricingCardOffered; // the owner has the card closed: say so at the top of the plans, and what still works
+    if (text) text.textContent = listings ? 'Write to support and we will help you buy your listings.' : cardOff ? 'You can pay ' + (pricingCryptoOffered ? 'with crypto or ' : '') + 'with the wallet. To renew another way, write to support and we will renew your plan for you.' : 'Write to support and we will renew your plan for you.';
     const head = document.getElementById('pricingSupportHead');
-    if (head) head.textContent = !listings && (pricingCardOffered || pricingCryptoOffered) ? 'Cannot pay ' + payWays() + '?' : 'Cannot pay with the wallet?';
+    if (head) head.textContent = cardOff ? 'Right now you cannot pay by card.' : !listings && (pricingCardOffered || pricingCryptoOffered) ? 'Cannot pay ' + payWays() + '?' : 'Cannot pay with the wallet?';
   }
   // The words follow what the server really offers: card words only while some plan has a card option (never on Buy Listings: that is the wallet or support).
   function setPricingCardWording(on, cryptoOn) {
+    pricingWaysKnown = true;
     pricingCardOffered = !!on;
     pricingCryptoOffered = !!cryptoOn;
     const title = document.getElementById('bcTrustPayTitle');
