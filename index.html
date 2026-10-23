@@ -736,6 +736,9 @@
   /* An app frame on a wide screen: the menu on the left scrolls by itself and so does the page on the right. */
   @media (min-width: 721px) {
     .app-shell { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+    /* The frame IS the screen, so the browser's own page scrollbar goes away while the app is open, and the frame is pinned to the window: nothing placed after it (an extension's panel, a stray element) can make the page scroll or move it. The sign-in page still scrolls on a short window. */
+    html:has(#appShell[style*="flex"]), html:has(#appShell[style*="flex"]) body { overflow: hidden; }
+    .app-shell { position: fixed; inset: 0; }
     .sidebar { height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
     .sidebar > * { flex-shrink: 0; }
     .main { height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; scrollbar-gutter: stable; scroll-padding-top: calc(var(--topbar-h) + 12px); }
