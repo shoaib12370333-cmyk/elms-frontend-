@@ -5333,7 +5333,7 @@
               <label>Product location</label>
               <select class="st-input" id="settingMerchantLocationKey">
                 <option value="">Select after fetching&hellip;</option>
-                <option value="__custom__">Custom (enter postal code)</option>
+                <option value="__custom__">Custom (postal code, or city and region)</option>
               </select>
             </div>
             <div class="st-field">
@@ -5386,6 +5386,10 @@
                 <label>City</label>
                 <input class="st-input" type="text" id="customLocationCity" placeholder="e.g. Manchester" />
               </div>
+              <div class="st-field" id="customLocationStateField" style="display:none;">
+                <label>Region</label>
+                <input class="st-input" type="text" id="customLocationState" placeholder="e.g. Doha" />
+              </div>
               <div class="st-field">
                 <label>Postal code</label>
                 <input class="st-input" type="text" id="customLocationPostalCode" placeholder="Full code, e.g. M1 1AE" />
@@ -5398,7 +5402,8 @@
                 </div>
               </div>
             </div>
-            <div class="st-hint">UK and other countries need the <b>full</b> postal code, not just the first part. "Generate" finds a real one for the city; if you already have your own, type it in and press "Use my own code" to check and save it instead.</div>
+            <div class="st-hint" id="customLocationPostalHint">UK and other countries need the <b>full</b> postal code, not just the first part. "Generate" finds a real one for the city; if you already have your own, type it in and press "Use my own code" to check and save it instead.</div>
+            <div class="st-hint" id="customLocationNoPostalNote" style="display:none;"></div>
             <div id="postalLookupResult" style="margin-top:10px;"></div>
           </div>
 
@@ -11621,7 +11626,60 @@ B0EXAMPLE2"></textarea></div>
   // The 18 eBay marketplace countries ELMS can generate real postal codes for.
   const EBAY_COUNTRIES = [['US', 'United States'], ['GB', 'United Kingdom'], ['DE', 'Germany'], ['FR', 'France'], ['IT', 'Italy'], ['ES', 'Spain'], ['CA', 'Canada'], ['AU', 'Australia'], ['NL', 'Netherlands'], ['CH', 'Switzerland'], ['AT', 'Austria'], ['BE', 'Belgium'], ['IE', 'Ireland'], ['PL', 'Poland'], ['HK', 'Hong Kong'], ['SG', 'Singapore'], ['MY', 'Malaysia'], ['PH', 'Philippines']];
   const MARKETPLACE_COUNTRY = { EBAY_US: 'US', EBAY_GB: 'GB', EBAY_DE: 'DE', EBAY_FR: 'FR', EBAY_IT: 'IT', EBAY_ES: 'ES', EBAY_CA: 'CA', EBAY_AU: 'AU', EBAY_NL: 'NL', EBAY_CH: 'CH', EBAY_AT: 'AT', EBAY_BE: 'BE', EBAY_IE: 'IE', EBAY_PL: 'PL', EBAY_HK: 'HK', EBAY_SG: 'SG', EBAY_MY: 'MY', EBAY_PH: 'PH' };
-  const countryOptionsHtml = (selected, placeholder = 'Select country') => `<option value="">${placeholder}</option>${EBAY_COUNTRIES.map(([c, n]) => `<option value="${c}"${c === selected ? ' selected' : ''}>${n}</option>`).join('')}`;
+  // Every country an item location can be in: [code, name] and a 1 when the country has no postal codes (a location there is a city and a region). Same list as the server's config/countries.js.
+  const WORLD_COUNTRIES = [
+    ["AF", "Afghanistan", 1], ["AX", "Åland Islands"], ["AL", "Albania"], ["DZ", "Algeria"], ["AS", "American Samoa"], ["AD", "Andorra"],
+    ["AO", "Angola", 1], ["AI", "Anguilla"], ["AQ", "Antarctica", 1], ["AG", "Antigua and Barbuda", 1], ["AR", "Argentina"], ["AM", "Armenia"],
+    ["AW", "Aruba", 1], ["AU", "Australia"], ["AT", "Austria"], ["AZ", "Azerbaijan"], ["BS", "Bahamas", 1], ["BH", "Bahrain"],
+    ["BD", "Bangladesh"], ["BB", "Barbados"], ["BY", "Belarus"], ["BE", "Belgium"], ["BZ", "Belize", 1], ["BJ", "Benin", 1],
+    ["BM", "Bermuda"], ["BT", "Bhutan", 1], ["BO", "Bolivia", 1], ["BQ", "Bonaire, Sint Eustatius and Saba", 1], ["BA", "Bosnia and Herzegovina"], ["BW", "Botswana", 1],
+    ["BV", "Bouvet Island", 1], ["BR", "Brazil"], ["IO", "British Indian Ocean Territory"], ["VG", "British Virgin Islands", 1], ["BN", "Brunei"], ["BG", "Bulgaria"],
+    ["BF", "Burkina Faso", 1], ["BI", "Burundi", 1], ["CV", "Cabo Verde"], ["KH", "Cambodia"], ["CM", "Cameroon", 1], ["CA", "Canada"],
+    ["KY", "Cayman Islands", 1], ["CF", "Central African Republic", 1], ["TD", "Chad", 1], ["CL", "Chile"], ["CN", "China"], ["CX", "Christmas Island"],
+    ["CC", "Cocos (Keeling) Islands"], ["CO", "Colombia"], ["KM", "Comoros", 1], ["CD", "Congo (Democratic Republic)", 1], ["CG", "Congo (Republic)", 1], ["CK", "Cook Islands", 1],
+    ["CR", "Costa Rica"], ["CI", "Côte d'Ivoire", 1], ["HR", "Croatia"], ["CU", "Cuba"], ["CW", "Curaçao", 1], ["CY", "Cyprus"],
+    ["CZ", "Czechia"], ["DK", "Denmark"], ["DJ", "Djibouti", 1], ["DM", "Dominica", 1], ["DO", "Dominican Republic"], ["EC", "Ecuador"],
+    ["EG", "Egypt"], ["SV", "El Salvador"], ["GQ", "Equatorial Guinea", 1], ["ER", "Eritrea", 1], ["EE", "Estonia"], ["SZ", "Eswatini"],
+    ["ET", "Ethiopia"], ["FK", "Falkland Islands"], ["FO", "Faroe Islands"], ["FJ", "Fiji", 1], ["FI", "Finland"], ["FR", "France"],
+    ["GF", "French Guiana"], ["PF", "French Polynesia"], ["TF", "French Southern Territories", 1], ["GA", "Gabon", 1], ["GM", "Gambia", 1], ["GE", "Georgia"],
+    ["DE", "Germany"], ["GH", "Ghana", 1], ["GI", "Gibraltar"], ["GR", "Greece"], ["GL", "Greenland"], ["GD", "Grenada", 1],
+    ["GP", "Guadeloupe"], ["GU", "Guam"], ["GT", "Guatemala"], ["GG", "Guernsey"], ["GN", "Guinea", 1], ["GW", "Guinea-Bissau"],
+    ["GY", "Guyana", 1], ["HT", "Haiti"], ["HM", "Heard Island and McDonald Islands"], ["HN", "Honduras"], ["HK", "Hong Kong", 1], ["HU", "Hungary"],
+    ["IS", "Iceland"], ["IN", "India"], ["ID", "Indonesia"], ["IR", "Iran"], ["IQ", "Iraq"], ["IE", "Ireland"],
+    ["IM", "Isle of Man"], ["IL", "Israel"], ["IT", "Italy"], ["JM", "Jamaica", 1], ["JP", "Japan"], ["JE", "Jersey"],
+    ["JO", "Jordan"], ["KZ", "Kazakhstan"], ["KE", "Kenya"], ["KI", "Kiribati", 1], ["KW", "Kuwait"], ["KG", "Kyrgyzstan"],
+    ["LA", "Laos"], ["LV", "Latvia"], ["LB", "Lebanon"], ["LS", "Lesotho"], ["LR", "Liberia"], ["LY", "Libya", 1],
+    ["LI", "Liechtenstein"], ["LT", "Lithuania"], ["LU", "Luxembourg"], ["MO", "Macao", 1], ["MG", "Madagascar"], ["MW", "Malawi"],
+    ["MY", "Malaysia"], ["MV", "Maldives"], ["ML", "Mali", 1], ["MT", "Malta"], ["MH", "Marshall Islands"], ["MQ", "Martinique"],
+    ["MR", "Mauritania", 1], ["MU", "Mauritius", 1], ["YT", "Mayotte"], ["MX", "Mexico"], ["FM", "Micronesia"], ["MD", "Moldova"],
+    ["MC", "Monaco"], ["MN", "Mongolia"], ["ME", "Montenegro"], ["MS", "Montserrat", 1], ["MA", "Morocco"], ["MZ", "Mozambique"],
+    ["MM", "Myanmar"], ["NA", "Namibia", 1], ["NR", "Nauru", 1], ["NP", "Nepal"], ["NL", "Netherlands"], ["NC", "New Caledonia"],
+    ["NZ", "New Zealand"], ["NI", "Nicaragua"], ["NE", "Niger"], ["NG", "Nigeria"], ["NU", "Niue"], ["NF", "Norfolk Island"],
+    ["KP", "North Korea"], ["MK", "North Macedonia"], ["MP", "Northern Mariana Islands"], ["NO", "Norway"], ["OM", "Oman"], ["PK", "Pakistan"],
+    ["PW", "Palau"], ["PS", "Palestinian Territories", 1], ["PA", "Panama"], ["PG", "Papua New Guinea"], ["PY", "Paraguay"], ["PE", "Peru"],
+    ["PH", "Philippines"], ["PN", "Pitcairn"], ["PL", "Poland"], ["PT", "Portugal"], ["PR", "Puerto Rico"], ["QA", "Qatar", 1],
+    ["RE", "Réunion"], ["RO", "Romania"], ["RU", "Russia"], ["RW", "Rwanda", 1], ["BL", "Saint Barthélemy"], ["SH", "Saint Helena"],
+    ["KN", "Saint Kitts and Nevis", 1], ["LC", "Saint Lucia", 1], ["MF", "Saint Martin"], ["PM", "Saint Pierre and Miquelon"], ["VC", "Saint Vincent and the Grenadines", 1], ["WS", "Samoa", 1],
+    ["SM", "San Marino"], ["ST", "São Tomé and Príncipe", 1], ["SA", "Saudi Arabia"], ["SN", "Senegal"], ["RS", "Serbia"], ["SC", "Seychelles", 1],
+    ["SL", "Sierra Leone", 1], ["SG", "Singapore"], ["SX", "Sint Maarten", 1], ["SK", "Slovakia"], ["SI", "Slovenia"], ["SB", "Solomon Islands", 1],
+    ["SO", "Somalia"], ["ZA", "South Africa"], ["GS", "South Georgia and the South Sandwich Islands"], ["KR", "South Korea"], ["SS", "South Sudan", 1], ["ES", "Spain"],
+    ["LK", "Sri Lanka"], ["SD", "Sudan"], ["SR", "Suriname", 1], ["SJ", "Svalbard and Jan Mayen"], ["SE", "Sweden"], ["CH", "Switzerland"],
+    ["SY", "Syria", 1], ["TW", "Taiwan"], ["TJ", "Tajikistan"], ["TZ", "Tanzania", 1], ["TH", "Thailand"], ["TL", "Timor-Leste", 1],
+    ["TG", "Togo", 1], ["TK", "Tokelau", 1], ["TO", "Tonga", 1], ["TT", "Trinidad and Tobago", 1], ["TN", "Tunisia"], ["TR", "Turkey"],
+    ["TM", "Turkmenistan"], ["TC", "Turks and Caicos Islands"], ["TV", "Tuvalu", 1], ["VI", "U.S. Virgin Islands"], ["UG", "Uganda", 1], ["UA", "Ukraine"],
+    ["AE", "United Arab Emirates", 1], ["GB", "United Kingdom"], ["US", "United States"], ["UM", "United States Minor Outlying Islands", 1], ["UY", "Uruguay"], ["UZ", "Uzbekistan"],
+    ["VU", "Vanuatu", 1], ["VA", "Vatican City"], ["VE", "Venezuela"], ["VN", "Vietnam"], ["WF", "Wallis and Futuna"], ["EH", "Western Sahara", 1],
+    ["YE", "Yemen", 1], ["ZM", "Zambia"], ["ZW", "Zimbabwe", 1],
+  ];
+  const COUNTRY_HAS_NO_POSTAL = new Set(WORLD_COUNTRIES.filter((c) => c[2]).map((c) => c[0]));
+  const countryNameOf = (code) => (WORLD_COUNTRIES.find((c) => c[0] === code) || [code, code])[1];
+  // The 18 eBay marketplace countries first, then every other country. A placeholder of null leaves out the empty choice.
+  const countryOptionsHtml = (selected, placeholder = 'Select country') => {
+    const first = new Set(EBAY_COUNTRIES.map(([c]) => c));
+    const opt = ([c, n]) => `<option value="${c}"${c === selected ? ' selected' : ''}>${escapeHtml(n)}</option>`;
+    return (placeholder === null ? '' : `<option value="">${placeholder}</option>`) + `<optgroup label="eBay marketplaces">${EBAY_COUNTRIES.map(opt).join('')}</optgroup><optgroup label="All countries">${WORLD_COUNTRIES.filter((c) => !first.has(c[0])).map(opt).join('')}</optgroup>`;
+  };
+  { const customCountry = document.getElementById('customLocationCountry'); if (customCountry) customCountry.innerHTML = countryOptionsHtml('US', null); } // Settings > Item location: every country
 
   // Generates a real postal code for a city through the backend and reports the outcome as text.
   async function requestPostalCode(country, cityText) {
@@ -11634,7 +11692,7 @@ B0EXAMPLE2"></textarea></div>
     return data.location;
   }
   function describePostalLocation(loc) {
-    if (loc.notRequired) return `${loc.countryName} does not use postal codes.`;
+    if (loc.notRequired) return loc.city && loc.state ? `${[loc.city, loc.state, loc.countryName].join(', ')} \u00B7 ${loc.countryName} has no postal codes, so eBay uses the city and the region.` : `${loc.countryName} does not use postal codes.`;
     return `${loc.postalCode} · ${[loc.city, loc.state, loc.countryName].filter(Boolean).join(', ')}`;
   }
 
@@ -11897,7 +11955,18 @@ B0EXAMPLE2"></textarea></div>
         q('[data-ui-zip-status]').textContent = 'Country changed — click Generate to get a zip code for the new country.';
       }
       zipCountry = e.target.value;
+      syncZipNote();
     });
+    // A country without postal codes has no zip, and a listing can only carry a zip: such a listing is sent with the account's location.
+    function zipNoPostalText(c) { return countryNameOf(c) + " has no postal codes, and a listing can only carry a zip, so this listing is sent with your account's location. To sell from " + countryNameOf(c) + ', set its city and region in Settings > Selling settings > Product location > Custom.'; }
+    let noPostalNoteShown = false;
+    function syncZipNote() {
+      const c = fld('country_location')?.value || '';
+      const status = q('[data-ui-zip-status]');
+      if (COUNTRY_HAS_NO_POSTAL.has(c) && !fld('postal_code').value) { status.textContent = zipNoPostalText(c); noPostalNoteShown = true; }
+      else if (noPostalNoteShown) { status.textContent = 'Choose a country, type a city and click Generate to fill in a real zip code.'; noPostalNoteShown = false; }
+    }
+    syncZipNote();
 
     const syncImagesEmpty = () => { q('[data-ui-images-empty]').style.display = q('[data-ui-images]').children.length ? 'none' : ''; };
 
@@ -11979,7 +12048,7 @@ B0EXAMPLE2"></textarea></div>
         try {
           const loc = await requestPostalCode(country, city);
           fld('postal_code').value = loc.postalCode || '';
-          status.textContent = describePostalLocation(loc);
+          status.textContent = loc.notRequired ? zipNoPostalText(country) : describePostalLocation(loc);
         } catch (err) { status.textContent = err.message; }
         finally { btn.disabled = false; btn.textContent = label; }
       } else if (action === 'remove-image') {
@@ -18201,15 +18270,25 @@ async function autoSuggestEmptyDraftCategories() {
       // If the user previously chose "Custom" for their product location,
       // restore that view (select the option and reveal the fields) since
       // populateSelect() above won't find a matching merchant location key.
+      // What the store before this one left in the location boxes is not this store's: start empty.
+      for (const boxId of ['customLocationPostalCode', 'customLocationCity', 'customLocationState']) document.getElementById(boxId).value = '';
+      document.getElementById('postalLookupResult').textContent = '';
+      document.getElementById('customLocationCountry').value = 'US';
+      lastCustomCountry = 'US';
+      syncCustomLocationMode();
       if (savedSellerSettings.productLocationMode === 'custom') {
         document.getElementById('settingMerchantLocationKey').value = '__custom__';
         document.getElementById('customLocationFields').style.display = 'block';
         if (savedSellerSettings.customCountryCode) {
           document.getElementById('customLocationCountry').value = savedSellerSettings.customCountryCode;
+          lastCustomCountry = document.getElementById('customLocationCountry').value;
         }
         if (savedSellerSettings.customPostalCode) {
           document.getElementById('customLocationPostalCode').value = savedSellerSettings.customPostalCode;
         }
+        if (savedSellerSettings.customCity) document.getElementById('customLocationCity').value = savedSellerSettings.customCity;
+        if (savedSellerSettings.customState) document.getElementById('customLocationState').value = savedSellerSettings.customState;
+        syncCustomLocationMode();
       }
     } catch (err) {
       // Silently leave the fields blank if this fails - the user can still fetch manually.
@@ -18289,6 +18368,29 @@ async function autoSuggestEmptyDraftCategories() {
 
   document.getElementById('fetchEbayPoliciesBtn').addEventListener('click', () => fetchAndPopulateEbayPolicies());
 
+  // A country without postal codes is a city and a region: show the region box and say so. (The postal box stays: a code typed there is still used.)
+  function syncCustomLocationMode() {
+    const country = document.getElementById('customLocationCountry').value;
+    const none = COUNTRY_HAS_NO_POSTAL.has(country);
+    document.getElementById('customLocationStateField').style.display = none ? '' : 'none';
+    const note = document.getElementById('customLocationNoPostalNote');
+    note.style.display = none ? '' : 'none';
+    const typedCode = document.getElementById('customLocationPostalCode').value.trim();
+    note.textContent = !none ? '' : typedCode
+      ? countryNameOf(country) + ' has no postal codes. The code in the box is used as you typed it. To use a city and region instead, clear the postal code box and fill in the city and region.'
+      : countryNameOf(country) + ' has no postal codes, so eBay uses your city and region instead. Type them, or type the city and press Generate to find the region.';
+    const postalHint = document.getElementById('customLocationPostalHint');
+    if (postalHint) postalHint.style.display = none ? 'none' : '';
+    document.getElementById('customLocationPostalCode').placeholder = none ? 'None needed for this country' : 'Full code, e.g. M1 1AE';
+  }
+  var lastCustomCountry = 'US';
+  document.getElementById('customLocationCountry').addEventListener('change', () => {
+    const now = document.getElementById('customLocationCountry').value;
+    if (now !== lastCustomCountry) { document.getElementById('customLocationPostalCode').value = ''; document.getElementById('postalLookupResult').textContent = ''; }
+    lastCustomCountry = now;
+    syncCustomLocationMode();
+  });
+
   // Show/hide the custom postal code fields based on the dropdown selection.
   document.getElementById('settingMerchantLocationKey').addEventListener('change', (e) => {
     document.getElementById('customLocationFields').style.display = e.target.value === '__custom__' ? 'block' : 'none';
@@ -18300,7 +18402,7 @@ async function autoSuggestEmptyDraftCategories() {
     const resultEl = document.getElementById('postalLookupResult');
     const country = document.getElementById('customLocationCountry').value;
     const city = document.getElementById('customLocationCity').value.trim();
-    if (!city && country !== 'HK') {
+    if (!city) {
       resultEl.className = 'error';
       resultEl.textContent = 'Type a city first, for example "New York" or "Austin, Texas".';
       return;
@@ -18311,9 +18413,14 @@ async function autoSuggestEmptyDraftCategories() {
     try {
       const loc = await requestPostalCode(country, city);
       document.getElementById('customLocationPostalCode').value = loc.postalCode || '';
+      if (loc.notRequired) { if (loc.city) document.getElementById('customLocationCity').value = loc.city; if (loc.state) document.getElementById('customLocationState').value = loc.state; }
+      const cityBox = document.getElementById('customLocationCity').value.trim();
+      const regionBox = document.getElementById('customLocationState').value.trim();
+      const haveRegion = !!(loc.notRequired && cityBox && regionBox);
       resultEl.className = 'success';
-      resultEl.textContent = describePostalLocation(loc);
-      if (loc.postalCode) {
+      resultEl.textContent = loc.notRequired && !haveRegion ? countryNameOf(country) + ' has no postal codes. We found "' + (loc.city || city) + '" but no region: type your region, then press Save settings.' : describePostalLocation(loc.notRequired ? { ...loc, city: cityBox, state: regionBox } : loc);
+      syncCustomLocationMode();
+      if (loc.postalCode || haveRegion) {
         // A generated code is already verified, so it becomes the inventory location right away:
         // switch to "Custom", keep the country/postal code, and save exactly like Save settings does.
         const locSelect = document.getElementById('settingMerchantLocationKey');
@@ -18338,7 +18445,7 @@ async function autoSuggestEmptyDraftCategories() {
     const postalCode = document.getElementById('customLocationPostalCode').value.trim();
     if (!postalCode) {
       resultEl.className = 'error';
-      resultEl.textContent = 'Type your postal code first.';
+      resultEl.textContent = COUNTRY_HAS_NO_POSTAL.has(country) ? countryNameOf(country) + ' has no postal codes. Type your city and region (or press Generate), then press Save settings.' : 'Type your postal code first.';
       return;
     }
     btn.disabled = true;
@@ -18389,13 +18496,27 @@ async function autoSuggestEmptyDraftCategories() {
 
     if (isCustomLocation) {
       const customPostalCode = document.getElementById('customLocationPostalCode').value.trim();
-      if (!customPostalCode) {
-        statusEl.className = 'error';
-        statusEl.textContent = 'Please enter a postal code for your custom product location.';
-        return;
+      const customCountry = document.getElementById('customLocationCountry').value;
+      if (!customPostalCode && COUNTRY_HAS_NO_POSTAL.has(customCountry)) { // no postal codes there: the place is a city and a region
+        const customCity = document.getElementById('customLocationCity').value.trim();
+        const customState = document.getElementById('customLocationState').value.trim();
+        if (!customCity || !customState) {
+          statusEl.className = 'error';
+          statusEl.textContent = countryNameOf(customCountry) + ' has no postal codes. Type your city and region (or press Generate), then save.';
+          return;
+        }
+        body.customCity = customCity;
+        body.customState = customState;
+        body.customPostalCode = '';
+      } else {
+        if (!customPostalCode) {
+          statusEl.className = 'error';
+          statusEl.textContent = 'Please enter a postal code for your custom product location.';
+          return;
+        }
+        body.customPostalCode = customPostalCode;
       }
-      body.customCountryCode = document.getElementById('customLocationCountry').value;
-      body.customPostalCode = customPostalCode;
+      body.customCountryCode = customCountry;
       body.merchantLocationKey = ''; // not using a saved merchant location in this mode
     } else {
       body.merchantLocationKey = locationSelection;
