@@ -4229,6 +4229,37 @@
     .lv-actions .dv-btn { flex:1; } .dv-seg button span { display:none; }
   }
 
+  /* Live listings > Alerts: the same card as a live listing, with a colour for what happened (amber price up, green price down, blue a big drop that waits, grey ended, red could not end) */
+  .ll-pill { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 6px; border-radius:99px; background:#E53238; color:#fff; font:800 11px Inter,sans-serif; }
+  .al-bar { justify-content:space-between; }
+  .al-note { margin:0 0 14px; max-width:780px; font:500 13px/1.5 Inter,sans-serif; color:var(--dv-mute); }
+  .al-link { border:none; background:none; padding:0; color:#0064D2; font:inherit; font-weight:700; cursor:pointer; text-decoration:underline; }
+  .lv-card.ll-alert { grid-template-columns:92px minmax(0,1.3fr) minmax(0,1.7fr) auto; }
+  .lv-card.ll-alert.unseen { border-color:#BFD6F3; background:#FBFDFF; }
+  .ll-alert .lv-img, .ll-alert .lv-title { cursor:default; } .ll-alert .lv-title:hover { color:var(--dv-ink); }
+  .al-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .al-new { display:inline-flex; align-items:center; gap:5px; font:800 11px Inter,sans-serif; color:#0064D2; } .al-new::before { content:''; width:8px; height:8px; border-radius:50%; background:#0064D2; }
+  .al-when { font:600 12px Inter,sans-serif; color:var(--dv-mute); }
+  .al-detail { min-width:0; display:grid; gap:4px; font:600 13px/1.45 Inter,sans-serif; color:#334155; overflow-wrap:anywhere; }
+  .al-detail b { color:var(--dv-ink); } .al-detail .al-sub { font-weight:500; color:var(--dv-mute); } .al-detail .al-bad { color:#B42318; }
+  .al-x { width:32px; padding:0; font-size:18px; line-height:1; color:#667085; }
+  .al-why { grid-column:1 / -1; margin-top:-4px; padding:9px 12px; border-radius:10px; background:#F5F7FB; border:1px solid var(--dv-line); font:500 13px/1.5 Inter,sans-serif; color:#334155; overflow-wrap:anywhere; }
+  .al-why b { color:var(--dv-ink); font-weight:800; }
+  .lv-card.al-failed .al-why { background:#FEF3F2; border-color:#FECDCA; color:#7A271A; } .lv-card.al-failed .al-why b { color:#B42318; }
+  .lv-card.al-up::before { background:#F5AF02; } .lv-card.al-up .lv-status { background:#FEF3D0; color:#8A5A00; }
+  .lv-card.al-down::before { background:#86B817; } .lv-card.al-down .lv-status { background:#EDF7DC; color:#3F6208; }
+  .lv-card.al-held::before { background:#0064D2; } .lv-card.al-held .lv-status { background:#E8F1FD; color:#0B4FA0; }
+  .lv-card.al-ended::before { background:#98A2B3; } .lv-card.al-ended .lv-status { background:#F2F4F7; color:#475467; }
+  .lv-card.al-failed::before { background:#E53238; } .lv-card.al-failed .lv-status { background:#FDE8E9; color:#B42318; }
+  @media (max-width: 1100px) { .lv-card.ll-alert { grid-template-columns:92px minmax(0,1fr) auto; } .al-detail { grid-column:1 / -1; } }
+  @media (max-width: 640px) {
+    .lv-card.ll-alert { grid-template-columns:76px minmax(0,1fr); }
+    .lv-actions .al-x { flex:none; }
+    /* six tabs do not fit one row of a phone: the strip wraps to two rows, so the red number of the Alerts tab (a pill, which the rule that hides the other numbers leaves alone) is always in view */
+    .dv-toolbar #llTabs { max-width:100%; flex-wrap:wrap; } #llTabs button { flex:none; padding:0 9px; }
+    .al-bar .dv-seg { max-width:100%; flex-wrap:wrap; } .al-bar .dv-seg button { flex:none; }
+  }
+
   /* Security: devices + login activity */
   .sc-head-actions { display:flex; gap:8px; flex-wrap:wrap; }
   .sc-toggle { display:flex; gap:12px; align-items:flex-start; padding:12px 14px; margin-bottom:14px; border:1.5px solid var(--line); border-radius:12px; background:#FBFCFE; cursor:pointer; }
@@ -5507,6 +5538,22 @@
           </div>
           <p class="meta-line" style="margin-top:4px;">Variables for your own wording: <code>{{buyer_name}}</code>, <code>{{product_name}}</code>. In the "Shipped" update you can also use <code>{{tracking_number}}</code> and <code>{{carrier}}</code>; if you do not place the tracking number yourself, it is added at the end when you ship with one.</p>
           <div id="autoMessagesStatus" style="margin-top:10px;"></div>
+        </section>
+
+        <section class="st-card" id="priceAlertsCard">
+          <div class="st-head">
+            <div class="st-ico yellow">&#128276;</div>
+            <div class="st-head-txt"><h2>Price &amp; stock alerts</h2><p>ELMS checks every listing once a day. What it found is listed under Alerts in Live listings. This card is about the email.</p></div>
+          </div>
+          <label class="sc-toggle"><input type="checkbox" id="priceAlertMailToggle" disabled /><span class="toggle-slider-sm"></span><span><b>Email me about price changes and ended listings</b><small>At most one email a day, and only when something happened. Listings that were ended because the supplier ran out of stock, or that could not be ended, are always in it while this is on.</small></span></label>
+          <div class="st-field" style="margin-top:6px;max-width:320px;">
+            <label for="priceAlertMinSelect">Only tell me about price changes of at least</label>
+            <select class="st-input" id="priceAlertMinSelect" disabled>
+              <option value="0">Any change</option><option value="1">1%</option><option value="5">5%</option><option value="10">10%</option><option value="20">20%</option>
+            </select>
+          </div>
+          <p class="st-hint">This only limits the email. The Alerts tab always lists every change.</p>
+          <p class="st-status" id="priceAlertsStatus"></p>
         </section>
 
         <section class="st-card" id="veroCard">
@@ -8871,8 +8918,8 @@ B0EXAMPLE2"></textarea></div>
   // sidebar. Other stores' data stays in the backend and comes back when that store
   // is selected again. A background sync is started for the selected store (POST .../sync), so the page must ask how it is going
   // (GET .../sync-status) for the SAME store: the server keeps one running job per store, and asking without it finds none.
-  const STORE_SCOPED_GET = /^\/api\/(listings(\/queue|\/counts|\/summary|\/ids|\/export)?|dashboard|imports|system-notifications(\/unread-count)?|orders(\/sync-status)?|notifications(\/unread-count|\/sync-status)?)$/;
-  const STORE_SCOPED_POST = /^\/api\/(orders\/sync|notifications\/sync|system-notifications\/mark-all-read)$/;
+  const STORE_SCOPED_GET = /^\/api\/(listings(\/queue|\/counts|\/summary|\/ids|\/export|\/alerts)?|dashboard|imports|system-notifications(\/unread-count)?|orders(\/sync-status)?|notifications(\/unread-count|\/sync-status)?)$/;
+  const STORE_SCOPED_POST = /^\/api\/(orders\/sync|notifications\/sync|system-notifications\/mark-all-read|listings\/alerts\/seen)$/;
   let activeStoreId; // undefined = not loaded yet, '' = no store connected
   let activeStorePromise = null;
   function setActiveStoreId(id) { activeStoreId = id || ''; activeStorePromise = null; }
@@ -14172,6 +14219,16 @@ async function autoSuggestEmptyDraftCategories() {
   try { llView = localStorage.getItem('elmsLiveListingsView') === 'cards' ? 'cards' : 'rows'; } catch (_) {}
   // What each tab asks the server for - the real DB status value each tab's listings actually have.
   const LL_TAB_STATUS = { all: 'published', active: 'published', ended: 'ended', sold: 'sold', issues: 'error' };
+  // The Alerts tab: what the daily check did to this store's listings (a price that moved, a listing ended because the supplier ran out of stock, one that is out of
+  // stock but could not be ended). It is its own list (GET /api/listings/alerts), not a status a listing has, so it keeps its own state next to the listings'.
+  let llAlerts = []; // the alerts of the page being looked at
+  let llAlertKind = 'all'; // 'all' | 'price_up' | 'price_down' | 'out_of_stock'
+  let llAlertsTotal = 0;
+  let llAlertsPages = 1;
+  let llAlertsUnseen = 0; // the whole store, whatever the kind filter says
+  const LL_ALERT_PAGE_SIZES = [10, 20, 50, 100]; // the server sends 100 alerts at most
+  let llAlertsPageSize = 20;
+  let llDeepLinkRead = false; // /listing?tab=alerts (the link of the daily email) is read once, when the page is first opened
 
   function llListingStatus(l) {
     const s = String(l.status || '').toLowerCase();
@@ -14214,11 +14271,12 @@ async function autoSuggestEmptyDraftCategories() {
     return p;
   }
   async function llFetchPage() {
+    if (llTab === 'alerts') return llFetchAlerts(); // its own list, not a status of a listing
     const seq = ++llSeq;
     const p = llFilterParams();
     p.set('page', String(llPage)); p.set('limit', String(llPageSize)); p.set('sort', llSort);
-    const res = await apiFetch('/api/listings?' + p.toString());
-    const data = await res.json();
+    let res; let data;
+    try { res = await apiFetch('/api/listings?' + p.toString()); data = await res.json(); } catch (err) { if (seq !== llSeq) return false; throw err; } // a request that fails after a newer one has started is not heard of
     if (seq !== llSeq) return false; // a newer request took over
     if (!res.ok || !data.success) throw new Error(data.error || 'Could not load listings.');
     llTotal = data.total || 0;
@@ -14226,6 +14284,23 @@ async function autoSuggestEmptyDraftCategories() {
     if (!(data.listings || []).length && llTotal > 0 && llPage > 1) { llPage = llPages; return llFetchPage(); } // the last page emptied out (a delete): the new last one
     llAll = (data.listings || []).map(llTagRow);
     llPage = data.page || llPage;
+    return true;
+  }
+  /** One page of the Alerts tab. The newest request wins, like the listings'. The store comes from apiFetch (accountId is added to this path). */
+  async function llFetchAlerts() {
+    const seq = ++llSeq;
+    const p = new URLSearchParams({ kind: llAlertKind, page: String(llPage), limit: String(llAlertsPageSize) });
+    let res; let data;
+    try { res = await apiFetch('/api/listings/alerts?' + p.toString()); data = await res.json(); } catch (err) { if (seq !== llSeq) return false; throw err; } // a request that fails after a newer one has started is not heard of
+    if (seq !== llSeq) return false; // a newer request took over
+    if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the alerts.');
+    llAlertsTotal = data.total || 0;
+    llAlertsPages = data.pages || 1;
+    if (!(data.alerts || []).length && llAlertsTotal > 0 && llPage > 1 && llAlertsPages < llPage) { llPage = llAlertsPages; return llFetchAlerts(); } // the last page emptied out (an alert was dismissed): the new last one
+    llAlerts = data.alerts || [];
+    llPage = data.page || llPage;
+    llAlertsUnseen = Number(data.unseen) || 0;
+    if (llSummary && llSummary.counts) llSummary.counts.alerts = llAlertsUnseen; // the number on the tab follows what the server just said
     return true;
   }
   async function llFetchSummary() {
@@ -14240,15 +14315,25 @@ async function autoSuggestEmptyDraftCategories() {
   }
   /** Changes what the view asks for (a tab, the sort, the search, a page), then shows the new page. */
   async function llGo(change) {
+    const was = { tab: llTab, page: llPage, kind: llAlertKind }; // what the page on screen shows
     change();
     const box = document.getElementById('listingsContent');
     if (box) box.classList.add('is-loading');
-    try { if (await llFetchPage()) renderListings(); } catch (err) { showToast('Live listings', err.message, 'error'); } finally { if (box) box.classList.remove('is-loading'); }
+    try { if (await llFetchPage()) renderListings(); } catch (err) { llTab = was.tab; llPage = was.page; llAlertKind = was.kind; showToast('Live listings', err.message, 'error'); } finally { if (box) box.classList.remove('is-loading'); }
   }
   /** The same page again (after an edit, a delete, a sync) and the numbers above it. */
   async function llRefresh() {
     await llGo(() => {});
     llFetchSummary();
+  }
+
+  /** The "tab" of the address is taken out once it has opened its tab (other pages carry the address along, and a reload would open Alerts again). Other parameters (via, ref ...) stay. */
+  function llDropTabFromAddress() {
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.delete('tab');
+      window.history.replaceState(window.history.state, '', u.pathname + u.search + u.hash);
+    } catch (_) { /* file:// or a sandboxed frame cannot change the address */ }
   }
 
   async function loadListings() {
@@ -14258,9 +14343,23 @@ async function autoSuggestEmptyDraftCategories() {
     llSummary = null;
     llAutoRefreshed = false;
     llPage = 1;
+    if (!llDeepLinkRead) {
+      llDeepLinkRead = true;
+      try {
+        if (pageFromPath(window.location.pathname) === 'listings' && new URLSearchParams(window.location.search).get('tab') === 'alerts') {
+          llTab = 'alerts';
+          llDropTabFromAddress(); // used up
+        }
+      } catch (_) { /* no address to read */ }
+    }
     try {
       await ensureVeroWords();
-      await llFetchPage();
+      try { await llFetchPage(); } catch (err) {
+        if (llTab !== 'alerts') throw err;
+        llTab = 'all'; // the alerts could not be read: the listings open instead, and the next visit is not stuck on the same error
+        showToast('Live listings', err.message, 'error');
+        await llFetchPage();
+      }
       renderListings();
       llFetchSummary(); // the boxes above the list follow: the list does not wait for them
       llLoadFlags();
@@ -14310,8 +14409,13 @@ async function autoSuggestEmptyDraftCategories() {
 
   function llTabsHtml() {
     const c = llSummary ? llSummary.counts : null;
-    const tab = (key, label) => `<button type="button" class="${llTab === key ? 'on' : ''}" data-ll-tab="${key}">${label} <span>${c ? c[key] : '\u2026'}</span></button>`;
-    return tab('all', 'All') + tab('active', 'Active') + tab('sold', 'Sold') + tab('ended', 'Ended') + tab('issues', 'Issues');
+    const tab = (key, label) => {
+      const n = c ? (c[key] != null ? c[key] : '') : '\u2026'; // a server that sends no number for a tab shows none (never the word "undefined")
+      // the Alerts number is a red pill when something is new; it is not a <span>, so the phone rule that hides the other numbers leaves it alone
+      const count = key === 'alerts' && Number(n) > 0 ? `<b class="ll-pill" title="${escapeAttr(n + ' new alert' + (Number(n) === 1 ? '' : 's'))}">${Number(n) > 999 ? '999+' : n}</b>` : `<span>${n}</span>`;
+      return `<button type="button" class="${llTab === key ? 'on' : ''}" data-ll-tab="${key}">${label} ${count}</button>`;
+    };
+    return tab('all', 'All') + tab('active', 'Active') + tab('sold', 'Sold') + tab('ended', 'Ended') + tab('issues', 'Issues') + tab('alerts', 'Alerts');
   }
   function llKpiHtml() {
     const c = llSummary ? llSummary.counts : null;
@@ -14338,7 +14442,22 @@ async function autoSuggestEmptyDraftCategories() {
     if (llNoViews() && llSort !== 'views') { const o = document.querySelector('#llSortSelect option[value="views"]'); if (o) o.remove(); } // the summary arrived after the list was drawn
   }
 
+  /** The top of the page, the same on every tab: the heading with its buttons, the boxes with the numbers, and eBay's banner for listings that break a rule. */
+  function llTopHtml() {
+    return `
+        <header class="dv-hero">
+          <div><h1>Live listings</h1><p>Everything you have published to eBay: price, profit, stock and how buyers are reacting.</p></div>
+          <div class="dv-hero-actions">
+            <span class="dv-synced" id="llSyncedLabel">${escapeHtml(llSyncedText())}</span>
+            <button class="dv-btn" id="llSyncBtn" type="button">Sync from eBay</button>
+            <button class="dv-btn primary" id="llCreateBtn" type="button">+ Create listing</button>
+          </div>
+        </header>
+        <div class="lv-kpis" id="llKpis">${llKpiHtml()}</div>
+        <div id="llFlagBanner">${llFlagHtml()}</div>`;
+  }
   function renderListings() {
+    if (llTab === 'alerts') { renderAlertsTab(); return; }
     const container = document.getElementById('listingsContent');
     const restoreNote = keepNoteEditor(container);
     const typing = document.getElementById('llSearchInput');
@@ -14352,16 +14471,7 @@ async function autoSuggestEmptyDraftCategories() {
 
     container.innerHTML = `
       <div class="lv">
-        <header class="dv-hero">
-          <div><h1>Live listings</h1><p>Everything you have published to eBay: price, profit, stock and how buyers are reacting.</p></div>
-          <div class="dv-hero-actions">
-            <span class="dv-synced" id="llSyncedLabel">${escapeHtml(llSyncedText())}</span>
-            <button class="dv-btn" id="llSyncBtn" type="button">Sync from eBay</button>
-            <button class="dv-btn primary" id="llCreateBtn" type="button">+ Create listing</button>
-          </div>
-        </header>
-        <div class="lv-kpis" id="llKpis">${llKpiHtml()}</div>
-        <div id="llFlagBanner">${llFlagHtml()}</div>
+        ${llTopHtml()}
         <div class="dv-toolbar">
           <label class="dv-selectall"><input type="checkbox" id="llSelectAll" /> Select</label><button type="button" class="dv-selectevery" id="llSelectEvery" hidden title="Select every live listing of this view, on all pages"></button>
           <span class="dv-seg" role="tablist" id="llTabs">${llTabsHtml()}</span>
@@ -14991,6 +15101,263 @@ async function autoSuggestEmptyDraftCategories() {
         document.body.appendChild(menu);
       });
     });
+  }
+
+  // ---------- Live listings: the Alerts tab ----------
+  // The daily check writes one alert for every price it followed, every listing it ended because the supplier is out of stock, every listing that was out of stock but
+  // could not be ended, and every big price drop it is waiting to confirm (GET /api/listings/alerts). Nothing here is worked out on this page: the numbers are the ones the
+  // check recorded. "Mark all as seen" and the red number on the tab are about the alerts the seller has not looked at yet.
+  const LL_ALERT_KINDS = {
+    price_up: { label: 'Price up', cls: 'al-up' },
+    price_down: { label: 'Price down', cls: 'al-down' },
+    price_drop_held: { label: 'Big drop, waiting', cls: 'al-held' },
+    ended_out_of_stock: { label: 'Ended: out of stock', cls: 'al-ended' },
+    end_failed: { label: 'Still live: could not end', cls: 'al-failed' },
+  };
+  const LL_ALERT_FILTERS = [['all', 'All'], ['price_up', 'Price up'], ['price_down', 'Price down'], ['out_of_stock', 'Out of stock']];
+  const LL_SOURCE_NAMES = { amazon: 'Amazon', cj: 'CJdropshipping', aliexpress: 'AliExpress' };
+
+  /** "3 h ago" for the last week, the date after that; the full date and time is the tooltip. */
+  function llAlertWhen(v) {
+    const t = v ? new Date(v) : null;
+    if (!t || isNaN(t)) return { text: '', title: '' };
+    const mins = Math.max(0, Math.round((Date.now() - t.getTime()) / 60000));
+    const text = mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : mins < 1440 ? Math.round(mins / 60) + ' h ago' : mins < 10080 ? Math.round(mins / 1440) + ' d ago' : t.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+    return { text, title: t.toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) };
+  }
+
+  // The daily check stores a "note" (why an eBay price was not changed) and a "reason" (why a listing could not be ended, or was ended) for some alerts. They are whole sentences
+  // or short phrases; the helpers below take either, and a text that would name a service behind ELMS is never shown.
+  const LL_VENDOR_WORDS = /canopy|easyparser/i;
+  const LL_ENDED_SENTENCE = /the supplier has no stock, so elms ended this listing on ebay\.?/i;
+  const LL_FILLER_WORDS = new Set('the supplier has no stock so elms ended this listing on ebay out of at is was item product'.split(' ')); // words that only say "out of stock" again
+  const llSellerText = (v) => { const s = String(v == null ? '' : v).replace(/\s+/g, ' ').trim(); return s && !LL_VENDOR_WORDS.test(s) ? s : ''; };
+  /** A note of a price alert as one sentence ("Repricing is switched off for this listing."), without the ", so your eBay price was not changed" the server may add. '' = nothing to add. */
+  function llNoteSentence(note) {
+    const s = llSellerText(note).replace(/[,;:]?\s*so your eBay price (?:was|has been) not changed\.?$/i, '').replace(/[.\s]+$/, '');
+    if (!s || /^your ebay price (?:was|has been) not changed$/i.test(s)) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1) + '.';
+  }
+  /** The same note to go inside brackets: no full stop, and a first word that is only capitalised for being first is written small. */
+  function llNoteInline(note) {
+    const s = llNoteSentence(note).replace(/\.$/, '');
+    return /^[A-Z][a-z]/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s;
+  }
+  /** Why a listing could not be ended: the server may send the whole sentence ("... could not end it on eBay (why): end it yourself."), then only the why is kept. */
+  function llEndFailedWhy(reason) {
+    const s = llSellerText(reason);
+    const m = s.match(/could not end (?:it|this listing) on ebay\s*\((.*)\)/i);
+    if (m) return m[1].trim();
+    return s.replace(/[:;,.\s]*end it (?:on ebay )?yourself\.?$/i, '').replace(/[.\s]+$/, '');
+  }
+  /** What the reason of an ended listing adds to "the supplier has no stock": nothing when it only says that again. */
+  function llEndedExtra(reason) {
+    const s = llSellerText(reason).replace(LL_ENDED_SENTENCE, '').replace(/^[.,;:\s]+|[.\s]+$/g, '');
+    const words = s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+    if (!words.length || words.every((w) => LL_FILLER_WORDS.has(w))) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1) + '.';
+  }
+
+  const LL_LIVE_STATUSES = ['published', 'active', 'paused']; // a listing in one of these is for sale on eBay
+  /**
+   * An alert of a listing that was out of stock but could not be ended, whose listing is not for sale any more (ended since, sold, deleted): nothing is left for the seller to do,
+   * so it is shown as done. Without a listing to look at (no id) it stays as the check wrote it.
+   */
+  function llAlertResolved(a) {
+    if (a.kind !== 'end_failed' || !a.listing_id) return false;
+    return LL_LIVE_STATUSES.indexOf(String(a.listing_status || '').toLowerCase()) < 0;
+  }
+  /**
+   * What became of the eBay price of a price alert the check followed: 'same' (the pricing rule gave the same price, to the cent), 'followed' (it moved the way the supplier price
+   * moved), 'recalc' (it moved the other way: a pricing rule at work), 'updated' (it changed, but the old and the new price are not known).
+   */
+  function llEbayMove(a) {
+    const d = a.data || {};
+    const has = (v) => v != null && v !== '' && Number.isFinite(Number(v));
+    if (!has(d.sellFrom) || !has(d.sellTo)) return 'updated';
+    const diff = Math.round(Number(d.sellTo) * 100) - Math.round(Number(d.sellFrom) * 100);
+    if (diff === 0) return 'same';
+    return (diff > 0) === (a.kind === 'price_up') ? 'followed' : 'recalc';
+  }
+
+  /** What happened, in numbers: the supplier's price, and what became of the eBay price. Text that came from the server goes through escapeHtml. */
+  function llAlertDetailHtml(a) {
+    const d = a.data || {};
+    const has = (v) => v != null && v !== '' && Number.isFinite(Number(v));
+    const move = (from, to, cur) => `<b>${escapeHtml(formatPrice(from, cur))} \u2192 ${escapeHtml(formatPrice(to, cur))}</b>`;
+    if (!LL_ALERT_KINDS[a.kind]) return ''; // a kind this page does not know: no numbers and no claim about the eBay price (the row still shows what it is)
+    if (a.kind === 'ended_out_of_stock') return '<div>Ended on eBay: the supplier is out of stock.</div>';
+    if (llAlertResolved(a)) return '<div>Out of stock at the supplier. ELMS could not end it at that time.</div><div class="al-sub">' + (a.listing_status ? 'It is no longer live on eBay.' : 'The listing is no longer in ELMS.') + '</div>';
+    if (a.kind === 'end_failed') { const why = llEndFailedWhy(d.reason); return `<div class="al-bad">Out of stock at the supplier, but still live on eBay: ELMS could not end it${why ? ' (' + escapeHtml(why) + ')' : ''}.</div><div class="al-sub">End it on eBay yourself.</div>`; }
+    const pct = has(d.pct) ? ' (' + (Number(d.pct) > 0 ? '+' : '') + Number(d.pct).toFixed(1) + '%)' : '';
+    const first = `<div>${escapeHtml(LL_SOURCE_NAMES[a.source] || 'Supplier')} price ${move(d.from, d.to, a.source_currency || a.currency)}${escapeHtml(pct)}</div>`;
+    if (a.kind === 'price_drop_held') return first + '<div class="al-sub">Waiting for a second reading: your eBay price was not changed.</div>';
+    if (d.ebayChanged === true) {
+      const moved = llEbayMove(a); // "followed" is said only when the eBay price moved the way the supplier price did (a pricing rule can keep it where it was, or turn it the other way)
+      if (moved === 'same') return first + `<div>Your eBay price <b>stayed at ${escapeHtml(formatPrice(d.sellTo, a.currency))}</b></div><div class="al-sub">Your pricing rule gives the same price.</div>`;
+      if (moved === 'recalc') return first + `<div>Your eBay price ${move(d.sellFrom, d.sellTo, a.currency)}</div><div class="al-sub">Your pricing rule recalculated it.</div>`;
+      return first + (moved === 'followed' ? `<div>Your eBay price ${move(d.sellFrom, d.sellTo, a.currency)}</div>` : '<div>Your eBay price was updated.</div>');
+    }
+    const note = llNoteInline(d.note);
+    return first + `<div class="al-sub">Your eBay price was not changed${note ? ' (' + escapeHtml(note) + ')' : ''}.</div>`;
+  }
+
+  /**
+   * "Why this is an alert:" - one plain sentence under the numbers that says what the daily check found and what it did, from the same facts as the line above it. The Amazon price
+   * is in the supplier's currency, the eBay price in the listing's. Text from the server is escaped; a kind this page does not know gets no line (a wrong reason is worse than none).
+   */
+  function llAlertWhyHtml(a) {
+    const d = a.data || {};
+    const has = (v) => v != null && v !== '' && Number.isFinite(Number(v));
+    const money = (v, cur) => escapeHtml(formatPrice(v, cur));
+    const supplierCur = a.source_currency || a.currency; // the supplier's price is in its own currency
+    let t = '';
+    if (a.kind === 'price_up' || a.kind === 'price_down') {
+      const pct = has(d.pct) ? ' (' + (Number(d.pct) > 0 ? '+' : '') + Number(d.pct).toFixed(1) + '%)' : '';
+      t = 'The ' + escapeHtml(LL_SOURCE_NAMES[a.source] || 'supplier') + ' price went ' + (a.kind === 'price_up' ? 'up' : 'down') + (has(d.from) && has(d.to) ? ' from ' + money(d.from, supplierCur) + ' to ' + money(d.to, supplierCur) : '') + escapeHtml(pct) + '.';
+      if (d.ebayChanged === true) {
+        const moved = llEbayMove(a);
+        const pair = has(d.sellFrom) && has(d.sellTo) ? ' (' + money(d.sellFrom, a.currency) + ' to ' + money(d.sellTo, a.currency) + ')' : '';
+        t += moved === 'same' ? ' Your eBay price stayed at ' + money(d.sellTo, a.currency) + ' (your pricing rule gives the same price).'
+          : moved === 'recalc' ? ' Your pricing rule recalculated your eBay price' + pair + '.'
+          : moved === 'followed' ? ' Your eBay price followed' + pair + '.'
+          : ' Your eBay price was updated.';
+      } else t += ' Your eBay price was not changed.' + (llNoteSentence(d.note) ? ' ' + escapeHtml(llNoteSentence(d.note)) : '');
+    } else if (a.kind === 'ended_out_of_stock') {
+      t = 'The supplier has no stock, so ELMS ended this listing on eBay.' + (llEndedExtra(d.reason) ? ' ' + escapeHtml(llEndedExtra(d.reason)) : '');
+    } else if (llAlertResolved(a)) {
+      t = 'The supplier had no stock and ELMS could not end this listing on eBay at that time. It is no longer live.';
+    } else if (a.kind === 'end_failed') {
+      const why = llEndFailedWhy(d.reason);
+      t = 'The supplier has no stock but ELMS could not end this listing on eBay' + (why ? ' (' + escapeHtml(why) + ')' : '') + '. End it on eBay yourself so nobody orders it.';
+    } else if (a.kind === 'price_drop_held') {
+      t = 'The supplier price fell by more than 40%' + (has(d.from) && has(d.to) ? ' (' + money(d.from, supplierCur) + ' to ' + money(d.to, supplierCur) + ')' : '') + ': ELMS waits for a second reading before changing your eBay price.';
+    }
+    return t ? '<div class="al-why"><b>Why this is an alert:</b> ' + t + '</div>' : '';
+  }
+
+  function llAlertRowHtml(a) {
+    // an out-of-stock listing that could not be ended and is not for sale any more is shown as done (grey), not as something to do (red)
+    const kind = llAlertResolved(a) ? { label: a.listing_status ? 'Could not end: since ended' : 'Could not end: listing gone', cls: 'al-ended' } : (LL_ALERT_KINDS[a.kind] || { label: 'Alert', cls: 'al-ended' });
+    const findable = !!a.listing_id && a.listing_status != null; // a listing that is not in ELMS any more (the server sends no status for it) cannot be found
+    const when = llAlertWhen(a.created_at);
+    const title = String(a.title || a.listing_title || '');
+    const image = a.main_image || a.listing_image || '';
+    const itemId = a.ebay_listing_id || '';
+    // a listing that was ended can be put back on eBay from here (the same window as the row menu of the Ended tab)
+    const canRelist = a.kind === 'ended_out_of_stock' && !!a.listing_id && !!a.listing_status && llListingStatus({ status: a.listing_status }) === 'ended';
+    return `
+      <article class="lv-card ll-alert ${kind.cls}${a.seen ? '' : ' unseen'}" data-alert-id="${escapeAttr(a.id)}">
+        ${image ? `<img class="lv-img" src="${escapeAttr(image)}" alt="" loading="lazy" />` : '<div class="lv-img"></div>'}
+        <div class="lv-main">
+          <div class="al-top"><span class="lv-status">${escapeHtml(kind.label)}</span>${a.seen ? '' : '<span class="al-new" title="You have not looked at this one yet">New</span>'}<span class="al-when" title="${escapeAttr(when.title)}">${escapeHtml(when.text)}</span></div>
+          <h3 class="lv-title">${escapeHtml(title) || '\u2014'}</h3>
+          <div class="dv-chips">
+            ${sourceBadgeHtml({ source_platform: a.source })}
+            ${a.sku ? `<span class="dv-chip">${escapeHtml(String(a.sku))}</span>` : ''}
+            ${itemId ? `<a class="dv-chip" href="${escapeAttr(llEbayUrl({ marketplace_id: a.marketplace_id }, itemId))}" target="_blank" rel="noopener noreferrer" title="Open the eBay listing">eBay ${escapeHtml(String(itemId))} &#8599;</a>` : ''}
+          </div>
+        </div>
+        <div class="al-detail">${llAlertDetailHtml(a)}</div>
+        <div class="lv-actions">
+          ${canRelist ? '<button type="button" class="dv-btn primary small" data-al-relist>Relist</button>' : ''}
+          ${findable ? '<button type="button" class="dv-btn small" data-al-find>Find listing</button>' : ''}
+          <button type="button" class="dv-btn small ghost al-x" data-al-del aria-label="Dismiss this alert" title="Dismiss this alert">&times;</button>
+        </div>
+        ${llAlertWhyHtml(a)}
+      </article>`;
+  }
+
+  function renderAlertsTab() {
+    const container = document.getElementById('listingsContent');
+    const pages = Math.max(1, llAlertsPages);
+    const start = (llPage - 1) * llAlertsPageSize;
+    llPageIds = []; // nothing on this tab can be ticked
+    container.innerHTML = `
+      <div class="lv">
+        ${llTopHtml()}
+        <div class="dv-toolbar">
+          <span class="dv-seg" role="tablist" id="llTabs">${llTabsHtml()}</span>
+        </div>
+        <div class="dv-toolbar al-bar">
+          <span class="dv-seg" role="group" aria-label="Kind of alert" id="llAlertKinds">${LL_ALERT_FILTERS.map(([k, t]) => `<button type="button" class="${llAlertKind === k ? 'on' : ''}" data-al-kind="${k}">${t}</button>`).join('')}</span>
+          ${llAlertsUnseen > 0 ? '<button type="button" class="dv-btn" id="llAlertsSeenBtn">Mark all as seen</button>' : ''}
+        </div>
+        <p class="al-note">ELMS checks every listing once a day. Price changes and listings ended because the supplier ran out of stock show here, and one email a day sums them up. You can change or switch off that email in <button type="button" class="al-link" data-eg-page="settings">Settings</button>.</p>
+        ${llAlerts.length ? `
+        <div class="lv-list" id="llAlertList">${llAlerts.map((a) => llAlertRowHtml(a)).join('')}</div>
+        <div class="dv-footer">
+          <div>Showing ${start + 1}&ndash;${start + llAlerts.length} of ${llAlertsTotal.toLocaleString()} alert${llAlertsTotal === 1 ? '' : 's'}</div>
+          <div class="dv-footer-right">
+            ${llPaginationHtml(llPage, pages)}
+            <label class="dv-pagesize">Show <select id="llAlertSizeSelect" class="dv-select">${LL_ALERT_PAGE_SIZES.map((n) => `<option value="${n}"${n === llAlertsPageSize ? ' selected' : ''}>${n}</option>`).join('')}</select> per page</label>
+          </div>
+        </div>` : `<div class="dv-empty"><b>${llAlertKind === 'all' ? 'No alerts yet' : 'No alerts in this view'}</b>${llAlertKind === 'all' ? 'When a price changes or a listing runs out of stock at the supplier, it appears here.' : 'Try another filter.'}</div>`}
+      </div>
+    `;
+    wireListingsPage(); // the heading buttons, the tabs and the pager are the page's own
+    wireAlertsPanel();
+  }
+
+  function wireAlertsPanel() {
+    const root = document.getElementById('listingsContent');
+    root.querySelector('#llAlertKinds')?.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-al-kind]');
+      const kind = b && b.getAttribute('data-al-kind');
+      if (kind && kind !== llAlertKind) llGo(() => { llAlertKind = kind; llPage = 1; });
+    });
+    root.querySelector('#llAlertSizeSelect')?.addEventListener('change', (e) => { const v = Number(e.target.value) || 20; llGo(() => { llAlertsPageSize = v; llPage = 1; }); });
+    root.querySelector('#llAlertsSeenBtn')?.addEventListener('click', (e) => llMarkAlertsSeen(e.currentTarget));
+    root.querySelector('#llAlertList')?.addEventListener('click', (e) => {
+      const row = e.target.closest('.ll-alert');
+      const a = row && llAlerts.find((x) => String(x.id) === row.getAttribute('data-alert-id'));
+      if (!a) return;
+      const del = e.target.closest('[data-al-del]');
+      if (del) return void llDismissAlert(a, del);
+      if (e.target.closest('[data-al-find]')) return void llFindAlertListing(a);
+      if (e.target.closest('[data-al-relist]')) openRelistDialog([String(a.listing_id)], { offerMore: false });
+    });
+  }
+
+  /** "Mark all as seen": every alert of the store (the server marks them all, not only this page), then the red number goes. */
+  async function llMarkAlertsSeen(btn) {
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/api/listings/alerts/seen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not mark the alerts as seen.');
+    } catch (err) {
+      btn.disabled = false;
+      showToast('Alerts', err.message, 'error');
+      return;
+    }
+    llAlerts.forEach((a) => { a.seen = true; });
+    llAlertsUnseen = 0;
+    if (llSummary && llSummary.counts) llSummary.counts.alerts = 0;
+    if (llTab === 'alerts') renderAlertsTab(); else llApplySummary(); // the seller may have changed tab while this ran
+  }
+
+  /** The x on a row: the alert is removed on the server, then the page is read again (the next alert takes its place, the numbers are the server's). */
+  async function llDismissAlert(a, btn) {
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/api/listings/alerts/' + encodeURIComponent(a.id), { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok && res.status !== 404) throw new Error(data.error || 'Could not remove this alert.'); // 404: it was already gone, which is what was asked
+    } catch (err) {
+      btn.disabled = false;
+      showToast('Alerts', err.message, 'error');
+      return;
+    }
+    await llGo(() => {});
+  }
+
+  /** "Find listing": the All tab with its SKU searched - or the tab the listing is on now (an ended or sold-out listing is not on All). */
+  function llFindAlertListing(a) {
+    const q = String(a.sku || a.ebay_listing_id || a.title || '').trim();
+    if (!q) return;
+    const tab = { active: 'all', sold: 'sold', ended: 'ended', issues: 'issues' }[llListingStatus({ status: a.listing_status })] || 'all';
+    llGo(() => { llSearch = q; llTab = tab; llPage = 1; llVeroOnly = false; llSource = ''; }); // a filter left on from before must not hide the listing
   }
 
   // ---------- Net Profit sheet ----------
@@ -17233,6 +17600,7 @@ async function autoSuggestEmptyDraftCategories() {
     loadSecurityOverview();
     loadVeroSettings();
     loadPricingRule();
+    loadPriceAlertSettings(); // not behind the awaits below: its two controls stay switched off until it has answered
     await loadEbayAccountsList();
     await loadOrderSyncSettings();
     await loadExtensionKey();
@@ -17664,6 +18032,61 @@ async function autoSuggestEmptyDraftCategories() {
   });
   document.getElementById('orderedTextSaveBtn')?.addEventListener('click', () => saveAutoMessageSetting('orderedText', document.getElementById('orderedTextInput').value));
   document.getElementById('shippedTextSaveBtn')?.addEventListener('click', () => saveAutoMessageSetting('shippedText', document.getElementById('shippedTextInput').value));
+  // ---------- Settings: Price & stock alerts (the daily email; the Alerts tab of Live listings always lists everything) ----------
+  let paSaved = null; // what the server holds: { mail, minPercent }. null until it has been read, and the two controls stay switched off until then
+  let paQueue = Promise.resolve(); // the saves go one after the other: a quick second change cannot be overwritten by the answer to the first
+  /** Puts values on the two controls (only the named fields, so a change made while another save is still running is not undone). */
+  function paShow(values, fields) {
+    const mailBox = document.getElementById('priceAlertMailToggle');
+    const sel = document.getElementById('priceAlertMinSelect');
+    if (!mailBox || !sel) return;
+    if (!fields || fields.includes('mail')) mailBox.checked = !!values.mail;
+    if (!fields || fields.includes('minPercent')) {
+      const v = Number(values.minPercent) || 0;
+      if (![...sel.options].some((o) => Number(o.value) === v)) { const o = document.createElement('option'); o.value = String(v); o.textContent = v + '%'; sel.appendChild(o); } // a value set another way is shown, not hidden
+      sel.value = String(v);
+    }
+  }
+  async function loadPriceAlertSettings() {
+    const status = document.getElementById('priceAlertsStatus');
+    if (!status) return;
+    try {
+      const res = await apiFetch('/api/listings/alerts/settings');
+      const data = await res.json();
+      if (!res.ok || !data.success || typeof data.mail !== 'boolean') throw new Error('not read');
+      paSaved = { mail: data.mail, minPercent: Number(data.minPercent) || 0 };
+      paShow(paSaved);
+      document.getElementById('priceAlertMailToggle').disabled = false;
+      document.getElementById('priceAlertMinSelect').disabled = false;
+      status.className = 'st-status';
+      status.textContent = '';
+    } catch (_) {
+      status.className = 'st-status error';
+      status.textContent = 'Could not read these settings. Open Settings again in a moment.';
+    }
+  }
+  function savePriceAlertSetting(body) {
+    const fields = Object.keys(body);
+    const run = async () => {
+      const status = document.getElementById('priceAlertsStatus');
+      try {
+        const res = await apiFetch('/api/listings/alerts/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Could not save this setting.');
+        if (typeof data.mail === 'boolean') paSaved.mail = data.mail;
+        if (data.minPercent != null && Number.isFinite(Number(data.minPercent))) paSaved.minPercent = Number(data.minPercent);
+        paShow(paSaved, fields);
+        if (status) { status.className = 'st-status success'; status.textContent = 'Saved!'; }
+      } catch (err) {
+        paShow(paSaved, fields); // back to what the server holds
+        if (status) { status.className = 'st-status error'; status.textContent = err.message; }
+      }
+    };
+    paQueue = paQueue.then(run, run);
+    return paQueue;
+  }
+  document.getElementById('priceAlertMailToggle')?.addEventListener('change', (e) => savePriceAlertSetting({ mail: e.target.checked }));
+  document.getElementById('priceAlertMinSelect')?.addEventListener('change', (e) => savePriceAlertSetting({ minPercent: Number(e.target.value) }));
   document.getElementById('secLogoutOthersBtn')?.addEventListener('click', async (e) => {
     const btn = e.currentTarget; // before the await (it is null once the click event is over)
     if (!(await elmsConfirm('Log out every other device? This device stays signed in.'))) return;
