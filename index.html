@@ -767,6 +767,33 @@
   .reconnect-banner-btn { flex:0 0 auto; border:0; border-radius:8px; background:#B42318; color:#fff; font:inherit; font-weight:700; padding:8px 16px; cursor:pointer; }
   .reconnect-banner-btn:hover { background:#912018; }
   @media (max-width: 720px) { .reconnect-banner { padding:8px 16px; font-size:13px; } .reconnect-banner-text small { display:none; } .reconnect-banner-btn { padding:7px 14px; } }
+
+  /* The plan line, under the reconnect line: amber while the extra days after a plan's end run (everything still works), red once ELMS is paused for the account.
+     Shown on every page. Like the reconnect line it is a non-shrinking child of .main, so the Messages frame (which never scrolls as a whole) simply has that much less room. */
+  .plan-banner { flex:0 0 auto; display:flex; align-items:center; gap:10px 16px; flex-wrap:wrap; border-bottom:1px solid; padding:10px 32px; font-size:14px; line-height:1.45; }
+  .plan-banner[hidden] { display:none; }
+  .plan-banner.grace { background:#FFFBEB; border-color:#FDE68A; color:#78350F; }
+  .plan-banner.paused { background:#FEF2F2; border-color:#FECACA; color:#7F1D1D; }
+  .plan-banner-text { flex:1 1 320px; min-width:0; overflow-wrap:break-word; }
+  .pb-short, .plan-banner-more { display:none; } /* the short line and its "show all" arrow are for phones */
+  .plan-banner-more { flex:0 0 auto; border:0; background:transparent; color:inherit; font:inherit; font-size:20px; line-height:1; padding:2px 8px; margin:-6px 0; cursor:pointer; border-radius:6px; }
+  .plan-banner-btn { flex:0 0 auto; border:0; border-radius:8px; color:#fff; font:inherit; font-weight:700; padding:8px 16px; cursor:pointer; }
+  .plan-banner.grace .plan-banner-btn { background:#B45309; }
+  .plan-banner.grace .plan-banner-btn:hover { background:#92400E; }
+  .plan-banner.paused .plan-banner-btn { background:#B42318; }
+  .plan-banner.paused .plan-banner-btn:hover { background:#912018; }
+  .app-shell.on-plans .plan-banner-btn { display:none; } /* the button leads to the Plans page: on that page it would lead nowhere */
+  /* On a phone the line is ONE short row (about 44px: the Messages frame needs the room): the short text, an arrow that opens the whole sentence, and the button. */
+  @media (max-width: 720px) {
+    .plan-banner { flex-wrap:nowrap; gap:6px; padding:6px 12px; font-size:13px; }
+    .plan-banner-text { flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .pb-full { display:none; } .pb-short { display:inline; }
+    .plan-banner-more { display:block; }
+    .plan-banner.open .plan-banner-text { white-space:normal; }
+    .plan-banner.open .pb-full { display:inline; } .plan-banner.open .pb-short { display:none; }
+    .plan-banner.open .plan-banner-more { transform:rotate(180deg); }
+    .plan-banner-btn { padding:6px 12px; }
+  }
   .topbar {
     display: flex;
     align-items: center;
@@ -812,6 +839,9 @@
     box-shadow: 0 4px 14px rgba(37,99,235,0.35);
   }
   .credit-balance-chip svg { width: 15px; height: 15px; }
+  .credit-balance-chip.is-paused { background:#B42318; box-shadow:0 2px 8px rgba(180,35,24,0.28); }
+  .credit-balance-chip.is-paused:hover { box-shadow:0 4px 14px rgba(180,35,24,0.38); }
+  .credit-balance-chip.is-paused .cb-word { display:none; }
   .user-chip {
     display: none;
     position: relative;
@@ -4760,6 +4790,12 @@
       <button type="button" class="reconnect-banner-btn" id="reconnectBannerBtn">Reconnect eBay</button>
     </div>
 
+    <div class="plan-banner" id="planBanner" role="status" hidden>
+      <div class="plan-banner-text" id="planBannerText"></div>
+      <button type="button" class="plan-banner-more" id="planBannerMore" aria-expanded="false" aria-label="Show the whole message">&#9662;</button>
+      <button type="button" class="plan-banner-btn" id="planBannerBtn">Renew plan</button>
+    </div>
+
     <div class="sidebar-scrim" id="sidebarScrim"></div>
 
     <div class="content">
@@ -7133,6 +7169,7 @@ B0EXAMPLE2"></textarea></div>
     if (!opts.fromPop || page !== asked) syncUrlToPage(page, !!opts.replace || page !== asked); // an address that was sent to another panel is rewritten, also when it came from the back button
     document.querySelector('.content')?.classList.toggle('messages-wide', page === 'messages');
     document.getElementById('appShell')?.classList.toggle('msg-frame', page === 'messages');
+    document.getElementById('appShell')?.classList.toggle('on-plans', page === 'pricing');
     document.querySelector('.content')?.classList.toggle('drafts-wide', page === 'drafts' || page === 'listings' || page === 'orders' || page === 'netprofit' || page === 'admin' || leftMenu);
     document.getElementById('appShell')?.classList.toggle('owner-mode', leftMenu);
     const shownPage = leftMenu ? 'admin' : page; // the owner and team panels are the admin page in another frame
@@ -7275,9 +7312,11 @@ B0EXAMPLE2"></textarea></div>
    * after a few seconds.
    */
   function showToast(title, message, type = '', opts = {}) {
+    if (type === 'error' && !opts.planRefusal && isPlanPausedRepeat(message)) return;
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    if (opts.planRefusal) toast.dataset.refusal = '1';
     const icon = type === 'success' ? '\u2713' : type === 'error' ? '\u26A0' : '<span class="toast-spinner"></span>';
     if (type === 'error' && typeof message === 'string' && !adminPageOpen()) message = neutralErrorText(message); // a raw technical message is never shown (the admin sees the real text)
     toast.innerHTML = `
@@ -7298,13 +7337,23 @@ B0EXAMPLE2"></textarea></div>
   // specific error text the calling code's own catch block already shows. A bulk action can trigger several 402s
   // within the same beat (one per row); a short cooldown keeps that down to a single toast, not one per row.
   let lastOutOfCreditsToastAt = 0;
-  var PLAN_LIMIT_TITLES = { plan_feature: 'Not in your plan', drafts_allowance: 'No new drafts left this month', drafts_cap: 'Drafts is full', live_limit: 'Live listings: your plan is full', ai_quota: 'No AI actions left this month' };
+  var PLAN_LIMIT_TITLES = { plan_feature: 'Not in your plan', drafts_allowance: 'No new drafts left this month', drafts_cap: 'Drafts is full', live_limit: 'Live listings: your plan is full', ai_quota: 'No AI actions left this month', plan_paused: 'Plan ended' };
   var lastPlanLimitToastAt = 0;
   function showPlanLimitToast(d) {
     if (Date.now() - lastPlanLimitToastAt < 5000) return; // a bulk action can be refused many times in one beat: one toast is enough
     lastPlanLimitToastAt = Date.now();
-    showToast(PLAN_LIMIT_TITLES[d.code], d.error || '', 'error', { actionLabel: 'See plans', onAction: () => showPage('pricing') });
+    showToast(PLAN_LIMIT_TITLES[d.code], d.error || '', 'error', { actionLabel: 'See plans', onAction: () => showPage('pricing'), planRefusal: true });
+    if (d.code === 'plan_paused') dropPlanPausedRepeats();
   }
+  // A paused account is refused with the same sentence on every action. The toast above says it once; the error toast the failed action raises by itself (it prints the server's sentence too, alone or after some words of its own) is dropped for a moment.
+  var lastPlanPausedAnswer = { text: '', at: 0 };
+  function rememberPlanPaused(d) { lastPlanPausedAnswer = { text: String((d && d.error) || ''), at: Date.now() }; }
+  // The failed action may have been quicker than this answer: its own toast, already on screen with the sentence in it, goes when the one toast with the button arrives.
+  function dropPlanPausedRepeats() {
+    const text = lastPlanPausedAnswer.text;
+    if (text) document.querySelectorAll('#toastContainer .toast:not([data-refusal])').forEach((el) => { if (el.textContent.includes(text)) el.remove(); });
+  }
+  function isPlanPausedRepeat(message) { return !!lastPlanPausedAnswer.text && typeof message === 'string' && message.includes(lastPlanPausedAnswer.text) && Date.now() - lastPlanPausedAnswer.at < 15000; } // (a page may put words in front of the sentence: "The eBay note was not changed: ...")
   // What the price line of an AI action says for a plan by listings: it is part of the plan, with the AI actions left this month (the server sends included + aiLeft). null = the credits price.
   function includedLine(d) {
     if (!d || !d.included) return null;
@@ -7313,6 +7362,87 @@ B0EXAMPLE2"></textarea></div>
   }
   // True when the person is on a plan by listings (no credits are used while it runs).
   function onSlotsPlan() { return !!(window.currentUser && window.currentUser.planModel === 'slots'); }
+
+  // ---------- The plan line under the top bar, and the "Paused" chip ----------
+  // Both read the profile (/api/auth/me, and /api/auth/plan-state for the checks that are not a sign-in): AMBER while the extra days after a plan's end run (everything still works), RED once ELMS is paused for the account.
+  // Never for an admin, and never for a person on a plan or on credits: an old credits account has no plan to renew.
+  const PLAN_PAUSED_HEAD = 'Your plan has ended, so ELMS is paused for your account:';
+  const PLAN_PAUSED_REST = 'orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. Renew your plan to start again.';
+  // The parts of the profile that say what plan the person has and whether ELMS is paused for them. Every place that reads the profile again (/me or plan-state) copies THIS list, so none forgets one.
+  const PLAN_PROFILE_FIELDS = ['planModel', 'entitlement', 'planName', 'planExpiresAt', 'planPaused', 'planPausedAt'];
+  function pickPlanFields(user) { const o = {}; PLAN_PROFILE_FIELDS.forEach((k) => { o[k] = user[k]; }); return o; }
+  const planBannerDay = (v) => { const d = v ? new Date(v) : null; return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''; };
+  function planIsPaused(user) { const u = user || window.currentUser; return !!(u && u.planPaused === true && u.role !== 'admin'); }
+  // The name under the person's name in the top bar.
+  function userRoleLabel(user) { return user.role === 'admin' ? 'Admin' : planIsPaused(user) ? 'Plan ended' : (user.planName || user.plan || 'Free Plan'); }
+  function paintUserRole() { const el = document.getElementById('userRole'); if (el && window.currentUser) el.textContent = userRoleLabel(window.currentUser); }
+  // What the line says now: null (no line) or { tone, head (bold), rest, short (the one-row version for a phone) } - all plain text.
+  function planBannerState(user) {
+    const u = user || window.currentUser;
+    if (!u || u.role === 'admin') return null;
+    if (planIsPaused(u)) return { tone: 'paused', head: PLAN_PAUSED_HEAD, rest: PLAN_PAUSED_REST, short: 'Plan ended: ELMS is paused.' };
+    const e = u.entitlement;
+    if (!e || e.inGrace !== true) return null; // only a plan by listings that is past its end date (a credits account has none)
+    const ended = planBannerDay(u.planExpiresAt);
+    const until = planBannerDay(e.graceEndsAt);
+    const endsMs = e.graceEndsAt ? new Date(e.graceEndsAt).getTime() : NaN;
+    const head = ended ? 'Your plan ended on ' + ended + '.' : 'Your plan has ended.';
+    if (endsMs <= Date.now()) return { tone: 'grace', head, rest: 'The extra days are over and ELMS is about to pause for your account; renew now so it does not.', short: 'Plan ended: pausing soon.' }; // (the plan is closed by an hourly job)
+    const days = Math.ceil((endsMs - Date.now()) / 86400000);
+    return { tone: 'grace', head, rest: 'Everything keeps working ' + (until ? 'until ' + until : 'for a few more days') + '; renew now so ELMS does not pause.', short: days >= 1 ? 'Plan ended: renew in ' + days + (days === 1 ? ' day.' : ' days.') : 'Plan ended: renew soon.' };
+  }
+  // Paints the line. It touches the DOM ONLY when what it says changed: the line is a status region, and a screen reader reads a rewritten one out again (this runs after every profile read).
+  function paintPlanBanner() {
+    const el = document.getElementById('planBanner');
+    const textEl = document.getElementById('planBannerText');
+    if (!el || !textEl) return;
+    const s = planBannerState();
+    const key = s ? [s.tone, s.head, s.rest, s.short].join('|') : '';
+    if ((el.dataset.key || '') === key && el.hidden === !s) return;
+    if (!s) { hidePlanBanner(); return; }
+    const plain = s.head + ' ' + s.rest;
+    el.className = 'plan-banner ' + s.tone;
+    el.dataset.key = key;
+    el.setAttribute('aria-label', plain);
+    textEl.title = plain;
+    textEl.innerHTML = '<span class="pb-full"><b>' + escapeHtml(s.head) + '</b> ' + escapeHtml(s.rest) + '</span><span class="pb-short">' + escapeHtml(s.short) + '</span>';
+    document.getElementById('planBannerMore')?.setAttribute('aria-expanded', 'false');
+    el.hidden = false;
+  }
+  function hidePlanBanner() {
+    const el = document.getElementById('planBanner');
+    const textEl = document.getElementById('planBannerText');
+    if (!el || !textEl || (el.hidden && !el.dataset.key)) return;
+    el.hidden = true; el.className = 'plan-banner'; el.dataset.key = ''; el.removeAttribute('aria-label'); textEl.removeAttribute('title'); textEl.innerHTML = '';
+  }
+  document.getElementById('planBannerBtn')?.addEventListener('click', () => showPage('pricing'));
+  document.getElementById('planBannerMore')?.addEventListener('click', (e) => { const open = document.getElementById('planBanner').classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', String(open)); });
+  // The plan part of the profile, read again WITHOUT /me (the server counts /me as opening the app; this answer has no side effects, so a tab that stays open may ask it every minute). An older server answers 404: then nothing happens.
+  async function refreshPlanState() {
+    try {
+      const res = await apiFetch('/api/auth/plan-state');
+      if (!res.ok) return;
+      const d = await res.json();
+      if (!d || !d.success || !d.planModel || !window.currentUser) return;
+      Object.assign(window.currentUser, pickPlanFields(d));
+      updateCreditBalanceChip(window.currentUser.creditBalance, window.currentUser);
+    } catch (_) { /* the line keeps what it shows */ }
+  }
+  // The server refused an action with plan_paused while the page still thought the plan was running (the plan closed since the page loaded): the line and the chip say so at once, then the plan part of the profile is read again for the rest.
+  function notePlanPaused() {
+    const u = window.currentUser;
+    if (!u || u.role === 'admin' || u.planPaused === true) return;
+    u.planPaused = true;
+    updateCreditBalanceChip(u.creditBalance, u);
+    refreshPlanState();
+  }
+  // Once a minute (from the background refresh): a line that is showing, or a plan whose end date has passed, reads the plan state again - so a plan that was renewed somewhere else (a voucher, the admin) clears the line, and one that closed shows it.
+  function planBannerTick() {
+    const u = window.currentUser;
+    if (!u || u.role === 'admin') return;
+    const endsAt = u.planExpiresAt ? new Date(u.planExpiresAt).getTime() : 0;
+    if (planBannerState(u) || (onSlotsPlan() && endsAt && endsAt <= Date.now() + 60000)) refreshPlanState();
+  }
   // An AI tool that is NOT part of the plan: its price line answers available:false with the words to say. A window that would only be refused one item at a time says it once and stops.
   function planLocked(d) {
     if (!d || !d.included || d.available !== false) return false;
@@ -8906,7 +9036,7 @@ B0EXAMPLE2"></textarea></div>
       headers['Authorization'] = `Bearer ${sessionToken}`;
     }
 
-    const { waitForServer, ...fetchOptions } = options;
+    const { waitForServer, quietWhenPaused, ...fetchOptions } = options; // quietWhenPaused: an automatic call (nobody pressed anything) that must not toast when a paused account is refused
     const isGet = String(options.method || 'GET').toUpperCase() === 'GET';
     let res;
     if (waitForServer) {
@@ -8956,8 +9086,15 @@ B0EXAMPLE2"></textarea></div>
       res.clone().json().then((d) => showOutOfCreditsToast(d && d.error)).catch(() => {});
     }
     // A plan by listings refuses with 403 and a code (not 402: that one means "out of credits"): say it with a way to the plans.
+    // A paused account (code plan_paused) is also remembered at once: the line and the chip say so. Its toast is for actions the person started: a read (the badges, the inbox) or an automatic call never toasts.
     if (res.status === 403) {
-      res.clone().json().then((d) => { if (d && PLAN_LIMIT_TITLES[d.code]) showPlanLimitToast(d); }).catch(() => {});
+      res.clone().json().then((d) => {
+        if (!d || !PLAN_LIMIT_TITLES[d.code]) return;
+        if (d.code !== 'plan_paused') return showPlanLimitToast(d);
+        rememberPlanPaused(d);
+        notePlanPaused();
+        if (!isGet && !quietWhenPaused) showPlanLimitToast(d);
+      }).catch(() => {});
     }
 
     // A person on a plan by listings has a live-listings chip: after a write that can change it (publish, schedule, delete, relist, a draft made) it is read again, a moment after the last one.
@@ -8971,6 +9108,7 @@ B0EXAMPLE2"></textarea></div>
     res.json = async () => {
       try {
         const answer = await parseJson();
+        if (res.status === 403 && answer && answer.code === 'plan_paused') rememberPlanPaused(answer); // before the caller's own error toast can be raised
         return isAdminUrl(path) ? answer : neutralServerAnswer(answer, !res.ok || (answer && answer.success === false));
       } catch (_) {
         const err = new Error(res.ok
@@ -9106,7 +9244,7 @@ B0EXAMPLE2"></textarea></div>
   let presenceTick = 0;
   function pingPresence() {
     if (!localStorage.getItem('elmsSessionToken')) return;
-    apiFetch('/api/presence/ping', { method: 'POST' }).catch(() => {});
+    apiFetch('/api/presence/ping', { method: 'POST', quietWhenPaused: true }).catch(() => {}); // every minute, by itself
     if (presenceTick++ % 2 === 0) checkAdminNotices();
   }
 
@@ -9135,7 +9273,11 @@ B0EXAMPLE2"></textarea></div>
   }
 
   // What the plans page learned about the shop belongs to the account that is signed in: a new sign-in starts clean. A sign-in answer does not say what is on sale (only /me does).
-  function resetPlanState() { window.plansOnSale = undefined; window.pricingMyPlan = null; window.planUsage = null; pricingModel = 'credits'; pricingWaysKnown = false; }
+  function resetPlanState() {
+    window.plansOnSale = undefined; window.pricingMyPlan = null; window.planUsage = null; pricingModel = 'credits'; pricingWaysKnown = false;
+    hidePlanBanner(); // the plan line belongs to the account that is signed in (the next sign-in paints its own)
+    lastPlanPausedAnswer = { text: '', at: 0 };
+  }
   async function refreshPlansOnSale() {
     try {
       const res = await apiFetch('/api/auth/me');
@@ -9156,11 +9298,7 @@ B0EXAMPLE2"></textarea></div>
     // Subtitle is dynamic: admins see "Admin", everyone else sees their plan
     // name (falling back to "Free Plan"). Never hardcode "Admin" for all users.
     const roleEl = document.getElementById('userRole');
-    if (roleEl) {
-      roleEl.textContent = user.role === 'admin'
-        ? 'Admin'
-        : (user.planName || user.plan || 'Free Plan');
-    }
+    if (roleEl) roleEl.textContent = userRoleLabel(user); // "Plan ended" while ELMS is paused for the account
     document.getElementById('userChip').style.display = 'block';
     document.getElementById('sidebarFooter').textContent = user.googleId ? 'Signed in via Google' : 'Signed in';
     updateCreditBalanceChip(user.creditBalance, user);
@@ -9339,14 +9477,18 @@ B0EXAMPLE2"></textarea></div>
     if (!notice || planExpiredNoticeShown) return;
     planExpiredNoticeShown = true;
     const when = notice.endedAt ? new Date(notice.endedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    // A plan by listings that closed pauses ELMS for the account (the profile says so); a credits plan only takes its credits away. A notice from before the pause existed (the profile is not paused) claims nothing about it.
+    const what = notice.slots && planIsPaused(user)
+      ? 'ELMS is now paused for your account: orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. Renew your plan and everything starts again at once.'
+      : (notice.slots
+        ? 'The limits of the plan ended with it.'
+        : `The credits that came with it ended with it.${Number(notice.creditsKept) > 0 ? ` You still have ${Number(notice.creditsKept).toLocaleString()} credits from before the plan.` : ''}`) + ' Your listings, drafts and orders are all still there. Buy a plan again whenever you are ready.';
     const overlay = document.createElement('div');
     overlay.className = 'welcome-overlay';
     overlay.innerHTML = `
       <div class="welcome-box" role="dialog" aria-modal="true" aria-label="Your plan ended">
         <div class="welcome-title">Your${notice.planName ? ' ' + escapeHtml(notice.planName) : ''} plan ended</div>
-        <div class="welcome-sub">${when ? `It ran out on ${when}. ` : ''}${notice.slots
-          ? `The limits of the plan ended with it.${Number(notice.creditsKept) > 0 ? ` You have ${Number(notice.creditsKept).toLocaleString()} credits: publishing and price and stock monitoring use them again, as before the plan.` : ' You have no credits, so price and stock monitoring has paused and new listings cannot be published.'}`
-          : `The credits that came with it ended with it.${Number(notice.creditsKept) > 0 ? ` You still have ${Number(notice.creditsKept).toLocaleString()} credits from before the plan.` : ''}`} Your listings, drafts and orders are all still there. Buy a plan again whenever you are ready.</div>
+        <div class="welcome-sub">${when ? `It ran out on ${when}. ` : ''}${what}</div>
         <div class="welcome-actions">
           <button type="button" class="ord-btn primary" data-act="buy">See plans</button>
           <button type="button" class="ord-btn" data-act="close">Dismiss</button>
@@ -9424,9 +9566,16 @@ B0EXAMPLE2"></textarea></div>
   function updateCreditBalanceChip(creditBalance, user) {
     const chip = document.getElementById('creditBalanceChip');
     if (typeof applyPlanLabels === 'function') applyPlanLabels(user || window.currentUser);
-    // every path that refreshes the chip keeps the profile in step (a plan bought or closed since the page loaded): the price lines and the result windows read it
-    if (user && user.planModel && window.currentUser && window.currentUser !== user) { window.currentUser.planModel = user.planModel; window.currentUser.entitlement = user.entitlement; }
-    if (window.currentUser && creditBalance != null) window.currentUser.creditBalance = creditBalance; // (the grace banner and the price lines read the balance from the profile)
+    // every path that refreshes the chip keeps the profile in step (a plan bought, ended or paused since the page loaded): the price lines, the result windows and the plan line read it
+    if (user && user.planModel && window.currentUser && window.currentUser !== user) Object.assign(window.currentUser, pickPlanFields(user));
+    if (window.currentUser && creditBalance != null) window.currentUser.creditBalance = creditBalance; // (the price lines read the balance from the profile)
+    paintPlanBanner(); paintUserRole();
+    const paused = planIsPaused(window.currentUser || user);
+    if (chip) chip.classList.toggle('is-paused', paused);
+    if (paused) { // ELMS is paused for this account: there are no listings to count, the chip says so
+      if (chip) { document.getElementById('creditBalanceAmount').textContent = 'Paused'; chip.title = PLAN_PAUSED_HEAD + ' ' + PLAN_PAUSED_REST; chip.style.display = 'flex'; }
+      return;
+    }
     if (user && user.planModel === 'slots') { // a plan by listings: the chip shows the live listings used (the numbers come a moment later), not credits
       if (chip) { document.getElementById('creditBalanceAmount').textContent = user.entitlement ? String(user.entitlement.maxListings.toLocaleString('en-US')) : '0'; const w = chip.querySelector('.cb-word'); if (w) w.textContent = 'listings'; chip.removeAttribute('title'); /* the numbers of the plan come a moment later and set it */ chip.style.display = 'flex'; }
       refreshPlanUsage();
@@ -9464,7 +9613,7 @@ B0EXAMPLE2"></textarea></div>
     try {
       const res = await apiFetch('/api/auth/me');
       const data = await res.json();
-      if (res.ok && data.success) { window.currentUser = { ...(window.currentUser || {}), planModel: data.user.planModel, entitlement: data.user.entitlement }; updateCreditBalanceChip(data.user.creditBalance, data.user); }
+      if (res.ok && data.success) { window.currentUser = { ...(window.currentUser || {}), ...pickPlanFields(data.user) }; updateCreditBalanceChip(data.user.creditBalance, data.user); }
     } catch (err) {
       // Non-critical - the chip just keeps showing its last known value.
     }
@@ -11027,6 +11176,7 @@ B0EXAMPLE2"></textarea></div>
       if (!localStorage.getItem('elmsSessionToken')) return;
       Promise.allSettled([refreshSystemNotificationBadge(), refreshMessageBadge(), refreshDraftsCountBadge()]);
       pingPresence();
+      planBannerTick();
     };
     setInterval(refresh, 60000);
     pingPresence(); // right away: "online" starts now, and a waiting message from the admin pops up
@@ -14298,7 +14448,7 @@ async function autoSuggestEmptyDraftCategories() {
     if (t && Date.now() - t < LL_STALE_MS) return;
     llAutoRefreshed = true; // once per visit
     try {
-      const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: (await getActiveStoreId()) || undefined }) });
+      const res = await apiFetch('/api/listings/stats/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: (await getActiveStoreId()) || undefined }), quietWhenPaused: true }); // (starts by itself: a paused account is not told about it with a toast)
       const data = await res.json();
       if (!res.ok || !data.success) return;
       const byId = new Map((data.listings || []).map((x) => [x.id, x]));
@@ -19997,8 +20147,7 @@ async function autoSuggestEmptyDraftCategories() {
     const shown = storedThread(id, row);
     if (shown) {
       renderMessageDetail(shown);
-      messageRows = messageRows.map((r) => r.id === id ? { ...r, is_read: true } : r);
-      renderMessageList();
+      if (!planIsPaused()) { messageRows = messageRows.map((r) => r.id === id ? { ...r, is_read: true } : r); renderMessageList(); } // (a paused account reads the thread without marking it: the server leaves it unread, and so does the list)
     } else detail.innerHTML = '<div class="elms-loader" role="status" aria-label="Loading conversation" style="margin:auto"></div>';
     try {
       const data = await requestThread(id, false); // this one marks it read, here and on eBay
@@ -20010,8 +20159,7 @@ async function autoSuggestEmptyDraftCategories() {
         const box = document.getElementById('messageReplyInput');
         if (typed && box && !box.value) box.value = typed;
       }
-      messageRows = messageRows.map((r) => r.id === id ? { ...r, is_read: true } : r);
-      renderMessageList();
+      if (!planIsPaused()) { messageRows = messageRows.map((r) => r.id === id ? { ...r, is_read: true } : r); renderMessageList(); }
       refreshMessageBadge();
     } catch (err) {
       if (selectedMessageId === id && !shown) detail.innerHTML = `<div class="state-msg error" style="margin:auto;">${escapeHtml(err.message)}</div>`;
@@ -21517,7 +21665,8 @@ async function autoSuggestEmptyDraftCategories() {
     const adminNavLink = document.getElementById('adminNavLink');
     if (adminNavLink) adminNavLink.style.display = isAdmin ? 'flex' : 'none';
     const roleEl = document.getElementById('userRole');
-    if (roleEl && user) roleEl.textContent = isAdmin ? 'Admin' : (user.planName || user.plan || 'Free Plan');
+    if (roleEl && user) roleEl.textContent = userRoleLabel(user);
+    paintPlanBanner(); // (a person who became an admin has no plan line)
     const ownerOpenBtn = document.getElementById('ownerOpenBtn');
     if (ownerOpenBtn) ownerOpenBtn.style.display = isAdmin && user.isSuperAdmin ? '' : 'none'; // the owner's way to the owner panel; a member has one panel and the app's own Admin link opens it
   }
@@ -21528,7 +21677,7 @@ async function autoSuggestEmptyDraftCategories() {
       const d = await res.json();
       if (!res.ok || !d.success || !d.user || !window.currentUser) return;
       const before = JSON.stringify(adminAccessOf());
-      window.currentUser = Object.assign(window.currentUser, { role: d.user.role, isSuperAdmin: d.user.isSuperAdmin, adminAccess: d.user.adminAccess, planName: d.user.planName, plan: d.user.plan });
+      window.currentUser = Object.assign(window.currentUser, { role: d.user.role, isSuperAdmin: d.user.isSuperAdmin, adminAccess: d.user.adminAccess, plan: d.user.plan }, pickPlanFields(d.user));
       paintAdminEntry(window.currentUser);
       if (d.user.role !== 'admin') { showPage('dashboard', { replace: true }); return; }
       if (JSON.stringify(adminAccessOf()) !== before) {
@@ -27025,7 +27174,7 @@ async function autoSuggestEmptyDraftCategories() {
     // the plan the person is on, with how much of it is used (the usage comes from /api/payments/usage a moment later)
     const my = data.myPlan && data.myPlan.slots ? data.myPlan : null;
     window.pricingMyPlan = my; // the order review says when a bigger plan takes over the days left on this one
-    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + (Number(window.currentUser && window.currentUser.creditBalance) > 0 ? ', then publishing and price and stock monitoring use your ' + Number(window.currentUser.creditBalance).toLocaleString() + ' credits again. Renew below to keep the plan.' : ', then monitoring pauses and new listings cannot be published (you have no credits). Renew below to keep going.') : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.'}</span></div></div>` : '';
+    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + ', then ELMS pauses for your account: orders, messages and listings are not processed (your data stays and your listings stay live on eBay). Renew below so it does not pause.' : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.'}</span></div></div>` : '';
 
     const cardFor = (p, i) => {
       const noYear = yr && !p.yearlyPriceUsd; // a plan without a yearly price on the yearly view: monthly only (never "$0 / year")
@@ -27093,7 +27242,7 @@ async function autoSuggestEmptyDraftCategories() {
       ['How many drafts can I create?', 'Each month of your plan you can create as many new drafts as the plan says, and keep that many waiting in Drafts. Deleting a draft does not give one back before the next month starts. Drafts our team adds for you are not counted.'],
       ['Is monitoring included?', 'Yes. Prices and stock of your listings are checked as often as your plan says, and it costs nothing extra. Your credits are not used while a plan by listings runs.'],
       ['Does my plan renew by itself?', 'No. You pay for a month or a year, we remind you by email before it ends, and you renew when you want to.'],
-      ['What happens when my plan ends?', 'Everything keeps working for ' + grace + ' more days. After that you are back on credits: if you hold credits, publishing and price and stock monitoring use them again; with none, monitoring pauses and new listings cannot be published. Your listings stay on eBay and nothing is deleted. Choose a plan again and it all starts at once.'],
+      ['What happens when my plan ends?', 'Everything keeps working for ' + grace + ' more days. After that ELMS is paused for your account: orders, messages and listings are not processed. Your data stays, your listings stay live on eBay and nothing is deleted. Choose a plan again and everything starts at once.'],
       ['Which plan can I choose?', 'A bigger plan can be chosen at any time and starts at once; the days left on your current plan are added to it, counted by what a month of each plan costs. A smaller one can be chosen after your current plan ends.'],
     ];
     container.innerHTML = `
@@ -27131,7 +27280,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
   function paintPlanChip(u) {
     const chip = document.getElementById('creditBalanceChip');
-    if (!chip || !u) return;
+    if (!chip || !u || planIsPaused()) return; // (an answer that arrives late must not put the numbers over "Paused")
     document.getElementById('creditBalanceAmount').textContent = nf(u.live) + ' / ' + nf(u.maxListings);
     const word = chip.querySelector('.cb-word');
     if (word) word.textContent = 'listings';
@@ -27673,7 +27822,7 @@ async function autoSuggestEmptyDraftCategories() {
       if (res.ok && data.success && data.user) {
         updateCreditBalanceChip(data.user.creditBalance, data.user);
         const roleEl = document.getElementById('userRole');
-        if (roleEl && data.user.role !== 'admin') roleEl.textContent = data.user.planName || 'Free Plan';
+        if (roleEl && data.user.role !== 'admin') roleEl.textContent = userRoleLabel(data.user);
         const bal = document.getElementById('pricingBalance');
         if (bal) bal.textContent = Number(data.user.creditBalance || 0).toLocaleString();
       }
