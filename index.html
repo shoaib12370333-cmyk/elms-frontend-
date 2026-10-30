@@ -26156,7 +26156,7 @@ async function autoSuggestEmptyDraftCategories() {
   }
 
   // Admin -> Users -> edit window -> "Give a plan...": a customer paid OUTSIDE the checkout (a bank transfer, Payoneer, USDT...) and support gives the plan by hand. The server does the same
-  // as for a payment (the term runs on after a running one, the payment is recorded with the admin's name, the invoice, the affiliate commission); this window only asks what was paid and how,
+  // as for a payment (the term starts today and replaces a running one, the payment is recorded with the admin's name, the invoice, the affiliate commission); this window only asks what was paid and how,
   // shows what will happen (a preview that writes nothing), and asks once more before it gives anything. Only the owner and members with full rights see the button.
   async function openGivePlanModal(user, opts = {}) {
     const m = adminModal('<div class="elms-loader" role="status" aria-label="Loading"></div>');
@@ -26185,7 +26185,7 @@ async function autoSuggestEmptyDraftCategories() {
     const c = o.custom;
     box.innerHTML = '<div class="draft-title">Give a plan to ' + adEsc(user.name || user.email) + '</div>'
       + '<div class="meta-line">' + adEsc(user.email) + ' &middot; ' + planLine + ' &middot; ' + Number(o.user.creditBalance).toLocaleString() + ' credits</div>'
-      + '<p class="meta-line" style="margin:10px 0 0;">For money you <b>received outside the checkout</b> (a bank transfer, Payoneer, USDT...). It works like a payment: the credits, the eBay-store limit and the term are given, the payment is recorded (so it counts in the revenue and has an invoice), and if this person came through an affiliate the commission is made too. A plan that is still running is <b>extended</b>: the new term starts when it ends. For a free plan use a voucher instead.</p>'
+      + '<p class="meta-line" style="margin:10px 0 0;">For money you <b>received outside the checkout</b> (a bank transfer, Payoneer, USDT...). It works like a payment: the credits, the eBay-store limit and the term are given, the payment is recorded (so it counts in the revenue and has an invoice), and if this person came through an affiliate the commission is made too. A plan that is still running is <b>replaced</b>: the new term starts today and the days left on the old one are not added. For a free plan use a voucher instead.</p>'
       + '<div class="st-field" style="margin-top:14px;"><label for="gpPlan">Plan</label><select class="st-input" id="gpPlan">' + planOptions + (c ? '<option value="custom">Custom plan\u2026</option>' : '') + '</select></div>'
       + '<div class="st-field"><label for="gpBilling">Term</label><select class="st-input" id="gpBilling"><option value="monthly">Monthly (1 month)</option><option value="yearly">Yearly (12 months)</option></select></div>'
       + (c ? '<div id="gpCustom" style="display:none;"><div class="ad-edit-grid">'
@@ -26231,9 +26231,7 @@ async function autoSuggestEmptyDraftCategories() {
     const previewHtml = (p) => {
       const lines = [
         '<b>' + adEsc(p.planName) + '</b>: ' + (p.listingSlots ? Number(p.listingSlots).toLocaleString() + ' live listings (credits are not used while it runs).' : Number(p.credits).toLocaleString() + ' credits.'),
-        p.slotsMove === 'up' ? 'A <b>bigger</b> plan than the one running: it starts now with fresh monthly numbers, and the days left on the running plan are added to it, counted by price. It ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
-          : p.slotsMove === 'down' ? 'A <b>smaller</b> plan than the one running: the running plan keeps its limits, and the time paid for is added to it, counted by price. It ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>.' : '',
-        p.slotsMove === 'up' || p.slotsMove === 'down' ? '' : p.stacked ? 'The running plan ends on <b>' + adEsc(day(p.planEndsBefore)) + '</b>; the new term runs on from there and ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
+        p.replacesRunning ? 'Their running plan (ends <b>' + adEsc(day(p.planEndsBefore)) + '</b>) is <b>replaced</b>: the new term starts today and ends on <b>' + adEsc(day(p.planEndsAfter)) + '</b>. The days left on the old plan are not added.'
           : p.lapsed ? 'Their earlier plan has run out: it is closed first (its own credits end), and the new term runs from today to <b>' + adEsc(day(p.planEndsAfter)) + '</b>.'
             : 'The plan runs from today to <b>' + adEsc(day(p.planEndsAfter)) + '</b>.',
         'eBay stores: ' + p.storeLimitNow + (p.storeLimitAfter !== p.storeLimitNow ? ' \u2192 <b>' + p.storeLimitAfter + '</b>' : ' (no change)') + '.',
@@ -26287,7 +26285,8 @@ async function autoSuggestEmptyDraftCategories() {
       const p = sent.p;
       const text = 'Give ' + (user.name || user.email) + ' (' + user.email + ') the plan "' + p.planName + '"?\n\n'
         + 'You received ' + usd(p.amountUsd) + ' by ' + $('gpMethod').value + '.\n'
-        + (p.listingSlots ? Number(p.listingSlots).toLocaleString() + ' live listings are given (no credits are added); the plan ' : Number(p.credits).toLocaleString() + ' credits are added; the plan ') + (p.stacked || p.slotsMove ? 'is extended to ' : 'runs until ') + day(p.planEndsAfter) + '.\n'
+        + (p.listingSlots ? Number(p.listingSlots).toLocaleString() + ' live listings are given (no credits are added); the plan ' : Number(p.credits).toLocaleString() + ' credits are added; the plan ') + 'runs until ' + day(p.planEndsAfter) + '.\n'
+        + (p.replacesRunning ? 'The plan that runs now (ends ' + day(p.planEndsBefore) + ') is replaced; the days left on it are not added.\n' : '')
         + (p.affiliate ? 'An affiliate commission of ' + usd(p.affiliate.commissionUsd) + ' is recorded.\n' : '')
         + ($('gpReceipt').checked ? 'The customer gets the receipt and the invoice by email.' : 'The customer gets no receipt or invoice email.')
         + '\n\nThis is recorded as a payment. It cannot be undone from here.';
