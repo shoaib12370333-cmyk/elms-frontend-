@@ -6756,12 +6756,18 @@ B0EXAMPLE2"></textarea></div>
             <section class="st-card">
               <div class="st-head">
                 <div class="st-ico green">&#127873;</div>
-                <div class="st-head-txt"><h2>Welcome bonus</h2><p>Credits a brand-new account starts with.</p></div>
+                <div class="st-head-txt"><h2>Welcome bonus</h2><p>A free trial a brand-new account starts with.</p></div>
                 <label class="toggle-switch"><input type="checkbox" id="welcomeBonusToggle" /><span class="toggle-slider"></span></label>
               </div>
               <div class="st-field">
-                <label>Credits per new user <span class="welcome-bonus-label" id="welcomeBonusStateLabel" style="text-transform:none;letter-spacing:0;">Off</span></label>
-                <input class="st-input" type="number" id="welcomeBonusCredits" min="0" value="10" />
+                <label>Free listings per new user <span class="welcome-bonus-label" id="welcomeBonusStateLabel" style="text-transform:none;letter-spacing:0;">Off</span></label>
+                <input class="st-input" type="number" id="welcomeTrialListings" min="0" max="5000" step="1" value="100" />
+              </div>
+              <div class="st-field">
+                <label>Trial length (days)</label>
+                <input class="st-input" type="number" id="welcomeTrialDays" min="1" max="365" step="1" value="30" />
+              </div>
+              <div class="st-hint">Free listings = live listings at once (drafts: 1.5 times that a month; no AI; one eBay store). 0 = no trial. Plans by listings must be on sale. After the days the usual extra days follow, then ELMS pauses for the account until a plan is bought.
               </div>
               <div class="st-actions"><button class="st-btn primary" id="saveWelcomeBonusBtn" type="button">Save</button><div id="welcomeBonusStatus"></div></div>
             </section>
@@ -7503,10 +7509,12 @@ B0EXAMPLE2"></textarea></div>
     const ended = planBannerDay(u.planExpiresAt);
     const until = planBannerDay(e.graceEndsAt);
     const endsMs = e.graceEndsAt ? new Date(e.graceEndsAt).getTime() : NaN;
-    const head = ended ? 'Your plan ended on ' + ended + '.' : 'Your plan has ended.';
-    if (endsMs <= Date.now()) return { tone: 'grace', head, rest: 'The extra days are over and ELMS is about to pause for your account; renew now so it does not.', short: 'Plan ended: pausing soon.' }; // (the plan is closed by an hourly job)
+    const trial = e.trial === true; // the free trial of a new account: any plan takes its place, so it says "choose a plan" where a paid plan says "renew"
+    const head = trial ? (ended ? 'Your free trial ended on ' + ended + '.' : 'Your free trial has ended.') : (ended ? 'Your plan ended on ' + ended + '.' : 'Your plan has ended.');
+    const btn = trial ? 'Choose a plan' : null;
+    if (endsMs <= Date.now()) return { tone: 'grace', btn, head, rest: 'The extra days are over and ELMS is about to pause for your account; ' + (trial ? 'choose a plan' : 'renew') + ' now so it does not.', short: (trial ? 'Trial ended' : 'Plan ended') + ': pausing soon.' }; // (the plan is closed by an hourly job)
     const days = Math.ceil((endsMs - Date.now()) / 86400000);
-    return { tone: 'grace', head, rest: 'Everything keeps working ' + (until ? 'until ' + until : 'for a few more days') + '; renew now so ELMS does not pause.', short: days >= 1 ? 'Plan ended: renew in ' + days + (days === 1 ? ' day.' : ' days.') : 'Plan ended: renew soon.' };
+    return { tone: 'grace', btn, head, rest: 'Everything keeps working ' + (until ? 'until ' + until : 'for a few more days') + '; ' + (trial ? 'choose a plan' : 'renew') + ' now so ELMS does not pause.', short: days >= 1 ? (trial ? 'Trial ended: choose a plan in ' : 'Plan ended: renew in ') + days + (days === 1 ? ' day.' : ' days.') : (trial ? 'Trial ended: choose a plan soon.' : 'Plan ended: renew soon.') };
   }
   // Paints the line. It touches the DOM ONLY when what it says changed: the line is a status region, and a screen reader reads a rewritten one out again (this runs after every profile read).
   function paintPlanBanner() {
@@ -7514,12 +7522,14 @@ B0EXAMPLE2"></textarea></div>
     const textEl = document.getElementById('planBannerText');
     if (!el || !textEl) return;
     const s = planBannerState();
-    const key = s ? [s.tone, s.head, s.rest, s.short].join('|') : '';
+    const key = s ? [s.tone, s.head, s.rest, s.short, s.btn || ''].join('|') : '';
     if ((el.dataset.key || '') === key && el.hidden === !s) return;
     if (!s) { hidePlanBanner(); return; }
     const plain = s.head + ' ' + s.rest;
     el.className = 'plan-banner ' + s.tone;
     el.dataset.key = key;
+    const bannerBtn = document.getElementById('planBannerBtn');
+    if (bannerBtn) bannerBtn.textContent = s.btn || 'Renew plan';
     el.setAttribute('aria-label', plain);
     textEl.title = plain;
     textEl.innerHTML = '<span class="pb-full"><b>' + escapeHtml(s.head) + '</b> ' + escapeHtml(s.rest) + '</span><span class="pb-short">' + escapeHtml(s.short) + '</span>';
@@ -9949,7 +9959,7 @@ B0EXAMPLE2"></textarea></div>
     overlay.className = 'welcome-overlay';
     overlay.innerHTML = `
       <div class="welcome-box" role="dialog" aria-modal="true" aria-label="Your plan ended">
-        <div class="welcome-title">Your${notice.planName ? ' ' + escapeHtml(notice.planName) : ''} plan ended</div>
+        <div class="welcome-title">${notice.trial ? 'Your free trial ended' : 'Your' + (notice.planName ? ' ' + escapeHtml(notice.planName) : '') + ' plan ended'}</div>
         <div class="welcome-sub">${when ? `It ran out on ${when}. ` : ''}${what}</div>
         <div class="welcome-actions">
           <button type="button" class="ord-btn primary" data-act="buy">See plans</button>
@@ -9976,13 +9986,17 @@ B0EXAMPLE2"></textarea></div>
   }
 
   /**
-   * The welcome popup. The number is what this account was really given at sign-up (the server sends it as user.welcomePopup and
-   * stops sending it once the popup was closed), so it follows whatever the admin had set for the welcome bonus at that time.
+   * The welcome popup. The numbers are what this account was really given at sign-up (the server sends them as user.welcomePopup and
+   * stops sending it once the popup was closed), so they follow whatever the admin had set for the welcome bonus at that time: the free trial
+   * ({ listings, days }), or - on an older account - the welcome credits ({ credits }).
    */
   let welcomePopupShown = false;
   function maybeShowWelcomePopup(user) {
-    const credits = Number(user && user.welcomePopup && user.welcomePopup.credits);
-    if (!(credits > 0) || welcomePopupShown) return;
+    const wp = user && user.welcomePopup;
+    const listings = Number(wp && wp.listings);
+    const days = Number(wp && wp.days);
+    const credits = Number(wp && wp.credits);
+    if (!(listings > 0 || credits > 0) || welcomePopupShown) return;
     welcomePopupShown = true;
     const overlay = document.createElement('div');
     overlay.className = 'welcome-overlay';
@@ -9990,8 +10004,8 @@ B0EXAMPLE2"></textarea></div>
       <div class="welcome-box" role="dialog" aria-modal="true" aria-label="Welcome to ELMS">
         <div class="welcome-logo" role="img" aria-label="ELMS"></div>
         <div class="welcome-title">Welcome to ELMS!</div>
-        <div class="welcome-sub">Your account is ready. Here are free credits to try ELMS:</div>
-        <div class="welcome-credits"><b>${credits.toLocaleString()}</b><span>free credit${credits === 1 ? '' : 's'}</span></div>
+        <div class="welcome-sub">${listings > 0 ? 'Your account is ready. Here is a free trial to try ELMS:' : 'Your account is ready. Here are free credits to try ELMS:'}</div>
+        <div class="welcome-credits"><b>${(listings > 0 ? listings : credits).toLocaleString()}</b><span>${listings > 0 ? 'free listing' + (listings === 1 ? '' : 's') + (days > 0 ? ' for ' + days + (days === 1 ? ' day' : ' days') : '') : 'free credit' + (credits === 1 ? '' : 's')}</span></div>
         <ul class="welcome-steps">
           <li><i>1</i><span>${user.hasEbayLogin ? 'Check your eBay store and its policies in Settings.' : 'Connect your eBay store in Settings.'}</span></li>
           <li><i>2</i><span>Paste an Amazon link on the Import page.</span></li>
@@ -25351,7 +25365,8 @@ async function autoSuggestEmptyDraftCategories() {
       const toggle = document.getElementById('welcomeBonusToggle');
       toggle.checked = !!data.settings.welcomeBonusEnabled;
       document.getElementById('welcomeBonusStateLabel').textContent = toggle.checked ? 'On' : 'Off';
-      document.getElementById('welcomeBonusCredits').value = data.settings.welcomeBonusCredits ?? 10;
+      document.getElementById('welcomeTrialListings').value = data.settings.welcomeTrialListings ?? 100;
+      document.getElementById('welcomeTrialDays').value = data.settings.welcomeTrialDays ?? 30;
       document.getElementById('importPolicyToggle').checked = data.settings.importWithoutEbayAccount !== false;
       renderImportPolicyText();
     } catch (err) {
@@ -25400,7 +25415,8 @@ async function autoSuggestEmptyDraftCategories() {
     const btn = document.getElementById('saveWelcomeBonusBtn');
     const statusEl = document.getElementById('welcomeBonusStatus');
     const welcomeBonusEnabled = document.getElementById('welcomeBonusToggle').checked;
-    const welcomeBonusCredits = Number(document.getElementById('welcomeBonusCredits').value) || 0;
+    const welcomeTrialListings = Number(document.getElementById('welcomeTrialListings').value) || 0;
+    const welcomeTrialDays = Number(document.getElementById('welcomeTrialDays').value) || 0;
 
     btn.disabled = true;
     statusEl.className = '';
@@ -25410,7 +25426,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/admin/settings/welcome-bonus', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ welcomeBonusEnabled, welcomeBonusCredits }),
+        body: JSON.stringify({ welcomeBonusEnabled, welcomeTrialListings, welcomeTrialDays }),
       });
       const data = await res.json();
 
@@ -26660,6 +26676,7 @@ async function autoSuggestEmptyDraftCategories() {
         ['Password', acc.hasPassword ? (acc.passwordUnproven ? 'Set, but the owner never proved the mailbox' : 'Set') : 'None (Google sign-in only)'],
         ['Phone (typed, not verified)', u.phone ? adEsc(u.phoneDisplay || u.phone) + (u.phoneCountry ? ' &middot; ' + adEsc(u.phoneCountry) : '') : (u.phoneRequired ? '<span class="ad-tag bad">MUST ADD</span>' : '—')],
         ['Welcome credits given', acc.welcomeCredits == null ? '—' : adEsc(acc.welcomeCredits)],
+        ['Free trial given', acc.welcomeListings == null ? '—' : adEsc(acc.welcomeListings + ' listings' + (acc.welcomeTrialDays ? ' for ' + acc.welcomeTrialDays + ' days' : ''))],
         ['Content-rights confirmation', acc.contentRightsAckAt ? adEsc(adDate(acc.contentRightsAckAt)) + '<br /><small>wording ' + adEsc(acc.contentRightsAckVersion || '—') + '</small>' : (u.role === 'admin' ? '<span class="ad-tag free">STAFF: NOT ASKED</span>' : '<span class="ad-tag free">NOT YET</span>')],
         ['Last brand-word removal (ticked)', acc.veroRemovalConfirmedAt ? adEsc(adDateTime(acc.veroRemovalConfirmedAt)) : '—'],
         ['Referral code', acc.referralCode ? adEsc(acc.referralCode) + (acc.referralBlocked ? ' <span class="ad-tag bad">BLOCKED</span>' : '') : '—'],
@@ -28589,7 +28606,8 @@ async function autoSuggestEmptyDraftCategories() {
       if (L.aiQuota > 0) slotLines.push(['AI actions a month', nf(L.aiQuota)]);
       slotLines.push(['eBay stores', String(L.stores)]);
       const mine = window.pricingMyPlan;
-      if (mine && !mine.inGrace && Number(mine.maxListings) > 0 && Number(L.liveListings) > Number(mine.maxListings)) slotLines.push(['Your current plan', 'The days left are added to this plan, counted by price']);
+      if (mine && mine.trial) slotLines.push(['Your free trial', 'This plan starts at once and takes its place']);
+      else if (mine && !mine.inGrace && Number(mine.maxListings) > 0 && Number(L.liveListings) > Number(mine.maxListings)) slotLines.push(['Your current plan', 'The days left are added to this plan, counted by price']);
       if (Number.isFinite(Number(payUsd))) slotLines.push(['Price', '$' + Number(payUsd).toFixed(2) + (card ? ' + tax' : '')]);
       slotLines.slots = true; // the refund sentence below is not the credits one
       if (crypto) slotLines.crypto = true;
