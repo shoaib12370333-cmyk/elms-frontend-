@@ -19234,7 +19234,8 @@ async function autoSuggestEmptyDraftCategories() {
     }
     out += stdLines;
     if (svcMetrics.length) {
-      out += '<div class="sh-h2">Cases compared with similar sellers</div><div class="sh-rows">' + svcMetrics.map((m) => {
+      const compared = svcMetrics.some((m) => shText(m.average).trim() || shText(m.ratingLabel).trim()); // (eBay sends no benchmark for some sellers: then it is not a comparison)
+      out += '<div class="sh-h2">' + (compared ? 'Cases compared with similar sellers' : 'Case rates') + '</div><div class="sh-rows">' + svcMetrics.map((m) => {
         const avg = shText(m.average).trim();
         const counts = shText(m.counts).trim();
         const val = '<b>' + (shText(m.rate).trim() ? escapeHtml(shText(m.rate)) : '-') + '</b>'
@@ -19302,9 +19303,12 @@ async function autoSuggestEmptyDraftCategories() {
       const details = body.querySelector('details.sh-more');
       if (details && detailsOpen) details.open = true;
     }
-    if (focused) {
+    // The focus goes back to the new button only if the seller is still "nowhere in particular" (the old button was taken away, so the page lost it). Someone who moved on
+    // to the name field, another store or another control of this card while eBay was answering keeps their place, and the page does not scroll back.
+    const here = document.activeElement;
+    if (focused && (!here || here === document.body || !here.isConnected)) {
       const next = body.querySelector('[data-health-action="' + focused + '"]') || body.querySelector('[data-health-action]');
-      if (next) next.focus();
+      if (next) next.focus({ preventScroll: true });
     }
     if (refresh && live) live.textContent = isCard ? 'Seller health updated' : 'Could not check again just now.';
   }
