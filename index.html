@@ -7491,19 +7491,21 @@ B0EXAMPLE2"></textarea></div>
   // Never for an admin, and never for a person on a plan or on credits: an old credits account has no plan to renew.
   const PLAN_PAUSED_HEAD = 'Your plan has ended, so ELMS is paused for your account:';
   const PLAN_PAUSED_REST = 'orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. Renew your plan to start again.';
+  const PLAN_PAUSED_HEAD_TRIAL = 'Your free trial has ended, so ELMS is paused for your account:';
+  const PLAN_PAUSED_REST_TRIAL = 'orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. Choose a plan to start again.';
   // The parts of the profile that say what plan the person has and whether ELMS is paused for them. Every place that reads the profile again (/me or plan-state) copies THIS list, so none forgets one.
-  const PLAN_PROFILE_FIELDS = ['planModel', 'entitlement', 'planName', 'planExpiresAt', 'planPaused', 'planPausedAt'];
+  const PLAN_PROFILE_FIELDS = ['planModel', 'entitlement', 'planName', 'planExpiresAt', 'planPaused', 'planPausedAt', 'trialEnded'];
   function pickPlanFields(user) { const o = {}; PLAN_PROFILE_FIELDS.forEach((k) => { o[k] = user[k]; }); return o; }
   const planBannerDay = (v) => { const d = v ? new Date(v) : null; return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''; };
   function planIsPaused(user) { const u = user || window.currentUser; return !!(u && u.planPaused === true && u.role !== 'admin'); }
   // The name under the person's name in the top bar.
-  function userRoleLabel(user) { return user.role === 'admin' ? 'Admin' : planIsPaused(user) ? 'Plan ended' : (user.planName || user.plan || 'Free Plan'); }
+  function userRoleLabel(user) { return user.role === 'admin' ? 'Admin' : planIsPaused(user) ? (user.trialEnded === true ? 'Trial ended' : 'Plan ended') : (user.planName || user.plan || 'Free Plan'); }
   function paintUserRole() { const el = document.getElementById('userRole'); if (el && window.currentUser) el.textContent = userRoleLabel(window.currentUser); }
   // What the line says now: null (no line) or { tone, head (bold), rest, short (the one-row version for a phone) } - all plain text.
   function planBannerState(user) {
     const u = user || window.currentUser;
     if (!u || u.role === 'admin') return null;
-    if (planIsPaused(u)) return { tone: 'paused', head: PLAN_PAUSED_HEAD, rest: PLAN_PAUSED_REST, short: 'Plan ended: ELMS is paused.' };
+    if (planIsPaused(u)) return u.trialEnded === true ? { tone: 'paused', btn: 'Choose a plan', head: PLAN_PAUSED_HEAD_TRIAL, rest: PLAN_PAUSED_REST_TRIAL, short: 'Trial ended: ELMS is paused.' } : { tone: 'paused', head: PLAN_PAUSED_HEAD, rest: PLAN_PAUSED_REST, short: 'Plan ended: ELMS is paused.' };
     const e = u.entitlement;
     if (!e || e.inGrace !== true) return null; // only a plan by listings that is past its end date (a credits account has none)
     const ended = planBannerDay(u.planExpiresAt);
@@ -28322,7 +28324,7 @@ async function autoSuggestEmptyDraftCategories() {
     // the plan the person is on, with how much of it is used (the usage comes from /api/payments/usage a moment later)
     const my = data.myPlan && data.myPlan.slots ? data.myPlan : null;
     window.pricingMyPlan = my; // the order review says when a bigger plan takes over the days left on this one
-    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + ', then ELMS pauses for your account: orders, messages and listings are not processed (your data stays and your listings stay live on eBay). Renew below so it does not pause.' : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.'}</span></div></div>` : '';
+    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + ', then ELMS pauses for your account: orders, messages and listings are not processed (your data stays and your listings stay live on eBay). ' + (my.trial ? 'Choose a plan below' : 'Renew below') + ' so it does not pause.' : (my.trial ? 'Buying a plan starts it today and takes the place of the trial. The listings you have stay as they are.' : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.')}</span></div></div>` : '';
 
     const cardFor = (p, i) => {
       const noYear = yr && !p.yearlyPriceUsd; // a plan without a yearly price on the yearly view: monthly only (never "$0 / year")
