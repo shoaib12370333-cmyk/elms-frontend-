@@ -5722,7 +5722,7 @@
 
         <div class="bc-billing" id="pricingTabs"><span class="dv-seg" role="group" aria-label="Buy Credits or Buy Listings"><button type="button" data-pricing-tab="credits" class="on">Credits</button><button type="button" data-pricing-tab="listings">Buy Listings</button></span></div>
 
-        <div class="bc-support" id="pricingSupportNote"><div class="bc-support-ico" aria-hidden="true">&#128172;</div><div><b id="pricingSupportHead">Cannot pay with the wallet?</b><span id="pricingSupportText">Write to support and we will renew your plan for you.</span></div><a class="st-btn small primary" id="pricingSupportBtn" href="mailto:support@elmstool.com">Email support</a></div>
+        <div class="bc-support" id="pricingSupportNote"><div class="bc-support-ico" aria-hidden="true">&#128172;</div><div><b id="pricingSupportHead">Cannot pay with the wallet?</b><span id="pricingSupportText">Write to support and we will renew your plan for you.</span></div><a class="st-btn small primary" id="pricingSupportBtn" data-support-ticket="plan" href="mailto:support@elmstool.com">Write to support</a></div>
 
         <div data-pricing-panel="credits">
           <div id="pricingContent"><div class="elms-loader" role="status" aria-label="Loading"></div></div>
@@ -28333,7 +28333,7 @@ async function autoSuggestEmptyDraftCategories() {
         <div class="sp-head"><h3 class="sp-name">Custom</h3><p class="sp-tag">For high-volume sellers and agencies</p></div>
         <div class="sp-price"><span class="sp-amount" style="font-size:30px;">Let's talk</span></div>
         <div class="sp-qty"><b>Your own numbers</b><span>listings, checks and stores set for you</span></div>
-        <div class="sp-pays"><a class="bc-buy" id="spCustomContact" href="${supportMailto(pricingSupportEmail, 'custom')}">Contact us</a></div>
+        <div class="sp-pays"><a class="bc-buy" id="spCustomContact" data-support-ticket="custom" href="${supportMailto(pricingSupportEmail, 'custom')}">Contact us</a></div>
         <ul class="sp-feats">
           <li class="head">Set up with you</li>
           ${slotLi('The number of live listings you need')}
@@ -28674,12 +28674,41 @@ async function autoSuggestEmptyDraftCategories() {
     const body = 'Hi,\n\nI cannot pay ' + (!listings && (pricingCardOffered || pricingCryptoOffered) ? payWays() : 'with the wallet checkout') + '. ' + (listings ? 'Please help me buy listings.' : 'Please help me renew my plan.') + '\n\nMy ELMS account: ' + (me.email || '') + '\n' + (listings ? 'How many listings I want: ' : 'The plan I want: ') + '\n\nThank you';
     return 'mailto:' + (email || 'support@elmstool.com') + '?subject=' + encodeURIComponent(listings ? 'Help buying listings' : 'Help renewing my plan') + '&body=' + encodeURIComponent(body);
   }
+  // What a "Contact us" / "Write to support" button puts in a new ticket. A mail link does nothing on a computer that has no mail program, so these buttons open a ticket in ELMS itself
+  // (the mail link stays as the href, for a browser that cannot run this page). The words say the seller wants to talk to a person, so the assistant hands the ticket to an admin at once
+  // (services/supportAssistantService.js SERIOUS). The ticket belongs to the signed-in account, so the address is not asked for.
+  function supportTicketText(topic) {
+    const listings = topic === 'listings';
+    if (topic === 'custom') return { subject: 'A custom plan', message: 'Hi,\n\nI would like to talk to a person about a custom plan.\n\nHow many live listings I need: \nHow many eBay stores: \nHow often I want prices and stock checked: \n\nThank you' };
+    return {
+      subject: listings ? 'Help buying listings' : 'Help renewing my plan',
+      message: 'Hi,\n\nI would like to talk to a person: I cannot pay ' + (!listings && (pricingCardOffered || pricingCryptoOffered) ? payWays() : 'with the wallet checkout') + '. ' + (listings ? 'Please help me buy listings.' : 'Please help me renew my plan.') + '\n\n' + (listings ? 'How many listings I want: ' : 'The plan I want: ') + '\n\nThank you',
+    };
+  }
+  function openSupportTicket(topic) {
+    const t = supportTicketText(topic);
+    showPage('support');
+    const subject = document.getElementById('ticketSubject');
+    const message = document.getElementById('ticketMessage');
+    const status = document.getElementById('createTicketStatus');
+    if (!subject || !message) return;
+    const untouched = !subject.value.trim() && !message.value.trim(); // a ticket the seller is already writing is never overwritten
+    if (untouched) { subject.value = t.subject; message.value = t.message; }
+    if (status) { status.className = ''; status.textContent = untouched ? 'Fill in the blanks, then press Submit ticket.' : 'Your unfinished ticket is still here: press Submit ticket when it is ready.'; }
+    message.focus({ preventScroll: true });
+  }
+  document.addEventListener('click', (e) => {
+    const link = e.target && e.target.closest ? e.target.closest('[data-support-ticket]') : null;
+    if (!link) return;
+    e.preventDefault(); // (no mail program is opened)
+    openSupportTicket(link.getAttribute('data-support-ticket'));
+  });
   // The strip follows the tab: Buy credits renews a plan, Buy Listings buys listings. The address is the server's (checked); the account is whoever is signed in NOW.
   function setPricingSupport(email) {
     if (typeof email === 'string' && SUPPORT_ADDRESS_OK.test(email)) pricingSupportEmail = email;
     const listings = typeof pricingTab !== 'undefined' && pricingTab === 'listings';
     const btn = document.getElementById('pricingSupportBtn');
-    if (btn) btn.setAttribute('href', supportMailto(pricingSupportEmail, listings ? 'listings' : 'plan'));
+    if (btn) { btn.setAttribute('href', supportMailto(pricingSupportEmail, listings ? 'listings' : 'plan')); btn.setAttribute('data-support-ticket', listings ? 'listings' : 'plan'); }
     const text = document.getElementById('pricingSupportText');
     const cardOff = !listings && pricingWaysKnown && !pricingCardOffered; // the owner has the card closed: say so at the top of the plans, and what still works
     if (text) text.textContent = listings ? 'Write to support and we will help you buy your listings.' : cardOff ? 'You can pay ' + (pricingCryptoOffered ? 'with crypto or ' : '') + 'with the wallet. To renew another way, write to support and we will renew your plan for you.' : 'Write to support and we will renew your plan for you.';
@@ -28700,14 +28729,14 @@ async function autoSuggestEmptyDraftCategories() {
   }
   async function cardClosedDialog(message, email) {
     setPricingSupport(email);
-    const write = await elmsConfirm(message || 'Card payments are no longer available. Pay with the wallet checkout, or write to support and we will help you renew your plan.', { title: 'Card payments are closed', okText: 'Email support', cancelText: 'Close' });
-    if (write) window.location.href = supportMailto(pricingSupportEmail);
+    const write = await elmsConfirm(message || 'Card payments are no longer available. Pay with the wallet checkout, or write to support and we will help you renew your plan.', { title: 'Card payments are closed', okText: 'Write to support', cancelText: 'Close' });
+    if (write) openSupportTicket('plan');
   }
 
   async function cryptoClosedDialog(message, email) {
     setPricingSupport(email);
-    const write = await elmsConfirm(message || 'Paying with crypto is not available right now. Pay with the wallet checkout, or write to support and we will help you renew your plan.', { title: 'Crypto payments are closed', okText: 'Email support', cancelText: 'Close' });
-    if (write) window.location.href = supportMailto(pricingSupportEmail);
+    const write = await elmsConfirm(message || 'Paying with crypto is not available right now. Pay with the wallet checkout, or write to support and we will help you renew your plan.', { title: 'Crypto payments are closed', okText: 'Write to support', cancelText: 'Close' });
+    if (write) openSupportTicket('plan');
   }
 
   async function startCheckout(planId, btn, custom, provider, orderLines) {
