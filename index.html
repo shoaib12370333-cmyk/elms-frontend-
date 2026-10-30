@@ -3490,6 +3490,55 @@
   .ebst-item small { color:#64748B; margin-left:6px; }
   .ebst-item ul { margin:4px 0 0 18px; padding:0; color:#5B4300; }
   .ebst-more { margin-top:8px; font-size:12px; color:#64748B; }
+  /* Seller health card under a connected store (Settings > eBay stores): the LAST child of the store row, a line of its own, full width. It comes after the flag, the name block and
+     the buttons in the HTML and on the screen at every width (no "order" rules), so the Tab order is the picture. On a desktop it is indented to the name column, on a phone it is not. */
+  .st-acct > .st-health { position:relative; flex:1 1 100%; margin:0 0 0 58px; min-width:0; container-type:inline-size; }
+  .st-health[aria-busy="true"] .sh-card { opacity:.55; transition:opacity .15s; }
+  .sh-sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .sh-card { padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:#fff; font-size:12.5px; line-height:1.45; color:#334155; }
+  .sh-card.soft { background:#F4F8FE; border-color:#CFE0F7; }
+  .sh-head { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  .sh-title { font-size:13px; font-weight:800; color:var(--ink); }
+  .sh-sub { font-size:12px; color:#64748B; }
+  .sh-muted { margin-top:6px; font-size:12px; color:#64748B; overflow-wrap:anywhere; }
+  .sh-proj { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; margin-top:8px; font-size:12px; color:#475569; }
+  .sh-rows { margin-top:8px; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1.5fr) max-content; column-gap:12px; }
+  .sh-row { grid-column:1 / -1; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1.5fr) auto; column-gap:12px; align-items:center; padding:7px 0; border-top:1px solid #EEF2F7; }
+  @supports (grid-template-columns: subgrid) { .sh-row { grid-template-columns:subgrid; } }
+  .sh-rows > .sh-row:first-child { border-top:0; }
+  .sh-name { font-weight:600; color:var(--ink); overflow-wrap:anywhere; }
+  .sh-hint { display:block; margin-top:1px; font-size:11.5px; font-weight:500; line-height:1.35; color:#64748B; }
+  .sh-val { font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+  .sh-val > b { margin-right:3px; }
+  .sh-val small { display:inline-block; font-size:12px; font-weight:500; color:#64748B; margin:0 8px 0 0; }
+  .sh-pill { white-space:nowrap; justify-self:end; }
+  .sh-more { margin-top:8px; }
+  .sh-more > summary { cursor:pointer; font-weight:700; color:#0B4FA0; }
+  .sh-h2 { margin-top:14px; font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#0B4FA0; }
+  .sh-foot { display:flex; flex-wrap:wrap; align-items:center; gap:2px 10px; margin-top:10px; font-size:12px; color:#64748B; }
+  .sh-link { border:0; background:none; padding:2px 0; font:inherit; font-weight:700; color:#0064D2; text-decoration:underline; cursor:pointer; }
+  .sh-link:hover { color:#0B4FA0; }
+  .sh-link:disabled { color:#94A3B8; text-decoration:none; cursor:default; }
+  .sh-spin { flex:none; width:44px; margin:0; }
+  .sh-reconnect { margin-top:10px; display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; }
+  .sh-reconnect p { margin:0; flex:1 1 220px; color:#334155; }
+  /* A narrow card (a phone, or a tablet with the menu open) stacks every row: name and hint on a line, then the value, then the pill. The card's own width decides (container query);
+     the media query is the same thing for a browser without container queries. */
+  @container (max-width: 560px) {
+    .sh-rows { display:block; }
+    .sh-row { display:flex; flex-wrap:wrap; align-items:center; gap:2px 10px; }
+    .sh-row .sh-name { flex:1 1 100%; }
+    .sh-row .sh-val { flex:1 1 7em; min-width:0; }
+    .sh-row .sh-pill { margin-left:auto; }
+  }
+  @media (max-width: 600px) {
+    .st-acct > .st-health { margin-left:0; }
+    .sh-rows { display:block; }
+    .sh-row { display:flex; flex-wrap:wrap; align-items:center; gap:2px 10px; }
+    .sh-row .sh-name { flex:1 1 100%; }
+    .sh-row .sh-val { flex:1 1 7em; min-width:0; }
+    .sh-row .sh-pill { margin-left:auto; }
+  }
   .ap-bar { height:8px; border-radius:99px; background:#E8EDF3; overflow:hidden; }
   .ap-bar i { display:block; height:100%; background:#86B817; border-radius:99px; }
   .ap-bar.warn i { background:#F0A020; }
@@ -19004,10 +19053,12 @@ async function autoSuggestEmptyDraftCategories() {
               <button class="st-btn small danger" data-action="remove-account" type="button">Disconnect</button>`
               }
             </div>
+            ${acc.connected === false ? '' : `<div class="st-health" data-health id="ebHealth-${escapeAttr(acc.id)}"><div data-health-body><div class="elms-loader" style="width:64px;margin:6px 0;" role="status" aria-label="Loading"></div></div><span class="sh-sr" data-health-live aria-live="polite"></span></div>`}
           </div>
         `).join('');
         wireEbayAccountRowActions();
         loadStoreStatuses(currentEbayAccounts.filter((a) => a.connected !== false));
+        loadStoreHealth(currentEbayAccounts.filter((a) => a.connected !== false)); // not waited for: the chips above never wait for it
       }
 
       populatePoliciesAccountSelector();
@@ -19082,6 +19133,208 @@ async function autoSuggestEmptyDraftCategories() {
       }
     }
   }
+
+  // ---------- eBay seller health: the seller level, the numbers behind it and the case rates (the server reads eBay and remembers the answer) ----------
+  // Everything shown here comes from the answer of GET /api/ebay-accounts/:id/health - no number or metric name is written in this file. Any field may be missing.
+  const SH_NONE = 'Seller health is not available right now.';
+  const SH_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const shText = (v) => (typeof v === 'string' ? v : (typeof v === 'number' && Number.isFinite(v) ? String(v) : ''));
+  const shObj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : null);
+  const shList = (v) => (Array.isArray(v) ? v.filter((x) => shObj(x)) : []);
+  const shEsc = (v) => escapeHtml(shText(v));
+  const shTone = (t) => (t === 'good' || t === 'warn' ? t : 'neutral'); // only the three tones the server knows; anything else is neutral
+  const shLoaderHtml = '<div class="elms-loader" style="width:64px;margin:6px 0;" role="status" aria-label="Loading"></div>';
+  function shMonth(v) {
+    const s = shText(v).trim();
+    const m = /^(\d{4})-(\d{2})$/.exec(s);
+    return m && SH_MONTHS[Number(m[2]) - 1] ? SH_MONTHS[Number(m[2]) - 1] + ' ' + m[1] : s;
+  }
+  /** The level / rating as a pill: the words are the information, the colour only supports them. */
+  function shPill(label, tone) {
+    const l = shText(label).trim();
+    return l ? '<span class="ebst-chip sh-pill ' + shTone(tone) + '">' + escapeHtml(l) + '</span>' : '';
+  }
+  function shAgo(iso) {
+    const t = typeof iso === 'string' ? new Date(iso).getTime() : NaN;
+    if (Number.isNaN(t)) return '';
+    const min = Math.floor((Date.now() - t) / 60000);
+    if (min < 1) return 'just now';
+    if (min < 60) return min + ' min ago';
+    if (min < 1440) return Math.floor(min / 60) + ' h ago';
+    return 'on ' + new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  /** One row: name (with a small grey hint under it when there is one), value, pill. Everything a seller needs is visible text: a tooltip is not reachable by touch or keyboard. */
+  function shRow(name, valueHtml, pillHtml, hint) {
+    return '<div class="sh-row"><span class="sh-name">' + escapeHtml(name) + (hint ? '<small class="sh-hint">' + escapeHtml(hint) + '</small>' : '') + '</span> <span class="sh-val">' + valueHtml + '</span> ' + pillHtml + '</div>';
+  }
+  const shCheckAgainBtn = '<button type="button" class="sh-link" data-health-action="refresh">Check again</button>';
+  function shNoneHtml(why) {
+    return '<div class="sh-muted" title="' + escapeAttr(why || '') + '">' + SH_NONE + ' ' + shCheckAgainBtn + '</div>';
+  }
+  /** What an answer really holds: the seller level (with its rows) and the case rows. Notes and errors only explain a gap. */
+  function shFacts(h) {
+    const std = shObj(h.standards);
+    const svc = shObj(h.service);
+    const stdMetrics = shList(std && std.metrics).filter((m) => shText(m.name).trim() || shText(m.key).trim());
+    return {
+      stdMetrics,
+      stdOk: !!std && !!(shText(std.levelLabel).trim() || stdMetrics.length),
+      svcMetrics: shList(svc && svc.metrics).filter((m) => shText(m.label).trim() || shText(m.type).trim()),
+    };
+  }
+  /** An answer that tells nothing and only says a part "is not available right now" is a failed check, not news: it must not replace a card that is on screen. */
+  function shOnlyErrors(health) {
+    const h = shObj(health);
+    if (!h || h.needsReconnect === true) return false;
+    const facts = shFacts(h);
+    const errors = shObj(h.errors) || {};
+    return !facts.stdOk && !facts.svcMetrics.length && ['standards', 'service'].some((part) => shText(errors[part]).trim());
+  }
+  /** The card for one store (health = the "health" object of the answer), or null when there is nothing in it to show. */
+  function shCard(health) {
+    const h = shObj(health);
+    if (!h) return null;
+    if (h.needsReconnect === true) {
+      return '<div class="sh-card soft"><div class="sh-title">Seller health</div><div class="sh-reconnect"><p>eBay needs a one-time permission to show your seller level and case rates.</p> <button type="button" class="st-btn small" data-health-action="reconnect">Reconnect eBay</button></div></div>';
+    }
+    const notes = shObj(h.notes) || {};
+    const errors = shObj(h.errors) || {};
+    const std = shObj(h.standards);
+    const { stdMetrics, stdOk, svcMetrics } = shFacts(h);
+    const lines = (part, what) => (shText(notes[part]).trim() ? '<div class="sh-muted">' + shEsc(notes[part]) + '</div>' : '')
+      + (shText(errors[part]).trim() ? '<div class="sh-muted" title="' + escapeAttr(errors[part]) + '">' + what + ' not available right now.</div>' : '');
+    const stdLines = lines('standards', 'Seller level is');
+    const svcLines = lines('service', 'Case rates are');
+    if (!stdOk && !svcMetrics.length && !stdLines && !svcLines) return null;
+
+    const head = ['<span class="sh-title">Seller health</span>'];
+    if (stdOk) {
+      head.push(shPill(std.levelLabel, std.tone));
+      const program = shText(std.programLabel).trim();
+      const month = shMonth(std.evaluationMonth);
+      const sub = [program ? program + ' program' : '', month ? (std.cycle === 'PROJECTED' ? 'projected ' : 'evaluated ') + month : ''].filter(Boolean).join(' \u00b7 ');
+      if (sub) head.push('<span class="sh-sub">' + escapeHtml(sub) + '</span>');
+    }
+    let out = '<div class="sh-head">' + head.filter(Boolean).join(' ') + '</div>';
+    if (stdOk) {
+      const pr = shObj(std.projected);
+      if (pr && shText(pr.levelLabel).trim()) {
+        const pm = shMonth(pr.evaluationMonth);
+        out += '<div class="sh-proj"><span>' + (pm ? 'Projected for ' + escapeHtml(pm) : 'Projected') + ':</span> ' + shPill(pr.levelLabel, pr.tone) + '</div>';
+      }
+      if (shText(std.note).trim()) out += '<div class="sh-muted">' + shEsc(std.note) + '</div>';
+      const metricRow = (m) => {
+        const limit = shText(m.limit).trim();
+        return shRow(shText(m.name).trim() || shText(m.key).trim(), shText(m.value).trim() ? escapeHtml(shText(m.value)) : '-', shPill(m.levelLabel, m.tone), limit ? 'Limit for this level: ' + limit : '');
+      };
+      const perf = stdMetrics.filter((m) => m.group !== 'eligibility');
+      const elig = stdMetrics.filter((m) => m.group === 'eligibility');
+      if (perf.length) out += '<div class="sh-rows">' + perf.map(metricRow).join('') + '</div>';
+      if (elig.length) out += '<details class="sh-more"><summary>Other requirements (' + elig.length + ')</summary><div class="sh-rows">' + elig.map(metricRow).join('') + '</div></details>';
+    }
+    out += stdLines;
+    if (svcMetrics.length) {
+      const compared = svcMetrics.some((m) => shText(m.average).trim() || shText(m.ratingLabel).trim()); // (eBay sends no benchmark for some sellers: then it is not a comparison)
+      out += '<div class="sh-h2">' + (compared ? 'Cases compared with similar sellers' : 'Case rates') + '</div><div class="sh-rows">' + svcMetrics.map((m) => {
+        const avg = shText(m.average).trim();
+        const counts = shText(m.counts).trim();
+        const val = '<b>' + (shText(m.rate).trim() ? escapeHtml(shText(m.rate)) : '-') + '</b>'
+          + (avg ? ' <small>similar sellers: ' + escapeHtml(avg) + '</small>' : '')
+          + (counts ? ' <small>' + escapeHtml(counts) + '</small>' : '');
+        return shRow(shText(m.label).trim() || shText(m.type).trim(), val, shPill(m.ratingLabel, m.ratingTone), shText(m.dimension).trim());
+      }).join('') + '</div>';
+    }
+    out += svcLines;
+    const ago = shAgo(h.fetchedAt);
+    const when = ago ? '<span title="' + escapeAttr(new Date(h.fetchedAt).toLocaleString()) + '">Updated ' + escapeHtml(ago) + '</span>' : '';
+    out += '<div class="sh-foot">' + [when, shCheckAgainBtn].filter(Boolean).join(' ') + '</div>';
+    return '<div class="sh-card">' + out + '</div>';
+  }
+  const shBuildHtml = (health) => shCard(health) || shNoneHtml();
+  const shSpinHtml = '<span class="elms-loader sh-spin" data-health-spin role="status" aria-label="Loading"></span>';
+  const SH_RECHECK_FAILED = 'Could not check again just now. Try again in a moment.';
+  /**
+   * Fills one store's health block. Never throws; a block that is already being filled is left alone (no stacked requests).
+   * The first load shows the logo loader, then the card. "Check again" (refresh) keeps the card that is on screen - dimmed, its buttons off, a small loader by the
+   * "Updated" line - until the new answer is there; if that fails (no answer, an error, nothing usable in it, or only "not available right now" for every part) the old card
+   * stays as it was with one grey line.
+   * A keyboard user keeps their place (the new button gets the focus) and a hidden live region says how it went.
+   */
+  async function shLoadOne(accountId, box, refresh) {
+    const body = box && box.querySelector('[data-health-body]');
+    if (!body || box.getAttribute('data-busy')) return;
+    const live = box.querySelector('[data-health-live]');
+    const focused = document.activeElement && box.contains(document.activeElement) ? document.activeElement.getAttribute('data-health-action') : null;
+    const foot = refresh ? body.querySelector('.sh-card .sh-foot') : null;
+    const keep = !!foot;
+    const detailsOpen = !!body.querySelector('details.sh-more[open]');
+    box.setAttribute('data-busy', '1');
+    box.setAttribute('aria-busy', 'true');
+    if (live) live.textContent = '';
+    if (keep) {
+      body.querySelectorAll('[data-health-action]').forEach((btn) => { btn.disabled = true; });
+      foot.insertAdjacentHTML('beforeend', shSpinHtml);
+    } else {
+      body.innerHTML = shLoaderHtml;
+    }
+    let html = null;
+    let isCard = false;
+    try {
+      const res = await apiFetch('/api/ebay-accounts/' + encodeURIComponent(accountId) + '/health' + (refresh ? '?refresh=1' : ''));
+      const data = await res.json();
+      if (!res.ok || !data || !data.success) throw new Error((data && data.error) || 'eBay did not answer.');
+      const card = shCard(data.health);
+      if (card === null && keep) throw new Error('eBay sent nothing usable.');
+      if (keep && shOnlyErrors(data.health)) throw new Error('eBay could not answer.'); // (errors and no data: the card on screen is worth more)
+      isCard = card !== null;
+      html = isCard ? card : shNoneHtml();
+    } catch (err) {
+      if (!keep) html = shNoneHtml(err && err.message);
+    }
+    box.removeAttribute('data-busy');
+    box.removeAttribute('aria-busy');
+    if (!box.isConnected) return; // the list was drawn again while eBay was answering
+    if (html === null) { // the new check failed: the old card stays, as it was
+      body.querySelectorAll('[data-health-spin], .sh-recheck-failed').forEach((x) => x.remove());
+      body.querySelectorAll('[data-health-action]').forEach((btn) => { btn.disabled = false; });
+      body.querySelector('.sh-card').insertAdjacentHTML('beforeend', '<div class="sh-muted sh-recheck-failed">' + SH_RECHECK_FAILED + '</div>');
+    } else {
+      body.innerHTML = html;
+      const details = body.querySelector('details.sh-more');
+      if (details && detailsOpen) details.open = true;
+    }
+    // The focus goes back to the new button only if the seller is still "nowhere in particular" (the old button was taken away, so the page lost it). Someone who moved on
+    // to the name field, another store or another control of this card while eBay was answering keeps their place, and the page does not scroll back.
+    const here = document.activeElement;
+    if (focused && (!here || here === document.body || !here.isConnected)) {
+      const next = body.querySelector('[data-health-action="' + focused + '"]') || body.querySelector('[data-health-action]');
+      if (next) next.focus({ preventScroll: true });
+    }
+    if (refresh && live) live.textContent = isCard ? 'Seller health updated' : 'Could not check again just now.';
+  }
+  /** One store after the other (like the status chips). The blocks are taken when this starts: a list drawn again meanwhile gets its own run, and a block is asked once. */
+  async function loadStoreHealth(accounts) {
+    const todo = accounts.map((acc) => {
+      const row = document.querySelector('#ebayAccountsList [data-account-id="' + acc.id + '"]');
+      return { id: acc.id, box: row && row.querySelector('[data-health]') };
+    }).filter((x) => x.box && !x.box.hasAttribute('data-asked'));
+    todo.forEach((x) => x.box.setAttribute('data-asked', '1'));
+    for (const { id, box } of todo) {
+      if (box.isConnected) await shLoadOne(id, box, false);
+    }
+  }
+  // One click handler for "Check again" and "Reconnect eBay" in every health block.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest ? e.target.closest('[data-health-action]') : null;
+    if (!btn) return;
+    const row = btn.closest('[data-account-id]');
+    const box = btn.closest('[data-health]');
+    if (!row || !box) return;
+    const accountId = row.getAttribute('data-account-id');
+    if (btn.getAttribute('data-health-action') === 'refresh') { shLoadOne(accountId, box, true); return; }
+    const acc = (currentEbayAccounts || []).find((a) => String(a.id) === accountId);
+    openEbayConnectModal({ reconnectAccountId: accountId, marketplaceId: acc && acc.marketplaceId, label: acc ? accountDisplayLabel(acc) : 'your store' });
+  });
 
   function wireEbayAccountRowActions() {
     document.querySelectorAll('#ebayAccountsList [data-account-id]').forEach((row) => {
