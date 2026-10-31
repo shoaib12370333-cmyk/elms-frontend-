@@ -6756,12 +6756,18 @@ B0EXAMPLE2"></textarea></div>
             <section class="st-card">
               <div class="st-head">
                 <div class="st-ico green">&#127873;</div>
-                <div class="st-head-txt"><h2>Welcome bonus</h2><p>Credits a brand-new account starts with.</p></div>
+                <div class="st-head-txt"><h2>Welcome bonus</h2><p>A free trial a brand-new account starts with.</p></div>
                 <label class="toggle-switch"><input type="checkbox" id="welcomeBonusToggle" /><span class="toggle-slider"></span></label>
               </div>
               <div class="st-field">
-                <label>Credits per new user <span class="welcome-bonus-label" id="welcomeBonusStateLabel" style="text-transform:none;letter-spacing:0;">Off</span></label>
-                <input class="st-input" type="number" id="welcomeBonusCredits" min="0" value="10" />
+                <label>Free listings per new user <span class="welcome-bonus-label" id="welcomeBonusStateLabel" style="text-transform:none;letter-spacing:0;">Off</span></label>
+                <input class="st-input" type="number" id="welcomeTrialListings" min="0" max="5000" step="1" value="100" />
+              </div>
+              <div class="st-field">
+                <label>Trial length (days)</label>
+                <input class="st-input" type="number" id="welcomeTrialDays" min="1" max="365" step="1" value="30" />
+              </div>
+              <div class="st-hint">Free listings = live listings at once (drafts: 1.5 times that a month; no AI; one eBay store). 0 = no trial. Plans by listings must be on sale. After the days the usual extra days follow, then ELMS pauses for the account until a plan is bought.
               </div>
               <div class="st-actions"><button class="st-btn primary" id="saveWelcomeBonusBtn" type="button">Save</button><div id="welcomeBonusStatus"></div></div>
             </section>
@@ -7485,28 +7491,32 @@ B0EXAMPLE2"></textarea></div>
   // Never for an admin, and never for a person on a plan or on credits: an old credits account has no plan to renew.
   const PLAN_PAUSED_HEAD = 'Your plan has ended, so ELMS is paused for your account:';
   const PLAN_PAUSED_REST = 'orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. Renew your plan to start again.';
+  const PLAN_PAUSED_HEAD_TRIAL = 'Your free trial has ended, so ELMS is paused for your account:';
+  const PLAN_PAUSED_REST_TRIAL = 'orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. Choose a plan to start again.';
   // The parts of the profile that say what plan the person has and whether ELMS is paused for them. Every place that reads the profile again (/me or plan-state) copies THIS list, so none forgets one.
-  const PLAN_PROFILE_FIELDS = ['planModel', 'entitlement', 'planName', 'planExpiresAt', 'planPaused', 'planPausedAt'];
+  const PLAN_PROFILE_FIELDS = ['planModel', 'entitlement', 'planName', 'planExpiresAt', 'planPaused', 'planPausedAt', 'trialEnded'];
   function pickPlanFields(user) { const o = {}; PLAN_PROFILE_FIELDS.forEach((k) => { o[k] = user[k]; }); return o; }
   const planBannerDay = (v) => { const d = v ? new Date(v) : null; return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''; };
   function planIsPaused(user) { const u = user || window.currentUser; return !!(u && u.planPaused === true && u.role !== 'admin'); }
   // The name under the person's name in the top bar.
-  function userRoleLabel(user) { return user.role === 'admin' ? 'Admin' : planIsPaused(user) ? 'Plan ended' : (user.planName || user.plan || 'Free Plan'); }
+  function userRoleLabel(user) { return user.role === 'admin' ? 'Admin' : planIsPaused(user) ? (user.trialEnded === true ? 'Trial ended' : 'Plan ended') : (user.planName || user.plan || 'Free Plan'); }
   function paintUserRole() { const el = document.getElementById('userRole'); if (el && window.currentUser) el.textContent = userRoleLabel(window.currentUser); }
   // What the line says now: null (no line) or { tone, head (bold), rest, short (the one-row version for a phone) } - all plain text.
   function planBannerState(user) {
     const u = user || window.currentUser;
     if (!u || u.role === 'admin') return null;
-    if (planIsPaused(u)) return { tone: 'paused', head: PLAN_PAUSED_HEAD, rest: PLAN_PAUSED_REST, short: 'Plan ended: ELMS is paused.' };
+    if (planIsPaused(u)) return u.trialEnded === true ? { tone: 'paused', btn: 'Choose a plan', head: PLAN_PAUSED_HEAD_TRIAL, rest: PLAN_PAUSED_REST_TRIAL, short: 'Trial ended: ELMS is paused.' } : { tone: 'paused', head: PLAN_PAUSED_HEAD, rest: PLAN_PAUSED_REST, short: 'Plan ended: ELMS is paused.' };
     const e = u.entitlement;
     if (!e || e.inGrace !== true) return null; // only a plan by listings that is past its end date (a credits account has none)
     const ended = planBannerDay(u.planExpiresAt);
     const until = planBannerDay(e.graceEndsAt);
     const endsMs = e.graceEndsAt ? new Date(e.graceEndsAt).getTime() : NaN;
-    const head = ended ? 'Your plan ended on ' + ended + '.' : 'Your plan has ended.';
-    if (endsMs <= Date.now()) return { tone: 'grace', head, rest: 'The extra days are over and ELMS is about to pause for your account; renew now so it does not.', short: 'Plan ended: pausing soon.' }; // (the plan is closed by an hourly job)
+    const trial = e.trial === true; // the free trial of a new account: any plan takes its place, so it says "choose a plan" where a paid plan says "renew"
+    const head = trial ? (ended ? 'Your free trial ended on ' + ended + '.' : 'Your free trial has ended.') : (ended ? 'Your plan ended on ' + ended + '.' : 'Your plan has ended.');
+    const btn = trial ? 'Choose a plan' : null;
+    if (endsMs <= Date.now()) return { tone: 'grace', btn, head, rest: 'The extra days are over and ELMS is about to pause for your account; ' + (trial ? 'choose a plan' : 'renew') + ' now so it does not.', short: (trial ? 'Trial ended' : 'Plan ended') + ': pausing soon.' }; // (the plan is closed by an hourly job)
     const days = Math.ceil((endsMs - Date.now()) / 86400000);
-    return { tone: 'grace', head, rest: 'Everything keeps working ' + (until ? 'until ' + until : 'for a few more days') + '; renew now so ELMS does not pause.', short: days >= 1 ? 'Plan ended: renew in ' + days + (days === 1 ? ' day.' : ' days.') : 'Plan ended: renew soon.' };
+    return { tone: 'grace', btn, head, rest: 'Everything keeps working ' + (until ? 'until ' + until : 'for a few more days') + '; ' + (trial ? 'choose a plan' : 'renew') + ' now so ELMS does not pause.', short: days >= 1 ? (trial ? 'Trial ended: choose a plan in ' : 'Plan ended: renew in ') + days + (days === 1 ? ' day.' : ' days.') : (trial ? 'Trial ended: choose a plan soon.' : 'Plan ended: renew soon.') };
   }
   // Paints the line. It touches the DOM ONLY when what it says changed: the line is a status region, and a screen reader reads a rewritten one out again (this runs after every profile read).
   function paintPlanBanner() {
@@ -7514,12 +7524,14 @@ B0EXAMPLE2"></textarea></div>
     const textEl = document.getElementById('planBannerText');
     if (!el || !textEl) return;
     const s = planBannerState();
-    const key = s ? [s.tone, s.head, s.rest, s.short].join('|') : '';
+    const key = s ? [s.tone, s.head, s.rest, s.short, s.btn || ''].join('|') : '';
     if ((el.dataset.key || '') === key && el.hidden === !s) return;
     if (!s) { hidePlanBanner(); return; }
     const plain = s.head + ' ' + s.rest;
     el.className = 'plan-banner ' + s.tone;
     el.dataset.key = key;
+    const bannerBtn = document.getElementById('planBannerBtn');
+    if (bannerBtn) bannerBtn.textContent = s.btn || 'Renew plan';
     el.setAttribute('aria-label', plain);
     textEl.title = plain;
     textEl.innerHTML = '<span class="pb-full"><b>' + escapeHtml(s.head) + '</b> ' + escapeHtml(s.rest) + '</span><span class="pb-short">' + escapeHtml(s.short) + '</span>';
@@ -9941,7 +9953,7 @@ B0EXAMPLE2"></textarea></div>
     const when = notice.endedAt ? new Date(notice.endedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
     // A plan by listings that closed pauses ELMS for the account (the profile says so); a credits plan only takes its credits away. A notice from before the pause existed (the profile is not paused) claims nothing about it.
     const what = notice.slots && planIsPaused(user)
-      ? 'ELMS is now paused for your account: orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. Renew your plan and everything starts again at once.'
+      ? 'ELMS is now paused for your account: orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. ' + (notice.trial ? 'Choose a plan' : 'Renew your plan') + ' and everything starts again at once.'
       : (notice.slots
         ? 'The limits of the plan ended with it.'
         : `The credits that came with it ended with it.${Number(notice.creditsKept) > 0 ? ` You still have ${Number(notice.creditsKept).toLocaleString()} credits from before the plan.` : ''}`) + ' Your listings, drafts and orders are all still there. Buy a plan again whenever you are ready.';
@@ -9949,7 +9961,7 @@ B0EXAMPLE2"></textarea></div>
     overlay.className = 'welcome-overlay';
     overlay.innerHTML = `
       <div class="welcome-box" role="dialog" aria-modal="true" aria-label="Your plan ended">
-        <div class="welcome-title">Your${notice.planName ? ' ' + escapeHtml(notice.planName) : ''} plan ended</div>
+        <div class="welcome-title">${notice.trial ? 'Your free trial ended' : 'Your' + (notice.planName ? ' ' + escapeHtml(notice.planName) : '') + ' plan ended'}</div>
         <div class="welcome-sub">${when ? `It ran out on ${when}. ` : ''}${what}</div>
         <div class="welcome-actions">
           <button type="button" class="ord-btn primary" data-act="buy">See plans</button>
@@ -9976,13 +9988,17 @@ B0EXAMPLE2"></textarea></div>
   }
 
   /**
-   * The welcome popup. The number is what this account was really given at sign-up (the server sends it as user.welcomePopup and
-   * stops sending it once the popup was closed), so it follows whatever the admin had set for the welcome bonus at that time.
+   * The welcome popup. The numbers are what this account was really given at sign-up (the server sends them as user.welcomePopup and
+   * stops sending it once the popup was closed), so they follow whatever the admin had set for the welcome bonus at that time: the free trial
+   * ({ listings, days }), or - on an older account - the welcome credits ({ credits }).
    */
   let welcomePopupShown = false;
   function maybeShowWelcomePopup(user) {
-    const credits = Number(user && user.welcomePopup && user.welcomePopup.credits);
-    if (!(credits > 0) || welcomePopupShown) return;
+    const wp = user && user.welcomePopup;
+    const listings = Number(wp && wp.listings);
+    const days = Number(wp && wp.days);
+    const credits = Number(wp && wp.credits);
+    if (!(listings > 0 || credits > 0) || welcomePopupShown) return;
     welcomePopupShown = true;
     const overlay = document.createElement('div');
     overlay.className = 'welcome-overlay';
@@ -9990,8 +10006,8 @@ B0EXAMPLE2"></textarea></div>
       <div class="welcome-box" role="dialog" aria-modal="true" aria-label="Welcome to ELMS">
         <div class="welcome-logo" role="img" aria-label="ELMS"></div>
         <div class="welcome-title">Welcome to ELMS!</div>
-        <div class="welcome-sub">Your account is ready. Here are free credits to try ELMS:</div>
-        <div class="welcome-credits"><b>${credits.toLocaleString()}</b><span>free credit${credits === 1 ? '' : 's'}</span></div>
+        <div class="welcome-sub">${listings > 0 ? 'Your account is ready. Here is a free trial to try ELMS:' : 'Your account is ready. Here are free credits to try ELMS:'}</div>
+        <div class="welcome-credits"><b>${(listings > 0 ? listings : credits).toLocaleString()}</b><span>${listings > 0 ? 'free listing' + (listings === 1 ? '' : 's') + (days > 0 ? ' for ' + days + (days === 1 ? ' day' : ' days') : '') : 'free credit' + (credits === 1 ? '' : 's')}</span></div>
         <ul class="welcome-steps">
           <li><i>1</i><span>${user.hasEbayLogin ? 'Check your eBay store and its policies in Settings.' : 'Connect your eBay store in Settings.'}</span></li>
           <li><i>2</i><span>Paste an Amazon link on the Import page.</span></li>
@@ -10035,7 +10051,7 @@ B0EXAMPLE2"></textarea></div>
     const paused = planIsPaused(window.currentUser || user);
     if (chip) chip.classList.toggle('is-paused', paused);
     if (paused) { // ELMS is paused for this account: there are no listings to count, the chip says so
-      if (chip) { document.getElementById('creditBalanceAmount').textContent = 'Paused'; chip.title = PLAN_PAUSED_HEAD + ' ' + PLAN_PAUSED_REST; chip.style.display = 'flex'; }
+      if (chip) { document.getElementById('creditBalanceAmount').textContent = 'Paused'; chip.title = (((window.currentUser || user) || {}).trialEnded === true ? PLAN_PAUSED_HEAD_TRIAL + ' ' + PLAN_PAUSED_REST_TRIAL : PLAN_PAUSED_HEAD + ' ' + PLAN_PAUSED_REST); chip.style.display = 'flex'; }
       return;
     }
     if (user && user.planModel === 'slots') { // a plan by listings: the chip shows the live listings used (the numbers come a moment later), not credits
@@ -25351,7 +25367,8 @@ async function autoSuggestEmptyDraftCategories() {
       const toggle = document.getElementById('welcomeBonusToggle');
       toggle.checked = !!data.settings.welcomeBonusEnabled;
       document.getElementById('welcomeBonusStateLabel').textContent = toggle.checked ? 'On' : 'Off';
-      document.getElementById('welcomeBonusCredits').value = data.settings.welcomeBonusCredits ?? 10;
+      document.getElementById('welcomeTrialListings').value = data.settings.welcomeTrialListings ?? 100;
+      document.getElementById('welcomeTrialDays').value = data.settings.welcomeTrialDays ?? 30;
       document.getElementById('importPolicyToggle').checked = data.settings.importWithoutEbayAccount !== false;
       renderImportPolicyText();
     } catch (err) {
@@ -25400,7 +25417,8 @@ async function autoSuggestEmptyDraftCategories() {
     const btn = document.getElementById('saveWelcomeBonusBtn');
     const statusEl = document.getElementById('welcomeBonusStatus');
     const welcomeBonusEnabled = document.getElementById('welcomeBonusToggle').checked;
-    const welcomeBonusCredits = Number(document.getElementById('welcomeBonusCredits').value) || 0;
+    const welcomeTrialListings = Number(document.getElementById('welcomeTrialListings').value) || 0;
+    const welcomeTrialDays = Number(document.getElementById('welcomeTrialDays').value) || 0;
 
     btn.disabled = true;
     statusEl.className = '';
@@ -25410,7 +25428,7 @@ async function autoSuggestEmptyDraftCategories() {
       const res = await apiFetch('/api/admin/settings/welcome-bonus', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ welcomeBonusEnabled, welcomeBonusCredits }),
+        body: JSON.stringify({ welcomeBonusEnabled, welcomeTrialListings, welcomeTrialDays }),
       });
       const data = await res.json();
 
@@ -26660,6 +26678,7 @@ async function autoSuggestEmptyDraftCategories() {
         ['Password', acc.hasPassword ? (acc.passwordUnproven ? 'Set, but the owner never proved the mailbox' : 'Set') : 'None (Google sign-in only)'],
         ['Phone (typed, not verified)', u.phone ? adEsc(u.phoneDisplay || u.phone) + (u.phoneCountry ? ' &middot; ' + adEsc(u.phoneCountry) : '') : (u.phoneRequired ? '<span class="ad-tag bad">MUST ADD</span>' : '—')],
         ['Welcome credits given', acc.welcomeCredits == null ? '—' : adEsc(acc.welcomeCredits)],
+        ['Free trial given', acc.welcomeListings == null ? '—' : adEsc(acc.welcomeListings + ' listings' + (acc.welcomeTrialDays ? ' for ' + acc.welcomeTrialDays + ' days' : ''))],
         ['Content-rights confirmation', acc.contentRightsAckAt ? adEsc(adDate(acc.contentRightsAckAt)) + '<br /><small>wording ' + adEsc(acc.contentRightsAckVersion || '—') + '</small>' : (u.role === 'admin' ? '<span class="ad-tag free">STAFF: NOT ASKED</span>' : '<span class="ad-tag free">NOT YET</span>')],
         ['Last brand-word removal (ticked)', acc.veroRemovalConfirmedAt ? adEsc(adDateTime(acc.veroRemovalConfirmedAt)) : '—'],
         ['Referral code', acc.referralCode ? adEsc(acc.referralCode) + (acc.referralBlocked ? ' <span class="ad-tag bad">BLOCKED</span>' : '') : '—'],
@@ -28305,7 +28324,7 @@ async function autoSuggestEmptyDraftCategories() {
     // the plan the person is on, with how much of it is used (the usage comes from /api/payments/usage a moment later)
     const my = data.myPlan && data.myPlan.slots ? data.myPlan : null;
     window.pricingMyPlan = my; // the order review says when a bigger plan takes over the days left on this one
-    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + ', then ELMS pauses for your account: orders, messages and listings are not processed (your data stays and your listings stay live on eBay). Renew below so it does not pause.' : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.'}</span></div></div>` : '';
+    const myBanner = my ? `<div class="bc-ref-banner"><div class="bc-ref-ico">&#128197;</div><div><b>${escapeHtml(my.planName || 'Your plan')} ${my.inGrace ? 'ended on' : 'runs until'} ${escapeHtml(new Date(my.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }))}</b><span id="spUsageLine">${my.inGrace ? 'Everything keeps working until ' + escapeHtml(new Date(my.graceEndsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })) + ', then ELMS pauses for your account: orders, messages and listings are not processed (your data stays and your listings stay live on eBay). ' + (my.trial ? 'Choose a plan below' : 'Renew below') + ' so it does not pause.' : (my.trial ? 'Buying a plan starts it today and takes the place of the trial. The listings you have stay as they are.' : 'Buying again adds a month (or a year) after it. The listings you have stay as they are.')}</span></div></div>` : '';
 
     const cardFor = (p, i) => {
       const noYear = yr && !p.yearlyPriceUsd; // a plan without a yearly price on the yearly view: monthly only (never "$0 / year")
@@ -28589,7 +28608,8 @@ async function autoSuggestEmptyDraftCategories() {
       if (L.aiQuota > 0) slotLines.push(['AI actions a month', nf(L.aiQuota)]);
       slotLines.push(['eBay stores', String(L.stores)]);
       const mine = window.pricingMyPlan;
-      if (mine && !mine.inGrace && Number(mine.maxListings) > 0 && Number(L.liveListings) > Number(mine.maxListings)) slotLines.push(['Your current plan', 'The days left are added to this plan, counted by price']);
+      if (mine && mine.trial) slotLines.push(['Your free trial', 'This plan starts at once and takes its place']);
+      else if (mine && !mine.inGrace && Number(mine.maxListings) > 0 && Number(L.liveListings) > Number(mine.maxListings)) slotLines.push(['Your current plan', 'The days left are added to this plan, counted by price']);
       if (Number.isFinite(Number(payUsd))) slotLines.push(['Price', '$' + Number(payUsd).toFixed(2) + (card ? ' + tax' : '')]);
       slotLines.slots = true; // the refund sentence below is not the credits one
       if (crypto) slotLines.crypto = true;
