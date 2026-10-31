@@ -9953,7 +9953,7 @@ B0EXAMPLE2"></textarea></div>
     const when = notice.endedAt ? new Date(notice.endedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
     // A plan by listings that closed pauses ELMS for the account (the profile says so); a credits plan only takes its credits away. A notice from before the pause existed (the profile is not paused) claims nothing about it.
     const what = notice.slots && planIsPaused(user)
-      ? 'ELMS is now paused for your account: orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. Renew your plan and everything starts again at once.'
+      ? 'ELMS is now paused for your account: orders, messages and listings are not being processed. Your data is safe and your eBay listings stay live. ' + (notice.trial ? 'Choose a plan' : 'Renew your plan') + ' and everything starts again at once.'
       : (notice.slots
         ? 'The limits of the plan ended with it.'
         : `The credits that came with it ended with it.${Number(notice.creditsKept) > 0 ? ` You still have ${Number(notice.creditsKept).toLocaleString()} credits from before the plan.` : ''}`) + ' Your listings, drafts and orders are all still there. Buy a plan again whenever you are ready.';
@@ -10051,7 +10051,7 @@ B0EXAMPLE2"></textarea></div>
     const paused = planIsPaused(window.currentUser || user);
     if (chip) chip.classList.toggle('is-paused', paused);
     if (paused) { // ELMS is paused for this account: there are no listings to count, the chip says so
-      if (chip) { document.getElementById('creditBalanceAmount').textContent = 'Paused'; chip.title = PLAN_PAUSED_HEAD + ' ' + PLAN_PAUSED_REST; chip.style.display = 'flex'; }
+      if (chip) { document.getElementById('creditBalanceAmount').textContent = 'Paused'; chip.title = (((window.currentUser || user) || {}).trialEnded === true ? PLAN_PAUSED_HEAD_TRIAL + ' ' + PLAN_PAUSED_REST_TRIAL : PLAN_PAUSED_HEAD + ' ' + PLAN_PAUSED_REST); chip.style.display = 'flex'; }
       return;
     }
     if (user && user.planModel === 'slots') { // a plan by listings: the chip shows the live listings used (the numbers come a moment later), not credits
